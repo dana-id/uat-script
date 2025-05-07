@@ -31,25 +31,14 @@ run_python_runner(){
         exit 0 
     fi
     python3 --version
-    python3 -m venv path/to/venv
-    source path/to/venv/bin/activate
+    python3 -m venv venv
+    source venv/bin/activate
 
-    # Install package
+    # Install packages from requirements.txt
     python3 -m pip install --upgrade pip
-    python3 -m pip install pytest
-    python3 -m pip install dana-python-api-client
-    python3 -m pip install annotated-types
-    python3 -m pip install cffi
-    python3 -m pip install cryptography
-    python3 -m pip install pycparser
-    python3 -m pip install pydantic
-    python3 -m pip install pydantic-core
-    python3 -m pip install python-dateutil
-    python3 -m pip install six
-    python3 -m pip install typing-extensions
-    python3 -m pip install urllib3
+    python3 -m pip install -r dependency/python-requirements.txt
     
-    export PYTHONPATH=$PYTHONPATH:/Users/daniswaraab/Documents/dana-self-integration-test/runner/python/*
+    export PYTHONPATH=$PYTHONPATH:$(pwd)/runner/python
     pytest -v -s
 }
 
