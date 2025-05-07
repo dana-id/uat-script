@@ -1,0 +1,198 @@
+{
+    "ConsultPay": {
+        "ConsultPayBalancedSuccess": {
+            "request": {
+                "merchantId": "216620010016033632482",
+                "amount": {
+                    "value": "100000.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {
+                    "buyer": {
+                        "externalUserId": "8392183912832913821",
+                        "externalUserType": "",
+                        "nickname": "",
+                        "userId": ""
+                    },
+                    "envInfo": {
+                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
+                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
+                        "websiteLanguage": "en_US",
+                        "clientIp": "10.15.8.189",
+                        "osType": "Windows.PC",
+                        "appVersion": "1.0",
+                        "sdkVersion": "1.0",
+                        "sourcePlatform": "IPG",
+                        "orderOsType": "IOS",
+                        "merchantAppVersion": "1.0",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "2005700",
+                "responseMessage": "Successful",
+                "paymentInfos":[
+                    {
+                        "payMethod": "VIRTUAL_ACCOUNT",
+                        "payOption": "VIRTUAL_ACCOUNT_BNI"
+                    },
+                    {
+                        "payMethod": "VIRTUAL_ACCOUNT",
+                        "payOption": "VIRTUAL_ACCOUNT_BRI"
+                        },
+                        {
+                            "payMethod": "VIRTUAL_ACCOUNT",
+                            "payOption": "VIRTUAL_ACCOUNT_CIMB"
+                            },
+                            {
+                                "payMethod": "BALANCE"
+                            }
+                        ]
+                    }
+        },
+        "ConsultPayBalancedInvalidFieldFormat": {
+            "request": {
+                "merchantId": "216620010016033632482",
+                "amount": {
+                    "value": "",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {
+                    "buyer": {
+                        "externalUserId": "8392183912832913821",
+                        "externalUserType": "",
+                        "nickname": "",
+                        "userId": ""
+                    },
+                    "envInfo": {
+                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
+                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
+                        "websiteLanguage": "en_US",
+                        "clientIp": "10.15.8.189",
+                        "osType": "Windows.PC",
+                        "appVersion": "1.0",
+                        "sdkVersion": "1.0",
+                        "sourcePlatform": "IPG",
+                        "orderOsType": "IOS",
+                        "merchantAppVersion": "1.0",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    }
+                }
+            },
+            "response": {
+                "responseMessage":"Invalid Field Format",
+                "responseCode":"4000001"
+            }
+        },
+        "ConsultPayBalancedInconsistentRequest": {
+            "request": {
+                "merchantId": "216620010016033632482",
+                "amount": {
+                    "value": "12345678.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {
+                    "buyer": {
+                        "externalUserId": "8392183912832913821",
+                        "externalUserType": "",
+                        "nickname": "",
+                        "userId": ""
+                    },
+                    "envInfo": {
+                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
+                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
+                        "websiteLanguage": "en_US",
+                        "clientIp": "10.15.8.189",
+                        "osType": "Windows.PC",
+                        "appVersion": "1.0",
+                        "sdkVersion": "1.0",
+                        "sourcePlatform": "IPG",
+                        "orderOsType": "IOS",
+                        "merchantAppVersion": "1.0",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    }
+                }
+            },
+            "response": {
+                "responseMessage":"Inconsistent Request",
+                "responseCode":"4040018"
+            }
+        },
+        "ConsultPayBalancedInvalidMandatoryField": {
+            "request": {
+                "merchantId": "",
+                "amount": {
+                    "value": "12345678.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {
+                    "buyer": {
+                        "externalUserId": "8392183912832913821",
+                        "externalUserType": "",
+                        "nickname": "",
+                        "userId": ""
+                    },
+                    "envInfo": {
+                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
+                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
+                        "websiteLanguage": "en_US",
+                        "clientIp": "10.15.8.189",
+                        "osType": "Windows.PC",
+                        "appVersion": "1.0",
+                        "sdkVersion": "1.0",
+                        "sourcePlatform": "IPG",
+                        "orderOsType": "IOS",
+                        "merchantAppVersion": "1.0",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    }
+                }
+            },
+            "response": {
+                "resultInfo": {
+                    "responseCode": "4000002",
+                    "responseMessage": "MerchantId can not be empty"
+                }
+            }
+        },
+        "ConsultPayBalancedUnauthorized": {
+            "request": {
+                "merchantId": "216620010016033632482",
+                "amount": {
+                    "value": "12345678.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {
+                    "buyer": {
+                        "externalUserId": "8392183912832913821",
+                        "externalUserType": "",
+                        "nickname": "",
+                        "userId": ""
+                    },
+                    "envInfo": {
+                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
+                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
+                        "websiteLanguage": "en_US",
+                        "clientIp": "10.15.8.189",
+                        "osType": "Windows.PC",
+                        "appVersion": "1.0",
+                        "sdkVersion": "1.0",
+                        "sourcePlatform": "IPG",
+                        "orderOsType": "IOS",
+                        "merchantAppVersion": "1.0",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    }
+                }
+            },
+            "response": {
+                "responseMessage":"Unauthorized",
+                "responseCode":"4010000"
+            }
+        }
+    }
+}

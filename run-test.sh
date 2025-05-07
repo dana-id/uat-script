@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Fail on error
+set -e
+
+RUNNER_PATH=runner/
+
+INTERPRETER=$1
+
+main() {
+    case $INTERPRETER in
+    "python")
+        run_python_runner
+        ;;
+    "java")
+        run_node_runner
+        ;;
+    "javascript")
+        run_node_runner
+        ;;
+    *)
+        echo "Invalid option. Please choose a valid interpreter."
+        ;;
+esac
+}
+
+# Function to run the Python script
+run_python_runner(){
+    if ! command python3 --version &> /dev/null; then
+        echo "Python not available in this system. Please install Python 3."
+        exit 0 
+    fi
+    python3 --version
+    python3 -m venv path/to/venv
+    source path/to/venv/bin/activate
+
+    # Install package
+    python3 -m pip install --upgrade pip
+    python3 -m pip install pytest
+    python3 -m pip install dana-python-api-client
+    python3 -m pip install annotated-types
+    python3 -m pip install cffi
+    python3 -m pip install cryptography
+    python3 -m pip install pycparser
+    python3 -m pip install pydantic
+    python3 -m pip install pydantic-core
+    python3 -m pip install python-dateutil
+    python3 -m pip install six
+    python3 -m pip install typing-extensions
+    python3 -m pip install urllib3
+    
+    export PYTHONPATH=$PYTHONPATH:/Users/daniswaraab/Documents/dana-self-integration-test/runner/python/*
+    pytest -v -s
+}
+
+# Function to run the Javascript script
+run_node_runner(){
+    node $RUNNER_PATH"node/RunnerJavascript.js"
+}
+
+set -a
+source .env
+set +a
+main
