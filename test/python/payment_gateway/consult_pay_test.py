@@ -62,23 +62,6 @@ def test_consult_pay_invalid_field_format():
     except BadRequestException as e:
         assert_fail_response(json_path_file, title_case, case_name, e)
         
-# def test_consult_pay_inconsistent_request():
-#     """Should give success response code and message and correct mandatory fields"""
-#     case_name = "ConsultPayBalancedInconsistentRequest"
-    
-#     # Get the request data from the JSON file
-#     json_dict = get_request(json_path_file, title_case, case_name)
-    
-#     # Convert the request data to a ConsultPayRequest object
-#     consult_pay_request_obj = ConsultPayRequest.from_dict(json_dict)
-    
-#     # Make the API call
-#     api_instance.consult_pay(consult_pay_request_obj)
-#     api_response = api_instance.consult_pay(consult_pay_request_obj)
-    
-#     # Assert the API response
-#     assert_response(json_path_file, title_case, case_name, ConsultPayResponse.to_json(api_response))
-        
         
 def test_consult_pay_invalid_mandatory_field():
     """Should give fail response code and message and correct mandatory fields"""

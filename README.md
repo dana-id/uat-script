@@ -7,6 +7,12 @@ This repository contains scenarios that can be run for UAT in Sandbox and E2E sc
 - Automate running UAT scenarios in Sandbox with your credentials and the result can be downloaded in your Merchant Portal dashboard
 - Find examples of E2E scenarios for each business solution
 
+For documentation of each library visit:
+- Java: https://github.com/dana-id/java_client
+- Python: https://github.com/dana-id/python_client
+- Golang: https://github.com/dana-id/go_client
+- Node: https://github.com/dana-id/node_client
+
 ## How to Use
 
 1. **Set up your environment:**
@@ -46,3 +52,26 @@ Additional language support will be added in future updates.
 - `resource/`: Contains request templates and fixtures
 - `runner/`: Contains runner scripts for different programming languages
 
+## Note
+
+The test scenarios in this repository use a JSON-based approach for loading test data, which means the way API requests are made here may differ slightly from how you would use the libraries in your actual implementation (detailed in the [library documentation](#description)):
+
+**Example in Python:**
+- **In this repository:** Requests are loaded from JSON files and converted using `.from_dict()` method
+  ```python
+  # Test scenario approach
+  json_dict = get_request(json_path_file, title_case, case_name)
+  consult_pay_request_obj = ConsultPayRequest.from_dict(json_dict)
+  api_instance.consult_pay(consult_pay_request_obj)
+  ```
+
+- **In your actual implementation:** You would directly create request objects as shown in the library documentation
+  ```python
+  # Direct implementation approach
+  request = ConsultPayRequest(
+      merchant_id="YOUR_MERCHANT_ID",
+      amount={"value": "10000.00", "currency": "IDR"},
+      additional_info={...}
+  )
+  api_instance.consult_pay(request)
+  ```
