@@ -18,7 +18,7 @@ For documentation of each library visit:
 1. **Set up your environment:**
    - Clone this repo to your deployed sandbox system (can be in Kubernetes, VM, etc.)
    ```bash
-   git clone https://gitlab.dana.id/automation/dana-self-integration-test.git
+   git clone git@github.com:dana-id/self_testing_scenario.git
    cd dana-self-integration-test
    ```
 
