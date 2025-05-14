@@ -11,7 +11,7 @@ from dana.api_client import ApiClient
 from dana.rest import ApiException
 from dana.exceptions import *
 
-from helper.util import get_request
+from helper.util import get_request, with_delay
 from helper.assertion import *
 
 title_case = "QueryPayment"
@@ -54,6 +54,7 @@ def create_test_order(partner_reference_no):
     return api_instance.create_order(create_order_request_obj)
 
 
+@with_delay()
 def test_query_payment_valid_format():
     """Should query the payment status successfully"""
     # Create order first
@@ -79,6 +80,7 @@ def test_query_payment_valid_format():
     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response))
 
 
+@with_delay()
 def test_query_payment_invalid_format():
     """Should fail when query has invalid format"""
     # Create order first
@@ -104,6 +106,7 @@ def test_query_payment_invalid_format():
         assert_fail_response(json_path_file, title_case, case_name, e)
 
 
+@with_delay()
 def test_query_payment_invalid_mandatory_field():
     """Should fail when query is missing mandatory field"""
     # Create order first
@@ -126,6 +129,7 @@ def test_query_payment_invalid_mandatory_field():
         assert_fail_response(json_path_file, title_case, case_name, e)
 
 
+@with_delay()
 def test_query_payment_transaction_not_found():
     """Should fail when transaction is not found"""
     # Create order first
@@ -151,6 +155,7 @@ def test_query_payment_transaction_not_found():
         assert_fail_response(json_path_file, title_case, case_name, e)
 
 
+@with_delay()
 def test_query_payment_general_error():
     """Should handle general server error"""
     # Create order first

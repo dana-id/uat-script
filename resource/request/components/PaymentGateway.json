@@ -434,144 +434,12 @@
         },
         "CreateOrderInconsistentRequest": {
             "request": {
-                "partnerReferenceNo": "2020102900000000000001",
-                "merchantId": "216620010016033632482",
-                "subMerchantId": "310928924949487",
-                "amount": {
-                    "value": "123,45,678.00",
-                    "currency": "IDR"
-                },
-                "urlParams": [
-                    {
-                        "url": "https://tinknet.my.id/v1/test",
-                        "type": "PAY_RETURN",
-                        "isDeeplink": "Y"
-                    },
-                    {
-                        "url": "https://tinknet.my.id/v1/test",
-                        "type": "NOTIFICATION",
-                        "isDeeplink": "Y"
-                    }
-                ],
-                "externalStoreId": "239840198240795109",
-                "validUpTo": "2020-12-23T07:44:11+07:00",
-                "payOptionDetails": [
-                    {
-                        "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BNI",
-                        "transAmount": {
-                            "value": "12345678.00",
-                            "currency": "IDR"
-                        },
-                        "feeAmount": {
-                            "value": "12345678.00",
-                            "currency": "IDR"
-                        },
-                        "cardToken": "",
-                        "merchantToken": "",
-                        "additionalInfo": {
-                            "phoneNumber": "XXXXXXXXXX",
-                            "paymentCode": "2837182378123",
-                            "promoInfos": [
-                                {
-                                    "promoAmount": {
-                                        "value": "12345678.00",
-                                        "currency": "IDR"
-                                    },
-                                    "promoId": "prm_372183721837213",
-                                    "promoType": "DIRECT_DISCOUNT"
-                                }
-                            ]
-                        }
-                    }
-                ],
-                "additionalInfo": {
-                    "order": {
-                        "orderTitle": "Payment Gateway Order",
-                        "scenario": "API",
-                        "merchantTransType": "SPECIAL_MOVIE",
-                        "buyer": {
-                            "externalUserType": "",
-                            "nickname": "",
-                            "externalUserId": "8392183912832913821",
-                            "userId": ""
-                        },
-                        "goods": [
-                            {
-                                "unit": "Kg",
-                                "category": "travelling/subway",
-                                "price": {
-                                    "value": "10.00",
-                                    "currency": "IDR"
-                                },
-                                "merchantShippingId": "564314314574327545",
-                                "merchantGoodsId": "24525635625623",
-                                "description": "Women Summer Dress New White Lace Sleeveless Cute Casual Summer Dresses Vestidos roupas femininas",
-                                "snapshotUrl": "[http://snap.url.com]",
-                                "quantity": "",
-                                "extendInfo": ""
-                            }
-                        ],
-                        "shippingInfo": [
-                            {
-                                "chargeAmount": {
-                                    "value": "20.00",
-                                    "currency": "IDR"
-                                },
-                                "lastName": "Li",
-                                "trackingNo": "646431431322332133",
-                                "countryName": "JP",
-                                "merchantShippingId": "564314314574327545",
-                                "cityName": "Atlanta",
-                                "address1": "137 W San Bernardino",
-                                "address2": "4114 Sepulveda",
-                                "phoneNo": "2423-2322342",
-                                "areaName": "Rd",
-                                "email": "abc@gmail.com",
-                                "zipCode": "310001",
-                                "stateName": "GA",
-                                "faxNo": "2123-11113",
-                                "carrier": "Federal Express",
-                                "firstName": "Jim",
-                                "mobileNo": "13765443223"
-                            }
-                        ]
-                    },
-                    "mcc": "5732",
-                    "envInfo": {
-                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
-                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
-                        "websiteLanguage": "en_US",
-                        "clientIp": "10.15.8.189",
-                        "osType": "Windows.PC",
-                        "appVersion": "1.0",
-                        "sdkVersion": "1.0",
-                        "sourcePlatform": "IPG",
-                        "orderOsType": "IOS",
-                        "merchantAppVersion": "1.0",
-                        "terminalType": "SYSTEM",
-                        "orderTerminalType": "WEB",
-                        "extendInfo": "{\"deviceId\":\"CV19A56370e8a00d54293aab8001e4794\"}"
-                    },
-                    "extendInfo": "{\"key\":\"value\"}"
-                }
-            },
-            "response": {
-                "partnerReferenceNo": "${partnerReferenceNo}",
-                "responseMessage": "Inconsistent Request",
-                "responseCode": "4040018"
-            }
-        },
-        "CreateOrderInvalidMandatorField": {
-            "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "216620010016033632482",
-                "subMerchantId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "222000.00",
                     "currency": "IDR"
                 },
-                "externalStoreId": "",
                 "urlParams": [
                     {
                         "url": "https://tinknet.my.id/v1/test",
@@ -587,42 +455,39 @@
                 "validUpTo": "2030-05-01T00:46:43+07:00",
                 "additionalInfo": {
                     "order": {
-                        "orderTitle": "Payment Gateway Order",
+                        "orderTitle": "Paket Tinknet 10Mb",
                         "scenario": "API",
-                        "merchantTransType": "SPECIAL_MOVIE",
-                        "buyer": {}
+                        "merchantTransType": "SPECIAL_MOVIE"
                     },
                     "mcc": "5732",
                     "envInfo": {
                         "sourcePlatform": "IPG",
-                        "terminalType": "SYSTEM",
-                        "orderTerminalType": "WEB"
+                        "terminalType": "SYSTEM"
                     }
                 },
                 "payOptionDetails": [
                     {
-                        "payMethod": "BALANCE",
-                        "payOption": "",
+                        "payMethod": "VIRTUAL_ACCOUNT",
+                        "payOption": "VIRTUAL_ACCOUNT_BNI",
                         "transAmount": {
-                            "value": "10000.00",
+                            "value": "222000.00",
                             "currency": "IDR"
                         }
                     }
-                ],
-                "extendInfo": "{\"key\":\"value\"}"
+                ]
             },
             "response": {
-                "responseCode": "4000002",
-                "responseMessage": "Invalid Field Format"
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "responseMessage": "Inconsistent Request",
+                "responseCode": "4040018"
             }
         },
-        "CreateOrderUnauthorized": {
+        "CreateOrderInvalidMandatoryField": {
             "request": {
-                "partnerReferenceNo": "2020102900000000000001",
-                "merchantId": "",
-                "subMerchantId": "310928924949487",
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "merchantId": "216620010016033632482",
                 "amount": {
-                    "value": "123,45,678.00",
+                    "value": "",
                     "currency": "IDR"
                 },
                 "urlParams": [
@@ -637,108 +502,78 @@
                         "isDeeplink": "Y"
                     }
                 ],
-                "externalStoreId": "239840198240795109",
-                "validUpTo": "2020-12-23T07:44:11+07:00",
-                "payOptionDetails": [
-                    {
-                        "payMethod": "NETWORK_PAY",
-                        "payOption": "VIRTUAL_ACCOUNT_MANDIRI",
-                        "transAmount": {
-                            "value": "12345678.00",
-                            "currency": "IDR"
-                        },
-                        "feeAmount": {
-                            "value": "12345678.00",
-                            "currency": "IDR"
-                        },
-                        "cardToken": "",
-                        "merchantToken": "",
-                        "additionalInfo": {
-                            "phoneNumber": "XXXXXXXXXX",
-                            "paymentCode": "2837182378123",
-                            "promoInfos": [
-                                {
-                                    "promoAmount": {
-                                        "value": "12345678.00",
-                                        "currency": "IDR"
-                                    },
-                                    "promoId": "prm_372183721837213",
-                                    "promoType": "DIRECT_DISCOUNT"
-                                }
-                            ]
-                        }
-                    }
-                ],
+                "validUpTo": "2030-05-01T00:46:43+07:00",
                 "additionalInfo": {
                     "order": {
-                        "orderTitle": "Payment Gateway Order",
+                        "orderTitle": "Paket Tinknet 10Mb",
                         "scenario": "API",
-                        "merchantTransType": "SPECIAL_MOVIE",
-                        "buyer": {
-                            "externalUserType": "",
-                            "nickname": "",
-                            "externalUserId": "8392183912832913821",
-                            "userId": ""
-                        },
-                        "goods": [
-                            {
-                                "unit": "Kg",
-                                "category": "travelling/subway",
-                                "price": {
-                                    "value": "10.00",
-                                    "currency": "IDR"
-                                },
-                                "merchantShippingId": "564314314574327545",
-                                "merchantGoodsId": "24525635625623",
-                                "description": "Women Summer Dress New White Lace Sleeveless Cute Casual Summer Dresses Vestidos roupas femininas",
-                                "snapshotUrl": "[http://snap.url.com]",
-                                "quantity": "",
-                                "extendInfo": ""
-                            }
-                        ],
-                        "shippingInfo": [
-                            {
-                                "chargeAmount": {
-                                    "value": "20.00",
-                                    "currency": "IDR"
-                                },
-                                "lastName": "Li",
-                                "trackingNo": "646431431322332133",
-                                "countryName": "JP",
-                                "merchantShippingId": "564314314574327545",
-                                "cityName": "Atlanta",
-                                "address1": "137 W San Bernardino",
-                                "address2": "4114 Sepulveda",
-                                "phoneNo": "2423-2322342",
-                                "areaName": "Rd",
-                                "email": "abc@gmail.com",
-                                "zipCode": "310001",
-                                "stateName": "GA",
-                                "faxNo": "2123-11113",
-                                "carrier": "Federal Express",
-                                "firstName": "Jim",
-                                "mobileNo": "13765443223"
-                            }
-                        ]
+                        "merchantTransType": "SPECIAL_MOVIE"
                     },
                     "mcc": "5732",
                     "envInfo": {
-                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
-                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
-                        "websiteLanguage": "en_US",
-                        "clientIp": "10.15.8.189",
-                        "osType": "Windows.PC",
-                        "appVersion": "1.0",
-                        "sdkVersion": "1.0",
                         "sourcePlatform": "IPG",
-                        "orderOsType": "IOS",
-                        "merchantAppVersion": "1.0",
-                        "terminalType": "SYSTEM",
-                        "orderTerminalType": "WEB",
-                        "extendInfo": "{\"deviceId\":\"CV19A56370e8a00d54293aab8001e4794\"}"
+                        "terminalType": "SYSTEM"
+                    }
+                },
+                "payOptionDetails": [
+                    {
+                        "payMethod": "VIRTUAL_ACCOUNT",
+                        "payOption": "VIRTUAL_ACCOUNT_BNI",
+                        "transAmount": {
+                            "value": "222000.00",
+                            "currency": "IDR"
+                        }
+                    }
+                ]
+            },
+            "response": {
+                "responseCode": "4000001",
+                "responseMessage": "Invalid Field Format amount"
+            }
+        },
+        "CreateOrderUnauthorized": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "merchantId": "216620010016033632482",
+                "amount": {
+                    "value": "222000.00",
+                    "currency": "IDR"
+                },
+                "urlParams": [
+                    {
+                        "url": "https://tinknet.my.id/v1/test",
+                        "type": "PAY_RETURN",
+                        "isDeeplink": "Y"
                     },
-                    "extendInfo": "{\"key\":\"value\"}"
-                }
+                    {
+                        "url": "https://tinknet.my.id/v1/test",
+                        "type": "NOTIFICATION",
+                        "isDeeplink": "Y"
+                    }
+                ],
+                "validUpTo": "2030-05-01T00:46:43+07:00",
+                "additionalInfo": {
+                    "order": {
+                        "orderTitle": "Paket Tinknet 10Mb",
+                        "scenario": "API",
+                        "merchantTransType": "SPECIAL_MOVIE"
+                    },
+                    "mcc": "5732",
+                    "envInfo": {
+                        "sourcePlatform": "IPG",
+                        "terminalType": "SYSTEM"
+                    }
+                },
+                "payOptionDetails": [
+                    {
+                        "payMethod": "VIRTUAL_ACCOUNT",
+                        "payOption": "VIRTUAL_ACCOUNT_BNI",
+                        "transAmount": {
+                            "value": "222000.00",
+                            "currency": "IDR"
+                        }
+                    }
+                ]
             },
             "response": {
                 "responseMessage": "Unauthorized",

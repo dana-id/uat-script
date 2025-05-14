@@ -9,7 +9,7 @@ from dana.api_client import ApiClient
 from dana.rest import ApiException
 from dana.exceptions import *
 
-from helper.util import get_request  # Import the Invoke class
+from helper.util import get_request, with_delay  # Import the utilities
 from helper.assertion import *
 
 title_case = "ConsultPay"
@@ -29,6 +29,7 @@ with ApiClient(configuration) as api_client:
     api_instance = PaymentGatewayApi(api_client)
 
 
+@with_delay()
 def test_consult_pay_success():
     """Should give success response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedSuccess"
@@ -46,6 +47,7 @@ def test_consult_pay_success():
     assert_response(json_path_file, title_case, case_name, ConsultPayResponse.to_json(api_response))
     
     
+@with_delay()
 def test_consult_pay_invalid_field_format():
     """Should give fail response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedInvalidFieldFormat"
@@ -63,6 +65,7 @@ def test_consult_pay_invalid_field_format():
         assert_fail_response(json_path_file, title_case, case_name, e)
         
         
+@with_delay()
 def test_consult_pay_invalid_mandatory_field():
     """Should give fail response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedInvalidMandatoryField"
@@ -79,6 +82,7 @@ def test_consult_pay_invalid_mandatory_field():
     except BadRequestException as e:
         assert_fail_response(json_path_file, title_case, case_name, e)
 
+@with_delay()
 def test_consult_pay_unauthorized():
     """Should give fail response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedUnauthorized"

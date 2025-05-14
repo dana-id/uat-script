@@ -1,5 +1,25 @@
 import json
+import time
+import functools
 from pprint import pprint
+import random
+
+def with_delay(delay_seconds=random.uniform(0.5, 1.5)):
+    """
+    Decorator that adds a delay after a function completes.
+    Useful for rate limiting API calls in tests.
+    
+    :param delay_seconds: Delay in seconds (default: 0.5)
+    :return: Decorated function
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            time.sleep(delay_seconds)
+            return result
+        return wrapper
+    return decorator
 
 def get_request_with_delimiter(input_string: str, delimiter: str) -> list:
         """
