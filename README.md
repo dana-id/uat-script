@@ -2,12 +2,12 @@
 
 ## Description
 
-This repository contains scenarios that can be run for UAT in Sandbox and E2E scenarios using DANA Client with your choice of programming language. You can use it to:
+This repository contains scenarios that can be run for UAT in Sandbox and E2E scenarios using DANA Client library with your choice of programming language (Python, Golang, Java, Node). You can use it to:
 
 - Automate running UAT scenarios in Sandbox with your credentials and the result can be downloaded in your Merchant Portal dashboard
 - Find examples of E2E scenarios for each business solution
 
-For documentation of each library visit:
+For documentation of each DANA Client library visit:
 - Java: https://github.com/dana-id/java_client
 - Python: https://github.com/dana-id/python_client
 - Golang: https://github.com/dana-id/go_client
