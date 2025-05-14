@@ -19,7 +19,7 @@ For documentation of each DANA Client library visit:
    - Clone this repo to your deployed sandbox system (can be in Kubernetes, VM, etc.)
    ```bash
    git clone git@github.com:dana-id/self_testing_scenario.git
-   cd dana-self-integration-test
+   cd self_testing_scenario
    ```
 
 2. **Configure your credentials:**
@@ -43,6 +43,8 @@ For documentation of each DANA Client library visit:
 Currently, the following programming languages are supported:
 
 - Python
+- Golang
+- Node
 
 Additional language support will be added in future updates.
 
@@ -50,7 +52,6 @@ Additional language support will be added in future updates.
 
 - `test/`: Contains test scenarios for different business solutions
 - `resource/`: Contains request templates and fixtures
-- `runner/`: Contains runner scripts for different programming languages
 
 ## Note
 
