@@ -3,6 +3,9 @@ import time
 import functools
 from pprint import pprint
 import random
+import os
+from uuid import uuid4
+from datetime import datetime, timezone, timedelta
 
 def with_delay(delay_seconds=random.uniform(0.5, 1.5)):
     """
@@ -45,9 +48,6 @@ def get_request(json_path_file: str, title: str, data: str) -> dict:
     
     # Navigate to the specific request data
     request_data = json_data.get(title, {}).get(data, {}).get("request", {})
-    print("Request Data:")
-    pprint(data)
-    pprint(request_data)
     
     return request_data
 
@@ -65,8 +65,6 @@ def get_response(json_path_file: str, title: str, data: str) -> dict:
     
     # Navigate to the specific request data
     response_data = json_data.get(title, {}).get(data, {}).get("response", {})
-    print("Response Data:")
-    pprint(response_data)
     
     return response_data
 
@@ -84,7 +82,5 @@ def get_response_code(json_path_file: str, title: str, data: str) -> dict:
     
     # Navigate to the specific request data
     response_data = json_data.get(title, {}).get(data, {}).get("responseCode", {})
-    print("Response Data:")
-    pprint(response_data)
     
     return response_data

@@ -71,21 +71,22 @@ def assert_response(json_path_file: str, title: str, data: str, api_response_jso
         raise AssertionError(error_msg)
 
     # Print success message
-    print("Assertion passed: API response matches the expected data.")
-    
-def assert_fail_response(json_path_file: str, title: str, data: str, error_string: str, variable_dict: dict = None) -> None:
+    pprint(f"Assertion passed: API response matches the expected data {actual_response}")
+
+
+def assert_fail_response(json_path_file: str, title: str, data: str, error_body: str, variable_dict: dict = None) -> None:
     """
     Asserts that the API error response matches the expected data from a JSON file.
-
+    
     For fields with value "${valueFromServer}", only validates that the field exists in the response,
     without checking the actual value.
     For fields with value "${key}" where key exists in variable_dict, substitutes the actual value.
     For all other fields, performs an exact match.
-
+    
     :param json_path_file: Path to the JSON file containing the expected data.
     :param title: The title or key in the JSON file to locate the expected data.
     :param data: The specific data key to compare within the JSON file.
-    :param error_string: The error response string from the API exception.
+    :param error_body: The error response string from the API exception.
     :param variable_dict: Dictionary of variables to replace in the format {"key": "value"}
     :raises AssertionError: If the API response does not match the expected data.
     """
@@ -96,13 +97,9 @@ def assert_fail_response(json_path_file: str, title: str, data: str, error_strin
     if variable_dict:
         expected_data = replace_variables(expected_data, variable_dict)
     
-    # Extract the relevant part of the error string
-    temp_error_string = str(error_string).replace("HTTP response body: ", "", 1)
-    temp_error = str(temp_error_string).split("\n")[3]
-    
     try:
         # Parse the error response JSON
-        actual_response = json.loads(temp_error)
+        actual_response = json.loads(error_body)
         
         # Recursively compare actual and expected, with special handling for ${valueFromServer}
         diff_paths = []
@@ -118,8 +115,9 @@ def assert_fail_response(json_path_file: str, title: str, data: str, error_strin
             raise AssertionError(error_msg)
 
         # Print success message
-        print("Assertion passed: API error response matches the expected data.")
+        pprint(f"Assertion passed: API error response matches the expected data {actual_response}")
     except json.JSONDecodeError as e:
+        
         raise ValueError(f"Failed to parse JSON error response: {e}")
 
 def compare_json_objects(expected, actual, path, diff_paths):

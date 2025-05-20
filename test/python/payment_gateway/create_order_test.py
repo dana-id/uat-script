@@ -1,17 +1,18 @@
-import json
 import os
 from uuid import uuid4
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.payment_gateway.v1.enum import *
 from dana.payment_gateway.v1.models import *
 from dana.payment_gateway.v1 import *
 from dana.api_client import ApiClient
-from dana.rest import ApiException
 from dana.exceptions import *
+from dana.utils.snap_header import SnapHeader
 
 from helper.util import get_request, with_delay
+from helper.api_helpers import execute_api_request_directly, get_standard_headers, execute_and_assert_api_error, get_headers_with_signature
 from helper.assertion import *
 
 title_case = "CreateOrder"
@@ -23,22 +24,41 @@ configuration = SnapConfiguration(
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
         CHANNEL_ID=os.environ.get("CHANNEL_ID"),
-        ENV="sandbox"
+        ENV=Env.SANDBOX
     )
 )
 
 with ApiClient(configuration) as api_client:
     api_instance = PaymentGatewayApi(api_client)
 
-
 def generate_partner_reference_no():
-    """Generate a unique partner reference number based on current time"""
     return str(uuid4())
 
 @with_delay()
-def test_create_order_balance():
-    """Should create an order using balance payment method"""
-    case_name = "CreateOrderBalance"
+def test_create_order_redirect_scenario():
+    """Should create an order using redirect scenario with BALANCE payment method"""
+    case_name = "CreateOrderRedirect"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Set a unique partner reference number
+    partner_reference_no = generate_partner_reference_no()
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_order_request_obj = CreateOrderByRedirectRequest.from_dict(json_dict)
+    
+    # Make the API call
+    api_response = api_instance.create_order(create_order_request_obj)
+    
+    # Assert the API response
+    assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
+
+@with_delay()
+def test_create_order_api_scenario():
+    """Should create an order using API scenario with BALANCE payment method"""
+    case_name = "CreateOrderApi"
     
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -96,8 +116,12 @@ def test_create_order_invalid_field_format():
     # Make the API call and expect an exception
     try:
         api_instance.create_order(create_order_request_obj)
+        pytest.fail("Expected BadRequestException but the API call succeeded")
+
     except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e, {"partnerReferenceNo": partner_reference_no})
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
+    except:
+        pytest.fail("Expected BadRequestException but the API call give another exception")
 
 @with_delay()
 def test_create_order_inconsistent_request():
@@ -117,10 +141,26 @@ def test_create_order_inconsistent_request():
     # Make the API call and expect an exception
     try:
         api_instance.create_order(create_order_request_obj)
-        time.sleep(2)
-        api_instance.create_order(create_order_request_obj)
-    except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e, {"partnerReferenceNo": partner_reference_no})
+    except:
+        pytest.fail("Fail to call first API")
+
+    time.sleep(1)
+    
+    try:
+        # Preparing request with the same partner reference number but different amount
+        json_dict["amount"]["value"] = "100000.00"
+        json_dict["payOptionDetails"][0]["transAmount"]["value"] = "100000.00"
+
+        create_order_request_obj_second = CreateOrderByApiRequest.from_dict(json_dict)
+
+        api_instance.create_order(create_order_request_obj_second)
+
+        pytest.fail("Expected NotFoundException but the API call succeeded")
+
+    except NotFoundException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
+    except:
+        pytest.fail("Expected NotFoundException but the API call give another exception")
 
 @with_delay()
 def test_create_order_invalid_mandatory_field():
@@ -133,15 +173,32 @@ def test_create_order_invalid_mandatory_field():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    
+
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
     
-    # Make the API call and expect an exception
-    try:
-        api_instance.create_order(create_order_request_obj)
-    except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e, {"partnerReferenceNo": partner_reference_no})
+    # Prepare headers without timestamp to trigger mandatory field error
+    # This now handles the signature generation internally
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/payment-gateway/v1.0/debit/payment-host-to-host.htm",
+        request_obj=json_dict,
+        with_timestamp=False
+    )
+    
+    # Execute the API request and assert the error
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm",
+        create_order_request_obj,
+        headers,
+        400,  # Expected status code
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": partner_reference_no}
+    )
 
 @with_delay()
 def test_create_order_unauthorized():
@@ -158,9 +215,20 @@ def test_create_order_unauthorized():
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
 
-    # Make the API call and expect an exception
-    try:
-        api_instance.create_order(create_order_request_obj, _headers={"X-SIGNATURE": ""})
-    except UnauthorizedException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e, {"partnerReferenceNo": partner_reference_no})
-
+    # Prepare headers with invalid signature to trigger authorization error
+    # Since we're only using the invalid signature flag, we don't need to pass any of the other parameters
+    headers = get_headers_with_signature(invalid_signature=True)
+    
+    # Execute the API request and assert the error
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm",
+        create_order_request_obj,
+        headers,
+        401,  # Expected status code
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": partner_reference_no}
+    )

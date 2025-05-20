@@ -3,6 +3,8 @@ package helper
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"reflect"
 	"strings"
 )
@@ -72,16 +74,19 @@ func AssertResponse(jsonPathFile, title, data string, apiResponseJson string, va
 		for _, diff := range diffPaths {
 			errorMsg += diff + "\n"
 		}
+		// Print verbose output only on failure
+		fmt.Printf("Actual response: %v\n", actualResponse)
 		return fmt.Errorf(errorMsg)
 	}
 
 	// Print success message
-	fmt.Println("Assertion passed: API response matches the expected data.")
+	actualJSON, _ := json.Marshal(actualResponse)
+	fmt.Printf("Assertion passed: API response matches the expected data %s\n", string(actualJSON))
 	return nil
 }
 
 // AssertFailResponse asserts that the API error response matches the expected data
-func AssertFailResponse(jsonPathFile, title, data string, errorString string, variableDict map[string]interface{}) error {
+func AssertFailResponse(jsonPathFile, title, data string, errorInfo interface{}, variableDict map[string]interface{}) error {
 	// Fetch the expected data from the JSON file
 	expectedData, err := GetResponse(jsonPathFile, title, data)
 	if err != nil {
@@ -93,27 +98,48 @@ func AssertFailResponse(jsonPathFile, title, data string, errorString string, va
 		expectedData = ReplaceVariables(expectedData, variableDict).(map[string]interface{})
 	}
 
-	// Extract the relevant part of the error string
-	tempErrorString := strings.Replace(errorString, "HTTP response body: ", "", 1)
-	tempErrorLines := strings.Split(tempErrorString, "\n")
-	
-	// In Go, the error structure may be different, adjust the index if needed
-	tempError := ""
-	for _, line := range tempErrorLines {
-		if strings.Contains(line, "{") && strings.Contains(line, "}") {
-			tempError = line
-			break
+	var bodyContent []byte
+
+	// Handle different types of error info
+	switch v := errorInfo.(type) {
+	case string:
+		// Extract the relevant part of the error string
+		tempErrorString := strings.Replace(v, "HTTP response body: ", "", 1)
+		tempErrorLines := strings.Split(tempErrorString, "\n")
+
+		tempError := ""
+		for _, line := range tempErrorLines {
+			if strings.Contains(line, "{") && strings.Contains(line, "}") {
+				tempError = line
+				break
+			}
 		}
-	}
-	
-	if tempError == "" && len(tempErrorLines) > 3 {
-		tempError = tempErrorLines[3] // Default as in Python
+
+		if tempError == "" && len(tempErrorLines) > 3 {
+			tempError = tempErrorLines[3] // Default as in Python
+		}
+
+		bodyContent = []byte(tempError)
+
+	case *http.Response:
+		// Read the response body
+		var readErr error
+		bodyContent, readErr = io.ReadAll(v.Body)
+		if readErr != nil {
+			return fmt.Errorf("failed to read response body: %w", readErr)
+		}
+
+		// Reset the response body for further use
+		v.Body.Close()
+
+	default:
+		return fmt.Errorf("unsupported error info type: %T", v)
 	}
 
 	// Parse the error response JSON
 	var actualResponse map[string]interface{}
-	if err := json.Unmarshal([]byte(tempError), &actualResponse); err != nil {
-		return fmt.Errorf("failed to parse error response JSON: %w", err)
+	if err := json.Unmarshal(bodyContent, &actualResponse); err != nil {
+		return fmt.Errorf("failed to parse error response JSON: %w\nRaw body: %s", err, string(bodyContent))
 	}
 
 	// Recursively compare actual and expected
@@ -126,11 +152,14 @@ func AssertFailResponse(jsonPathFile, title, data string, errorString string, va
 		for _, diff := range diffPaths {
 			errorMsg += diff + "\n"
 		}
+		// Print verbose output only on failure
+		fmt.Printf("Actual error response: %v\n", actualResponse)
 		return fmt.Errorf(errorMsg)
 	}
 
 	// Print success message
-	fmt.Println("Assertion passed: API error response matches the expected data.")
+	actualJSON, _ := json.Marshal(actualResponse)
+	fmt.Printf("Assertion passed: API error response matches the expected data %s\n", string(actualJSON))
 	return nil
 }
 
@@ -140,7 +169,7 @@ func compareJsonObjects(expected, actual interface{}, path string, diffPaths *[]
 	if expected == nil && actual == nil {
 		return
 	}
-	
+
 	// Different types
 	if reflect.TypeOf(expected) != reflect.TypeOf(actual) {
 		*diffPaths = append(*diffPaths, fmt.Sprintf("Path: %s\n  Expected: %v\n  Actual: %v", path, expected, actual))

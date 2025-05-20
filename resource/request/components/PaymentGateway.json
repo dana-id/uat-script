@@ -48,6 +48,14 @@
                     },
                     {
                         "payMethod": "BALANCE"
+                    },
+                    {
+                        "payMethod": "NETWORK_PAY",
+                        "payOption": "NETWORK_PAY_PG_GOPAY"
+                    },
+                    {
+                        "payMethod": "NETWORK_PAY",
+                        "payOption": "NETWORK_PAY_PG_OVO"
                     }
                 ]
             }
@@ -161,6 +169,104 @@
         }
     },
     "CreateOrder": {
+        "CreateOrderRedirect": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "externalStoreId": "",
+                "urlParams": [
+                    {
+                        "url": "https://tinknet.my.id/v1/test",
+                        "type": "PAY_RETURN",
+                        "isDeeplink": "Y"
+                    },
+                    {
+                        "url": "https://tinknet.my.id/v1/test",
+                        "type": "NOTIFICATION",
+                        "isDeeplink": "Y"
+                    }
+                ],
+                "validUpTo": "2030-05-01T00:46:43+07:00",
+                "additionalInfo": {
+                    "order": {
+                        "orderTitle": "Payment Gateway Order",
+                        "scenario": "REDIRECT",
+                        "merchantTransType": "SPECIAL_MOVIE",
+                        "buyer": {}
+                    },
+                    "mcc": "5732",
+                    "envInfo": {
+                        "sourcePlatform": "IPG",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    },
+                    "extendInfo": "{\"key\":\"value\"}"
+                }
+            },
+            "response": {
+                "responseCode": "2000000",
+                "responseMessage": "Success"
+            }
+        },
+        "CreateOrderApi": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "externalStoreId": "",
+                "urlParams": [
+                    {
+                        "url": "https://tinknet.my.id/v1/test",
+                        "type": "PAY_RETURN",
+                        "isDeeplink": "Y"
+                    },
+                    {
+                        "url": "https://tinknet.my.id/v1/test",
+                        "type": "NOTIFICATION",
+                        "isDeeplink": "Y"
+                    }
+                ],
+                "validUpTo": "2030-05-01T00:46:43+07:00",
+                "additionalInfo": {
+                    "order": {
+                        "orderTitle": "Payment Gateway Order",
+                        "scenario": "API",
+                        "merchantTransType": "SPECIAL_MOVIE",
+                        "buyer": {}
+                    },
+                    "mcc": "5732",
+                    "envInfo": {
+                        "sourcePlatform": "IPG",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    },
+                    "extendInfo": "{\"key\":\"value\"}"
+                },
+                "payOptionDetails": [
+                    {
+                        "payMethod": "BALANCE",
+                        "payOption": "",
+                        "transAmount": {
+                            "value": "22200.00",
+                            "currency": "IDR"
+                        }
+                    }
+                ]
+            },
+            "response": {
+                "responseCode": "2000000",
+                "responseMessage": "Success"
+            }
+        },
         "CreateOrderBalance": {
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
@@ -196,7 +302,8 @@
                         "sourcePlatform": "IPG",
                         "terminalType": "SYSTEM",
                         "orderTerminalType": "WEB"
-                    }
+                    },
+                    "extendInfo": "{\"key\":\"value\"}"
                 },
                 "payOptionDetails": [
                     {
@@ -207,8 +314,7 @@
                             "currency": "IDR"
                         }
                     }
-                ],
-                "extendInfo": "{\"key\":\"value\"}"
+                ]
             },
             "response": {
                 "responseCode": "2000000",
@@ -250,7 +356,9 @@
                         "sourcePlatform": "IPG",
                         "terminalType": "SYSTEM",
                         "orderTerminalType": "WEB"
-                    }
+                    },
+                    "extendInfo": "{\"key\":\"value\"}"
+
                 },
                 "payOptionDetails": [
                     {
@@ -261,8 +369,7 @@
                             "currency": "IDR"
                         }
                     }
-                ],
-                "extendInfo": "{\"key\":\"value\"}"
+                ]
             },
             "response": {
                 "responseCode": "2000000",
@@ -304,7 +411,8 @@
                         "sourcePlatform": "IPG",
                         "terminalType": "SYSTEM",
                         "orderTerminalType": "WEB"
-                    }
+                    },
+                    "extendInfo": "{\"key\":\"value\"}"
                 },
                 "payOptionDetails": [
                     {
@@ -315,8 +423,7 @@
                             "currency": "IDR"
                         }
                     }
-                ],
-                "extendInfo": "{\"key\":\"value\"}"
+                ]
             },
             "response": {
                 "responseCode": "2000000",
@@ -383,6 +490,62 @@
                 "merchantId": "",
                 "subMerchantId": "",
                 "amount": {
+                    "value": "22200",
+                    "currency": "IDR"
+                },
+                "externalStoreId": "",
+                "urlParams": [
+                    {
+                        "url": "https://tinknet.my.id/v1/test",
+                        "type": "PAY_RETURN",
+                        "isDeeplink": "Y"
+                    },
+                    {
+                        "url": "https://tinknet.my.id/v1/test",
+                        "type": "NOTIFICATION",
+                        "isDeeplink": "Y"
+                    }
+                ],
+                "validUpTo": "2030-05-01T00:46:43+07:00",
+                "additionalInfo": {
+                    "order": {
+                        "orderTitle": "Payment Gateway Order",
+                        "scenario": "API",
+                        "merchantTransType": "SPECIAL_MOVIE",
+                        "buyer": {}
+                    },
+                    "mcc": "5732",
+                    "envInfo": {
+                        "sourcePlatform": "IPG",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    },
+                    "extendInfo": "{\"key\":\"value\"}"
+
+                },
+                "payOptionDetails": [
+                    {
+                        "payMethod": "BALANCE",
+                        "payOption": "",
+                        "transAmount": {
+                            "value": "22200",
+                            "currency": "IDR"
+                        }
+                    }
+                ]
+            },
+            "response": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "responseCode": "4000001",
+                "responseMessage": "Invalid Field Format amount"
+            }
+        },
+        "CreateOrderInconsistentRequest": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "amount": {
                     "value": "22200.00",
                     "currency": "IDR"
                 },
@@ -412,27 +575,27 @@
                         "sourcePlatform": "IPG",
                         "terminalType": "SYSTEM",
                         "orderTerminalType": "WEB"
-                    }
+                    },
+                    "extendInfo": "{\"key\":\"value\"}"
                 },
                 "payOptionDetails": [
                     {
                         "payMethod": "BALANCE",
                         "payOption": "",
                         "transAmount": {
-                            "value": "10000.00",
+                            "value": "222000.00",
                             "currency": "IDR"
                         }
                     }
-                ],
-                "extendInfo": "{\"key\":\"value\"}"
+                ]
             },
             "response": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "responseCode": "4000001",
-                "responseMessage": "Invalid Field Format"
+                "responseMessage": "Inconsistent Request",
+                "responseCode": "4040018"
             }
         },
-        "CreateOrderInconsistentRequest": {
+        "CreateOrderInvalidMandatoryField": {
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "216620010016033632482",
@@ -477,58 +640,8 @@
                 ]
             },
             "response": {
-                "partnerReferenceNo": "${partnerReferenceNo}",
-                "responseMessage": "Inconsistent Request",
-                "responseCode": "4040018"
-            }
-        },
-        "CreateOrderInvalidMandatoryField": {
-            "request": {
-                "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
-                "amount": {
-                    "value": "",
-                    "currency": "IDR"
-                },
-                "urlParams": [
-                    {
-                        "url": "https://tinknet.my.id/v1/test",
-                        "type": "PAY_RETURN",
-                        "isDeeplink": "Y"
-                    },
-                    {
-                        "url": "https://tinknet.my.id/v1/test",
-                        "type": "NOTIFICATION",
-                        "isDeeplink": "Y"
-                    }
-                ],
-                "validUpTo": "2030-05-01T00:46:43+07:00",
-                "additionalInfo": {
-                    "order": {
-                        "orderTitle": "Paket Tinknet 10Mb",
-                        "scenario": "API",
-                        "merchantTransType": "SPECIAL_MOVIE"
-                    },
-                    "mcc": "5732",
-                    "envInfo": {
-                        "sourcePlatform": "IPG",
-                        "terminalType": "SYSTEM"
-                    }
-                },
-                "payOptionDetails": [
-                    {
-                        "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BNI",
-                        "transAmount": {
-                            "value": "222000.00",
-                            "currency": "IDR"
-                        }
-                    }
-                ]
-            },
-            "response": {
-                "responseCode": "4000001",
-                "responseMessage": "Invalid Field Format amount"
+                "responseCode": "4005402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
             }
         },
         "CreateOrderUnauthorized": {
@@ -576,13 +689,13 @@
                 ]
             },
             "response": {
-                "responseMessage": "Unauthorized",
-                "responseCode": "4010000"
+                "responseMessage": "Unauthorized. Invalid Signature",
+                "responseCode": "4015400"
             }
         }
     },
     "QueryPayment": {
-        "QueryPaymentValidFormat": {
+        "QueryPaymentCreatedOrder": {
             "request": {
                 "originalPartnerReferenceNo":"${partnerReferenceNo}",
                 "originalReferenceNo":"",
@@ -600,8 +713,93 @@
               },
               "response": {
                 "responseCode": "2005500",
-                "responseMessage": "Successful"
-            }
+                "responseMessage": "Successful",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "${valueFromServer}",
+                "serviceCode": "54",
+                "latestTransactionStatus": "01",
+                "transactionStatusDesc": "INIT",
+                "transAmount": {
+                  "value": "22200.00",
+                  "currency": "IDR"
+                },
+                "amount": {
+                  "value": "22200.00",
+                  "currency": "IDR"
+                },
+                "title": "Payment Gateway Order",
+                "additionalInfo": {
+                  "amountDetail": {
+                    "orderAmount": {
+                      "value": "22200.00",
+                      "currency": "IDR"
+                    }
+                  },
+                  "timeDetail": {
+                    "createdTime": "${valueFromServer}",
+                    "expiryTime": "${valueFromServer}"
+                  },
+                  "statusDetail": {
+                    "acquirementStatus": "INIT"
+                  }
+                }
+              }
+        },
+        "QueryPaymentCanceledOrder": {
+            "request": {
+                "originalPartnerReferenceNo":"${partnerReferenceNo}",
+                "originalReferenceNo":"",
+                "originalExternalId":"",
+                "serviceCode": "54",
+                "transactionDate":"2030-05-01T00:46:43+07:00",
+                "amount":{
+                    "value":"22200.00",
+                    "currency":"IDR"
+                },
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "externalStoreId":"",
+                "additionalInfo":{}
+              },  
+            "response": {
+                "responseCode": "2005500",
+                "responseMessage": "Successful",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "${valueFromServer}",
+                "serviceCode": "54",
+                "latestTransactionStatus": "05",
+                "transactionStatusDesc": "CANCELED",
+                "transAmount": {
+                  "value": "22200.00",
+                  "currency": "IDR"
+                },
+                "amount": {
+                  "value": "22200.00",
+                  "currency": "IDR"
+                },
+                "title": "Payment Gateway Order",
+                "additionalInfo": {
+                  "buyer": {
+                    "userId": "216610000000000003032"
+                  },
+                  "seller": {},
+                  "amountDetail": {
+                    "orderAmount": {
+                      "value": "22200.00",
+                      "currency": "IDR"
+                    }
+                  },
+                  "timeDetail": {
+                    "createdTime": "${valueFromServer}",
+                    "expiryTime": "${valueFromServer}"
+                  },
+                  "extendInfo": "${valueFromServer}",
+                  "statusDetail": {
+                    "acquirementStatus": "CANCELED",
+                    "frozen": "false"
+                  }
+                }
+              }
         },
         "QueryPaymentInvalidFormat": {
             "request": {
@@ -621,7 +819,7 @@
               },
               "response": {
                 "responseCode": "4005501",
-                "responseMessage": "Invalid Field Format"
+                "responseMessage": "Invalid Field Format X-TIMESTAMP"
             }
         },
         "QueryPaymentInvalidMandatoryField": {
@@ -641,7 +839,7 @@
               },
               "response": {
                 "responseCode": "4005502",
-                "responseMessage": "Invalid Mandatory Field"
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
             }
         },
         "QueryPaymentTransactionNotFound": {
@@ -684,6 +882,12 @@
               "response": {
                 "responseCode": "5005501",
                 "responseMessage": "Internal Server Error"
+            }
+        },
+        "QueryPaymentUnauthorized": {
+            "response": {
+                "responseMessage": "Unauthorized. Invalid Signature",
+                "responseCode": "4015500"
             }
         }
     },

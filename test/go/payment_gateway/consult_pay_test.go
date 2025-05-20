@@ -26,12 +26,12 @@ func TestConsultPayWithStrPrivateKeySuccess(t *testing.T) {
 	}
 
 	// Create the ConsultPayRequest object and populate it with JSON data
+	consultPayRequest := &pg.ConsultPayRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
 	if err != nil {
 		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
 
-	consultPayRequest := &pg.ConsultPayRequest{}
 	err = json.Unmarshal(jsonBytes, consultPayRequest)
 	if err != nil {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
@@ -39,10 +39,7 @@ func TestConsultPayWithStrPrivateKeySuccess(t *testing.T) {
 
 	// Make the API call
 	ctx := context.Background()
-	apiResponse, httpResponse, err := helper.
-		ApiClient.PaymentGatewayAPI.
-		ConsultPay(ctx).ConsultPayRequest(*consultPayRequest).
-		Execute()
+	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.ConsultPay(ctx).ConsultPayRequest(*consultPayRequest).Execute()
 	if err != nil {
 		t.Fatalf("API call failed: %v", err)
 	}

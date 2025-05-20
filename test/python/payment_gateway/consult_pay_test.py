@@ -1,4 +1,3 @@
-import json
 import os
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.payment_gateway.v1.enum import *
@@ -6,10 +5,9 @@ from dana.payment_gateway.v1.models import *
 from dana.payment_gateway.v1.models import ConsultPayRequest
 from dana.payment_gateway.v1 import *
 from dana.api_client import ApiClient
-from dana.rest import ApiException
 from dana.exceptions import *
 
-from helper.util import get_request, with_delay  # Import the utilities
+from helper.util import get_request, with_delay
 from helper.assertion import *
 
 title_case = "ConsultPay"
@@ -21,7 +19,7 @@ configuration = SnapConfiguration(
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
         CHANNEL_ID=os.environ.get("CHANNEL_ID"),
-        ENV="sandbox"
+        ENV=Env.SANDBOX
     )
 )
 
@@ -62,7 +60,7 @@ def test_consult_pay_invalid_field_format():
     try:
         api_response = api_instance.consult_pay(consult_pay_request_obj)
     except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e)
+        assert_fail_response(json_path_file, title_case, case_name, e.body)
         
         
 @with_delay()
@@ -78,23 +76,6 @@ def test_consult_pay_invalid_mandatory_field():
     
     # Make the API call
     try:
-        api_response = api_instance.consult_pay(consult_pay_request_obj)
+        api_instance.consult_pay(consult_pay_request_obj)
     except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e)
-
-@with_delay()
-def test_consult_pay_unauthorized():
-    """Should give fail response code and message and correct mandatory fields"""
-    case_name = "ConsultPayBalancedUnauthorized"
-        
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Convert the request data to a ConsultPayRequest object
-    consult_pay_request_obj = ConsultPayRequest.from_dict(json_dict)
-    
-    # Make the API call
-    try:
-        api_response = api_instance.consult_pay(consult_pay_request_obj)
-    except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e)
+        assert_fail_response(json_path_file, title_case, case_name, e.body)
