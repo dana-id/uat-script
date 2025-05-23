@@ -126,6 +126,33 @@ describe('Create Order Tests', () => {
     }
   });
 
+  // Test successful create order using wallet payment method
+  test('should successfully create order with wallet payment method', async () => {
+    const caseName = "CreateOrderNetworkPayPgOtherWallet";
+
+    // Get the request data from the JSON file
+    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+
+    // Set a unique partner reference number
+    const partnerReferenceNo = generatePartnerReferenceNo();
+    requestData.partnerReferenceNo = partnerReferenceNo;
+    requestData.merchantId = merchantId;
+
+    try {
+      const response = await dana.paymentGatewayApi.createOrder(requestData);
+
+      // Assert the response matches the expected data using our helper function
+      await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
+    } catch (e: any) {
+      if (e instanceof ResponseError) {
+      console.error('Create order test failed:', e, '\nResponse:', JSON.stringify(e.rawResponse, null, 2));
+      // } else {
+      // console.error('Create order test failed:', e);
+      }
+      throw e;
+    }
+  });
+
   // Test invalid field format
   test('should fail when field format is invalid', async () => {
     const caseName = "CreateOrderInvalidFieldFormat";
@@ -180,7 +207,7 @@ describe('Create Order Tests', () => {
       requestData.payOptionDetails[0].transAmount.value = "100000.00";
 
       const response = await dana.paymentGatewayApi.createOrder(requestData);
-      
+
       fail("Expected NotFoundException but the API call succeeded");
     } catch (e) {
       if (e instanceof ResponseError && Number(e.status) === 404) {
