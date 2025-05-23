@@ -97,6 +97,47 @@ def test_create_order_network_pay_pg_other_va_bank():
     # Assert the API response
     assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
+@with_delay()
+def test_create_order_network_pay_pg_qris():
+    """Should create an order using QRIS payment method"""
+    case_name = "CreateOrderNetworkPayPgQris"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Set a unique partner reference number
+    partner_reference_no = generate_partner_reference_no()
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
+    
+    # Make the API call
+    api_response = api_instance.create_order(create_order_request_obj)
+    
+    # Assert the API response
+    assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
+
+@with_delay()
+def test_create_order_network_pay_pg_other_wallet():
+    """Should create an order using wallet payment method"""
+    case_name = "CreateOrderNetworkPayPgOtherWallet"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Set a unique partner reference number
+    partner_reference_no = generate_partner_reference_no()
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
+    
+    # Make the API call
+    api_response = api_instance.create_order(create_order_request_obj)
+    
+    # Assert the API response
+    assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
 @with_delay()
 def test_create_order_invalid_field_format():

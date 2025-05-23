@@ -15,10 +15,7 @@ main() {
     "go")
         run_go_runner
         ;;
-    "java")
-        run_node_runner
-        ;;
-    "javascript")
+    "node")
         run_node_runner
         ;;
     *)
@@ -40,13 +37,7 @@ run_python_runner(){
     # Install packages from requirements.txt
     python3 -m pip install --upgrade pip
     
-    # Check if requirements.txt exists in test/python
-    if [ -f "test/python/requirements.txt" ]; then
-        python3 -m pip install -r test/python/requirements.txt
-    else
-        # Fallback to the old path for backward compatibility
-        python3 -m pip install -r dependency/python-requirements.txt
-    fi
+    python3 -m pip install --upgrade -r test/python/requirements.txt
     
     export PYTHONPATH=$PYTHONPATH:$(pwd)/runner/python
     pytest -v -s
@@ -54,7 +45,34 @@ run_python_runner(){
 
 # Function to run the Javascript script
 run_node_runner(){
-    echo "Javascript runner not implemented yet"
+    if ! command node --version &> /dev/null; then
+        echo "Node.js not available in this system. Please install Node.js."
+        exit 0 
+    fi
+    
+    echo "Running Node.js tests..."
+    node --version
+    npm --version
+    
+    # Change to the Node.js test directory
+    cd test/node
+    
+    # Create package.json if it doesn't exist
+    if [ ! -f "package.json" ]; then
+        echo "Initializing Node.js project..."
+        npm init -y
+    fi
+    
+    # Install dependencies
+    echo "Installing dependencies..."
+    npm install --save dana-node-api-client dotenv
+    npm install --save-dev jest
+    
+    # Run the tests
+    echo "Running tests..."
+    npm test
+    
+    cd ../..
 }
 
 # Function to run the Go tests
@@ -75,7 +93,10 @@ run_go_runner(){
     
     # Run go mod tidy only if go.mod exists
     if [ -f "go.mod" ]; then
+        # Update dana Go client to the latest version
+        go get -u github.com/dana-id/go_client
         go mod tidy
+        go clean -testcache
         go test -v ./payment_gateway/...
     else
         echo "Error: go.mod file not found in test/go directory"

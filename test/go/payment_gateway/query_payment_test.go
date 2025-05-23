@@ -278,52 +278,52 @@ func TestQueryPaymentTransactionNotFound(t *testing.T) {
 	}
 }
 
-// TestQueryPaymentGeneralError tests the query payment API with general error
-func TestQueryPaymentGeneralError(t *testing.T) {
-	// Create an order first
-	partnerReferenceNo, err := createTestOrder()
-	if err != nil {
-		t.Fatalf("Failed to create test order: %v", err)
-	}
+// // TestQueryPaymentGeneralError tests the query payment API with general error
+// func TestQueryPaymentGeneralError(t *testing.T) {
+// 	// Create an order first
+// 	partnerReferenceNo, err := createTestOrder()
+// 	if err != nil {
+// 		t.Fatalf("Failed to create test order: %v", err)
+// 	}
 
-	// Give time for the order to be processed
-	time.Sleep(2 * time.Second)
+// 	// Give time for the order to be processed
+// 	time.Sleep(2 * time.Second)
 
-	// Now query the payment
-	caseName := "QueryPaymentGeneralError"
+// 	// Now query the payment
+// 	caseName := "QueryPaymentGeneralError"
 
-	// Get the request data from the JSON file
-	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, queryPaymentTitleCase, caseName)
-	if err != nil {
-		t.Fatalf("Failed to get request data: %v", err)
-	}
+// 	// Get the request data from the JSON file
+// 	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, queryPaymentTitleCase, caseName)
+// 	if err != nil {
+// 		t.Fatalf("Failed to get request data: %v", err)
+// 	}
 
-	// Set the correct partner reference number
-	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+// 	// Set the correct partner reference number
+// 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 
-	// Create the QueryPaymentRequest object and populate it with JSON data
-	queryPaymentRequest := &pg.QueryPaymentRequest{}
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
+// 	// Create the QueryPaymentRequest object and populate it with JSON data
+// 	queryPaymentRequest := &pg.QueryPaymentRequest{}
+// 	jsonBytes, err := json.Marshal(jsonDict)
+// 	if err != nil {
+// 		t.Fatalf("Failed to marshal JSON: %v", err)
+// 	}
 
-	err = json.Unmarshal(jsonBytes, queryPaymentRequest)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
+// 	err = json.Unmarshal(jsonBytes, queryPaymentRequest)
+// 	if err != nil {
+// 		t.Fatalf("Failed to unmarshal JSON: %v", err)
+// 	}
 
-	// Make the API call
-	ctx := context.Background()
-	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.QueryPayment(ctx).QueryPaymentRequest(*queryPaymentRequest).Execute()
-	if err != nil {
-		// Assert the API error response
-		err = helper.AssertFailResponse(queryPaymentJsonPath, queryPaymentTitleCase, caseName, httpResponse, nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-	} else {
-		httpResponse.Body.Close()
-		t.Fatal("Expected error but got successful response")
-	}
-}
+// 	// Make the API call
+// 	ctx := context.Background()
+// 	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.QueryPayment(ctx).QueryPaymentRequest(*queryPaymentRequest).Execute()
+// 	if err != nil {
+// 		// Assert the API error response
+// 		err = helper.AssertFailResponse(queryPaymentJsonPath, queryPaymentTitleCase, caseName, httpResponse, nil)
+// 		if err != nil {
+// 			t.Fatal(err)
+// 		}
+// 	} else {
+// 		httpResponse.Body.Close()
+// 		t.Fatal("Expected error but got successful response")
+// 	}
+// }

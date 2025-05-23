@@ -128,6 +128,59 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 	}
 }
 
+// TestCreateOrderNetworkPayPgQris tests the create order API with QRIS payment method
+func TestCreateOrderNetworkPayPgQris(t *testing.T) {
+	caseName := "CreateOrderNetworkPayPgQris"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Set a unique partner reference number
+	partnerReferenceNo := generatePartnerReferenceNo()
+	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+	// Create the CreateOrderRequest object and populate it with JSON data
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	// Unmarshal directly into CreateOrderByApiRequest
+	createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
+	err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Create the final request object
+	createOrderReq := pg.CreateOrderRequest{
+		CreateOrderByApiRequest: createOrderByApiRequest,
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+	if err != nil {
+		t.Fatalf("API call failed: %v", err)
+	}
+	defer httpResponse.Body.Close()
+
+	// Convert the response to JSON for assertion
+	responseJSON, err := apiResponse.MarshalJSON()
+	if err != nil {
+		t.Fatalf("Failed to convert response to JSON: %v", err)
+	}
+
+	// Assert the API response with the partner reference number as a variable
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, string(responseJSON), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // TestCreateOrderInvalidFieldFormat tests the create order API with invalid field format
 func TestCreateOrderInvalidFieldFormat(t *testing.T) {
 	caseName := "CreateOrderInvalidFieldFormat"

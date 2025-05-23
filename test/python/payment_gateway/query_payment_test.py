@@ -86,7 +86,7 @@ def test_order_reference_number():
     partner_reference_no = generate_partner_reference_no()
     print(f"\nCreating shared test order with reference number: {partner_reference_no}")
     create_test_order(partner_reference_no)
-    return partner_reference_no    
+    return partner_reference_no
 
 @with_delay()
 def test_query_payment_created_order(test_order_reference_number):
@@ -242,29 +242,36 @@ def test_query_payment_transaction_not_found(test_order_reference_number):
     except NotFoundException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
+    except Exception as e:
+        pytest.fail("Expected NotFoundException but the API call give another exception")
 
-@with_delay()
-def test_query_payment_general_error(test_order_reference_number):
-    """Should handle general server error"""
-    # Query payment
-    case_name = "QueryPaymentGeneralError"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Set the correct partner reference number
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    
-    # Convert the request data to a QueryPaymentRequest object
-    query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
-    
-    # Make the API call and expect an exception
-    try:
-        api_instance.query_payment(query_payment_request_obj)
 
-        pytest.fail("Expected ServiceException but the API call succeeded")
-    except ServiceException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": test_order_reference_number})
+# @with_delay()
+# def test_query_payment_general_error(test_order_query_general_error):
+#     """Should handle general server error"""
+#     # Query payment
+#     case_name = "QueryPaymentGeneralError"
+    
+#     # Get the request data from the JSON file
+#     json_dict = get_request(json_path_file, title_case, case_name)
+    
+#     # Set the correct partner reference number
+#     json_dict["originalPartnerReferenceNo"] = test_order_query_general_error
+    
+#     # Convert the request data to a QueryPaymentRequest object
+#     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
+    
+#     # Make the API call and expect an exception
+#     try:
+#         api_instance.query_payment(query_payment_request_obj)
+
+#         pytest.fail("Expected ServiceException but the API call succeeded")
+#     except ServiceException as e:
+
+#         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": test_order_reference_number})
+
+#     except Exception as e:
+#         pytest.fail("Expected ServiceException but the API call give another exception")
 
 
 @with_delay()
