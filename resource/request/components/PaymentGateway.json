@@ -36,6 +36,10 @@
                 "paymentInfos": [
                     {
                         "payMethod": "VIRTUAL_ACCOUNT",
+                        "payOption": "VIRTUAL_ACCOUNT_BNI"
+                    },
+                    {
+                        "payMethod": "VIRTUAL_ACCOUNT",
                         "payOption": "VIRTUAL_ACCOUNT_CIMB"
                     },
                     {
