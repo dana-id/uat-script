@@ -25,7 +25,6 @@ configuration = SnapConfiguration(
         PRIVATE_KEY=os.environ.get("PRIVATE_KEY"),
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
-        CHANNEL_ID=os.environ.get("CHANNEL_ID"),
         ENV=Env.SANDBOX
     )
 )

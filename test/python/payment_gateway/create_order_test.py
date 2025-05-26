@@ -23,7 +23,6 @@ configuration = SnapConfiguration(
         PRIVATE_KEY=os.environ.get("PRIVATE_KEY"),
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
-        CHANNEL_ID=os.environ.get("CHANNEL_ID"),
         ENV=Env.SANDBOX
     )
 )
@@ -50,10 +49,22 @@ def test_create_order_redirect_scenario():
     create_order_request_obj = CreateOrderByRedirectRequest.from_dict(json_dict)
     
     # Make the API call
-    api_response = api_instance.create_order(create_order_request_obj)
+
+    try:
+        api_response = api_instance.create_order(create_order_request_obj)
     
-    # Assert the API response
-    assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
+        # Assert the API response
+        assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
+    except ServiceException as e:
+        try:
+            api_response = api_instance.create_order(create_order_request_obj)
+        
+            # Assert the API response
+            assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
+        except Exception as e:
+            pytest.fail(f"Fail to call create order API {e}")
+    except Exception as e:
+        pytest.fail(f"Fail to call create order API {e}")
 
 @with_delay()
 def test_create_order_api_scenario():

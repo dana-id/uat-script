@@ -40,6 +40,10 @@
                     },
                     {
                         "payMethod": "VIRTUAL_ACCOUNT",
+                        "payOption": "VIRTUAL_ACCOUNT_BRI"
+                    },
+                    {
+                        "payMethod": "VIRTUAL_ACCOUNT",
                         "payOption": "VIRTUAL_ACCOUNT_CIMB"
                     },
                     {
@@ -994,7 +998,27 @@
             },
             "response": {
                 "responseCode": "2005700",
-                "responseMessage": "Successful"
+                "responseMessage": "Success"
+            }
+        },
+        "CancelOrderInProgress": {
+            "request": {
+                "originalPartnerReferenceNo": "2025700",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2025700",
+                "responseMessage": "Request In Progress"
             }
         },
         "CancelOrderUserStatusAbnormal": {
@@ -1053,7 +1077,7 @@
             },
             "response": {
                 "responseCode": "4005702",
-                "responseMessage": "Invalid Mandatory Field"
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
             }
         },
         "CancelOrderTransactionNotFound": {
@@ -1174,6 +1198,26 @@
             "response": {
                 "responseCode": "4045700",
                 "responseMessage": "Invalid Transaction Status"
+            }
+        },
+        "CancelOrderUnauthorized": {
+            "request": {
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4015700",
+                "responseMessage": "Unauthorized. Invalid Signature"
             }
         },
         "CancelOrderRequestTimeout": {

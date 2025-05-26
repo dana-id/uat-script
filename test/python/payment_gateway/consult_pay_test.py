@@ -18,7 +18,6 @@ configuration = SnapConfiguration(
         PRIVATE_KEY=os.environ.get("PRIVATE_KEY"),
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
-        CHANNEL_ID=os.environ.get("CHANNEL_ID"),
         ENV=Env.SANDBOX
     )
 )
@@ -40,6 +39,9 @@ def test_consult_pay_success():
     
     # Make the API call
     api_response = api_instance.consult_pay(consult_pay_request_obj)
+
+    print("The response of PaymentGatewayApi->consult_pay:\n")
+    pprint(ConsultPayResponse.to_json(api_response))
     
     # Assert the API response
     assert_response(json_path_file, title_case, case_name, ConsultPayResponse.to_json(api_response))
