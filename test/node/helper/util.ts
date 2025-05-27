@@ -72,36 +72,38 @@ function getResponseCode(jsonPathFile: string, title: string, data: string): str
 }
 
 /**
- * Retries calling an async API function if it returns a 500 General Error.
+ * Retries an async function call for inconsistent request scenarios (e.g., duplicate partnerReferenceNo with different payloads).
+ * Retries on 500, 'General Error', or 'Internal Server Error', and allows custom retry condition.
  *
- * @param apiCall - The async function to call (should throw or return an object with status).
- * @param retries - Number of times to retry (default: 3).
- * @param delayMs - Delay between retries in milliseconds (default: 1000).
+ * @param apiCall - The async function to call (should throw or return an object with status/message).
+ * @param maxAttempts - Number of times to retry (default: 3).
+ * @param delayMs - Delay between retries in milliseconds (default: 2000).
+ * @param isRetryable - Optional custom function to determine if error is retryable.
  * @returns The result of the API call if successful, otherwise throws the last error.
  */
-function retryOnGeneralErrorSync<T>(
-  apiCall: () => T & { status?: number; message?: string },
-  retries = 3,
-  delayMs = 1000
-): T {
+async function retryOnInconsistentRequest<T>(
+  apiCall: () => Promise<T>,
+  maxAttempts = 3,
+  delayMs = 2000,
+  isRetryable?: (error: any) => boolean
+): Promise<T> {
   let lastError: any;
-  for (let attempt = 0; attempt <= retries; attempt++) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const result = apiCall();
-      if (result && result.status === 500 && result.message === 'General Error') {
-        throw new Error('500 General Error');
-      }
-      return result;
+      return await apiCall();
     } catch (error: any) {
       lastError = error;
-      if (
-        attempt < retries &&
-        (error?.status === 500 || (typeof error?.message === 'string' && error.message.includes('500 General Error')))
-      ) {
-        const start = Date.now();
-        while (Date.now() - start < delayMs) {
-          // Busy-wait for delayMs milliseconds
-        }
+      const errorMsg = error?.message || '';
+      const status = error?.status || error?.response?.status;
+      const shouldRetry =
+        (status === 500 ||
+          errorMsg.includes('General Error') ||
+          errorMsg.includes('Internal Server Error') ||
+          (typeof isRetryable === 'function' && isRetryable(error))) &&
+        attempt < maxAttempts;
+      if (shouldRetry) {
+        console.warn(`Inconsistent request error encountered (attempt ${attempt}). Retrying in ${delayMs}ms...`);
+        await new Promise(res => setTimeout(res, delayMs));
         continue;
       }
       throw lastError;
@@ -119,9 +121,9 @@ function retryOnGeneralErrorSync<T>(
  */
 
 export {
-  retryOnGeneralErrorSync,
   getRequestWithDelimiter,
   getRequest,
   getResponse,
   getResponseCode,
+  retryOnInconsistentRequest,
 };

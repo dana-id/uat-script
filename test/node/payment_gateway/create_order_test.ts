@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 
 // Import helper functions
-import { getRequest } from '../helper/util';
+import { getRequest, retryOnInconsistentRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node-api-client';
@@ -47,7 +47,7 @@ describe('Create Order Tests', () => {
     requestData.merchantId = merchantId;
 
     try {
-      const response = await dana.paymentGatewayApi.createOrder(requestData);
+      const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 2000);
 
       // Assert the response matches the expected data using our helper function
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
@@ -70,7 +70,7 @@ describe('Create Order Tests', () => {
     requestData.merchantId = merchantId;
 
     try {
-      const response = await dana.paymentGatewayApi.createOrder(requestData);
+      const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 1000);
 
       // Assert the response matches the expected data using our helper function
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
@@ -145,9 +145,9 @@ describe('Create Order Tests', () => {
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e: any) {
       if (e instanceof ResponseError) {
-      console.error('Create order test failed:', e, '\nResponse:', JSON.stringify(e.rawResponse, null, 2));
-      // } else {
-      // console.error('Create order test failed:', e);
+        console.error('Create order test failed:', e, '\nResponse:', JSON.stringify(e.rawResponse, null, 2));
+        // } else {
+        // console.error('Create order test failed:', e);
       }
       throw e;
     }
@@ -206,7 +206,7 @@ describe('Create Order Tests', () => {
       requestData.amount.value = "100000.00";
       requestData.payOptionDetails[0].transAmount.value = "100000.00";
 
-      const response = await dana.paymentGatewayApi.createOrder(requestData);
+      const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 2000);
 
       fail("Expected NotFoundException but the API call succeeded");
     } catch (e) {

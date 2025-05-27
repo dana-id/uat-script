@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 
 // Import helper functions
-import { getRequest } from '../helper/util';
+import { getRequest, retryOnInconsistentRequest } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { CreateOrderByApiRequest, CancelOrderRequest } from 'dana-node-api-client/dist/payment_gateway/v1';
@@ -47,7 +47,7 @@ describe('Cancel Order Tests', () => {
     
     try {
       // Create the order
-      await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+      await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(createOrderRequestData), 3, 2000);
       
       // Wait to ensure the order is processed in the system
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -74,6 +74,30 @@ describe('Cancel Order Tests', () => {
     } catch (e) {
       console.error('Cancel order test failed:', e);
       throw e;
+    }
+  });
+
+  //Test cancel order with transaction not found
+  test('should fail when transaction not found', async () => {
+    const caseName = "CancelOrderTransactionNotFound";
+    try {
+      // Get the request data from the JSON file
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+      // Set the partner reference number
+      // requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
+      // Make the API call
+      await dana.paymentGatewayApi.cancelOrder(requestData);
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 404) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
+          { 'partnerReferenceNo': sharedOriginalPartnerReference });
+      } else if (e instanceof ResponseError && Number(e.status) !== 404) {
+        fail("Expected transaction not found failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
     }
   });
 

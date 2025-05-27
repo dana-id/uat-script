@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 
 // Import helper functions
-import { getRequest, retryOnGeneralErrorSync } from '../helper/util';
+import { getRequest } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { CreateOrderByApiRequest, QueryPaymentRequest } from 'dana-node-api-client/dist/payment_gateway/v1';
