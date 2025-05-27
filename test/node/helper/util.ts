@@ -72,6 +72,45 @@ function getResponseCode(jsonPathFile: string, title: string, data: string): str
 }
 
 /**
+ * Retries calling an async API function if it returns a 500 General Error.
+ *
+ * @param apiCall - The async function to call (should throw or return an object with status).
+ * @param retries - Number of times to retry (default: 3).
+ * @param delayMs - Delay between retries in milliseconds (default: 1000).
+ * @returns The result of the API call if successful, otherwise throws the last error.
+ */
+function retryOnGeneralErrorSync<T>(
+  apiCall: () => T & { status?: number; message?: string },
+  retries = 3,
+  delayMs = 1000
+): T {
+  let lastError: any;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const result = apiCall();
+      if (result && result.status === 500 && result.message === 'General Error') {
+        throw new Error('500 General Error');
+      }
+      return result;
+    } catch (error: any) {
+      lastError = error;
+      if (
+        attempt < retries &&
+        (error?.status === 500 || (typeof error?.message === 'string' && error.message.includes('500 General Error')))
+      ) {
+        const start = Date.now();
+        while (Date.now() - start < delayMs) {
+          // Busy-wait for delayMs milliseconds
+        }
+        continue;
+      }
+      throw lastError;
+    }
+  }
+  throw lastError;
+}
+
+/**
  * Creates a decorator to add a delay after a function completes
  * In JavaScript, this is implemented as a higher-order function
  *
@@ -80,6 +119,7 @@ function getResponseCode(jsonPathFile: string, title: string, data: string): str
  */
 
 export {
+  retryOnGeneralErrorSync,
   getRequestWithDelimiter,
   getRequest,
   getResponse,
