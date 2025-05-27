@@ -85,36 +85,101 @@ def get_response_code(json_path_file: str, title: str, data: str) -> dict:
     
     return response_data
 
-def retry_on_general_error(max_retries=3, delay_seconds=1.0):
+# def retry_on_general_error(max_retries=3, delay_seconds=1.0):
+#     """
+#     Decorator to retry a function if it raises an exception or returns a response with status code 500 (General Error).
+
+#     :param max_retries: Maximum number of retries.
+#     :param delay_seconds: Delay between retries in seconds.
+#     :return: Decorated function.
+#     """
+#     def decorator(func):
+#         @functools.wraps(func)
+#         def wrapper(*args, **kwargs):
+#             for attempt in range(max_retries):
+#                 try:
+#                     response = func(*args, **kwargs)
+#                     # If response is a requests.Response or dict with status_code
+#                     status_code = getattr(response, 'status_code', None)
+#                     if status_code is None and isinstance(response, dict):
+#                         status_code = response.get('status_code')
+#                     if status_code == 500:
+#                         if attempt < max_retries - 1:
+#                             time.sleep(delay_seconds)
+#                             continue
+#                         else:
+#                             return response
+#                     return response
+#                 except Exception as e:
+#                     if attempt < max_retries - 1:
+#                         time.sleep(delay_seconds)
+#                         continue
+#                     else:
+#                         raise
+#         return wrapper
+#     return decorator
+
+def retry_on_inconsistent_request(max_retries=3, delay_seconds=2.0, is_retryable=None):
     """
-    Decorator to retry a function if it raises an exception or returns a response with status code 500 (General Error).
+    Decorator to retry a function for inconsistent request scenarios (e.g., duplicate partnerReferenceNo with different payloads).
+    Retries on 500, 'General Error', or 'Internal Server Error', and allows custom retry condition.
 
     :param max_retries: Maximum number of retries.
     :param delay_seconds: Delay between retries in seconds.
+    :param is_retryable: Optional custom function to determine if error is retryable.
     :return: Decorated function.
     """
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            last_error = None
             for attempt in range(max_retries):
                 try:
                     response = func(*args, **kwargs)
-                    # If response is a requests.Response or dict with status_code
+                    # Check for status_code or message in response
                     status_code = getattr(response, 'status_code', None)
                     if status_code is None and isinstance(response, dict):
                         status_code = response.get('status_code')
-                    if status_code == 500:
+                    message = getattr(response, 'message', None)
+                    if message is None and isinstance(response, dict):
+                        message = response.get('message')
+                    if (
+                        (status_code == 500 or (isinstance(message, str) and (
+                            'General Error' in message or 'Internal Server Error' in message))) or
+                        (is_retryable and is_retryable(response))
+                    ):
                         if attempt < max_retries - 1:
+                            print(f"Inconsistent request error encountered (attempt {attempt + 1}). Retrying in {delay_seconds}s...")
                             time.sleep(delay_seconds)
                             continue
                         else:
                             return response
                     return response
                 except Exception as e:
-                    if attempt < max_retries - 1:
+                    last_error = e
+                    error_msg = str(e)
+                    if (
+                        attempt < max_retries - 1 and (
+                            'General Error' in error_msg or 'Internal Server Error' in error_msg or
+                            (is_retryable and is_retryable(e))
+                        )
+                    ):
+                        print(f"Inconsistent request exception encountered (attempt {attempt + 1}). Retrying in {delay_seconds}s...")
                         time.sleep(delay_seconds)
                         continue
                     else:
                         raise
+            if last_error:
+                raise last_error
         return wrapper
     return decorator
+
+# Example usage:
+#
+# @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
+# def call_api():
+#     return api_instance.create_order(request_obj)
+#
+# Or for inline usage:
+# decorated_call = retry_on_inconsistent_request()(lambda: api_instance.create_order(request_obj))
+# result = decorated_call()

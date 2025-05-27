@@ -34,7 +34,7 @@ with ApiClient(configuration) as api_client:
 def generate_partner_reference_no():
     return str(uuid4())
 
-@retry_on_general_error(3, 1)
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def create_test_order(partner_reference_no):
     """Helper function to create a test order"""
     case_name = "CreateOrderApi"
