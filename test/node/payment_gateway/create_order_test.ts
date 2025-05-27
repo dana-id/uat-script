@@ -194,7 +194,7 @@ describe('Create Order Tests', () => {
     requestData.merchantId = merchantId;
 
     try {
-      const response = await dana.paymentGatewayApi.createOrder(requestData);
+      const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 2000);
     } catch (e) {
       console.error('Fail to call first API', e);
     }

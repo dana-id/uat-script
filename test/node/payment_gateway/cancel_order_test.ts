@@ -144,4 +144,46 @@ describe('Cancel Order Tests', () => {
       }
     }
   });
+
+  // Test unauthorized access using manual API call
+    test('should fail when authorization fails (manual API call)', async () => {
+      const caseName = "CancelOrderUnauthorized";
+  
+      // Get the request data from the JSON file
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+      const partnerReferenceNo = generatePartnerReferenceNo();
+      requestData.originalPartnerReferenceNo = partnerReferenceNo;
+  
+      // Define custom headers with invalid signature to trigger authorization error
+      const customHeaders: Record<string, string> = {
+        'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
+      };
+  
+      try {
+        // Define base URL based on environment
+        const baseUrl: string = 'https://api.sandbox.dana.id';
+        const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
+  
+        // Make direct API call with custom headers
+        await executeManualApiRequest(
+          caseName,
+          "POST",
+          baseUrl + apiPath,
+          apiPath,
+          requestData,
+          customHeaders
+        );
+  
+        fail("Expected an error but the API call succeeded");
+      } catch (e: any) {
+        if (e instanceof ResponseError && Number(e.status) === 401) {
+          // Assert the error response matches expected format
+          await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
+        } else if (e instanceof ResponseError && Number(e.status) !== 401) {
+          fail("Expected unauthorized failed but got status code " + e.status);
+        } else {
+          throw e;
+        }
+      }
+    });
 });

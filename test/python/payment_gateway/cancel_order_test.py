@@ -54,6 +54,28 @@ def create_test_order(partner_reference_no):
     except Exception as e:
         pytest.fail(f"Fail to call create order API {e}")
 
+def create_test_order_canceled(partner_reference_no):
+    """Helper function to create a test order with short expiration date to have canceled status"""
+    case_name = "CreateOrderApi"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, create_order_title_case, case_name)
+    
+    # Set the partner reference number
+    json_dict["partnerReferenceNo"] = partner_reference_no
+
+    # Set the expiration time to 1 second from now
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=1)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.create_order(create_order_request_obj)
+    except Exception as e:
+        pytest.fail(f"Fail to call create order API {e}")
+
 @pytest.fixture(scope="module")
 def test_order_reference_number():
     """Fixture that creates a test order once per module and shares the reference number"""
@@ -83,27 +105,27 @@ def test_cancel_order(test_order_reference_number):
     # Assert the API response
     assert_response(json_path_file, title_case, case_name, CancelOrderResponse.to_json(api_response), {"partnerReferenceNo": test_order_reference_number})
 
-def create_test_order_canceled(partner_reference_no):
-    """Helper function to create a test order with short expiration date to have canceled status"""
-    case_name = "CreateOrderApi"
+# @with_delay()
+# def test_cancel_order_in_progress():
+#     """Should cancel the order"""
+#     # Cancel order
+#     case_name = "CancelOrderInProgress"
     
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, create_order_title_case, case_name)
+#     # Get the request data from the JSON file
+#     json_dict = get_request(json_path_file, title_case, case_name)
     
-    # Set the partner reference number
-    json_dict["partnerReferenceNo"] = partner_reference_no
-
-    # Set the expiration time to 1 second from now
-    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=1)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
+#     # Set the correct partner reference number
+#     # json_dict["originalPartnerReferenceNo"] = test_order_reference_number_in_progress
     
-    # Convert the request data to a CreateOrderRequest object
-    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
+#     # Convert the request data to a CancelOrderRequest object
+#     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+#     cancel_order_request_obj.amount = None
     
-    # Make the API call
-    try:
-        api_instance.create_order(create_order_request_obj)
-    except Exception as e:
-        pytest.fail(f"Fail to call create order API {e}")  
+#     # Make the API call
+#     api_response = api_instance.cancel_order(cancel_order_request_obj)
+    
+#     # Assert the API response
+#     assert_response(json_path_file, title_case, case_name, CancelOrderResponse.to_json(api_response), {"partnerReferenceNo": "2025700"})    
 
 @with_delay()
 def test_cancel_order_transaction_not_found():
