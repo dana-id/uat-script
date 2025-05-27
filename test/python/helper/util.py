@@ -85,40 +85,6 @@ def get_response_code(json_path_file: str, title: str, data: str) -> dict:
     
     return response_data
 
-# def retry_on_general_error(max_retries=3, delay_seconds=1.0):
-#     """
-#     Decorator to retry a function if it raises an exception or returns a response with status code 500 (General Error).
-
-#     :param max_retries: Maximum number of retries.
-#     :param delay_seconds: Delay between retries in seconds.
-#     :return: Decorated function.
-#     """
-#     def decorator(func):
-#         @functools.wraps(func)
-#         def wrapper(*args, **kwargs):
-#             for attempt in range(max_retries):
-#                 try:
-#                     response = func(*args, **kwargs)
-#                     # If response is a requests.Response or dict with status_code
-#                     status_code = getattr(response, 'status_code', None)
-#                     if status_code is None and isinstance(response, dict):
-#                         status_code = response.get('status_code')
-#                     if status_code == 500:
-#                         if attempt < max_retries - 1:
-#                             time.sleep(delay_seconds)
-#                             continue
-#                         else:
-#                             return response
-#                     return response
-#                 except Exception as e:
-#                     if attempt < max_retries - 1:
-#                         time.sleep(delay_seconds)
-#                         continue
-#                     else:
-#                         raise
-#         return wrapper
-#     return decorator
-
 def retry_on_inconsistent_request(max_retries=3, delay_seconds=2.0, is_retryable=None):
     """
     Decorator to retry a function for inconsistent request scenarios (e.g., duplicate partnerReferenceNo with different payloads).

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
+	"time"
 )
 
 // GetRequest loads request data from a JSON file based on the title case and case name
@@ -64,4 +66,45 @@ func GetResponse(jsonPath, titleCase, caseName string) (map[string]interface{}, 
 	}
 
 	return nil, fmt.Errorf("case %s not found in any structure", caseName)
+}
+
+// RetryOnInconsistentRequest retries a function for inconsistent request scenarios (e.g., duplicate partnerReferenceNo with different payloads).
+// Retries on error or if the returned error/message indicates a general/internal error.
+//
+// Example usage:
+//   result, err := RetryOnInconsistentRequest(func() (interface{}, error) {
+//       return client.CreateOrder(requestObj) // or any API call
+//   }, 3, 2*time.Second)
+//
+//   if err != nil {
+//       // handle error
+//   }
+func RetryOnInconsistentRequest(apiCall func() (interface{}, error), maxAttempts int, delay time.Duration) (interface{}, error) {
+	var lastErr error
+	for attempt := 1; attempt <= maxAttempts; attempt++ {
+		result, err := apiCall()
+		if err == nil {
+			// Check for error message in result if it's a map
+			if respMap, ok := result.(map[string]interface{}); ok {
+				msg, _ := respMap["message"].(string)
+				code, _ := respMap["status"].(float64)
+				if (code == 500 || strings.Contains(msg, "General Error") || strings.Contains(msg, "Internal Server Error")) && attempt < maxAttempts {
+					// Retry on general/internal error
+					time.Sleep(delay)
+					continue
+				}
+			}
+			return result, nil
+		}
+		// If error is retryable
+		errMsg := err.Error()
+		if (strings.Contains(errMsg, "General Error") || strings.Contains(errMsg, "Internal Server Error")) && attempt < maxAttempts {
+			// Retry on general/internal error
+			time.Sleep(delay)
+			continue
+		}
+		lastErr = err
+		break
+	}
+	return nil, lastErr
 }

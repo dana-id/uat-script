@@ -20,41 +20,47 @@ const (
 
 // createTestOrder creates a test order to be queried
 func createTestOrder() (string, error) {
-	// Get the request data from the JSON file
-	caseName := "CreateOrderApi"
-	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, createOrderForQueryTitleCase, caseName)
+	var partnerReferenceNo string
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		// Get the request data from the JSON file
+		caseName := "CreateOrderApi"
+		jsonDict, err := helper.GetRequest(queryPaymentJsonPath, createOrderForQueryTitleCase, caseName)
+		if err != nil {
+			return "", err
+		}
+
+		// Set a unique partner reference number
+		partnerReferenceNo = uuid.New().String()
+		jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+		// Create the CreateOrderRequest object and populate it with JSON data
+		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
+		jsonBytes, err := json.Marshal(jsonDict)
+		if err != nil {
+			return "", err
+		}
+
+		err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
+		if err != nil {
+			return "", err
+		}
+
+		// Make the API call
+		ctx := context.Background()
+		createOrderReq := pg.CreateOrderRequest{
+			CreateOrderByApiRequest: createOrderByApiRequest,
+		}
+		_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return "", err
+		}
+		defer httpResponse.Body.Close()
+
+		return partnerReferenceNo, nil
+	}, 3, 2*time.Second)
 	if err != nil {
-		return "", err
 	}
-
-	// Set a unique partner reference number
-	partnerReferenceNo := uuid.New().String()
-	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-	// Create the CreateOrderRequest object and populate it with JSON data
-	createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		return "", err
-	}
-
-	err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
-	if err != nil {
-		return "", err
-	}
-
-	// Make the API call
-	ctx := context.Background()
-	createOrderReq := pg.CreateOrderRequest{
-		CreateOrderByApiRequest: createOrderByApiRequest,
-	}
-	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
-	if err != nil {
-		return "", err
-	}
-	defer httpResponse.Body.Close()
-
-	return partnerReferenceNo, nil
+	return result.(string), nil
 }
 
 // TestQueryPaymentValidFormat tests the query payment API with valid format

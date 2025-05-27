@@ -18,43 +18,50 @@ const (
 	createOrderForCancelTitleCase = "CreateOrder"
 )
 
-// createTestOrderForCancel creates a test order to be canceled
+// createTestOrderForCancel creates a test order to be canceled, with retry on inconsistent request
 func createTestOrderForCancel() (string, error) {
-	// Get the request data from the JSON file
-	caseName := "CreateOrderApi"
-	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, createOrderForCancelTitleCase, caseName)
+	var partnerReferenceNo string
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		// Get the request data from the JSON file
+		caseName := "CreateOrderApi"
+		jsonDict, err := helper.GetRequest(cancelOrderJsonPath, createOrderForCancelTitleCase, caseName)
+		if err != nil {
+			return nil, err
+		}
+
+		// Set a unique partner reference number
+		partnerReferenceNo = uuid.New().String()
+		jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+		// Create the CreateOrderRequest object and populate it with JSON data
+		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
+		jsonBytes, err := json.Marshal(jsonDict)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
+		if err != nil {
+			return nil, err
+		}
+
+		// Make the API call
+		ctx := context.Background()
+		createOrderReq := pg.CreateOrderRequest{
+			CreateOrderByApiRequest: createOrderByApiRequest,
+		}
+		_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return nil, err
+		}
+		defer httpResponse.Body.Close()
+
+		return partnerReferenceNo, nil
+	}, 3, 2*time.Second)
 	if err != nil {
 		return "", err
 	}
-
-	// Set a unique partner reference number
-	partnerReferenceNo := uuid.New().String()
-	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-	// Create the CreateOrderRequest object and populate it with JSON data
-	createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		return "", err
-	}
-
-	err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
-	if err != nil {
-		return "", err
-	}
-
-	// Make the API call
-	ctx := context.Background()
-	createOrderReq := pg.CreateOrderRequest{
-		CreateOrderByApiRequest: createOrderByApiRequest,
-	}
-	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
-	if err != nil {
-		return "", err
-	}
-	defer httpResponse.Body.Close()
-
-	return partnerReferenceNo, nil
+	return result.(string), nil
 }
 
 // TestCancelOrderValidScenario tests canceling an order with valid parameters
