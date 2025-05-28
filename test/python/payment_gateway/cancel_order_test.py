@@ -105,27 +105,26 @@ def test_cancel_order(test_order_reference_number):
     # Assert the API response
     assert_response(json_path_file, title_case, case_name, CancelOrderResponse.to_json(api_response), {"partnerReferenceNo": test_order_reference_number})
 
-# @with_delay()
-# def test_cancel_order_in_progress():
-#     """Should cancel the order"""
-#     # Cancel order
-#     case_name = "CancelOrderInProgress"
+@with_delay()
+def test_cancel_order_in_progress():
+    """Should cancel the order"""
+    # Cancel order
+    case_name = "CancelOrderInProgress"
     
-#     # Get the request data from the JSON file
-#     json_dict = get_request(json_path_file, title_case, case_name)
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
     
-#     # Set the correct partner reference number
-#     # json_dict["originalPartnerReferenceNo"] = test_order_reference_number_in_progress
+    # Set the correct partner reference number
+    # json_dict["originalPartnerReferenceNo"] = test_order_reference_number_in_progress
     
-#     # Convert the request data to a CancelOrderRequest object
-#     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-#     cancel_order_request_obj.amount = None
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
     
-#     # Make the API call
-#     api_response = api_instance.cancel_order(cancel_order_request_obj)
+    # Make the API call
+    api_response = api_instance.cancel_order(cancel_order_request_obj)
     
-#     # Assert the API response
-#     assert_response(json_path_file, title_case, case_name, CancelOrderResponse.to_json(api_response), {"partnerReferenceNo": "2025700"})    
+    # Assert the API response
+    assert_response(json_path_file, title_case, case_name, CancelOrderResponse.to_json(api_response), {"partnerReferenceNo": "2025700"})    
 
 @with_delay()
 def test_cancel_order_transaction_not_found():

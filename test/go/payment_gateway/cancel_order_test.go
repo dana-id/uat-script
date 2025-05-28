@@ -125,6 +125,55 @@ func TestCancelOrderValidScenario(t *testing.T) {
 	}
 }
 
+// TestCancelOrderInProgress tests canceling an order with in-progress status
+func TestCancelOrderInProgress(t *testing.T) {
+	// Use a specific case for in-progress order cancellation
+	caseName := "CancelOrderInProgress"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		t.Fatalf("API call failed: %v", err)
+	}
+	defer httpResponse.Body.Close()
+
+	// Convert the response to JSON for assertion
+	responseJSON, err := apiResponse.MarshalJSON()
+	if err != nil {
+		t.Fatalf("Failed to convert response to JSON: %v", err)
+	}
+
+	// Create variable dictionary for dynamic values
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": "2025700",
+	}
+
+	// Assert the API response with variable substitution
+	err = helper.AssertResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, string(responseJSON), variableDict)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // TestCancelOrderInvalidMandatoryField tests canceling an order with a missing mandatory field
 func TestCancelOrderInvalidMandatoryField(t *testing.T) {
 	// Create an order first

@@ -77,6 +77,25 @@ describe('Cancel Order Tests', () => {
     }
   });
 
+  // Test cancel order with in-progress status
+  test('should cancel order in progress', async () => {    
+    const caseName = "CancelOrderInProgress";
+    
+    try {
+      // Get the request data from the JSON file
+      const cancelRequestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+      
+      // Make the API call
+      const response = await dana.paymentGatewayApi.cancelOrder(cancelRequestData);
+      
+      // Assert the response matches the expected data using our helper function
+      await assertResponse(jsonPathFile, titleCase, caseName, response, { 'partnerReferenceNo': "2025700" });
+    } catch (e) {
+      console.error('Cancel order in progress test failed:', e);
+      throw e;
+    }
+  });
+
   //Test cancel order with transaction not found
   test('should fail when transaction not found', async () => {
     const caseName = "CancelOrderTransactionNotFound";
