@@ -54,22 +54,26 @@ func TestCreateOrderBalance(t *testing.T) {
 		CreateOrderByApiRequest: createOrderByApiRequest,
 	}
 
-	// Make the API call
-	ctx := context.Background()
-	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+	// Make the API call with retry on inconsistent request
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		ctx := context.Background()
+		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return nil, err
+		}
+		defer httpResponse.Body.Close()
+		responseJSON, err := apiResponse.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		return string(responseJSON), nil
+	}, 3, 2*time.Second)
 	if err != nil {
 		t.Fatalf("API call failed: %v", err)
 	}
-	defer httpResponse.Body.Close()
-
-	// Convert the response to JSON for assertion
-	responseJSON, err := apiResponse.MarshalJSON()
-	if err != nil {
-		t.Fatalf("Failed to convert response to JSON: %v", err)
-	}
 
 	// Assert the API response with the partner reference number as a variable
-	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, string(responseJSON), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,22 +111,26 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 		CreateOrderByApiRequest: createOrderByApiRequest,
 	}
 
-	// Make the API call
-	ctx := context.Background()
-	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+	// Make the API call with retry on inconsistent request
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		ctx := context.Background()
+		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return nil, err
+		}
+		defer httpResponse.Body.Close()
+		responseJSON, err := apiResponse.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		return string(responseJSON), nil
+	}, 3, 2*time.Second)
 	if err != nil {
 		t.Fatalf("API call failed: %v", err)
 	}
-	defer httpResponse.Body.Close()
-
-	// Convert the response to JSON for assertion
-	responseJSON, err := apiResponse.MarshalJSON()
-	if err != nil {
-		t.Fatalf("Failed to convert response to JSON: %v", err)
-	}
 
 	// Assert the API response with the partner reference number as a variable
-	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, string(responseJSON), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -160,22 +168,26 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 		CreateOrderByApiRequest: createOrderByApiRequest,
 	}
 
-	// Make the API call
-	ctx := context.Background()
-	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+	// Make the API call with retry on inconsistent request
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		ctx := context.Background()
+		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return nil, err
+		}
+		defer httpResponse.Body.Close()
+		responseJSON, err := apiResponse.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		return string(responseJSON), nil
+	}, 3, 2*time.Second)
 	if err != nil {
 		t.Fatalf("API call failed: %v", err)
 	}
-	defer httpResponse.Body.Close()
-
-	// Convert the response to JSON for assertion
-	responseJSON, err := apiResponse.MarshalJSON()
-	if err != nil {
-		t.Fatalf("Failed to convert response to JSON: %v", err)
-	}
 
 	// Assert the API response with the partner reference number as a variable
-	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, string(responseJSON), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -335,7 +347,7 @@ func TestCreateOrderInvalidMandatoryField(t *testing.T) {
 	variableDict := map[string]interface{}{
 		"partnerReferenceNo": partnerReferenceNo,
 	}
-	
+
 	err = helper.ExecuteAndAssertErrorResponse(
 		t,
 		ctx,
