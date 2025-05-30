@@ -12,7 +12,7 @@ from dana.api_client import ApiClient
 from dana.exceptions import *
 from dana.utils.snap_header import SnapHeader
 
-from helper.util import get_request, with_delay
+from helper.util import get_request, with_delay, retry_on_inconsistent_request
 from helper.api_helpers import execute_api_request_directly, get_standard_headers, execute_and_assert_api_error, get_headers_with_signature
 from helper.assertion import *
 
@@ -37,6 +37,7 @@ def generate_partner_reference_no():
     return str(uuid4())
 
 
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def create_test_order(partner_reference_no):
     """Helper function to create a test order"""
     case_name = "CreateOrderApi"
@@ -51,10 +52,7 @@ def create_test_order(partner_reference_no):
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
     
     # Make the API call
-    try:
-        api_instance.create_order(create_order_request_obj)
-    except Exception as e:
-        pytest.fail(f"Fail to call create order API {e}")
+    api_instance.create_order(create_order_request_obj)
 
 def create_test_order_canceled(partner_reference_no):
     """Helper function to create a test order with short expiration date to have canceled status"""

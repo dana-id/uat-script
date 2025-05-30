@@ -1019,17 +1019,13 @@
         },
         "CancelOrderUserStatusAbnormal": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "4035705",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
                 "additionalInfo": {}
             },
             "response": {
@@ -1039,17 +1035,13 @@
         },
         "CancelOrderMerchantStatusAbnormal": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "4045708",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
                 "additionalInfo": {}
             },
             "response": {
@@ -1118,17 +1110,13 @@
         },
         "CancelOrderNotAllowed": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "4035715",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
                 "additionalInfo": {}
             },
             "response": {
