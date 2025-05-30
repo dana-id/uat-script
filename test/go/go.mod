@@ -3,7 +3,7 @@ module self_testing_scenario
 go 1.22.0
 
 require (
-	github.com/dana-id/go_client v0.1.9
+	github.com/dana-id/go_client v0.1.10
 	github.com/google/uuid v1.6.0
 )
 

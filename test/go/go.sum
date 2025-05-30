@@ -1,5 +1,5 @@
-github.com/dana-id/go_client v0.1.9 h1:fopFQ8yMxkzEuOWohkbCMUjGl+3QIdOIQO4IH1+azOA=
-github.com/dana-id/go_client v0.1.9/go.mod h1:xoxMDd08dkDffd1wopjMaF0LdQCuE6CdbVx67IGx464=
+github.com/dana-id/go_client v0.1.10 h1:HKd7jbrM+Gfjb0YJNDNx0bq+M/ULESQVLgE/JhtnQR0=
+github.com/dana-id/go_client v0.1.10/go.mod h1:xoxMDd08dkDffd1wopjMaF0LdQCuE6CdbVx67IGx464=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/kr/pretty v0.2.1 h1:Fmg33tUaq4/8ym9TJN1x7sLJnHVwhP33CNkpYV/7rwI=

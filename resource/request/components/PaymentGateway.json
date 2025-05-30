@@ -1090,17 +1090,13 @@
         },
         "CancelOrderTransactionExpired": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "4035700",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
                 "additionalInfo": {}
             },
             "response": {
@@ -1126,17 +1122,13 @@
         },
         "CancelOrderAccountStatusAbnormal": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "4035705",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
                 "additionalInfo": {}
             },
             "response": {
@@ -1146,17 +1138,13 @@
         },
         "CancelOrderInsufficientFunds": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "4035714",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
                 "additionalInfo": {}
             },
             "response": {
@@ -1206,17 +1194,13 @@
         },
         "CancelOrderRequestTimeout": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "5005701",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
                 "additionalInfo": {}
             },
             "response": {

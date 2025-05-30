@@ -16,7 +16,7 @@ main() {
         run_go_runner
         ;;
     "node")
-        run_node_runner
+        run_node_runner "$1"
         ;;
     *)
         echo "Invalid option. Please choose a valid interpreter."
@@ -60,6 +60,7 @@ run_python_runner(){
 
 # Function to run the Javascript script
 run_node_runner(){
+    caseName=$1
     if ! command node --version &> /dev/null; then
         echo "Node.js not available in this system. Please install Node.js."
         exit 0 
@@ -83,9 +84,21 @@ run_node_runner(){
     npm install --save dana-node-api-client dotenv
     npm install --save-dev jest
     
-    # Run the tests
-    echo "Running tests..."
-    npm test
+    # Run the tests, support running a specific scenario if provided as caseName
+    if [ -n "$caseName" ]; then
+        npx jest --color --testNamePattern="^$caseName$"
+        exit_code=$?
+        if [ $exit_code -eq 0 ]; then
+            : # success
+        elif [ $exit_code -eq 1 ]; then
+            echo "\033[31mERROR: No tests were collected for case name: $caseName\033[0m" >&2
+            exit 1
+        else
+            exit $exit_code
+        fi
+    else
+        npm test
+    fi
     
     cd ../..
 }
