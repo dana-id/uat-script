@@ -47,7 +47,7 @@ describe('Create Order Tests', () => {
     requestData.merchantId = merchantId;
 
     try {
-      const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 2000);
+      const response = await dana.paymentGatewayApi.createOrder(requestData);
 
       // Assert the response matches the expected data using our helper function
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
