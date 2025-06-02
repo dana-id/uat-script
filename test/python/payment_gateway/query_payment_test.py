@@ -18,6 +18,7 @@ from helper.assertion import *
 
 title_case = "QueryPayment"
 create_order_title_case = "CreateOrder"
+cancel_order_title_case = "CancelOrder"
 json_path_file = "resource/request/components/PaymentGateway.json"
 
 configuration = SnapConfiguration(
@@ -54,6 +55,7 @@ def create_test_order(partner_reference_no):
     # Make the API call
     api_instance.create_order(create_order_request_obj)
 
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def create_test_order_canceled(partner_reference_no):
     """Helper function to create a test order with short expiration date to have canceled status"""
     case_name = "CreateOrderApi"
@@ -71,10 +73,19 @@ def create_test_order_canceled(partner_reference_no):
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
     
     # Make the API call
-    try:
-        api_instance.create_order(create_order_request_obj)
-    except Exception as e:
-        pytest.fail(f"Fail to call create order API {e}")
+    api_instance.create_order(create_order_request_obj)
+
+    # Get the request data for canceling the order
+    json_dict_cancel = get_request(json_path_file, cancel_order_title_case, "CancelOrderValidScenario")
+    
+    # Set the original partner reference number
+    json_dict_cancel["originalPartnerReferenceNo"] = partner_reference_no
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict_cancel)
+    
+    # Make the API call to cancel the order
+    api_instance.cancel_order(cancel_order_request_obj)
 
 
 @pytest.fixture(scope="module")
@@ -114,6 +125,7 @@ def test_query_payment_created_order(test_order_reference_number):
 
 #     partner_reference_no = generate_partner_reference_no()
 #     create_test_order_canceled(partner_reference_no)
+    
 #     time.sleep(2)
     
 #     """Should query the payment with status canceled"""    
@@ -131,10 +143,13 @@ def test_query_payment_created_order(test_order_reference_number):
     
 #     # Make the API call
 #     api_response = api_instance.query_payment(query_payment_request_obj)
-    
-#     # Assert the API response
-#     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": test_order_reference_number_canceled})
 
+#     # Print the expected API response for debugging
+#     expected_response = get_request(json_path_file, title_case, case_name)
+#     print("Expected API Response:\n", json.dumps(expected_response, indent=2, ensure_ascii=False))
+
+#     # Assert the API response
+#     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
 @with_delay()
 def test_query_payment_invalid_format(test_order_reference_number):

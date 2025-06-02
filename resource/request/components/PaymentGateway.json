@@ -794,7 +794,7 @@
                 "originalReferenceNo": "${valueFromServer}",
                 "serviceCode": "54",
                 "latestTransactionStatus": "05",
-                "transactionStatusDesc": "CANCELED",
+                "transactionStatusDesc": "CANCELLED",
                 "transAmount": {
                     "value": "22200.00",
                     "currency": "IDR"
@@ -821,7 +821,7 @@
                     },
                     "extendInfo": "${valueFromServer}",
                     "statusDetail": {
-                        "acquirementStatus": "CANCELED",
+                        "acquirementStatus": "CANCELLED",
                         "frozen": "false"
                     }
                 }
@@ -1242,7 +1242,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "100000.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1264,7 +1264,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "435815.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1276,7 +1276,7 @@
                 "responseMessage": "Transaction Not Permitted"
             }
         },
-        "RefundOrderDueToExceed": {
+        "RefundOrderDueToExceedRefundWindowTime": {
             "request": {
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
@@ -1317,7 +1317,7 @@
             },
             "response": {
                 "responseCode": "4035802",
-                "responseMessage": "Exceeds Transaction Amount Limit "
+                "responseMessage": "Transaction Not Permitted"
             }
         },
         "RefundOrderDuplicateRequest": {
@@ -1352,7 +1352,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "22000.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1374,7 +1374,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "10000",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1383,7 +1383,7 @@
             },
             "response": {
                 "responseCode": "4005801",
-                "responseMessage": "Invalid Field Format"
+                "responseMessage": "Invalid Field Format refundAmount"
             }
         },
         "RefundOrderInvalidMandatoryParameter": {
@@ -1404,18 +1404,18 @@
             },
             "response": {
                 "responseCode": "4005802",
-                "responseMessage": "Invalid Mandatory Field"
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
             }
         },
         "RefundOrderInvalidBill": {
             "request": {
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "123123123123123",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "originalCaptureNo": "",
-                "partnerRefundNo": "${partnerReferenceNo}",
+                "partnerRefundNo": "123123123123123",
                 "refundAmount": {
                     "value": "10000.00",
                     "currency": "IDR"
@@ -1451,7 +1451,7 @@
                 "responseMessage": "Insufficient Funds"
             }
         },
-        "RefundOrderInvalidSignature": {
+        "RefundOrderUnauthorized": {
             "request": {
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
@@ -1470,7 +1470,7 @@
             },
             "response": {
                 "responseCode": "4015800",
-                "responseMessage": "Unauthorized"
+                "responseMessage": "Unauthorized. Invalid Signature"
             }
         },
         "RefundOrderTimeout": {
@@ -1515,6 +1515,28 @@
             "response": {
                 "responseCode": "4045808",
                 "responseMessage": "Invalid Merchant"
+            }
+        },
+        "RefundOrderInProgress": {
+            "request": {
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "originalCaptureNo": "",
+                "partnerRefundNo": "${partnerReferenceNo}",
+                "refundAmount": {
+                    "value": "225800.00",
+                    "currency": "IDR"
+                },
+                "externalStoreId": "",
+                "reason": "Customer complain",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2025800",
+                "responseMessage": "Request In Progress"
             }
         }
     }

@@ -69,10 +69,7 @@ def create_test_order_canceled(partner_reference_no):
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
     
     # Make the API call
-    try:
-        api_instance.create_order(create_order_request_obj)
-    except Exception as e:
-        pytest.fail(f"Fail to call create order API {e}")
+    api_instance.create_order(create_order_request_obj)
 
 @pytest.fixture(scope="module")
 def test_order_reference_number():
