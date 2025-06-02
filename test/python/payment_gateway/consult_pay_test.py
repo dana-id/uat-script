@@ -39,9 +39,6 @@ def test_consult_pay_success():
     
     # Make the API call
     api_response = api_instance.consult_pay(consult_pay_request_obj)
-
-    print("The response of PaymentGatewayApi->consult_pay:\n")
-    pprint(ConsultPayResponse.to_json(api_response))
     
     # Assert the API response
     assert_response(json_path_file, title_case, case_name, ConsultPayResponse.to_json(api_response))

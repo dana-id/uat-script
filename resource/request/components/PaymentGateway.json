@@ -387,7 +387,7 @@
                 "payOptionDetails": [
                     {
                         "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_OVO",
+                        "payOption": "NETWORK_PAY_PG_GOPAY",
                         "transAmount": {
                             "value": "22200.00",
                             "currency": "IDR"
@@ -771,6 +771,56 @@
                 }
             }
         },
+        "QueryPaymentPaidOrder": {
+            "request": {
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "serviceCode": "54",
+                "transactionDate": "2030-05-01T00:46:43+07:00",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2005500",
+                "responseMessage": "Successful",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "${valueFromServer}",
+                "serviceCode": "54",
+                "latestTransactionStatus": "00",
+                "transactionStatusDesc": "INIT",
+                "transAmount": {
+                    "value": "50001.00",
+                    "currency": "IDR"
+                },
+                "amount": {
+                    "value": "50001.00",
+                    "currency": "IDR"
+                },
+                "title": "Payment Gateway Order Test",
+                "additionalInfo": {
+                    "amountDetail": {
+                        "orderAmount": {
+                            "value": "50001.00",
+                            "currency": "IDR"
+                        }
+                    },
+                    "timeDetail": {
+                        "createdTime": "${valueFromServer}",
+                        "expiryTime": "${valueFromServer}"
+                    },
+                    "statusDetail": {
+                        "acquirementStatus": "PAID"
+                    }
+                }
+            }
+        },
         "QueryPaymentCanceledOrder": {
             "request": {
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
@@ -805,10 +855,6 @@
                 },
                 "title": "Payment Gateway Order",
                 "additionalInfo": {
-                    "buyer": {
-                        "userId": "216610000000000003032"
-                    },
-                    "seller": {},
                     "amountDetail": {
                         "orderAmount": {
                             "value": "22200.00",
@@ -819,10 +865,8 @@
                         "createdTime": "${valueFromServer}",
                         "expiryTime": "${valueFromServer}"
                     },
-                    "extendInfo": "${valueFromServer}",
                     "statusDetail": {
-                        "acquirementStatus": "CANCELLED",
-                        "frozen": "false"
+                        "acquirementStatus": "CANCELLED"
                     }
                 }
             }

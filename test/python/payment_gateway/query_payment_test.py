@@ -37,6 +37,29 @@ with ApiClient(configuration) as api_client:
 def generate_partner_reference_no():
     return str(uuid4())
 
+@pytest.fixture(scope="module")
+def test_order_reference_number():
+    """Fixture that creates a test order once per module and shares the reference number"""
+    partner_reference_no = generate_partner_reference_no()
+    print(f"\nCreating shared test order with reference number: {partner_reference_no}")
+    create_test_order(partner_reference_no)
+    return partner_reference_no
+
+@pytest.fixture(scope="module")
+def test_order_paid_reference_number():
+    """Fixture that creates a test order once per module and shares the reference number"""
+    partner_reference_no = generate_partner_reference_no()
+    print(f"\nCreating shared test order with reference number: {partner_reference_no}")
+    create_test_order_paid(partner_reference_no)
+    return partner_reference_no
+
+@pytest.fixture(scope="module")
+def test_order_canceled_reference_number():
+    """Fixture that creates a test order once per module and shares the reference number"""
+    partner_reference_no = generate_partner_reference_no()
+    print(f"\nCreating shared test order with reference number: {partner_reference_no}")
+    create_test_order_canceled(partner_reference_no)
+    return partner_reference_no
 
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def create_test_order(partner_reference_no):
@@ -55,7 +78,26 @@ def create_test_order(partner_reference_no):
     # Make the API call
     api_instance.create_order(create_order_request_obj)
 
+
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
+def create_test_order_paid(partner_reference_no):
+    """Helper function to create a test order"""
+    case_name = "CreateOrderNetworkPayPgOtherWallet"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, create_order_title_case, case_name)
+    
+    # Set the partner reference number and amount mock
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["amount"]["value"] = "50001.00"
+    json_dict["payOptionDetails"][0]["transAmount"]["value"] = "50001.00"
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
+    
+    # Make the API call
+    api_instance.create_order(create_order_request_obj)
+
 def create_test_order_canceled(partner_reference_no):
     """Helper function to create a test order with short expiration date to have canceled status"""
     case_name = "CreateOrderApi"
@@ -65,9 +107,6 @@ def create_test_order_canceled(partner_reference_no):
     
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = partner_reference_no
-
-    # Set the expiration time to 1 second from now
-    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=1)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -87,18 +126,26 @@ def create_test_order_canceled(partner_reference_no):
     # Make the API call to cancel the order
     api_instance.cancel_order(cancel_order_request_obj)
 
+    # Cancel order
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, "CancelOrder", "CancelOrderValidScenario")
+    
+    # Set the correct partner reference number
+    json_dict["originalPartnerReferenceNo"] = partner_reference_no
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.cancel_order(cancel_order_request_obj)
+    except Exception as e:
+        pytest.fail(f"Fail to call cancel order API {e}")
 
-@pytest.fixture(scope="module")
-def test_order_reference_number():
-    """Fixture that creates a test order once per module and shares the reference number"""
-    partner_reference_no = generate_partner_reference_no()
-    print(f"\nCreating shared test order with reference number: {partner_reference_no}")
-    create_test_order(partner_reference_no)
-    return partner_reference_no
 
 @with_delay()
 def test_query_payment_created_order(test_order_reference_number):
-    """Should query the payment with status created but not paid"""
+    """Should query the payment with status created but not paid (INIT)"""
     # Get the partner reference number from the fixture
     partner_reference_no = test_order_reference_number
     
@@ -121,39 +168,52 @@ def test_query_payment_created_order(test_order_reference_number):
     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
 # @with_delay()
-# def test_query_payment_canceled_order():
-
-#     partner_reference_no = generate_partner_reference_no()
-#     create_test_order_canceled(partner_reference_no)
+# def test_query_payment_paid_order(test_order_paid_reference_number):
     
-#     time.sleep(2)
-    
-#     """Should query the payment with status canceled"""    
+#     """Should query the payment with status paid (PAID)"""    
 #     # Query payment
-#     case_name = "QueryPaymentCanceledOrder"
+#     case_name = "QueryPaymentPaidOrder"
     
 #     # Get the request data from the JSON file
 #     json_dict = get_request(json_path_file, title_case, case_name)
     
 #     # Set the correct partner reference number
-#     json_dict["originalPartnerReferenceNo"] = partner_reference_no
+#     json_dict["originalPartnerReferenceNo"] = test_order_paid_reference_number
     
 #     # Convert the request data to a QueryPaymentRequest object
 #     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
 #     # Make the API call
 #     api_response = api_instance.query_payment(query_payment_request_obj)
-
-#     # Print the expected API response for debugging
-#     expected_response = get_request(json_path_file, title_case, case_name)
-#     print("Expected API Response:\n", json.dumps(expected_response, indent=2, ensure_ascii=False))
-
+    
 #     # Assert the API response
-#     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
+#     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": test_order_paid_reference_number})
+
+@with_delay()
+def test_query_payment_canceled_order(test_order_canceled_reference_number):
+    
+    """Should query the payment with status canceled (CANCELLED)"""    
+    # Query payment
+    case_name = "QueryPaymentCanceledOrder"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Set the correct partner reference number
+    json_dict["originalPartnerReferenceNo"] = test_order_canceled_reference_number
+    
+    # Convert the request data to a QueryPaymentRequest object
+    query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
+    
+    # Make the API call
+    api_response = api_instance.query_payment(query_payment_request_obj)
+    
+    # Assert the API response
+    assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": test_order_canceled_reference_number})
 
 @with_delay()
 def test_query_payment_invalid_format(test_order_reference_number):
-    """Should fail when query uses invalid format"""    
+    """Should fail when query uses invalid format (ex: X-TIMESTAMP header format not correct)"""    
     # Query payment
     case_name = "QueryPaymentInvalidFormat"
     
@@ -193,7 +253,7 @@ def test_query_payment_invalid_format(test_order_reference_number):
 
 @with_delay()
 def test_query_payment_invalid_mandatory_field(test_order_reference_number):
-    """Should fail when query is missing mandatory field"""
+    """Should fail when query is missing mandatory field (ex: request without X-TIMESTAMP header)"""
     
     # Query payment
     case_name = "QueryPaymentInvalidMandatoryField"
@@ -230,6 +290,38 @@ def test_query_payment_invalid_mandatory_field(test_order_reference_number):
         {"partnerReferenceNo": test_order_reference_number}
     )
 
+@with_delay()
+def test_query_payment_unauthorized(test_order_reference_number):
+    """Should fail when unauthorized due to invalid signature"""
+    # Query payment
+    case_name = "QueryPaymentUnauthorized"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, "QueryPaymentCreatedOrder")
+    
+    # Set the correct partner reference number
+    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    
+    # Convert the request data to a QueryPaymentRequest object
+    query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
+    
+    # Prepare headers with invalid signature to trigger authorization error
+    # Since we're only using the invalid signature flag, we don't need to pass any of the other parameters
+    headers = get_headers_with_signature(invalid_signature=True)
+    
+    # Execute the API request and assert the error
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm",
+        query_payment_request_obj,
+        headers,
+        401,  # Expected status code
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": test_order_reference_number}
+    )
 
 @with_delay()
 def test_query_payment_transaction_not_found(test_order_reference_number):
@@ -284,37 +376,3 @@ def test_query_payment_transaction_not_found(test_order_reference_number):
 
 #     except Exception as e:
 #         pytest.fail("Expected ServiceException but the API call give another exception")
-
-
-@with_delay()
-def test_query_payment_unauthorized(test_order_reference_number):
-    """Should fail when unauthorized due to invalid signature"""
-    # Query payment
-    case_name = "QueryPaymentUnauthorized"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, "QueryPaymentCreatedOrder")
-    
-    # Set the correct partner reference number
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    
-    # Convert the request data to a QueryPaymentRequest object
-    query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
-    
-    # Prepare headers with invalid signature to trigger authorization error
-    # Since we're only using the invalid signature flag, we don't need to pass any of the other parameters
-    headers = get_headers_with_signature(invalid_signature=True)
-    
-    # Execute the API request and assert the error
-    execute_and_assert_api_error(
-        api_client,
-        "POST",
-        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm",
-        query_payment_request_obj,
-        headers,
-        401,  # Expected status code
-        json_path_file,
-        title_case,
-        case_name,
-        {"partnerReferenceNo": test_order_reference_number}
-    )

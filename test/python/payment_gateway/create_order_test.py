@@ -1,7 +1,6 @@
 import os
 from uuid import uuid4
 import pytest
-from datetime import datetime, timedelta, timezone
 
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.payment_gateway.v1.enum import *
@@ -9,10 +8,9 @@ from dana.payment_gateway.v1.models import *
 from dana.payment_gateway.v1 import *
 from dana.api_client import ApiClient
 from dana.exceptions import *
-from dana.utils.snap_header import SnapHeader
 
 from helper.util import get_request, with_delay
-from helper.api_helpers import execute_api_request_directly, get_standard_headers, execute_and_assert_api_error, get_headers_with_signature
+from helper.api_helpers import execute_and_assert_api_error, get_headers_with_signature
 from helper.assertion import *
 
 title_case = "CreateOrder"
@@ -35,7 +33,7 @@ def generate_partner_reference_no():
 
 @with_delay()
 def test_create_order_redirect_scenario():
-    """Should create an order using redirect scenario with BALANCE payment method"""
+    """Should create an order using redirect scenario and pay with DANA"""
     case_name = "CreateOrderRedirect"
     
     # Get the request data from the JSON file
@@ -88,29 +86,8 @@ def test_create_order_api_scenario():
     assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
 @with_delay()
-def test_create_order_network_pay_pg_other_va_bank():
-    """Should create an order using VA bank payment method"""
-    case_name = "CreateOrderNetworkPayPgOtherVaBank"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Set a unique partner reference number
-    partner_reference_no = generate_partner_reference_no()
-    json_dict["partnerReferenceNo"] = partner_reference_no
-    
-    # Convert the request data to a CreateOrderRequest object
-    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
-    
-    # Make the API call
-    api_response = api_instance.create_order(create_order_request_obj)
-    
-    # Assert the API response
-    assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
-
-@with_delay()
 def test_create_order_network_pay_pg_qris():
-    """Should create an order using QRIS payment method"""
+    """Should create an order using API scenario with QRIS payment method"""
     case_name = "CreateOrderNetworkPayPgQris"
     
     # Get the request data from the JSON file
@@ -131,8 +108,30 @@ def test_create_order_network_pay_pg_qris():
 
 @with_delay()
 def test_create_order_network_pay_pg_other_wallet():
-    """Should create an order using wallet payment method"""
+    """Should create an order using API scenario with wallet payment method"""
     case_name = "CreateOrderNetworkPayPgOtherWallet"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Set a unique partner reference number
+    partner_reference_no = generate_partner_reference_no()
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
+    
+    # Make the API call
+    api_response = api_instance.create_order(create_order_request_obj)
+    
+    # Assert the API response
+    assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
+
+
+@with_delay()
+def test_create_order_network_pay_pg_other_va_bank():
+    """Should create an order with API scenario using VA bank payment method"""
+    case_name = "CreateOrderNetworkPayPgOtherVaBank"
     
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -152,7 +151,7 @@ def test_create_order_network_pay_pg_other_wallet():
 
 @with_delay()
 def test_create_order_invalid_field_format():
-    """Should fail when field format is invalid"""
+    """Should fail when field format is invalid (ex: amount without decimal)"""
     case_name = "CreateOrderInvalidFieldFormat"
     
     # Get the request data from the JSON file
@@ -177,7 +176,7 @@ def test_create_order_invalid_field_format():
 
 @with_delay()
 def test_create_order_inconsistent_request():
-    """Should fail when request is inconsistent, for example duplicated partner_reference_no"""
+    """Should fail when request is inconsistent, for example duplicated partner_reference_no with different amount"""
     case_name = "CreateOrderInconsistentRequest"
     
     # Get the request data from the JSON file
@@ -216,7 +215,7 @@ def test_create_order_inconsistent_request():
 
 @with_delay()
 def test_create_order_invalid_mandatory_field():
-    """Should fail when mandatory field is missing"""
+    """Should fail when mandatory field is missing (ex: X-TIMESTAMP in header)"""
     case_name = "CreateOrderInvalidMandatoryField"
     
     # Get the request data from the JSON file
@@ -254,7 +253,7 @@ def test_create_order_invalid_mandatory_field():
 
 @with_delay()
 def test_create_order_unauthorized():
-    """Should fail when authorization fails"""
+    """Should fail when authorization fails (wrong X-SIGNATURE)"""
     case_name = "CreateOrderUnauthorized"
     
     # Get the request data from the JSON file

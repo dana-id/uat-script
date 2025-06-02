@@ -109,9 +109,6 @@ def test_cancel_order_in_progress():
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    # Set the correct partner reference number
-    # json_dict["originalPartnerReferenceNo"] = test_order_reference_number_in_progress
-    
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
     
@@ -122,10 +119,32 @@ def test_cancel_order_in_progress():
     assert_response(json_path_file, title_case, case_name, CancelOrderResponse.to_json(api_response), {"partnerReferenceNo": "2025700"})    
 
 @with_delay()
-def test_cancel_order_transaction_not_found():
-    """Should fail to cancel the order when transaction is not found"""
+def test_cancel_order_with_user_status_abnormal():
+    """Should fail to cancel the order when user status is abnormal"""
     # Cancel order
-    case_name = "CancelOrderTransactionNotFound"
+    case_name = "CancelOrderUserStatusAbnormal"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.cancel_order(cancel_order_request_obj)
+
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035705"})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception")
+
+@with_delay()
+def test_cancel_order_with_merchant_status_abnormal():
+    """Should fail to cancel the order when merchant status is abnormal"""
+    # Cancel order
+    case_name = "CancelOrderMerchantStatusAbnormal"
     
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -139,14 +158,14 @@ def test_cancel_order_transaction_not_found():
 
         pytest.fail("Expected NotFoundException but the API call succeeded")
     except NotFoundException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4045708"})
     except:
-        pytest.fail("Expected NotFoundException but the API call give another exception")
+        pytest.fail("Expected NotFoundException but the API call give another exception") 
 
 
 @with_delay()
 def test_cancel_order_invalid_mandatory_field(test_order_reference_number):
-    """Should fail to cancel the order when mandatory field is invalid"""
+    """Should fail to cancel the order when mandatory field is invalid (ex: request without X-TIMESTAMP header)"""
     # Cancel order
     case_name = "CancelOrderInvalidMandatoryField"
     
@@ -179,6 +198,116 @@ def test_cancel_order_invalid_mandatory_field(test_order_reference_number):
     )
 
 @with_delay()
+def test_cancel_order_transaction_not_found():
+    """Should fail to cancel the order when transaction is not found"""
+    # Cancel order
+    case_name = "CancelOrderTransactionNotFound"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.cancel_order(cancel_order_request_obj)
+
+        pytest.fail("Expected NotFoundException but the API call succeeded")
+    except NotFoundException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+    except:
+        pytest.fail("Expected NotFoundException but the API call give another exception")
+
+@with_delay()
+def test_cancel_order_with_expired_transaction():
+    """Should fail to cancel the order when transaction is expired"""
+    # Cancel order
+    case_name = "CancelOrderTransactionExpired"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.cancel_order(cancel_order_request_obj)
+
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035700"})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception") 
+
+@with_delay()
+def test_cancel_order_with_agreement_not_allowed():
+    """Should fail to cancel the order when agreement is not allowed"""
+    # Cancel order
+    case_name = "CancelOrderNotAllowed"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.cancel_order(cancel_order_request_obj)
+
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035715"})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception")
+
+@with_delay()
+def test_cancel_order_with_account_status_abnormal():
+    """Should fail to cancel the order when account status is abnormal"""
+    # Cancel order
+    case_name = "CancelOrderAccountStatusAbnormal"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.cancel_order(cancel_order_request_obj)
+
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035705"})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception") 
+
+@with_delay()
+def test_cancel_order_with_insufficient_funds():
+    """Should fail to cancel the order when funds are insufficient"""
+    # Cancel order
+    case_name = "CancelOrderInsufficientFunds"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.cancel_order(cancel_order_request_obj)
+
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035714"})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception") 
+
+@with_delay()
 def test_cancel_order_unauthorized(test_order_reference_number):
     """Should fail to cancel the order when authorization is invalid"""
     # Cancel order
@@ -205,13 +334,13 @@ def test_cancel_order_unauthorized(test_order_reference_number):
         title_case,
         case_name,
         {"partnerReferenceNo": test_order_reference_number}
-    )
+    )       
 
 @with_delay()
-def test_cancel_order_with_merchant_status_abnormal():
-    """Should fail to cancel the order when merchant status is abnormal"""
+def test_cancel_order_timeout():
+    """Should fail to cancel the order resulting timeout"""
     # Cancel order
-    case_name = "CancelOrderMerchantStatusAbnormal"
+    case_name = "CancelOrderRequestTimeout"
     
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -224,139 +353,7 @@ def test_cancel_order_with_merchant_status_abnormal():
         api_instance.cancel_order(cancel_order_request_obj)
 
         pytest.fail("Expected NotFoundException but the API call succeeded")
-    except NotFoundException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4045708"})
+    except ServiceException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "5005701"})
     except:
-        pytest.fail("Expected NotFoundException but the API call give another exception")
-
-@with_delay()
-def test_cancel_order_with_user_status_abnormal():
-    """Should fail to cancel the order when user status is abnormal"""
-    # Cancel order
-    case_name = "CancelOrderUserStatusAbnormal"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Convert the request data to a CancelOrderRequest object
-    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-    
-    # Make the API call
-    try:
-        api_instance.cancel_order(cancel_order_request_obj)
-
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035705"})
-    except:
-        pytest.fail("Expected ForbiddenException but the API call give another exception")  
-
-@with_delay()
-def test_cancel_order_with_agreement_not_allowed():
-    """Should fail to cancel the order when agreement is not allowed"""
-    # Cancel order
-    case_name = "CancelOrderNotAllowed"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Convert the request data to a CancelOrderRequest object
-    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-    
-    # Make the API call
-    try:
-        api_instance.cancel_order(cancel_order_request_obj)
-
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035715"})
-    except:
-        pytest.fail("Expected ForbiddenException but the API call give another exception")        
-
-@with_delay()
-def test_cancel_order_with_insufficient_funds():
-    """Should fail to cancel the order when funds are insufficient"""
-    # Cancel order
-    case_name = "CancelOrderInsufficientFunds"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Convert the request data to a CancelOrderRequest object
-    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-    
-    # Make the API call
-    try:
-        api_instance.cancel_order(cancel_order_request_obj)
-
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035714"})
-    except:
-        pytest.fail("Expected ForbiddenException but the API call give another exception")
-
-# @with_delay()
-# def test_cancel_order_with_insufficient_funds():
-#     """Should fail to cancel the order when funds are insufficient"""
-#     # Cancel order
-#     case_name = "CancelOrderRequestTimeout"
-    
-#     # Get the request data from the JSON file
-#     json_dict = get_request(json_path_file, title_case, case_name)
-    
-#     # Convert the request data to a CancelOrderRequest object
-#     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-    
-#     # Make the API call
-#     try:
-#         api_instance.cancel_order(cancel_order_request_obj)
-
-#         pytest.fail("Expected NotFoundException but the API call succeeded")
-#     except ServiceException as e:
-#         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "5005701"})
-#     except:
-#         pytest.fail("Expected NotFoundException but the API call give another exception")       
-
-@with_delay()
-def test_cancel_order_with_account_status_abnormal():
-    """Should fail to cancel the order when account status is abnormal"""
-    # Cancel order
-    case_name = "CancelOrderAccountStatusAbnormal"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Convert the request data to a CancelOrderRequest object
-    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-    
-    # Make the API call
-    try:
-        api_instance.cancel_order(cancel_order_request_obj)
-
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035705"})
-    except:
-        pytest.fail("Expected ForbiddenException but the API call give another exception") 
-
-@with_delay()
-def test_cancel_order_with_expired_transaction():
-    """Should fail to cancel the order when transaction is expired"""
-    # Cancel order
-    case_name = "CancelOrderTransactionExpired"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Convert the request data to a CancelOrderRequest object
-    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-    
-    # Make the API call
-    try:
-        api_instance.cancel_order(cancel_order_request_obj)
-
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035700"})
-    except:
-        pytest.fail("Expected ForbiddenException but the API call give another exception") 
+        pytest.fail("Expected NotFoundException but the API call give another exception")       
