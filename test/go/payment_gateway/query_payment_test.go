@@ -208,6 +208,67 @@ func TestQueryPaymentCreatedOrder(t *testing.T) {
 	}
 }
 
+// TestQueryPaymentCanceledOrder tests query the payment with status canceled (CANCELLED)
+func TestQueryPaymentCanceledOrder(t *testing.T) {
+	// Create an order first with short expiry time
+	partnerReferenceNo, err := createTestOrderCanceled()
+	if err != nil {
+		t.Fatalf("Failed to create test order with canceled status: %v", err)
+	}
+
+	// Give time for the order to be processed
+	time.Sleep(2 * time.Second)
+
+	// Now query the payment
+	caseName := "QueryPaymentCanceledOrder"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, queryPaymentTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Set the correct partner reference number
+	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+
+	// Create the QueryPaymentRequest object and populate it with JSON data
+	queryPaymentRequest := &pg.QueryPaymentRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, queryPaymentRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.QueryPayment(ctx).QueryPaymentRequest(*queryPaymentRequest).Execute()
+	if err != nil {
+		t.Fatalf("API call failed: %v", err)
+	}
+	defer httpResponse.Body.Close()
+
+	// Convert the response to JSON for assertion
+	responseJSON, err := apiResponse.MarshalJSON()
+	if err != nil {
+		t.Fatalf("Failed to convert response to JSON: %v", err)
+	}
+
+	// Create variable dictionary for dynamic values
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": partnerReferenceNo,
+	}
+
+	// Assert the API response with variable substitution
+	err = helper.AssertResponse(queryPaymentJsonPath, queryPaymentTitleCase, caseName, string(responseJSON), variableDict)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // TestQueryPaymentInvalidFormat tests if the query fails when using invalid format (ex: X-TIMESTAMP header format not correct)
 func TestQueryPaymentInvalidFormat(t *testing.T) {
 	// Create an order first
@@ -248,7 +309,7 @@ func TestQueryPaymentInvalidFormat(t *testing.T) {
 		"partnerReferenceNo": partnerReferenceNo,
 	}
 
-	err = helper.ExecuteAndAssertErrorResponse(
+	_ = helper.ExecuteAndAssertErrorResponse(
 		t,
 		ctx,
 		queryPaymentRequest,
@@ -303,7 +364,72 @@ func TestQueryPaymentInvalidMandatoryField(t *testing.T) {
 		"partnerReferenceNo": partnerReferenceNo,
 	}
 
-	err = helper.ExecuteAndAssertErrorResponse(
+	_ = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		queryPaymentRequest,
+		"POST",
+		endpoint,
+		resourcePath,
+		queryPaymentJsonPath,
+		queryPaymentTitleCase,
+		caseName,
+		customHeaders,
+		variableDict,
+	)
+}
+
+// TestQueryPaymentUnauthorized tests if the query fails when unauthorized due to invalid signature
+func TestQueryPaymentUnauthorized(t *testing.T) {
+	// Create an order first
+	partnerReferenceNo, err := createTestOrder()
+	if err != nil {
+		t.Fatalf("Failed to create test order: %v", err)
+	}
+
+	// Give time for the order to be processed
+	time.Sleep(2 * time.Second)
+
+	// Now query the payment
+	caseName := "QueryPaymentUnauthorized"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, queryPaymentTitleCase, "QueryPaymentCreatedOrder")
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Set the correct partner reference number
+	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+
+	// Create the QueryPaymentRequest object and populate it with JSON data
+	queryPaymentRequest := &pg.QueryPaymentRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, queryPaymentRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Set up the context and endpoint details
+	ctx := context.Background()
+	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm"
+	resourcePath := "/payment-gateway/v1.0/debit/status.htm"
+
+	// Set custom headers with invalid signature to trigger authorization error
+	customHeaders := map[string]string{
+		"X-SIGNATURE": "invalid_signature", // Invalid signature
+	}
+
+	// Create a variable dictionary to substitute in the response
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": partnerReferenceNo,
+	}
+
+	_ = helper.ExecuteAndAssertErrorResponse(
 		t,
 		ctx,
 		queryPaymentRequest,
@@ -366,132 +492,6 @@ func TestQueryPaymentTransactionNotFound(t *testing.T) {
 		httpResponse.Body.Close()
 		t.Fatal("Expected error but got successful response")
 	}
-}
-
-// TestQueryPaymentCanceledOrder tests query the payment with status canceled (CANCELLED)
-func TestQueryPaymentCanceledOrder(t *testing.T) {
-	// Create an order first with short expiry time
-	partnerReferenceNo, err := createTestOrderCanceled()
-	if err != nil {
-		t.Fatalf("Failed to create test order with canceled status: %v", err)
-	}
-
-	// Give time for the order to be processed
-	time.Sleep(2 * time.Second)
-
-	// Now query the payment
-	caseName := "QueryPaymentCanceledOrder"
-
-	// Get the request data from the JSON file
-	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, queryPaymentTitleCase, caseName)
-	if err != nil {
-		t.Fatalf("Failed to get request data: %v", err)
-	}
-
-	// Set the correct partner reference number
-	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-
-	// Create the QueryPaymentRequest object and populate it with JSON data
-	queryPaymentRequest := &pg.QueryPaymentRequest{}
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-
-	err = json.Unmarshal(jsonBytes, queryPaymentRequest)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
-
-	// Make the API call
-	ctx := context.Background()
-	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.QueryPayment(ctx).QueryPaymentRequest(*queryPaymentRequest).Execute()
-	if err != nil {
-		t.Fatalf("API call failed: %v", err)
-	}
-	defer httpResponse.Body.Close()
-
-	// Convert the response to JSON for assertion
-	responseJSON, err := apiResponse.MarshalJSON()
-	if err != nil {
-		t.Fatalf("Failed to convert response to JSON: %v", err)
-	}
-
-	// Create variable dictionary for dynamic values
-	variableDict := map[string]interface{}{
-		"partnerReferenceNo": partnerReferenceNo,
-	}
-
-	// Assert the API response with variable substitution
-	err = helper.AssertResponse(queryPaymentJsonPath, queryPaymentTitleCase, caseName, string(responseJSON), variableDict)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-// TestQueryPaymentUnauthorized tests if the query fails when unauthorized due to invalid signature
-func TestQueryPaymentUnauthorized(t *testing.T) {
-	// Create an order first
-	partnerReferenceNo, err := createTestOrder()
-	if err != nil {
-		t.Fatalf("Failed to create test order: %v", err)
-	}
-
-	// Give time for the order to be processed
-	time.Sleep(2 * time.Second)
-
-	// Now query the payment
-	caseName := "QueryPaymentUnauthorized"
-
-	// Get the request data from the JSON file
-	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, queryPaymentTitleCase, "QueryPaymentCreatedOrder")
-	if err != nil {
-		t.Fatalf("Failed to get request data: %v", err)
-	}
-
-	// Set the correct partner reference number
-	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-
-	// Create the QueryPaymentRequest object and populate it with JSON data
-	queryPaymentRequest := &pg.QueryPaymentRequest{}
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-
-	err = json.Unmarshal(jsonBytes, queryPaymentRequest)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
-
-	// Set up the context and endpoint details
-	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm"
-	resourcePath := "/payment-gateway/v1.0/debit/status.htm"
-
-	// Set custom headers with invalid signature to trigger authorization error
-	customHeaders := map[string]string{
-		"X-SIGNATURE": "invalid_signature", // Invalid signature
-	}
-
-	// Create a variable dictionary to substitute in the response
-	variableDict := map[string]interface{}{
-		"partnerReferenceNo": partnerReferenceNo,
-	}
-
-	err = helper.ExecuteAndAssertErrorResponse(
-		t,
-		ctx,
-		queryPaymentRequest,
-		"POST",
-		endpoint,
-		resourcePath,
-		queryPaymentJsonPath,
-		queryPaymentTitleCase,
-		caseName,
-		customHeaders,
-		variableDict,
-	)
 }
 
 // // TestQueryPaymentGeneralError tests the query payment API with general error

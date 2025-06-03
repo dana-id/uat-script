@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	cancelOrderTitleCase        = "CancelOrder"
-	cancelOrderJsonPath         = "../../../resource/request/components/PaymentGateway.json"
+	cancelOrderTitleCase          = "CancelOrder"
+	cancelOrderJsonPath           = "../../../resource/request/components/PaymentGateway.json"
 	createOrderForCancelTitleCase = "CreateOrder"
 )
 
@@ -304,7 +304,7 @@ func TestCancelOrderInvalidMandatoryField(t *testing.T) {
 		"partnerReferenceNo": partnerReferenceNo,
 	}
 
-	err = helper.ExecuteAndAssertErrorResponse(
+	_ = helper.ExecuteAndAssertErrorResponse(
 		t,
 		ctx,
 		cancelOrderRequest,
@@ -317,4 +317,268 @@ func TestCancelOrderInvalidMandatoryField(t *testing.T) {
 		customHeaders,
 		variableDict,
 	)
+}
+
+// TestCancelOrderTransactionNotFound tests if the cancel fails when transaction is not found
+func TestCancelOrderTransactionNotFound(t *testing.T) {
+	// Use a specific case for transaction not found
+	caseName := "CancelOrderTransactionNotFound"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
+}
+
+// TestCancelOrderWithExpiredTransaction tests if the cancel fails when transaction is expired
+func TestCancelOrderWithExpiredTransaction(t *testing.T) {
+	// Use a specific case for expired transaction
+	caseName := "CancelOrderTransactionExpired"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
+}
+
+// TestCancelOrderWithAccountStatusAbnormal tests if the cancel fails when account status is abnormal
+func TestCancelOrderWithAccountStatusAbnormal(t *testing.T) {
+	// Use a specific case for account status abnormal
+	caseName := "CancelOrderAccountStatusAbnormal"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
+}
+
+// TestCancelOrderWithInsufficientFunds tests if the cancel fails when there are insufficient funds
+func TestCancelOrderWithInsufficientFunds(t *testing.T) {
+	// Use a specific case for insufficient funds
+	caseName := "CancelOrderInsufficientFunds"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
+}
+
+// TestCancelOrderUnauthorized tests if the cancel fails with unauthorized error
+func TestCancelOrderUnauthorized(t *testing.T) {
+	// Create an order first
+	partnerReferenceNo, err := createTestOrderForCancel()
+	if err != nil {
+		t.Fatalf("Failed to create test order: %v", err)
+	}
+
+	// Give time for the order to be processed
+	time.Sleep(2 * time.Second)
+
+	// Now cancel the order with an unauthorized request
+	caseName := "CancelOrderUnauthorized"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Set the correct partner reference number
+	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Set up the context and endpoint details
+	ctx := context.Background()
+	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm"
+	resourcePath := "/payment-gateway/v1.0/debit/payment-host-to-host.htm"
+
+	// Set custom headers with invalid authorization to trigger unauthorized error
+	customHeaders := map[string]string{
+		"X-SIGNATURE": "invalid_signature",
+	}
+
+	// Create a variable dictionary to substitute in the response
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": partnerReferenceNo,
+	}
+
+	_ = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		cancelOrderRequest,
+		"POST",
+		endpoint,
+		resourcePath,
+		cancelOrderJsonPath,
+		cancelOrderTitleCase,
+		caseName,
+		customHeaders,
+		variableDict,
+	)
+}
+
+// TestCancelOrderTimeout tests if the cancel handles timeout correctly
+func TestCancelOrderTimeout(t *testing.T) {
+	caseName := "CancelOrderRequestTimeout"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
 }

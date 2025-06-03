@@ -462,7 +462,7 @@ func TestCreateOrderInvalidMandatoryField(t *testing.T) {
 		"partnerReferenceNo": partnerReferenceNo,
 	}
 
-	err = helper.ExecuteAndAssertErrorResponse(
+	_ = helper.ExecuteAndAssertErrorResponse(
 		t,
 		ctx,
 		createOrderReq,
@@ -523,7 +523,7 @@ func TestCreateOrderUnauthorized(t *testing.T) {
 		"partnerReferenceNo": partnerReferenceNo,
 	}
 
-	err = helper.ExecuteAndAssertErrorResponse(
+	_ = helper.ExecuteAndAssertErrorResponse(
 		t,
 		ctx,
 		createOrderReq,
