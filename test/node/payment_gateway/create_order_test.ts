@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-// Import helper functions
+// Import helper functions and assertion utilities
 import { getRequest, retryOnInconsistentRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { fail } from 'assert';
@@ -11,14 +11,14 @@ import { ResponseError } from 'dana-node-api-client';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { CreateOrderByApiRequest, CreateOrderByRedirectRequest } from 'dana-node-api-client/dist/payment_gateway/v1';
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
-// Setup constants
+// Constants for test configuration
 const titleCase = "CreateOrder";
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/PaymentGateway.json');
 
-// Initialize DANA client
+// Initialize DANA API client with credentials from environment variables
 const dana = new Dana({
   partnerId: process.env.X_PARTNER_ID || '',
   privateKey: process.env.PRIVATE_KEY || '',
@@ -28,28 +28,25 @@ const dana = new Dana({
 
 const merchantId = process.env.MERCHANT_ID || "216620010016033632482";
 
-// Utility function to generate unique reference numbers
+// Generate a unique partner reference number for each test case
 function generatePartnerReferenceNo(): string {
   return uuidv4();
 }
 
-describe('Create Order Tests', () => {
-  // Test successful create order with redirection
-  test('should successfully create order with REDIRECT scenario and pay with DANA Balance', async () => {
+describe('Payment Gateway - Create Order Tests', () => {
+  // Test: Create order with REDIRECT scenario and pay with DANA Balance
+  test('CreateOrderRedirect - should successfully create order with REDIRECT scenario and pay with DANA Balance', async () => {
     const caseName = "CreateOrderRedirect";
-
-    // Get the request data from the JSON file
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Set a unique partner reference number
+    // Assign unique reference and merchant ID
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
 
     try {
       const response = await dana.paymentGatewayApi.createOrder(requestData);
-
-      // Assert the response matches the expected data using our helper function
+      // Validate API response against expected result
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e) {
       console.error('Create order test failed:', e);
@@ -57,22 +54,19 @@ describe('Create Order Tests', () => {
     }
   });
 
-  // Test successful create order with api
-  test('should successfully create order with API scenario and pay with DANA Balance', async () => {
+  // Test: Create order with API scenario and pay with DANA Balance
+  test('CreateOrderApi - should successfully create order with API scenario and pay with DANA Balance', async () => {
     const caseName = "CreateOrderApi";
-
-    // Get the request data from the JSON file
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Set a unique partner reference number
+    // Assign unique reference and merchant ID
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
 
     try {
+      // Retry in case of inconsistent request errors
       const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 1000);
-
-      // Assert the response matches the expected data using our helper function
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e) {
       console.error('Create order test failed:', e);
@@ -80,22 +74,18 @@ describe('Create Order Tests', () => {
     }
   });
 
-  // Test successful create order using VA bank payment method
-  test('should successfully create order with API scenario and pay with VA bank payment method', async () => {
+  // Test: Create order using VA bank payment method
+  test('CreateOrderNetworkPayPgOtherVaBank - should successfully create order with API scenario and pay with VA bank payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgOtherVaBank";
-
-    // Get the request data from the JSON file
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Set a unique partner reference number
+    // Assign unique reference and merchant ID
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
 
     try {
       const response = await dana.paymentGatewayApi.createOrder(requestData);
-
-      // Assert the response matches the expected data using our helper function
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e) {
       console.error('Create order test failed:', e);
@@ -103,22 +93,18 @@ describe('Create Order Tests', () => {
     }
   });
 
-  // Test successful create order using QRIS payment method
-  test('should successfully create order with API scenario and pay with QRIS payment method', async () => {
+  // Test: Create order using QRIS payment method
+  test('CreateOrderNetworkPayPgQris - should successfully create order with API scenario and pay with QRIS payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgQris";
-
-    // Get the request data from the JSON file
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Set a unique partner reference number
+    // Assign unique reference and merchant ID
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
 
     try {
       const response = await dana.paymentGatewayApi.createOrder(requestData);
-
-      // Assert the response matches the expected data using our helper function
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e) {
       console.error('Create order test failed:', e);
@@ -126,41 +112,34 @@ describe('Create Order Tests', () => {
     }
   });
 
-  // Test successful create order using wallet payment method
-  test('should successfully create order with API scenario and pay with wallet payment method', async () => {
+  // Test: Create order using wallet payment method
+  test('CreateOrderNetworkPayPgOtherWallet - should successfully create order with API scenario and pay with wallet payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgOtherWallet";
-
-    // Get the request data from the JSON file
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Set a unique partner reference number
+    // Assign unique reference and merchant ID
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
 
     try {
       const response = await dana.paymentGatewayApi.createOrder(requestData);
-
-      // Assert the response matches the expected data using our helper function
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e: any) {
+      // Log detailed error if API returns a response error
       if (e instanceof ResponseError) {
         console.error('Create order test failed:', e, '\nResponse:', JSON.stringify(e.rawResponse, null, 2));
-        // } else {
-        // console.error('Create order test failed:', e);
       }
       throw e;
     }
   });
 
-  // Test invalid field format
-  test('should fail when field format is invalid (ex: amount without decimal)', async () => {
+  // Test: Fail when field format is invalid (e.g., amount without decimal)
+  test('CreateOrderInvalidFieldFormat - should fail when field format is invalid (ex: amount without decimal)', async () => {
     const caseName = "CreateOrderInvalidFieldFormat";
-
-    // Get the request data from the JSON file
     const requestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, titleCase, caseName);
 
-    // Set a unique partner reference number
+    // Assign unique reference and merchant ID
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
@@ -169,10 +148,9 @@ describe('Create Order Tests', () => {
       await dana.paymentGatewayApi.createOrder(requestData);
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
+      // Expecting a 400 Bad Request error
       if (e instanceof ResponseError && Number(e.status) === 400) {
-        // Assert the error response matches the expected data using our helper function
         await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { partnerReferenceNo });
-
       } else if (e instanceof ResponseError && Number(e.status) !== 400) {
         fail("Expected bad request failed but got status code " + e.status);
       } else {
@@ -181,28 +159,28 @@ describe('Create Order Tests', () => {
     }
   });
 
-  // Test inconsistent request
-  test('should fail when request is inconsistent, for example duplicated partner_reference_no', async () => {
+  // Test: Fail when request is inconsistent (e.g., duplicated partner_reference_no)
+  test('CreateOrderInconsistentRequest - should fail when request is inconsistent, for example duplicated partner_reference_no', async () => {
     const caseName = "CreateOrderInconsistentRequest";
-
-    // Get the request data from the JSON file
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Set a unique partner reference number
+    // Assign unique reference and merchant ID
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
 
     try {
+      // First request with unique partnerReferenceNo
       const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 2000);
     } catch (e) {
       console.error('Fail to call first API', e);
     }
 
+    // Wait briefly before sending the duplicate request
     await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
-      // Preparing request with the same partner reference number but different amount
+      // Modify amount to simulate inconsistency with same partnerReferenceNo
       requestData.amount.value = "100000.00";
       requestData.payOptionDetails[0].transAmount.value = "100000.00";
 
@@ -210,8 +188,8 @@ describe('Create Order Tests', () => {
 
       fail("Expected NotFoundException but the API call succeeded");
     } catch (e) {
+      // Expecting a 404 Not Found error for duplicate reference with different data
       if (e instanceof ResponseError && Number(e.status) === 404) {
-        // Assert the error response matches the expected data using our helper function
         await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 404) {
         fail(`Expected bad request failed but got status code ${e.status}. Response:\n${JSON.stringify(e.rawResponse, null, 2)}`);
@@ -221,21 +199,18 @@ describe('Create Order Tests', () => {
     }
   });
 
-  // Test missing mandatory field using manual API call
-  test('should fail when mandatory field is missing (ex: request without X-TIMESTAMP header)', async () => {
+  // Test: Fail when mandatory field is missing (e.g., missing X-TIMESTAMP header)
+  test('CreateOrderInvalidMandatoryField - should fail when mandatory field is missing (ex: request without X-TIMESTAMP header)', async () => {
     const caseName = "CreateOrderInvalidMandatoryField";
-
-    // Get the request data from the JSON file
     const requestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, titleCase, caseName);
 
-    // Set a unique partner reference number
+    // Assign unique reference and merchant ID
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
 
-    // Define custom headers without X-TIMESTAMP to trigger mandatory field error
+    // Custom headers: omit X-TIMESTAMP to trigger error
     const customHeaders: Record<string, string> = {
-      // Omit X-TIMESTAMP to trigger mandatory field error
       'X-TIMESTAMP': ''
     };
 
@@ -243,7 +218,7 @@ describe('Create Order Tests', () => {
       const baseUrl: string = 'https://api.sandbox.dana.id';
       const apiPath: string = '/payment-gateway/v1.0/debit/payment-host-to-host.htm';
 
-      // Make direct API call with custom headers - this should fail
+      // Make direct API call with missing mandatory header
       await executeManualApiRequest(
         caseName,
         "POST",
@@ -255,8 +230,8 @@ describe('Create Order Tests', () => {
 
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
+      // Expecting a 400 Bad Request error
       if (e instanceof ResponseError && Number(e.status) === 400) {
-        // Assert the error response matches expected format
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 400) {
         fail("Expected bad request failed but got status code " + e.status);
@@ -266,26 +241,23 @@ describe('Create Order Tests', () => {
     }
   });
 
-  // Test unauthorized access using manual API call
-  test('should fail when authorization fails (ex: wrong X-SIGNATURE)', async () => {
+  // Test: Fail when authorization fails (e.g., wrong X-SIGNATURE)
+  test('CreateOrderUnauthorized - should fail when authorization fails (ex: wrong X-SIGNATURE)', async () => {
     const caseName = "CreateOrderUnauthorized";
-
-    // Get the request data from the JSON file
     const requestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, titleCase, caseName);
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
 
-    // Define custom headers with invalid signature to trigger authorization error
+    // Custom headers: use invalid signature to trigger authorization error
     const customHeaders: Record<string, string> = {
       'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
     };
 
     try {
-      // Define base URL based on environment
       const baseUrl: string = 'https://api.sandbox.dana.id';
       const apiPath: string = '/payment-gateway/v1.0/debit/payment-host-to-host.htm';
 
-      // Make direct API call with custom headers
+      // Make direct API call with invalid signature
       await executeManualApiRequest(
         caseName,
         "POST",
@@ -297,8 +269,8 @@ describe('Create Order Tests', () => {
 
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
+      // Expecting a 401 Unauthorized error
       if (e instanceof ResponseError && Number(e.status) === 401) {
-        // Assert the error response matches expected format
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 401) {
         fail("Expected unauthorized failed but got status code " + e.status);
