@@ -61,21 +61,25 @@ def test_order_reference_number():
     create_test_order(partner_reference_no)
     return partner_reference_no 
 
-# @with_delay()
-# def test_refund_order_not_paid(test_order_reference_number):
-#     """Test refund order not paid"""
-#     case_name = "RefundOrderNotPaid"
-#     json_dict = get_request(json_path_file, title_case, case_name)
-#     json_dict["partnerReferenceNo"] = test_order_reference_number
-#     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-#     try:
-#         api_instance.refund_order(refund_order_request_obj)
-#         pytest.fail("Expected ServiceException but the API call succeeded")
-#     except ServiceException as e:
-#         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-#     except:
-#         pytest.fail("Expected ServiceException but the API call give another exception")
+@with_delay()
+def test_refund_order_in_progress(test_order_reference_number):
+    """Test refund order in progress"""
+    case_name = "RefundOrderInProgress"
 
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+
+    # Set the partner reference number
+    json_dict["partnerReferenceNo"] = test_order_reference_number
+
+    # Convert the request data to a RefundOrderRequest object
+    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
+
+    # Make the API call and assert the response
+    api_response = api_instance.refund_order(refund_order_request_obj)
+
+    # Assert the response
+    assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(api_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
 @with_delay()
 def test_refund_order_not_allowed(test_order_reference_number):
@@ -124,20 +128,108 @@ def test_refund_order_due_to_exceed_refund_window_time(test_order_reference_numb
     except:
         pytest.fail("Expected ForbiddenException but the API call give another exception")
 
+@with_delay()
+def test_refund_order_multiple_refund(test_order_reference_number):
+    """Test refund order multiple refund"""
+    case_name = "RefundOrderMultipleRefund"
+    json_dict = get_request(json_path_file, title_case, case_name)
+    json_dict["partnerReferenceNo"] = test_order_reference_number
+    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
+    try:
+        api_instance.refund_order(refund_order_request_obj)
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception")
+
 # @with_delay()
-# def test_refund_order_multiple_refund(test_order_reference_number):
-#     """Test refund order multiple refund"""
-#     case_name = "RefundOrderMultipleRefund"
+# def test_refund_order_not_paid(test_order_reference_number):
+#     """Test refund order not paid"""
+#     case_name = "RefundOrderNotPaid"
 #     json_dict = get_request(json_path_file, title_case, case_name)
 #     json_dict["partnerReferenceNo"] = test_order_reference_number
 #     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
 #     try:
 #         api_instance.refund_order(refund_order_request_obj)
-#         pytest.fail("Expected ForbiddenException but the API call succeeded")
-#     except ForbiddenException as e:
+#         pytest.fail("Expected ServiceException but the API call succeeded")
+#     except ServiceException as e:
 #         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 #     except:
-#         pytest.fail("Expected ForbiddenException but the API call give another exception")
+#         pytest.fail("Expected ServiceException but the API call give another exception")
+
+@with_delay()
+def test_refund_order_illegal_parameter(test_order_reference_number):
+    """Test refund order illegal parameter"""
+    case_name = "RefundOrderIllegalParameter"
+
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+
+    # Set the partner reference number
+    json_dict["partnerReferenceNo"] = test_order_reference_number
+
+    # Convert the request data to a RefundOrderRequest object
+    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
+
+    # Make the API call and assert the response
+    try:
+        api_instance.refund_order(refund_order_request_obj)
+        pytest.fail("Expected BadRequestException but the API call succeeded")
+    except BadRequestException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+    except:
+        pytest.fail("Expected BadRequestException but the API call give another exception")
+
+@with_delay()
+def test_refund_order_invalid_mandatory_field(test_order_reference_number):
+    """Test refund order when mandatory field is invalid"""
+    # Refund order
+    case_name = "RefundOrderInvalidMandatoryParameter"
+
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+
+    # Convert the request data to a RefundOrderRequest object
+    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
+    
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/payment-gateway/v1.0/debit/status.htm",
+        request_obj=json_dict,
+        with_timestamp=False
+    )
+
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm",
+        refund_order_request_obj,
+        headers,
+        400,  # Expected status code
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": test_order_reference_number}
+    )
+
+# @with_delay()
+# def test_refund_order_not_exist(test_order_reference_number):
+#     """Test refund when order not exist"""
+#     case_name = "RefundOrderInvalidBill"
+#     json_dict = get_request(json_path_file, title_case, case_name)
+#     json_dict["partnerReferenceNo"] = test_order_reference_number
+#     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
+#     try:
+#         api_instance.refund_order(refund_order_request_obj)
+#         pytest.fail("Expected NotFoundException but the API call succeeded")
+#     except NotFoundException as e:
+#         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+#     except:
+#         pytest.fail("Expected NotFoundException but the API call give another exception")
+
 
 @with_delay()
 def test_refund_order_insufficient_funds(test_order_reference_number):
@@ -163,51 +255,33 @@ def test_refund_order_insufficient_funds(test_order_reference_number):
         pytest.fail("Expected ForbiddenException but the API call give another exception")
 
 @with_delay()
-def test_refund_order_illegal_parameter(test_order_reference_number):
-    """Test refund order illegal parameter"""
-    case_name = "RefundOrderIllegalParameter"
+def test_refund_order_unauthorized(test_order_reference_number):
+    """Test refund order when authorization is invalid"""
+    # Refund order
+    case_name = "RefundOrderUnauthorized"
 
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
-
-    # Set the partner reference number
-    json_dict["partnerReferenceNo"] = test_order_reference_number
-
-    # Convert the request data to a RefundOrderRequest object
-    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-
-    # Make the API call and assert the response
-    try:
-        api_instance.refund_order(refund_order_request_obj)
-        pytest.fail("Expected BadRequestException but the API call succeeded")
-    except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-    except:
-        pytest.fail("Expected BadRequestException but the API call give another exception")
-
-
-@with_delay()
-def test_refund_order_timeout(test_order_reference_number):
-    """Test refund order timeout"""
-    case_name = "RefundOrderTimeout"
-
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-
-    # Set the partner reference number
-    json_dict["partnerReferenceNo"] = test_order_reference_number
+    
+    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
+    
+    headers = get_headers_with_signature(invalid_signature=True)
 
-    # Make the API call and assert the response
-    try:
-        api_instance.refund_order(refund_order_request_obj)
-        pytest.fail("Expected ServiceException but the API call succeeded")
-    except ServiceException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-    except:
-        pytest.fail("Expected ServiceException but the API call give another exception")
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm",
+        refund_order_request_obj,
+        headers,
+        401,  # Expected status code
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": test_order_reference_number}
+    )
 
 @with_delay()
 def test_refund_order_merchant_status_abnormal(test_order_reference_number):
@@ -233,9 +307,9 @@ def test_refund_order_merchant_status_abnormal(test_order_reference_number):
         pytest.fail("Expected NotFoundException but the API call give another exception")
 
 @with_delay()
-def test_refund_order_in_progress(test_order_reference_number):
-    """Test refund order in progress"""
-    case_name = "RefundOrderInProgress"
+def test_refund_order_timeout(test_order_reference_number):
+    """Test refund order timeout"""
+    case_name = "RefundOrderTimeout"
 
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -247,86 +321,10 @@ def test_refund_order_in_progress(test_order_reference_number):
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
 
     # Make the API call and assert the response
-    api_response = api_instance.refund_order(refund_order_request_obj)
-
-    # Assert the response
-    assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(api_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-
-# @with_delay()
-# def test_refund_order_not_exist(test_order_reference_number):
-#     """Test refund when order not exist"""
-#     case_name = "RefundOrderInvalidBill"
-#     json_dict = get_request(json_path_file, title_case, case_name)
-#     json_dict["partnerReferenceNo"] = test_order_reference_number
-#     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-#     try:
-#         api_instance.refund_order(refund_order_request_obj)
-#         pytest.fail("Expected NotFoundException but the API call succeeded")
-#     except NotFoundException as e:
-#         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-#     except:
-#         pytest.fail("Expected NotFoundException but the API call give another exception")
-
-
-# @with_delay()
-# def test_refund_order_unauthorized(test_order_reference_number):
-#     """Test refund order when authorization is invalid"""
-#     # Refund order
-#     case_name = "RefundOrderUnauthorized"
-
-#     # Get the request data from the JSON file
-#     json_dict = get_request(json_path_file, title_case, case_name)
-    
-#     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-
-#     # Convert the request data to a RefundOrderRequest object
-#     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-    
-#     headers = get_headers_with_signature(invalid_signature=True)
-
-#     execute_and_assert_api_error(
-#         api_client,
-#         "POST",
-#         "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm",
-#         refund_order_request_obj,
-#         headers,
-#         401,  # Expected status code
-#         json_path_file,
-#         title_case,
-#         case_name,
-#         {"partnerReferenceNo": test_order_reference_number}
-#     )
-
-# @with_delay()
-# def test_refund_order_invalid_mandatory_field(test_order_reference_number):
-#     """Test refund order when mandatory field is invalid"""
-#     # Refund order
-#     case_name = "RefundOrderInvalidMandatoryParameter"
-#
-#     # Get the request data from the JSON file
-#     json_dict = get_request(json_path_file, title_case, case_name)
-    
-#     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-
-#     # Convert the request data to a RefundOrderRequest object
-#     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-    
-#     headers = get_headers_with_signature(
-#         method="POST",
-#         resource_path="/payment-gateway/v1.0/debit/status.htm",
-#         request_obj=json_dict,
-#         with_timestamp=False
-#     )
-
-#     execute_and_assert_api_error(
-#         api_client,
-#         "POST",
-#         "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm",
-#         refund_order_request_obj,
-#         headers,
-#         400,  # Expected status code
-#         json_path_file,
-#         title_case,
-#         case_name,
-#         {"partnerReferenceNo": test_order_reference_number}
-#     )
+    try:
+        api_instance.refund_order(refund_order_request_obj)
+        pytest.fail("Expected ServiceException but the API call succeeded")
+    except ServiceException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+    except:
+        pytest.fail("Expected ServiceException but the API call give another exception")

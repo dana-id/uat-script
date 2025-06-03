@@ -1360,7 +1360,7 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4035802",
+                "responseCode": "4035815",
                 "responseMessage": "Transaction Not Permitted"
             }
         },
@@ -1447,7 +1447,7 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4005802",
+                "responseCode": "4005702",
                 "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
             }
         },
@@ -1513,7 +1513,7 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4015800",
+                "responseCode": "4015700",
                 "responseMessage": "Unauthorized. Invalid Signature"
             }
         },

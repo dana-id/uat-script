@@ -8,7 +8,7 @@ import { fail } from 'assert';
 import { getRequest } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
-import { CreateOrderByApiRequest, QueryPaymentRequest } from 'dana-node-api-client/dist/payment_gateway/v1';
+import { CreateOrderByApiRequest, QueryPaymentRequest, CancelOrderRequest } from 'dana-node-api-client/dist/payment_gateway/v1';
 import { ResponseError } from 'dana-node-api-client';
 
 // Load environment variables
@@ -34,35 +34,52 @@ function generatePartnerReferenceNo(): string {
 }
 
 let sharedOriginalPartnerReference: string;
+let sharedOriginalCanceledPartnerReference: string;
 
 describe('Query Payment Tests', () => {
-  // Shared variable to store the order reference
 
+  async function createOrder() {
+    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
+    createOrderRequestData.merchantId = merchantId;
+    sharedOriginalPartnerReference = generatePartnerReferenceNo();
+    createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference
+    await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+  }
+
+  async function createCanceledOrder() {
+    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
+    createOrderRequestData.merchantId = merchantId;
+    sharedOriginalCanceledPartnerReference = generatePartnerReferenceNo();
+    createOrderRequestData.partnerReferenceNo = sharedOriginalCanceledPartnerReference;
+    await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+
+    const cancelOrderRequestData = getRequest<CancelOrderRequest>(jsonPathFile, "CancelOrder", "CancelOrderValidScenario");
+    cancelOrderRequestData.originalPartnerReferenceNo = sharedOriginalCanceledPartnerReference;
+    await dana.paymentGatewayApi.cancelOrder(cancelOrderRequestData);
+  }
 
   // Create a shared order before all tests
   beforeAll(async () => {
-    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
-
-    // Set a unique partner reference number for create order
-    sharedOriginalPartnerReference = generatePartnerReferenceNo();
-    createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference;
-    createOrderRequestData.merchantId = merchantId;
 
     try {
-      // Create the order
-      await dana.paymentGatewayApi.createOrder(createOrderRequestData);
-
-      // Wait to ensure the order is processed in the system
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await createOrder()
 
       console.log(`Shared order created with reference: ${sharedOriginalPartnerReference}`);
     } catch (e) {
       console.error('Failed to create shared order - tests cannot continue:', e);
     }
+
+    try {
+      await createCanceledOrder()
+
+      console.log(`Shared canceled order created with reference: ${sharedOriginalCanceledPartnerReference}`);
+    } catch (e) {
+      console.error('Failed to create shared canceled order - tests cannot continue:', e);
+    }
   });
 
-  // Test successful query payment
-  test('should successfully query payment', async () => {
+  // Test successful query pending
+  test('should successfully query payment with status created but not paid (INIT)', async () => {
     const queryPaymentCaseName = "QueryPaymentCreatedOrder";
 
     try {
@@ -80,8 +97,27 @@ describe('Query Payment Tests', () => {
     }
   });
 
+  // Test successful query payment
+  test('should successfully query payment with status canceled (CANCELLED)', async () => {
+    const queryPaymentCaseName = "QueryPaymentCanceledOrder";
+
+    try {
+      // Now query that same order
+      const queryRequestData: QueryPaymentRequest = getRequest<QueryPaymentRequest>(jsonPathFile, titleCase, queryPaymentCaseName);
+      queryRequestData.originalPartnerReferenceNo = sharedOriginalCanceledPartnerReference;
+
+      const response = await dana.paymentGatewayApi.queryPayment(queryRequestData);
+
+      // Assert the response matches the expected data using our helper function
+      await assertResponse(jsonPathFile, titleCase, queryPaymentCaseName, response, { 'partnerReferenceNo': sharedOriginalCanceledPartnerReference });
+    } catch (e) {
+      console.error('Query payment test failed:', e);
+      throw e;
+    }
+  });
+
   // Test invalid field format
-  test('should fail when field format is invalid', async () => {
+  test('should fail when field format is invalid (ex: invalid format for X-TIMESTAMP)', async () => {
     const caseName = "QueryPaymentInvalidFormat";
 
     try {
@@ -126,7 +162,7 @@ describe('Query Payment Tests', () => {
   });
 
   // Test missing mandatory field using manual API call
-  test('should fail when mandatory field is missing (manual API call)', async () => {
+  test('should fail when mandatory field is missing (ex: missing X-TIMESTAMP header in request)', async () => {
     const caseName = "QueryPaymentInvalidMandatoryField";
 
     try {
@@ -166,37 +202,8 @@ describe('Query Payment Tests', () => {
     }
   });
 
-  // Test transaction not found using manual API call
-  test('should fail when transaction is not found (manual API call)', async () => {
-    const caseName = "QueryPaymentTransactionNotFound";
-    const titleCase = "QueryPayment";
-
-    try {
-      // Get the request data from the JSON file
-      const requestData: QueryPaymentRequest = getRequest<QueryPaymentRequest>(jsonPathFile, titleCase, caseName);
-
-      // Set a unique partner reference number for the query with _NOT_FOUND suffix to ensure it doesn't exist
-      // This matches the pattern used in the Python/Go tests
-      requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference + "_NOT_FOUND";
-
-      // Make the API call
-      await dana.paymentGatewayApi.queryPayment(requestData);
-
-      fail("Expected an error but the API call succeeded");
-    } catch (e: any) {
-
-      if (e instanceof ResponseError && Number(e.status) === 404) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { 'partnerReferenceNo': sharedOriginalPartnerReference });
-      } else if (e instanceof ResponseError && Number(e.status) !== 404) {
-        fail("Expected nout found request failed but got status code " + e.status);
-      } else {
-        throw e;
-      }
-    }
-  });
-
   // Test unauthorized access using manual API call
-  test('should fail when authorization fails (manual API call)', async () => {
+  test('should fail when authorization fails (ex: wrong signature)', async () => {
     const caseName = "QueryPaymentUnauthorized";
     const titleCase = "QueryPaymentApi";
 
@@ -236,6 +243,35 @@ describe('Query Payment Tests', () => {
           { 'partnerReferenceNo': sharedOriginalPartnerReference });
       } else if (e instanceof ResponseError && Number(e.status) !== 401) {
         fail("Expected unauthorized failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+
+  // Test transaction not found using manual API call
+  test('should fail when transaction is not found', async () => {
+    const caseName = "QueryPaymentTransactionNotFound";
+    const titleCase = "QueryPayment";
+
+    try {
+      // Get the request data from the JSON file
+      const requestData: QueryPaymentRequest = getRequest<QueryPaymentRequest>(jsonPathFile, titleCase, caseName);
+
+      // Set a unique partner reference number for the query with _NOT_FOUND suffix to ensure it doesn't exist
+      // This matches the pattern used in the Python/Go tests
+      requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference + "_NOT_FOUND";
+
+      // Make the API call
+      await dana.paymentGatewayApi.queryPayment(requestData);
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+
+      if (e instanceof ResponseError && Number(e.status) === 404) {
+        await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { 'partnerReferenceNo': sharedOriginalPartnerReference });
+      } else if (e instanceof ResponseError && Number(e.status) !== 404) {
+        fail("Expected nout found request failed but got status code " + e.status);
       } else {
         throw e;
       }

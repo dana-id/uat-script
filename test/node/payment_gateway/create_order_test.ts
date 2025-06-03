@@ -35,7 +35,7 @@ function generatePartnerReferenceNo(): string {
 
 describe('Create Order Tests', () => {
   // Test successful create order with redirection
-  test('should successfully create order with redirection', async () => {
+  test('should successfully create order with REDIRECT scenario and pay with DANA Balance', async () => {
     const caseName = "CreateOrderRedirect";
 
     // Get the request data from the JSON file
@@ -58,7 +58,7 @@ describe('Create Order Tests', () => {
   });
 
   // Test successful create order with api
-  test('should successfully create order with api', async () => {
+  test('should successfully create order with API scenario and pay with DANA Balance', async () => {
     const caseName = "CreateOrderApi";
 
     // Get the request data from the JSON file
@@ -81,7 +81,7 @@ describe('Create Order Tests', () => {
   });
 
   // Test successful create order using VA bank payment method
-  test('should successfully create order with VA bank payment method', async () => {
+  test('should successfully create order with API scenario and pay with VA bank payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgOtherVaBank";
 
     // Get the request data from the JSON file
@@ -104,7 +104,7 @@ describe('Create Order Tests', () => {
   });
 
   // Test successful create order using QRIS payment method
-  test('should successfully create order with QRIS payment method', async () => {
+  test('should successfully create order with API scenario and pay with QRIS payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgQris";
 
     // Get the request data from the JSON file
@@ -127,7 +127,7 @@ describe('Create Order Tests', () => {
   });
 
   // Test successful create order using wallet payment method
-  test('should successfully create order with wallet payment method', async () => {
+  test('should successfully create order with API scenario and pay with wallet payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgOtherWallet";
 
     // Get the request data from the JSON file
@@ -154,7 +154,7 @@ describe('Create Order Tests', () => {
   });
 
   // Test invalid field format
-  test('should fail when field format is invalid', async () => {
+  test('should fail when field format is invalid (ex: amount without decimal)', async () => {
     const caseName = "CreateOrderInvalidFieldFormat";
 
     // Get the request data from the JSON file
@@ -222,7 +222,7 @@ describe('Create Order Tests', () => {
   });
 
   // Test missing mandatory field using manual API call
-  test('should fail when mandatory field is missing (manual API call)', async () => {
+  test('should fail when mandatory field is missing (ex: request without X-TIMESTAMP header)', async () => {
     const caseName = "CreateOrderInvalidMandatoryField";
 
     // Get the request data from the JSON file
@@ -267,7 +267,7 @@ describe('Create Order Tests', () => {
   });
 
   // Test unauthorized access using manual API call
-  test('should fail when authorization fails (manual API call)', async () => {
+  test('should fail when authorization fails (ex: wrong X-SIGNATURE)', async () => {
     const caseName = "CreateOrderUnauthorized";
 
     // Get the request data from the JSON file
