@@ -352,8 +352,8 @@ def test_cancel_order_timeout():
     try:
         api_instance.cancel_order(cancel_order_request_obj)
 
-        pytest.fail("Expected NotFoundException but the API call succeeded")
+        pytest.fail("Expected ServiceException but the API call succeeded")
     except ServiceException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "5005701"})
     except:
-        pytest.fail("Expected NotFoundException but the API call give another exception")       
+        pytest.fail("Expected ServiceException but the API call give another exception")       

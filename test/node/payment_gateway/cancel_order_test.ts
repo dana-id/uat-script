@@ -96,24 +96,50 @@ describe('Cancel Order Tests', () => {
     }
   });
 
-  //Test cancel order with transaction not found
-  test('should fail when transaction not found', async () => {
-    const caseName = "CancelOrderTransactionNotFound";
+  // Test cancel order with user status abnormal
+  test('should fail when user status is abnormal', async () => {
+    const caseName = "CancelOrderUserStatusAbnormal";
+
     try {
       // Get the request data from the JSON file
       const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
-      // Set the partner reference number
-      // requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
+
       // Make the API call
       await dana.paymentGatewayApi.cancelOrder(requestData);
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 403) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), 
+          { 'partnerReferenceNo': "4035705" });
+      } else if (e instanceof ResponseError && Number(e.status) !== 403) {
+        fail("Expected forbidden failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+
+  // Test cancel order with merchant status abnormal (should return not found)
+  test('should fail with not found when merchant status is abnormal', async () => {
+    const caseName = "CancelOrderMerchantStatusAbnormal";
+
+    try {
+      // Get the request data from the JSON file
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+
+      // Make the API call
+      await dana.paymentGatewayApi.cancelOrder(requestData);
+
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
       if (e instanceof ResponseError && Number(e.status) === 404) {
         // Assert the error response matches expected format
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-          { 'partnerReferenceNo': sharedOriginalPartnerReference });
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), 
+          { 'partnerReferenceNo': "4045708" });
       } else if (e instanceof ResponseError && Number(e.status) !== 404) {
-        fail("Expected transaction not found failed but got status code " + e.status);
+        fail("Expected not found failed but got status code " + e.status);
       } else {
         throw e;
       }
@@ -164,45 +190,201 @@ describe('Cancel Order Tests', () => {
     }
   });
 
-  // Test unauthorized access using manual API call
-    test('should fail when authorization fails (manual API call)', async () => {
-      const caseName = "CancelOrderUnauthorized";
-  
+  //Test cancel order with transaction not found
+  test('should fail when transaction not found', async () => {
+    const caseName = "CancelOrderTransactionNotFound";
+    try {
       // Get the request data from the JSON file
       const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
-      const partnerReferenceNo = generatePartnerReferenceNo();
-      requestData.originalPartnerReferenceNo = partnerReferenceNo;
-  
-      // Define custom headers with invalid signature to trigger authorization error
-      const customHeaders: Record<string, string> = {
-        'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
-      };
-  
-      try {
-        // Define base URL based on environment
-        const baseUrl: string = 'https://api.sandbox.dana.id';
-        const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
-  
-        // Make direct API call with custom headers
-        await executeManualApiRequest(
-          caseName,
-          "POST",
-          baseUrl + apiPath,
-          apiPath,
-          requestData,
-          customHeaders
-        );
-  
-        fail("Expected an error but the API call succeeded");
-      } catch (e: any) {
-        if (e instanceof ResponseError && Number(e.status) === 401) {
-          // Assert the error response matches expected format
-          await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
-        } else if (e instanceof ResponseError && Number(e.status) !== 401) {
-          fail("Expected unauthorized failed but got status code " + e.status);
-        } else {
-          throw e;
-        }
+      // Set the partner reference number
+      // requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
+      // Make the API call
+      await dana.paymentGatewayApi.cancelOrder(requestData);
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 404) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
+          { 'partnerReferenceNo': sharedOriginalPartnerReference });
+      } else if (e instanceof ResponseError && Number(e.status) !== 404) {
+        fail("Expected transaction not found failed but got status code " + e.status);
+      } else {
+        throw e;
       }
-    });
+    }
+  });
+
+  // Test cancel order with transaction expired (should return forbidden)
+  test('should fail when transaction is expired', async () => {
+    const caseName = "CancelOrderTransactionExpired";
+    try {
+      // Get the request data from the JSON file
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+
+      // Make the API call
+      await dana.paymentGatewayApi.cancelOrder(requestData);
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 403) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
+          { 'partnerReferenceNo': "4035700" });
+      } else if (e instanceof ResponseError && Number(e.status) !== 403) {
+        fail("Expected forbidden failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+
+  // Test cancel order not allowed by agreement
+  test('should fail when cancel order is not allowed by agreement', async () => {
+    const caseName = "CancelOrderNotAllowed";
+    try {
+      // Get the request data from the JSON file
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+
+      // Make the API call
+      await dana.paymentGatewayApi.cancelOrder(requestData);
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 403) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
+          { 'partnerReferenceNo': "4035715" });
+      } else if (e instanceof ResponseError && Number(e.status) !== 403) {
+        fail("Expected forbidden failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+
+  // Test cancel order with account status abnormal (should return forbidden)
+  test('should fail when account status is abnormal', async () => {
+    const caseName = "CancelOrderAccountStatusAbnormal";
+
+    try {
+      // Get the request data from the JSON file
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+
+      // Make the API call
+      await dana.paymentGatewayApi.cancelOrder(requestData);
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 403) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
+          { 'partnerReferenceNo': "4035705" });
+      } else if (e instanceof ResponseError && Number(e.status) !== 403) {
+        fail("Expected forbidden failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+
+  // Test cancel order with insufficient funds
+  test('should fail when there are insufficient funds', async () => {
+    const caseName = "CancelOrderInsufficientFunds";
+    try {
+      // Get the request data from the JSON file
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+
+      // Make the API call
+      await dana.paymentGatewayApi.cancelOrder(requestData);
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 403) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
+          { 'partnerReferenceNo': "4035714" });
+      } else if (e instanceof ResponseError && Number(e.status) !== 403) {
+        fail("Expected forbidden failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+
+// Test unauthorized access using manual API call
+  test('should fail when authorization fails (manual API call)', async () => {
+    const caseName = "CancelOrderUnauthorized";
+
+    // Get the request data from the JSON file
+    const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+    const partnerReferenceNo = generatePartnerReferenceNo();
+    requestData.originalPartnerReferenceNo = partnerReferenceNo;
+
+    // Define custom headers with invalid signature to trigger authorization error
+    const customHeaders: Record<string, string> = {
+      'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
+    };
+
+    try {
+      // Define base URL based on environment
+      const baseUrl: string = 'https://api.sandbox.dana.id';
+      const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
+
+      // Make direct API call with custom headers
+      await executeManualApiRequest(
+        caseName,
+        "POST",
+        baseUrl + apiPath,
+        apiPath,
+        requestData,
+        customHeaders
+      );
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 401) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
+      } else if (e instanceof ResponseError && Number(e.status) !== 401) {
+        fail("Expected unauthorized failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+
+  // Test cancel order request timeout (should return 500 internal server error)
+  test('should fail with 500 internal server error on request timeout', async () => {
+    const caseName = "CancelOrderRequestTimeout";
+    try {
+      // Get the request data from the JSON file
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+
+      // Simulate a timeout by using a manual API call to a non-responsive endpoint or by setting a very low timeout if supported
+      // Here, we assume executeManualApiRequest can simulate or trigger a timeout scenario for testing
+      const baseUrl: string = 'https://api.sandbox.dana.id';
+      const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
+
+      await executeManualApiRequest(
+        caseName,
+        "POST",
+        baseUrl + apiPath,
+        apiPath,
+        requestData,
+        {} // No special headers needed for timeout
+      );
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      if (e instanceof ResponseError && Number(e.status) === 500) {
+        // Assert the error response matches expected format
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
+      } else if (e instanceof ResponseError && Number(e.status) !== 500) {
+        fail("Expected internal server error but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+  
 });
