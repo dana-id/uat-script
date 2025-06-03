@@ -383,7 +383,6 @@
                     "value": "22200.00",
                     "currency": "IDR"
                 },
-                "scenario": "API",
                 "payOptionDetails": [
                     {
                         "payMethod": "NETWORK_PAY",
@@ -404,7 +403,6 @@
                         }
                     }
                 ],
-                "mcc": "5732",
                 "urlParams": [
                     {
                         "url": "https://test.bi.go.id/v1/test",
@@ -431,7 +429,6 @@
                         "orderMemo": "Memo",
                         "createdTime": ""
                     },
-                    "buyer": {},
                     "mcc": "5732",
                     "extendInfo": "",
                     "envInfo": {

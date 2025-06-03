@@ -22,9 +22,66 @@ func generatePartnerReferenceNo() string {
 	return uuid.New().String()
 }
 
-// TestCreateOrderBalance tests the create order API with balance payment method
-func TestCreateOrderBalance(t *testing.T) {
-	caseName := "CreateOrderBalance"
+// TestCreateOrderRedirectScenario tests creating an order using redirect scenario and pay with DANA
+func TestCreateOrderRedirectScenario(t *testing.T) {
+	caseName := "CreateOrderRedirect"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Set a unique partner reference number
+	partnerReferenceNo := generatePartnerReferenceNo()
+	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+	// Create the CreateOrderRequest object and populate it with JSON data
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	// Unmarshal directly into CreateOrderByRedirectRequest
+	createOrderByRedirectRequest := &pg.CreateOrderByRedirectRequest{}
+	err = json.Unmarshal(jsonBytes, createOrderByRedirectRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Create the final request object
+	createOrderReq := pg.CreateOrderRequest{
+		CreateOrderByRedirectRequest: createOrderByRedirectRequest,
+	}
+
+	// Make the API call with retry on inconsistent request
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		ctx := context.Background()
+		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return nil, err
+		}
+		defer httpResponse.Body.Close()
+		responseJSON, err := apiResponse.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		return string(responseJSON), nil
+	}, 3, 2*time.Second)
+	if err != nil {
+		t.Fatalf("API call failed: %v", err)
+	}
+
+	// Assert the API response with the partner reference number as a variable
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestCreateOrderApiScenario tests creating an order using API scenario with BALANCE payment method
+func TestCreateOrderApiScenario(t *testing.T) {
+	caseName := "CreateOrderApi"
 
 	// Get the request data from the JSON file
 	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
@@ -79,64 +136,7 @@ func TestCreateOrderBalance(t *testing.T) {
 	}
 }
 
-// TestCreateOrderNetworkPayPgOtherVaBank tests the create order API with VA Bank payment method
-func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
-	caseName := "CreateOrderNetworkPayPgOtherVaBank"
-
-	// Get the request data from the JSON file
-	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
-	if err != nil {
-		t.Fatalf("Failed to get request data: %v", err)
-	}
-
-	// Set a unique partner reference number
-	partnerReferenceNo := generatePartnerReferenceNo()
-	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-	// Create the CreateOrderRequest object and populate it with JSON data
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-
-	// Unmarshal directly into CreateOrderByApiRequest
-	createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
-	err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
-
-	// Create the final request object
-	createOrderReq := pg.CreateOrderRequest{
-		CreateOrderByApiRequest: createOrderByApiRequest,
-	}
-
-	// Make the API call with retry on inconsistent request
-	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
-		ctx := context.Background()
-		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
-		if err != nil {
-			return nil, err
-		}
-		defer httpResponse.Body.Close()
-		responseJSON, err := apiResponse.MarshalJSON()
-		if err != nil {
-			return nil, err
-		}
-		return string(responseJSON), nil
-	}, 3, 2*time.Second)
-	if err != nil {
-		t.Fatalf("API call failed: %v", err)
-	}
-
-	// Assert the API response with the partner reference number as a variable
-	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-// TestCreateOrderNetworkPayPgQris tests the create order API with QRIS payment method
+// TestCreateOrderNetworkPayPgQris tests creating an order using API scenario with QRIS payment method
 func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	caseName := "CreateOrderNetworkPayPgQris"
 
@@ -193,7 +193,121 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	}
 }
 
-// TestCreateOrderInvalidFieldFormat tests the create order API with invalid field format
+// TestCreateOrderNetworkPayPgOtherWallet tests creating an order using API scenario with wallet payment method
+func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
+	caseName := "CreateOrderNetworkPayPgOtherWallet"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Set a unique partner reference number
+	partnerReferenceNo := generatePartnerReferenceNo()
+	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+	// Create the CreateOrderRequest object and populate it with JSON data
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	// Unmarshal directly into CreateOrderByApiRequest
+	createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
+	err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Create the final request object
+	createOrderReq := pg.CreateOrderRequest{
+		CreateOrderByApiRequest: createOrderByApiRequest,
+	}
+
+	// Make the API call with retry on inconsistent request
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		ctx := context.Background()
+		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return nil, err
+		}
+		defer httpResponse.Body.Close()
+		responseJSON, err := apiResponse.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		return string(responseJSON), nil
+	}, 3, 2*time.Second)
+	if err != nil {
+		t.Fatalf("API call failed: %v", err)
+	}
+
+	// Assert the API response with the partner reference number as a variable
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestCreateOrderNetworkPayPgOtherVaBank tests creating an order with API scenario using VA bank payment method
+func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
+	caseName := "CreateOrderNetworkPayPgOtherVaBank"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Set a unique partner reference number
+	partnerReferenceNo := generatePartnerReferenceNo()
+	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+	// Create the CreateOrderRequest object and populate it with JSON data
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	// Unmarshal directly into CreateOrderByApiRequest
+	createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
+	err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Create the final request object
+	createOrderReq := pg.CreateOrderRequest{
+		CreateOrderByApiRequest: createOrderByApiRequest,
+	}
+
+	// Make the API call with retry on inconsistent request
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		ctx := context.Background()
+		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return nil, err
+		}
+		defer httpResponse.Body.Close()
+		responseJSON, err := apiResponse.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+		return string(responseJSON), nil
+	}, 3, 2*time.Second)
+	if err != nil {
+		t.Fatalf("API call failed: %v", err)
+	}
+
+	// Assert the API response with the partner reference number as a variable
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestCreateOrderInvalidFieldFormat tests failing when field format is invalid (ex: amount without decimal)
 func TestCreateOrderInvalidFieldFormat(t *testing.T) {
 	caseName := "CreateOrderInvalidFieldFormat"
 

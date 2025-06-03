@@ -18,7 +18,7 @@ const (
 	createOrderForCancelTitleCase = "CreateOrder"
 )
 
-// createTestOrderForCancel creates a test order to be canceled, with retry on inconsistent request
+// createTestOrderForCancel creates a test order to be canceled
 func createTestOrderForCancel() (string, error) {
 	var partnerReferenceNo string
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
@@ -64,8 +64,8 @@ func createTestOrderForCancel() (string, error) {
 	return result.(string), nil
 }
 
-// TestCancelOrderValidScenario tests canceling an order with valid parameters
-func TestCancelOrderValidScenario(t *testing.T) {
+// TestCancelOrder tests canceling the order
+func TestCancelOrder(t *testing.T) {
 	// Create an order first
 	partnerReferenceNo, err := createTestOrderForCancel()
 	if err != nil {
@@ -125,7 +125,7 @@ func TestCancelOrderValidScenario(t *testing.T) {
 	}
 }
 
-// TestCancelOrderInProgress tests canceling an order with in-progress status
+// TestCancelOrderInProgress tests canceling the order when in progress
 func TestCancelOrderInProgress(t *testing.T) {
 	// Use a specific case for in-progress order cancellation
 	caseName := "CancelOrderInProgress"
@@ -174,7 +174,87 @@ func TestCancelOrderInProgress(t *testing.T) {
 	}
 }
 
-// TestCancelOrderInvalidMandatoryField tests canceling an order with a missing mandatory field
+// TestCancelOrderWithUserStatusAbnormal tests if the cancel fails when user status is abnormal
+func TestCancelOrderWithUserStatusAbnormal(t *testing.T) {
+	// Use a specific case for user status abnormal
+	caseName := "CancelOrderUserStatusAbnormal"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": "4035717",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
+}
+
+// TestCancelOrderWithMerchantStatusAbnormal tests if the cancel fails when merchant status is abnormal
+func TestCancelOrderWithMerchantStatusAbnormal(t *testing.T) {
+	// Use a specific case for merchant status abnormal
+	caseName := "CancelOrderMerchantStatusAbnormal"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": "4035703",
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
+}
+
+// TestCancelOrderInvalidMandatoryField tests if the cancel fails when mandatory field is invalid (ex: request without X-TIMESTAMP header)
 func TestCancelOrderInvalidMandatoryField(t *testing.T) {
 	// Create an order first
 	partnerReferenceNo, err := createTestOrderForCancel()
