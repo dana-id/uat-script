@@ -10,13 +10,13 @@ INTERPRETER=$1
 main() {
     case $INTERPRETER in
     "python")
-        run_python_runner "$1"
+        run_python_runner "$1" "$2"
         ;;
     "go")
-        run_go_runner
+        run_go_runner "$2"
         ;;
     "node")
-        run_node_runner "$1"
+        run_node_runner "$1" "$2"
         ;;
     *)
         echo "Invalid option. Please choose a valid interpreter."
@@ -26,7 +26,8 @@ main() {
 
 # Function to run the Python script
 run_python_runner(){
-    caseName=$1
+    interpreter=$1
+    caseName=$2
     if ! command python3 --version &> /dev/null; then
         echo "Python not available in this system. Please install Python 3."
         exit 0 
@@ -60,7 +61,8 @@ run_python_runner(){
 
 # Function to run the Javascript script
 run_node_runner(){
-    caseName=$1
+    interpreter=$1
+    caseName=$2
     if ! command node --version &> /dev/null; then
         echo "Node.js not available in this system. Please install Node.js."
         exit 0 
@@ -84,14 +86,15 @@ run_node_runner(){
     npm install --save dana-node-api-client dotenv
     npm install --save-dev jest
     
-    # Run the tests, support running a specific scenario if provided as caseName
+    # Run the tests, support running a specific scenario if provided as caseName (by file name)
     if [ -n "$caseName" ]; then
-        npx jest --color --testNamePattern="^$caseName$"
+        echo "Running Node.js test file(s) matching: $caseName"
+        npx jest --color --testPathPattern="$caseName"
         exit_code=$?
         if [ $exit_code -eq 0 ]; then
             : # success
         elif [ $exit_code -eq 1 ]; then
-            echo "\033[31mERROR: No tests were collected for case name: $caseName\033[0m" >&2
+            echo "\033[31mERROR: No test files were collected containing file pattern: $caseName\033[0m" >&2
             exit 1
         else
             exit $exit_code
@@ -105,6 +108,7 @@ run_node_runner(){
 
 # Function to run the Go tests
 run_go_runner(){
+    caseName=$1
     if ! command go version &> /dev/null; then
         echo "Go not available in this system. Please install Go."
         exit 0 
@@ -125,7 +129,43 @@ run_go_runner(){
         go get -u github.com/dana-id/go_client
         go mod tidy
         go clean -testcache
-        go test -v ./payment_gateway/...
+        if [ -n "$caseName" ]; then
+            echo "Running Go test file(s) containing: $caseName"
+            found_files=$(find ./payment_gateway -type f -name "*${caseName}*.go")
+            if [ -z "$found_files" ]; then
+                echo "\033[31mERROR: No Go test files were found containing file pattern: $caseName\033[0m" >&2
+                exit 1
+            fi
+            echo "\033[36mScenarios (test files) to run:\033[0m"
+            for f in $found_files; do
+                echo "  \033[33m- $f\033[0m"
+            done
+            go test -v $found_files 2>&1 | awk '{
+                if ($0 ~ /=== RUN/) {print "\n\033[36m" $0 "\033[0m"}
+                else if ($0 ~ /--- PASS/) {print "\033[32m" $0 "\033[0m"}
+                else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
+                else if ($0 ~ /--- SKIP/) {print "\033[33m" $0 "\033[0m"}
+                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 "\033[0m"}
+            }'
+            test_exit_code=$?
+            total=$(go test -list . $found_files | grep -c 'Test')
+            echo "\n\033[1;36mTotal scenarios run: $total\033[0m"
+            echo "\n\033[1;35m==== Go Test Results Summary Complete ====\033[0m"
+            exit $test_exit_code
+        else
+            go test -v ./payment_gateway/... 2>&1 | awk '{
+                if ($0 ~ /=== RUN/) {print "\n\033[36m" $0 "\033[0m"}
+                else if ($0 ~ /--- PASS/) {print "\033[32m" $0 "\033[0m"}
+                else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
+                else if ($0 ~ /--- SKIP/) {print "\033[33m" $0 "\033[0m"}
+                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 "\033[0m"}
+            }'
+            test_exit_code=$?
+            total=$(go test -list . ./payment_gateway/... | grep -c 'Test')
+            echo "\n\033[1;36mTotal scenarios run: $total\033[0m"
+            echo "\n\033[1;35m==== Go Test Results Summary Complete ====\033[0m"
+            exit $test_exit_code
+        fi
     else
         echo "Error: go.mod file not found in test/go directory"
         exit 1
@@ -137,4 +177,4 @@ run_go_runner(){
 set -a
 source .env
 set +a
-main "$2"
+main "$1" "$2"
