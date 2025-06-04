@@ -10,7 +10,7 @@ INTERPRETER=$1
 main() {
     case $INTERPRETER in
     "python")
-        run_python_runner "$1" "$2"
+        run_python_runner "$@"
         ;;
     "go")
         run_go_runner "$2"
@@ -27,7 +27,8 @@ main() {
 # Function to run the Python script
 run_python_runner(){
     interpreter=$1
-    caseName=$2
+    folderName=$2
+    caseName=$3
     if ! command python3 --version &> /dev/null; then
         echo "Python not available in this system. Please install Python 3."
         exit 0 
@@ -43,8 +44,33 @@ run_python_runner(){
     
     export PYTHONPATH=$PYTHONPATH:$(pwd)/runner/python
     
-    # Support running a specific scenario if provided as caseName
-    if [ -n "$caseName" ]; then
+    # Support running by folder and/or scenario name
+    if [ -n "$folderName" ] && [ -n "$caseName" ]; then
+        # Run specific scenario in a specific folder
+        test_path="test/python/$folderName"
+        if [ ! -d "$test_path" ]; then
+            echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
+            exit 1
+        fi
+        set +e
+        pytest -v -s "$test_path" -k "$caseName"
+        exit_code=$?
+        set -e
+        if [ $exit_code -eq 5 ]; then
+            echo "\033[31mERROR: No tests were collected for case name: $caseName in folder: $folderName\033[0m" >&2
+            exit 1
+        fi
+        exit $exit_code
+    elif [ -n "$folderName" ]; then
+        # Run all tests in the specified folder
+        test_path="test/python/$folderName"
+        if [ ! -d "$test_path" ]; then
+            echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
+            exit 1
+        fi
+        pytest -v -s "$test_path"
+    elif [ -n "$caseName" ]; then
+        # Fallback: run by scenario name in all tests
         set +e
         pytest -v -s -k "$caseName"
         exit_code=$?
@@ -181,4 +207,4 @@ run_go_runner(){
 set -a
 source .env
 set +a
-main "$1" "$2"
+main "$@"
