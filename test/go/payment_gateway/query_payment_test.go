@@ -113,7 +113,7 @@ func createTestOrderCanceled() (string, error) {
 
 	// Now cancel the order
 	caseName := "CancelOrderValidScenario"
-	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderForQueryTitleCase, caseName)
+	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, cancelOrderForQueryTitleCase, caseName)
 	if err != nil {
 		return "", err
 	}

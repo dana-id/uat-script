@@ -146,6 +146,8 @@ run_go_runner(){
                 else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
                 else if ($0 ~ /--- SKIP/) {print "\033[33m" $0 "\033[0m"}
                 else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 "\033[0m"}
+                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 "\033[0m"}
+                else {print $0}
             }'
             test_exit_code=$?
             total=$(go test -list . $found_files | grep -c 'Test')
@@ -159,6 +161,8 @@ run_go_runner(){
                 else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
                 else if ($0 ~ /--- SKIP/) {print "\033[33m" $0 "\033[0m"}
                 else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 "\033[0m"}
+                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 "\033[0m"}
+                else {print $0}
             }'
             test_exit_code=$?
             total=$(go test -list . ./payment_gateway/... | grep -c 'Test')
