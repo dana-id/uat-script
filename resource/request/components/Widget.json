@@ -177,8 +177,8 @@
                 "transactionDate": "2030-05-01T00:46:43+07:00"
             },
             "response": {
-                "responseMessage": "Invalid field format",
-                "responseCode": "4005401"
+                "responseMessage": "Invalid Field Format X-TIMESTAMP",
+                "responseCode": "4005501"
             }
         },
         "QueryOrderFailInvalidMandatoryField": {
