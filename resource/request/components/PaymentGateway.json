@@ -1431,6 +1431,7 @@
             "request": {
                 "merchantId": "216620010016033632482",
                 "subMerchantId": "",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "originalCaptureNo": "",

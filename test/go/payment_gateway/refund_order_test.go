@@ -276,7 +276,7 @@ func TestRefundOrderIllegalParameter(t *testing.T) {
 // TestRefundOrderInvalidMandatoryField tests if the refund fails when mandatory field is invalid
 func TestRefundOrderInvalidMandatoryField(t *testing.T) {
 	// Use a specific case for invalid mandatory field
-	caseName := "RefundOrderInvalidMandatoryField"
+	caseName := "RefundOrderInvalidMandatoryParameter"
 
 	// Get the request data from the JSON file
 	jsonDict, err := helper.GetRequest(refundOrderJsonPath, refundOrderTitleCase, caseName)
