@@ -67,41 +67,10 @@ def test_query_order_success_cancelled(test_order_reference_number):
 
 @with_delay()
 def test_query_order_not_found(test_order_reference_number):
-    """
-    Should fail when transaction is not found.
-
-    This test attempts to query an order using a non-existent partner reference number.
-    It expects the API to return a 404 Not Found error.
-    """
     case_name = "QueryOrderNotFound"
-
-    # Prepare request data with a deliberately invalid reference number
     json_dict = get_request(json_path_file, title_case, case_name)
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number + "_NOT_FOUND"
-
-    # Convert the dictionary to the appropriate request object
-    query_order_request_obj = QueryPaymentRequest.from_dict(json_dict)
-
-    try:
-        # Attempt to query the order
-        api_response = api_instance.query_payment(query_order_request_obj)
-        # If no exception, assert the failure response structure
-        assert_fail_response(
-            json_path_file,
-            title_case,
-            case_name,
-            api_response,
-            {"partnerReferenceNo": test_order_reference_number + "_NOT_FOUND"}
-        )
-    except ApiException as e:
-        # Assert that the API returns a 404 Not Found error
-        assert e.status == 404, f"Expected status code 404, but got {e.status}"
-        assert e.reason == "Not Found", f"Expected reason 'Not Found', but got {e.reason}"
-        assert e.body is not None, "Expected response body to be not None"
-        # Additional assertions can be added here based on the expected error response structure
-    except Exception as e:
-        # Fail the test if any unexpected exception occurs
-        pytest.fail(f"Unexpected exception occurred: {str(e)}")
+    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    pytest.skip("SKIP: Placeholder test")
 
 @with_delay()
 def test_query_order_fail_invalid_field(test_order_reference_number):
@@ -166,10 +135,41 @@ def test_query_order_fail_not_allowed(test_order_reference_number):
 
 @with_delay()
 def test_query_order_fail_transaction_not_found(test_order_reference_number):
+    """
+    Should fail when transaction is not found.
+
+    This test attempts to query an order using a non-existent partner reference number.
+    It expects the API to return a 404 Not Found error.
+    """
     case_name = "QueryOrderFailTransactionNotFound"
+
+    # Prepare request data with a deliberately invalid reference number
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number + "_NOT_FOUND"
-    pytest.skip("SKIP: Placeholder test")
+
+    # Convert the dictionary to the appropriate request object
+    query_order_request_obj = QueryPaymentRequest.from_dict(json_dict)
+
+    try:
+        # Attempt to query the order
+        api_response = api_instance.query_payment(query_order_request_obj)
+        # If no exception, assert the failure response structure
+        assert_fail_response(
+            json_path_file,
+            title_case,
+            case_name,
+            api_response,
+            {"partnerReferenceNo": test_order_reference_number + "_NOT_FOUND"}
+        )
+    except ApiException as e:
+        # Assert that the API returns a 404 Not Found error
+        assert e.status == 404, f"Expected status code 404, but got {e.status}"
+        assert e.reason == "Not Found", f"Expected reason 'Not Found', but got {e.reason}"
+        assert e.body is not None, "Expected response body to be not None"
+        # Additional assertions can be added here based on the expected error response structure
+    except Exception as e:
+        # Fail the test if any unexpected exception occurs
+        pytest.fail(f"Unexpected exception occurred: {str(e)}")
 
 @with_delay()
 def test_query_order_fail_general_error(test_order_reference_number):
