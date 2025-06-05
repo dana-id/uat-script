@@ -167,11 +167,38 @@ def test_query_order_fail_invalid_mandatory_field(test_order_reference_number):
         pytest.fail(f"Unexpected exception occurred: {str(e)}")
 
 @with_delay()
-def test_query_order_fail_not_allowed(test_order_reference_number):
-    case_name = "QueryOrderFailNotAllowed"
+def test_query_order_fail_unauthorized(test_order_reference_number):
+    """
+    Should fail when authorization fails (invalid signature)
+    """
+    case_name = "QueryOrderFailUnauthorized"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    pytest.skip("SKIP: Placeholder test")
+
+    # Convert the dictionary to the appropriate request object
+    query_order_request_obj = QueryPaymentRequest.from_dict(json_dict)
+
+    # Prepare headers with invalid signature to trigger authorization error
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/payment-gateway/v1.0/debit/status.htm",
+        request_obj=json_dict,
+        invalid_signature=True
+    )
+
+    # Execute the API request and assert the error
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm",
+        query_order_request_obj,
+        headers,
+        401,  # Expected status code
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": test_order_reference_number}
+    )
 
 @with_delay()
 def test_query_order_fail_transaction_not_found(test_order_reference_number):

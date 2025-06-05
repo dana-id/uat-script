@@ -202,7 +202,7 @@
                 "responseCode": "4005502"
             }
         },
-        "QueryOrderFailNotAllowed": {
+        "QueryOrderFailUnauthorized": {
             "request": {
                 "additionalInfo": {},
                 "amount": {
@@ -219,8 +219,8 @@
                 "transactionDate": "2030-05-01T00:46:43+07:00"
             },
             "response": {
-                "responseMessage": "Operation not allowed",
-                "responseCode": "4035403"
+                "responseMessage": "Unauthorized. Invalid Signature",
+                "responseCode": "4015500"
             }
         },
         "QueryOrderFailTransactionNotFound": {
