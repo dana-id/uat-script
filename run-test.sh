@@ -42,7 +42,7 @@ run_python_runner(){
     
     python3 -m pip install --upgrade -r test/python/requirements.txt
     
-    export PYTHONPATH=$PYTHONPATH:$(pwd)/runner/python
+    export PYTHONPATH=$PYTHONPATH:$(pwd)/test/python:$(pwd)/runner/python
     
     # Support running by folder and/or scenario name
     if [ -n "$folderName" ] && [ -n "$caseName" ]; then
