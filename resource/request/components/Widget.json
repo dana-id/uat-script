@@ -198,8 +198,8 @@
                 "transactionDate": "2030-05-01T00:46:43+07:00"
             },
             "response": {
-                "responseMessage": "Missing or invalid mandatory field",
-                "responseCode": "4005402"
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP",
+                "responseCode": "4005502"
             }
         },
         "QueryOrderFailNotAllowed": {

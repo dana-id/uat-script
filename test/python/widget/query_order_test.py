@@ -121,10 +121,50 @@ def test_query_order_fail_invalid_field(test_order_reference_number):
 
 @with_delay()
 def test_query_order_fail_invalid_mandatory_field(test_order_reference_number):
+    """
+    Should fail when a mandatory field is missing in the request.
+
+    This test attempts to query an order with a missing mandatory field (e.g., missing timestamp).
+    It expects the API to return a 400 Bad Request error.
+    """
     case_name = "QueryOrderFailInvalidMandatoryField"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    pytest.skip("SKIP: Placeholder test")
+
+    # Convert the dictionary to the appropriate request object
+    query_order_request_obj = QueryPaymentRequest.from_dict(json_dict)
+
+    # Prepare headers without the timestamp to trigger the error
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/payment-gateway/v1.0/debit/status.htm",
+        request_obj=json_dict,
+        with_timestamp=False
+    )
+
+    try:
+        # Attempt to query the order with missing mandatory field
+        execute_and_assert_api_error(
+            api_client,
+            "POST",
+            "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm",
+            query_order_request_obj,
+            headers,
+            400,  # Expected status code
+            json_path_file,
+            title_case,
+            case_name,
+            {"partnerReferenceNo": test_order_reference_number}
+        )
+    except ApiException as e:
+        # Assert that the API returns a 400 Bad Request error
+        assert e.status == 400, f"Expected status code 400, but got {e.status}"
+        assert e.reason == "Bad Request", f"Expected reason 'Bad Request', but got {e.reason}"
+        assert e.body is not None, "Expected response body to be not None"
+        # Additional assertions can be added here based on the expected error response structure
+    except Exception as e:
+        # Fail the test if any unexpected exception occurs
+        pytest.fail(f"Unexpected exception occurred: {str(e)}")
 
 @with_delay()
 def test_query_order_fail_not_allowed(test_order_reference_number):
