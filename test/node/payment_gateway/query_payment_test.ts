@@ -151,7 +151,7 @@ describe('Query Payment Tests', () => {
       fail("Expected an error but the API call succeeded ");
     } catch (e: any) {
 
-      if (e instanceof ResponseError && Number(e.status) === 400) {
+      if (Number(e.status) === 400) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { 'partnerReferenceNo': sharedOriginalPartnerReference });
       } else if (e instanceof ResponseError && Number(e.status) !== 400) {
         fail("Expected bad request failed but got status code " + e.status);
@@ -190,7 +190,7 @@ describe('Query Payment Tests', () => {
 
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      if (e instanceof ResponseError && Number(e.status) === 400) {
+      if (Number(e.status) === 400) {
         // Assert the error response matches expected format
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': sharedOriginalPartnerReference });
@@ -237,7 +237,7 @@ describe('Query Payment Tests', () => {
 
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      if (e instanceof ResponseError && Number(e.status) === 401) {
+      if (Number(e.status) === 401) {
         // Assert the error response matches expected format
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': sharedOriginalPartnerReference });

@@ -231,7 +231,7 @@ describe('Payment Gateway - Create Order Tests', () => {
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
       // Expecting a 400 Bad Request error
-      if (e instanceof ResponseError && Number(e.status) === 400) {
+      if (Number(e.status) === 400) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 400) {
         fail("Expected bad request failed but got status code " + e.status);
@@ -267,10 +267,10 @@ describe('Payment Gateway - Create Order Tests', () => {
         customHeaders
       );
 
-      fail("Expected an error but the API call succeeded");
+      fail("Expected an error but the API call succeeded");      
     } catch (e: any) {
       // Expecting a 401 Unauthorized error
-      if (e instanceof ResponseError && Number(e.status) === 401) {
+      if (Number(e.status) === 401) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 401) {
         fail("Expected unauthorized failed but got status code " + e.status);

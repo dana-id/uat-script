@@ -308,7 +308,7 @@ describe('Payment Gateway - Refund Order Tests', () => {
             // If the API call succeeds, this is unexpected
             fail("Expected an error but the API call succeeded");
         } catch (e: any) {
-            if (e instanceof ResponseError && Number(e.status) === 400) {
+            if (Number(e.status) === 400) {
                 // Assert the error response matches expected bad request error
                 await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
                     { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
@@ -406,7 +406,7 @@ describe('Payment Gateway - Refund Order Tests', () => {
             // If the API call succeeds, this is unexpected
             fail("Expected an error but the API call succeeded");
         } catch (e: any) {
-            if (e instanceof ResponseError && Number(e.status) === 401) {
+            if (Number(e.status) === 401) {
                 // Assert the error response matches expected unauthorized error
                 await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
                     { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });

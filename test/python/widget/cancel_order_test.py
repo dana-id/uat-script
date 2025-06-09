@@ -35,9 +35,24 @@ def test_cancel_order_reference_number():
 
 @with_delay()
 def test_cancel_order_success_in_process(test_cancel_order_reference_number):
+    """Should successfully cancel the order in process state"""
     case_name = "CancelOrderSuccessInProcess"
     json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Placeholder test")
+    # Set the correct partner reference number if needed
+    # if "originalPartnerReferenceNo" in json_dict:
+    #     json_dict["originalPartnerReferenceNo"] = test_cancel_order_reference_number
+    # else:
+    #     json_dict["partnerReferenceNo"] = test_cancel_order_reference_number
+    # cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    # api_response = api_instance.cancel_order(cancel_order_request_obj)
+    # assert_response(
+    #     json_path_file,
+    #     title_case,
+    #     case_name,
+    #     CancelOrderResponse.to_json(api_response),
+    #     {"partnerReferenceNo": test_cancel_order_reference_number}
+    # )
+    pytest.skip("SKIP: Need confirmation on responseMessage. Expected: 'Request is in process', Actual: 'Successful'")
 
 @with_delay()
 def test_cancel_order_fail_user_status_abnormal(test_cancel_order_reference_number):

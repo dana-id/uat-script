@@ -178,7 +178,7 @@ describe('Cancel Order Tests', () => {
       
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      if (e instanceof ResponseError && Number(e.status) === 400) {
+      if (Number(e.status) === 400) {
         // Assert the error response matches expected format
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), 
           { 'partnerReferenceNo': sharedOriginalPartnerReference });
@@ -342,7 +342,7 @@ describe('Cancel Order Tests', () => {
 
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      if (e instanceof ResponseError && Number(e.status) === 401) {
+      if (Number(e.status) === 401) {
         // Assert the error response matches expected format
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 401) {
@@ -376,7 +376,7 @@ describe('Cancel Order Tests', () => {
 
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      if (e instanceof ResponseError && Number(e.status) === 500) {
+      if (Number(e.status) === 500) {
         // Assert the error response matches expected format
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
       } else if (e instanceof ResponseError && Number(e.status) !== 500) {

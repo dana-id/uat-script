@@ -272,7 +272,22 @@
         "FinishNotifyFailOrderNotPaid": {}
     },
     "CancelOrder": {
-        "CancelOrderSuccessInProcess": {},
+        "CancelOrderSuccessInProcess": {
+            "request": {
+                "originalPartnerReferenceNo": "2025700",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2025700",
+                "responseMessage": "Request In Progress"
+            }
+        },
         "CancelOrderFailUserStatusAbnormal": {},
         "CancelOrderFailMerchantStatusAbnormal": {},
         "CancelOrderFailMissingParameter": {},
