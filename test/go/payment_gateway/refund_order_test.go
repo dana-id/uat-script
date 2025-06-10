@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
-	pg "github.com/dana-id/go_client/payment_gateway/v1"
+	pg "github.com/dana-id/dana-go/payment_gateway/v1"
 	"github.com/google/uuid"
 
-	"self_testing_scenario/helper"
+	"uat-script/helper"
 )
 
 const (
-	refundOrderTitleCase        = "RefundOrder"
-	refundOrderJsonPath         = "../../../resource/request/components/PaymentGateway.json"
+	refundOrderTitleCase          = "RefundOrder"
+	refundOrderJsonPath           = "../../../resource/request/components/PaymentGateway.json"
 	createOrderForRefundTitleCase = "CreateOrder"
 )
 

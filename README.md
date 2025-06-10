@@ -8,10 +8,9 @@ This repository contains scenarios that can be run for UAT in Sandbox and E2E sc
 - Find examples of E2E scenarios for each business solution
 
 For documentation of each DANA Client library visit:
-- Java: https://github.com/dana-id/java_client
-- Python: https://github.com/dana-id/python_client
-- Golang: https://github.com/dana-id/go_client
-- Node: https://github.com/dana-id/node_client
+- Python: https://github.com/dana-id/dana-python
+- Golang: https://github.com/dana-id/dana-go
+- Node: https://github.com/dana-id/dana-node
 
 ## How to Use
 

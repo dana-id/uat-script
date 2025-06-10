@@ -189,10 +189,13 @@ run_node_runner(){
 
 # Function to run the Go tests
 run_go_runner(){
+    # Enable pipefail to make the pipeline exit with the first command that fails
+    set -o pipefail
+    
     caseName=$1
     if ! command go version &> /dev/null; then
-        echo "Go not available in this system. Please install Go."
-        exit 0 
+        echo "ERROR: Go not available in this system. Please install Go."
+        exit 1
     fi
     
     echo "Running Go tests..."
@@ -207,7 +210,7 @@ run_go_runner(){
     # Run go mod tidy only if go.mod exists
     if [ -f "go.mod" ]; then
         # Update dana Go client to the latest version
-        go get -u github.com/dana-id/go_client
+        go get -u github.com/dana-id/dana-go
         go mod tidy
         go clean -testcache
         if [ -n "$caseName" ]; then

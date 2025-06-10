@@ -3,13 +3,90 @@
         "GetAuthSuccess": {}
     },
     "ApplyToken": {
-        "ApplyTokenSuccess": {},
-        "ApplyTokenFailExpiredAuthcode": {},
-        "ApplyTokenFailAuthcodeUsed": {},
-        "ApplyTokenFailAuthcodeInvalid": {},
-        "ApplyTokenFailInvalidParams": {},
-        "ApplyTokenFailInvalidMandatoryFields": {},
-        "ApplyTokenFailInvalidSignature": {}
+        "ApplyTokenSuccess": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2007400",
+                "responseMessage": "Successful"
+            }
+        },
+        "ApplyTokenFailExpiredAuthcode": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4017400",
+                "responseMessage": "Unauthorized. Auth Code Expired"
+            }
+        },
+        "ApplyTokenFailAuthcodeUsed": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4017400",
+                "responseMessage": "Unauthorized. Auth Code Used"
+            }
+        },
+        "ApplyTokenFailAuthcodeInvalid": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4017400",
+                "responseMessage": "Unauthorized. Invalid Auth Code"
+            }
+        },
+        "ApplyTokenFailInvalidParams": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4007401",
+                "responseMessage": "Invalid Field Format"
+            }
+        },
+        "ApplyTokenFailInvalidMandatoryFields": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4007402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "ApplyTokenFailInvalidSignature": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4017400",
+                "responseMessage": "Unauthorized. Invalid Signature"
+            }
+        }
     },
     "AccountUnbinding": {
         "AccountUnbindSuccess": {},

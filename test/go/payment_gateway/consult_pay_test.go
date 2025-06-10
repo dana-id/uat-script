@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	pg "github.com/dana-id/go_client/payment_gateway/v1"
+	pg "github.com/dana-id/dana-go/payment_gateway/v1"
 
-	"self_testing_scenario/helper"
+	"uat-script/helper"
 )
 
 const (

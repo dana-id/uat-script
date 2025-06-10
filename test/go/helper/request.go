@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dana-id/go_client/config"
-	"github.com/dana-id/go_client/utils"
+	"github.com/dana-id/dana-go/config"
+	"github.com/dana-id/dana-go/utils"
 	"github.com/google/uuid"
 )
 
