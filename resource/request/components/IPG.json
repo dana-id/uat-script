@@ -18,7 +18,22 @@
         "AccountUnbindFailInvalidParams": {}
     },
     "ApplyOtt": {
-        "ApplyOttSuccess": {},
+        "ApplyOttSuccess": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "resourceType": "OTT",
+                "responseCode": "2004900",
+                "responseMessage": "Successful"
+            }
+        },
         "ApplyOttFailInvalidFormat": {},
         "ApplyOttFailMissingOrInvalidMandatoryField": {},
         "ApplyOttFailInvalidSignature": {},
