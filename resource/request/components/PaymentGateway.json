@@ -776,7 +776,7 @@
                 "serviceCode": "54",
                 "transactionDate": "2030-05-01T00:46:43+07:00",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "50001.00",
                     "currency": "IDR"
                 },
                 "merchantId": "216620010016033632482",

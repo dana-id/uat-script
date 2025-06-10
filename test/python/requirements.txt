@@ -1,3 +1,4 @@
-dana-python-api-client>=0.2.0
+dana-python>=1.0.0
 pytest>=7.2.1
 pytest-cov>=2.8.1
+pytest-playwright>=0.7.0

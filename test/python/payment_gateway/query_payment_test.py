@@ -167,27 +167,28 @@ def test_query_payment_created_order(test_order_reference_number):
     # Assert the API response
     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
-# @with_delay()
-# def test_query_payment_paid_order(test_order_paid_reference_number):
+@with_delay()
+def test_query_payment_paid_order(test_order_paid_reference_number):
     
-#     """Should query the payment with status paid (PAID)"""    
-#     # Query payment
-#     case_name = "QueryPaymentPaidOrder"
+    """Should query the payment with status paid (PAID)"""    
+    # Query payment
+    case_name = "QueryPaymentPaidOrder"
     
-#     # Get the request data from the JSON file
-#     json_dict = get_request(json_path_file, title_case, case_name)
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
     
-#     # Set the correct partner reference number
-#     json_dict["originalPartnerReferenceNo"] = test_order_paid_reference_number
+    # Set the correct partner reference number
+    json_dict["originalPartnerReferenceNo"] = test_order_paid_reference_number
     
-#     # Convert the request data to a QueryPaymentRequest object
-#     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
+    # Convert the request data to a QueryPaymentRequest object
+    query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
+    print("Query payment request object: ", query_payment_request_obj)
     
-#     # Make the API call
-#     api_response = api_instance.query_payment(query_payment_request_obj)
+    # Make the API call
+    api_response = api_instance.query_payment(query_payment_request_obj)
     
-#     # Assert the API response
-#     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": test_order_paid_reference_number})
+    # Assert the API response
+    assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": test_order_paid_reference_number})
 
 @with_delay()
 def test_query_payment_canceled_order(test_order_canceled_reference_number):

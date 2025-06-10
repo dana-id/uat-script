@@ -16,7 +16,7 @@ main() {
         run_go_runner "$2"
         ;;
     "node")
-        run_node_runner "$1" "$2"
+        run_node_runner "$1" "$2" "$3"
         ;;
     *)
         echo "Invalid option. Please choose a valid interpreter."
@@ -41,6 +41,8 @@ run_python_runner(){
     python3 -m pip install --upgrade pip
     
     python3 -m pip install --upgrade -r test/python/requirements.txt
+
+    python3 -m playwright install
     
     export PYTHONPATH=$PYTHONPATH:$(pwd)/test/python:$(pwd)/runner/python
     
@@ -88,7 +90,8 @@ run_python_runner(){
 # Function to run the Javascript script
 run_node_runner(){
     interpreter=$1
-    caseName=$2
+    folderName=$2
+    caseName=$3
     if ! command node --version &> /dev/null; then
         echo "Node.js not available in this system. Please install Node.js."
         exit 0 
@@ -110,21 +113,66 @@ run_node_runner(){
     # Install dependencies
     echo "Installing dependencies..."
     npm install --save dana-node-api-client dotenv
-    npm install --save-dev jest
+    npm install --save-dev jest ts-jest
     
-    # Run the tests, support running a specific scenario if provided as caseName (by file name)
-    if [ -n "$caseName" ]; then
-        echo "Running Node.js test file(s) matching: $caseName"
+    # Warn if ts-jest is not installed
+    if ! npm list --depth=0 | grep -q ts-jest; then
+        echo "\033[33mWARNING: ts-jest is not installed. TypeScript tests may not run.\033[0m"
+    fi
+    
+    # Support running by folder and/or scenario name
+    if [ -n "$folderName" ] && [ -n "$caseName" ]; then
+        # Run specific scenario in a specific folder
+        test_path="$folderName"
+        if [ ! -d "$test_path" ]; then
+            echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
+            exit 1
+        fi
+        pattern="$folderName/.*$caseName.*\\.[tj]s$"
+        echo "Pattern: $pattern"
+        echo "Matching files:"
+        matches=$(find "$folderName" -type f \( -name "*$caseName*.ts" -o -name "*$caseName*.js" \))
+        if [ -z "$matches" ]; then
+            echo "\033[31mERROR: No files matched pattern: $pattern\033[0m" >&2
+            exit 1
+        fi
+        echo "$matches"
+        set +e
+        npx jest --color --testPathPattern="$pattern"
+        exit_code=$?
+        set -e
+        if [ $exit_code -eq 1 ]; then
+            echo "\033[31mERROR: No test files were collected for case name: $caseName in folder: $folderName\033[0m" >&2
+            exit 1
+        fi
+        exit $exit_code
+    elif [ -n "$folderName" ]; then
+        # Run all tests in the specified folder
+        test_path="$folderName"
+        if [ ! -d "$test_path" ]; then
+            echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
+            exit 1
+        fi
+        set +e
+        npx jest --color --testPathPattern="$folderName/"
+        exit_code=$?
+        set -e
+        if [ $exit_code -eq 1 ]; then
+            echo "\033[31mERROR: No test files were collected in folder: $folderName\033[0m" >&2
+            exit 1
+        fi
+        exit $exit_code
+    elif [ -n "$caseName" ]; then
+        # Fallback: run by scenario name in all tests
+        set +e
         npx jest --color --testPathPattern="$caseName"
         exit_code=$?
-        if [ $exit_code -eq 0 ]; then
-            : # success
-        elif [ $exit_code -eq 1 ]; then
-            echo "\033[31mERROR: No test files were collected containing file pattern: $caseName\033[0m" >&2
+        set -e
+        if [ $exit_code -eq 1 ]; then
+            echo "\033[31mERROR: No test files were collected for case name: $caseName\033[0m" >&2
             exit 1
-        else
-            exit $exit_code
         fi
+        exit $exit_code
     else
         npm test
     fi
@@ -205,6 +253,6 @@ run_go_runner(){
 }
 
 set -a
-source .env
+. ./.env
 set +a
 main "$@"

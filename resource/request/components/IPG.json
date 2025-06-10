@@ -1,0 +1,329 @@
+{
+    "GetAuth": {
+        "GetAuthSuccess": {}
+    },
+    "ApplyToken": {
+        "ApplyTokenSuccess": {},
+        "ApplyTokenFailExpiredAuthcode": {},
+        "ApplyTokenFailAuthcodeUsed": {},
+        "ApplyTokenFailAuthcodeInvalid": {},
+        "ApplyTokenFailInvalidParams": {},
+        "ApplyTokenFailInvalidMandatoryFields": {},
+        "ApplyTokenFailInvalidSignature": {}
+    },
+    "AccountUnbinding": {
+        "AccountUnbindSuccess": {},
+        "AccountUnbindFailAccessTokenNotExist": {},
+        "AccountUnbindFailInvalidUserStatus": {},
+        "AccountUnbindFailInvalidParams": {}
+    },
+    "ApplyOtt": {
+        "ApplyOttSuccess": {},
+        "ApplyOttFailInvalidFormat": {},
+        "ApplyOttFailMissingOrInvalidMandatoryField": {},
+        "ApplyOttFailInvalidSignature": {},
+        "ApplyOttFailTokenExpired": {},
+        "ApplyOttFailTokenNotFound": {},
+        "ApplyOttFailInvalidUserStatus": {},
+        "ApplyOttFailNonRetryableError": {},
+        "ApplyOttFailInternalServerError": {},
+        "ApplyOttFailUnexpectedResponse": {}
+    },
+    "BalanceInquiry": {
+        "BalanceInquirySuccess": {},
+        "BalanceInquiryFailInvalidFormat": {},
+        "BalanceInquiryFailMissingOrInvalidMandatoryField": {},
+        "BalanceInquiryFailInvalidSignature": {},
+        "BalanceInquiryFailTokenExpired": {},
+        "BalanceInquiryFailTokenNotFound": {},
+        "BalanceInquiryFailInvalidUserStatus": {},
+        "BalanceInquiryFailInternalServerError": {},
+        "BalanceInquiryFailUnexpectedResponse": {}
+    },
+    "Payment": {
+        "PaymentSuccess": {},
+        "PaymentFailInvalidFormat": {},
+        "PaymentFailMissingOrInvalidMandatoryField": {},
+        "PaymentFailInvalidSignature": {},
+        "PaymentFailGeneralError": {},
+        "PaymentFailTransactionNotPermitted": {},
+        "PaymentFailMerchantNotExistOrStatusAbnormal": {},
+        "PaymentFailInconsistentRequest": {},
+        "PaymentFailInternalServerError": {},
+        "PaymentFailExceedsTransactionAmountLimit": {},
+        "PaymentFailTimeout": {},
+        "PaymentFailIdempotent": {}
+    },
+    "QueryOrder": {
+        "QueryOrderSuccessPaid": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Order paid successfully",
+                "responseCode": "2005500"
+            }
+        },
+        "QueryOrderSuccessInitiated": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Order initiated successfully",
+                "responseCode": "2005501"
+            }
+        },
+        "QueryOrderSuccessPaying": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Order is in paying status",
+                "responseCode": "2005502"
+            }
+        },
+        "QueryOrderSuccessCancelled": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Order cancelled successfully",
+                "responseCode": "2005503"
+            }
+        },
+        "QueryOrderNotFound": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Transaction not found",
+                "responseCode": "4045501"
+            }
+        },
+        "QueryOrderFailInvalidField": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Invalid Field Format X-TIMESTAMP",
+                "responseCode": "4005501"
+            }
+        },
+        "QueryOrderFailInvalidMandatoryField": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP",
+                "responseCode": "4005502"
+            }
+        },
+        "QueryOrderFailUnauthorized": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Unauthorized. Invalid Signature",
+                "responseCode": "4015500"
+            }
+        },
+        "QueryOrderFailTransactionNotFound": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "Transaction not found",
+                "responseCode": "4045501"
+            }
+        },
+        "QueryOrderFailGeneralError": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "216620010016033632482",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "202502125762772767531876352",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": "",
+                "transactionDate": "2030-05-01T00:46:43+07:00"
+            },
+            "response": {
+                "responseMessage": "General error occurred",
+                "responseCode": "5005500"
+            }
+        }
+    },
+    "FinishNotify": {
+        "FinishNotifySuccess": {},
+        "FinishNotifyFailInternalServerError": {},
+        "FinishNotifyFailOrderNotPaid": {}
+    },
+    "CancelOrder": {
+        "CancelOrderSuccessInProcess": {
+            "request": {
+                "originalPartnerReferenceNo": "2025700",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2025700",
+                "responseMessage": "Request In Progress"
+            }
+        },
+        "CancelOrderFailUserStatusAbnormal": {},
+        "CancelOrderFailMerchantStatusAbnormal": {},
+        "CancelOrderFailMissingParameter": {},
+        "CancelOrderFailOrderNotExist": {},
+        "CancelOrderFailExceedCancelWindowTime": {},
+        "CancelOrderFailNotAllowedByAgreement": {},
+        "CancelOrderFailAccountStatusAbnormal": {},
+        "CancelOrderFailInsufficientMerchantBalance": {},
+        "CancelOrderFailOrderRefunded": {},
+        "CancelOrderFailInvalidSignature": {},
+        "CancelOrderFailTimeout": {}
+    },
+    "RefundOrder": {
+        "RefundInProcess": {},
+        "RefundFailExceedPaymentAmount": {},
+        "RefundFailNotAllowedByAgreement": {},
+        "RefundFailExceedRefundWindowTime": {},
+        "RefundFailMultipleRefundNotAllowed": {},
+        "RefundFailDuplicateRequest": {},
+        "RefundFailOrderNotPaid": {},
+        "RefundFailParameterIllegal": {},
+        "RefundFailMandatoryParameterInvalid": {},
+        "RefundFailOrderNotExist": {},
+        "RefundFailInsufficientMerchantBalance": {},
+        "RefundFailInvalidSignature": {},
+        "RefundFailTimeout": {},
+        "RefundFailIdempotent": {},
+        "RefundFailMerchantStatusAbnormal": {}
+    },
+    "TransactionList": {
+        "TransactionListSuccess": {},
+        "TransactionListFailInvalidParam": {},
+        "TransactionListFailDataNotAvailable": {},
+        "TransactionListFailSystemError": {},
+        "TransactionListFailInvalidSignature": {},
+        "TransactionListFailInvalidToken": {},
+        "TransactionListFailInvalidMandatoryParameter": {}
+    }
+}
