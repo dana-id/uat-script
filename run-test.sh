@@ -29,20 +29,27 @@ run_python_runner(){
     interpreter=$1
     folderName=$2
     caseName=$3
-    if ! command python3 --version &> /dev/null; then
+    # Check for python3 or python command
+    if command -v python3 &> /dev/null; then
+        PYTHON_CMD="python3"
+    elif command -v python &> /dev/null; then
+        PYTHON_CMD="python"
+    else
         echo "Python not available in this system. Please install Python 3."
-        exit 0 
+        exit 1
     fi
-    python3 --version
-    python3 -m venv venv
-    source venv/bin/activate
+    
+    $PYTHON_CMD --version
+    $PYTHON_CMD -m venv venv
+    . venv/bin/activate
 
     # Install packages from requirements.txt
-    python3 -m pip install --upgrade pip
+    $PYTHON_CMD -m pip install --upgrade pip
     
-    python3 -m pip install --upgrade -r test/python/requirements.txt
-
-    python3 -m playwright install
+    $PYTHON_CMD -m pip install --upgrade -r test/python/requirements.txt
+    
+    # Install Playwright browsers
+    $PYTHON_CMD -m playwright install --with-deps chromium
     
     export PYTHONPATH=$PYTHONPATH:$(pwd)/test/python:$(pwd)/runner/python
     
@@ -55,7 +62,7 @@ run_python_runner(){
             exit 1
         fi
         set +e
-        pytest -v -s "$test_path" -k "$caseName"
+        $PYTHON_CMD -m pytest -v -s "$test_path" -k "$caseName"
         exit_code=$?
         set -e
         if [ $exit_code -eq 5 ]; then
@@ -74,7 +81,7 @@ run_python_runner(){
     elif [ -n "$caseName" ]; then
         # Fallback: run by scenario name in all tests
         set +e
-        pytest -v -s -k "$caseName"
+        $PYTHON_CMD -m pytest -v -s -k "$caseName"
         exit_code=$?
         set -e
         if [ $exit_code -eq 5 ]; then
@@ -83,7 +90,7 @@ run_python_runner(){
         fi
         exit $exit_code
     else
-        pytest -v -s
+        $PYTHON_CMD -m pytest -v -s
     fi
 }
 
