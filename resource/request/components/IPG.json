@@ -332,7 +332,7 @@
                 "transactionDate": "2030-05-01T00:46:43+07:00"
             },
             "response": {
-                "responseMessage": "Transaction not found",
+                "responseMessage": "Transaction Not Found",
                 "responseCode": "4045501"
             }
         },
