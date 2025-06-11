@@ -380,17 +380,176 @@
                 "responseMessage": "Request In Progress"
             }
         },
-        "CancelOrderFailUserStatusAbnormal": {},
-        "CancelOrderFailMerchantStatusAbnormal": {},
-        "CancelOrderFailMissingParameter": {},
-        "CancelOrderFailOrderNotExist": {},
-        "CancelOrderFailExceedCancelWindowTime": {},
-        "CancelOrderFailNotAllowedByAgreement": {},
-        "CancelOrderFailAccountStatusAbnormal": {},
-        "CancelOrderFailInsufficientMerchantBalance": {},
+        "CancelOrderFailUserStatusAbnormal": {
+            "request": {
+                "originalPartnerReferenceNo": "4035705",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4035705",
+                "responseMessage": "Do Not Honor"
+            }
+        },
+        "CancelOrderFailMerchantStatusAbnormal": {
+            "request": {
+                "originalPartnerReferenceNo": "4045708",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4045708",
+                "responseMessage": "Invalid Merchant"
+            }
+        },
+        "CancelOrderFailMissingParameter": {
+            "request": {
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4005702",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "CancelOrderFailOrderNotExist": {
+            "request": {
+                "originalPartnerReferenceNo": "2382938123",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4045701",
+                "responseMessage": "Transaction Not Found"
+            }
+        },
+        "CancelOrderFailExceedCancelWindowTime": {
+            "request": {
+                "originalPartnerReferenceNo": "4035700",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4035700",
+                "responseMessage": "Transaction Expired"
+            }
+        },
+        "CancelOrderFailNotAllowedByAgreement": {
+            "request": {
+                "originalPartnerReferenceNo": "4035715",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4035715",
+                "responseMessage": "Transaction Not Permitted"
+            }
+        },
+        "CancelOrderFailAccountStatusAbnormal": {
+            "request": {
+                "originalPartnerReferenceNo": "4035705",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4035705",
+                "responseMessage": "Do Not Honor"
+            }
+        },
+        "CancelOrderFailInsufficientMerchantBalance": {
+            "request": {
+                "originalPartnerReferenceNo": "4035714",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4035714",
+                "responseMessage": "Insufficient Funds"
+            }
+        },
         "CancelOrderFailOrderRefunded": {},
-        "CancelOrderFailInvalidSignature": {},
-        "CancelOrderFailTimeout": {}
+        "CancelOrderFailInvalidSignature": {
+            "request": {
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4015700",
+                "responseMessage": "Unauthorized. Invalid Signature"
+            }
+        },
+        "CancelOrderFailTimeout": {"request": {
+                "originalPartnerReferenceNo": "5005701",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "5005701",
+                "responseMessage": "Internal Server Error"
+            }}
     },
     "RefundOrder": {
         "RefundInProcess": {},
