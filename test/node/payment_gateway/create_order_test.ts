@@ -1,4 +1,4 @@
-import Dana from 'dana-node-api-client';
+import Dana from 'dana-node';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
@@ -7,9 +7,9 @@ import * as dotenv from 'dotenv';
 import { getRequest, retryOnInconsistentRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { fail } from 'assert';
-import { ResponseError } from 'dana-node-api-client';
+import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
-import { CreateOrderByApiRequest, CreateOrderByRedirectRequest } from 'dana-node-api-client/dist/payment_gateway/v1';
+import { CreateOrderByApiRequest, CreateOrderByRedirectRequest } from 'dana-node/dist/payment_gateway/v1';
 
 // Load environment variables from .env file
 dotenv.config();

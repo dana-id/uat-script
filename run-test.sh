@@ -119,7 +119,7 @@ run_node_runner(){
     
     # Install dependencies
     echo "Installing dependencies..."
-    npm install --save dana-node-api-client dotenv
+    npm install --save dana-node dotenv
     npm install --save-dev jest ts-jest
     
     # Warn if ts-jest is not installed
