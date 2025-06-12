@@ -35,6 +35,7 @@ function generatePartnerReferenceNo(): string {
 
 let sharedOriginalPartnerReference: string;
 let sharedOriginalCanceledPartnerReference: string;
+let sharedOriginalPaidPartnerReference: string;
 
 describe('Query Payment Tests', () => {
 
@@ -43,6 +44,15 @@ describe('Query Payment Tests', () => {
     createOrderRequestData.merchantId = merchantId;
     sharedOriginalPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference
+    await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+  }
+
+  async function createPaidOrder() {
+    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
+    createOrderRequestData.merchantId = merchantId;
+    sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
+    createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
+    createOrderRequestData.amount.value = "50001.00"; // Set a valid amount to simulate a paid order
     await dana.paymentGatewayApi.createOrder(createOrderRequestData);
   }
 
@@ -67,6 +77,13 @@ describe('Query Payment Tests', () => {
       console.log(`Shared order created with reference: ${sharedOriginalPartnerReference}`);
     } catch (e) {
       console.error('Failed to create shared order - tests cannot continue:', e);
+    }
+
+    try {
+      await createPaidOrder()
+      console.log(`Shared paid order created with reference: ${sharedOriginalPartnerReference}`);
+    } catch (e) {
+      console.error('Failed to create shared paid order - tests cannot continue:', e);
     }
 
     try {
@@ -272,6 +289,34 @@ describe('Query Payment Tests', () => {
         await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { 'partnerReferenceNo': sharedOriginalPartnerReference });
       } else if (e instanceof ResponseError && Number(e.status) !== 404) {
         fail("Expected nout found request failed but got status code " + e.status);
+      } else {
+        throw e;
+      }
+    }
+  });
+
+  // Test general error scenario
+  test('should handle general error scenario (QueryPaymentGeneralError)', async () => {
+    const caseName = "QueryPaymentGeneralError";
+    const titleCase = "QueryPayment";
+
+    try {
+      // Prepare request data that will trigger a general error
+      const requestData: QueryPaymentRequest = getRequest<QueryPaymentRequest>(jsonPathFile, titleCase, caseName);
+
+      // Use a deliberately malformed or problematic reference number to simulate a general error
+      requestData.originalPartnerReferenceNo = sharedOriginalPaidPartnerReference;
+
+      // Make the API call
+      await dana.paymentGatewayApi.queryPayment(requestData);
+
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      // Expecting a 500 or general error
+      if (e instanceof ResponseError && Number(e.status) === 500) {
+        await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { 'partnerReferenceNo': "INVALID_GENERAL_ERROR_REF" });
+      } else if (e instanceof ResponseError && Number(e.status) !== 500) {
+        fail("Expected general error but got status code " + e.status);
       } else {
         throw e;
       }

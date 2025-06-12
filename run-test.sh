@@ -18,6 +18,9 @@ main() {
     "node")
         run_node_runner "$1" "$2" "$3"
         ;;
+    "php")
+        run_php_runner "$1" "$2" "$3"
+        ;;
     *)
         echo "Invalid option. Please choose a valid interpreter."
         ;;
@@ -185,6 +188,59 @@ run_node_runner(){
     fi
     
     cd ../..
+}
+
+# Function to run the PHP tests
+run_php_runner(){
+    interpreter=$1
+    folderName=$2
+    caseName=$3
+    
+    # Move to project root first
+    cd "$(dirname "$0")"
+    
+    # Store the root directory
+    ROOT_DIR="$(pwd)"
+    
+    # Install composer if not already installed
+    if ! command -v composer &> /dev/null; then
+        echo "Composer not found. Installing Composer..."
+        curl -sS https://getcomposer.org/installer | php
+        mv composer.phar /usr/local/bin/composer
+    fi
+    
+    # Change to the PHP test directory where composer.json is located
+    echo "Changing to test/php directory..."
+    cd test/php
+    
+    # Install dependencies
+    echo "Installing PHP dependencies..."
+    composer install --no-interaction
+    
+    # Change back to the project root for running PHPUnit
+    echo "Changing back to project root..."
+    cd "$ROOT_DIR"
+    
+    echo "Running PHP tests with PHPUnit..."
+    
+    # Support running by folder and/or scenario name
+    if [ -n "$folderName" ] && [ -n "$caseName" ]; then
+        # Run specific test in a specific folder
+        echo "Running test '$caseName' in folder 'test/php/$folderName'..."
+        test/php/vendor/bin/phpunit --configuration=phpunit.xml --filter="^.*\\\\$caseName.*$" "test/php/$folderName"
+    elif [ -n "$folderName" ]; then
+        # Run all tests in a specific folder
+        echo "Running all tests in folder 'test/php/$folderName'..."
+        test/php/vendor/bin/phpunit --configuration=phpunit.xml "test/php/$folderName"
+    elif [ -n "$caseName" ]; then
+        # Run by test name across all tests
+        echo "Running all tests matching '$caseName'..."
+        test/php/vendor/bin/phpunit --configuration=phpunit.xml --filter="^.*\\\\$caseName.*$" "test/php/payment_gateway"
+    else
+        # Run all PHP tests
+        echo "Running all PHP tests..."
+        test/php/vendor/bin/phpunit --configuration=phpunit.xml "test/php/payment_gateway"
+    fi
 }
 
 # Function to run the Go tests

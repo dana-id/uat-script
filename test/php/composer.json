@@ -1,0 +1,15 @@
+{
+    "name": "dana/self-integration-test",
+    "description": "Integration tests for Dana PHP SDK",
+    "type": "project",
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "danaid/dana-php": "*",
+        "phpunit/phpunit": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "DanaUat\\": "./"
+        }
+    }
+}
