@@ -9,11 +9,11 @@ function extractMobileFromUrl(url) {
   try {
     const urlObj = new URL(url);
     const seamlessData = urlObj.searchParams.get('seamlessData');
-    
+
     if (seamlessData) {
       const decodedData = decodeURIComponent(seamlessData);
       const jsonData = JSON.parse(decodedData);
-      
+
       if (jsonData && jsonData.mobile) {
         return jsonData.mobile;
       }
@@ -21,21 +21,23 @@ function extractMobileFromUrl(url) {
   } catch (error) {
     console.error('Error extracting mobile number from URL:', error);
   }
-  
+
   // Fallback to default number if extraction fails
   return '0811742234';
 }
 
-async function automateOAuth() {
+async function automateOAuth(phoneNumber, pinCode) {
   console.log('Starting OAuth automation...');
-  
-  // Extract mobile number from URL
-  const mobileNumber = extractMobileFromUrl(oauthUrl);
-  console.log(`Extracted mobile number from URL: ${mobileNumber}`);
-  
+  let foundAuthCode = null;
+
+  // Use provided phoneNumber or extract from URL
+  const mobileNumber = phoneNumber || extractMobileFromUrl(oauthUrl);
+  const pinToUse = pinCode || pin;
+  console.log(`Extracted mobile number from parameter or URL: ${mobileNumber}`);
+
   // Launch the browser (headful mode so you can see what's happening)
   const browser = await chromium.launch({
-    headless: false, // Set to true for production
+    headless: true, // Set to true for production
     slowMo: 300, // Slow down operations for better visibility during testing
     args: [
       '--disable-web-security',
@@ -46,7 +48,7 @@ async function automateOAuth() {
       '--user-agent="Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"'
     ]
   });
-  
+
   try {
     // Use a preset device profile instead of manual settings
     const context = await browser.newContext({
@@ -55,19 +57,19 @@ async function automateOAuth() {
       geolocation: { longitude: 106.8456, latitude: -6.2088 }, // Jakarta coordinates
       permissions: ['geolocation']
     });
-    
+
     // Open a new page
     const page = await context.newPage();
-    
+
     // Enable debug logging
     page.on('console', msg => console.log(`Browser console: ${msg.text()}`));
     page.on('pageerror', err => console.error(`Browser page error: ${err.message}`));
-    
+
     // Track navigation events
     page.on('framenavigated', async frame => {
       if (frame === page.mainFrame()) {
         const url = frame.url();
-        console.log('Navigation detected to:', url);        
+        console.log('Navigation detected to:', url);
         // Check if we've reached the PIN input page
         if (url.includes('/ipgLogin')) {
           console.log('Detected navigation to login page - waiting for PIN input to appear');
@@ -75,59 +77,59 @@ async function automateOAuth() {
         }
       }
     });
-    
+
     // Navigate to the OAuth URL
     console.log('Opening OAuth URL...');
     await page.goto(oauthUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
     console.log('Page loaded, waiting for scripts to initialize...');
-    
+
     // Wait a bit for any scripts to initialize (increased wait time)
     await page.waitForTimeout(4000);
     console.log('Done waiting for initialization');
-    
+
     // Try different selectors for the phone input field
     console.log('Trying to find the phone input field...');
-    
+
     await page.evaluate((mobile) => {
       const inputs = document.querySelectorAll('input');
       for (const input of inputs) {
-        if (input.type === 'tel' || 
-                input.placeholder === '12312345678' || 
-                input.maxLength === 13 ||
-                input.className.includes('phone-number')) {
-              input.value = mobile;
-              input.dispatchEvent(new Event('input', { bubbles: true }));
-              console.log('Found and filled mobile number input');
-              return true;
-            }
-          }
-          return false;
+        if (input.type === 'tel' ||
+          input.placeholder === '12312345678' ||
+          input.maxLength === 13 ||
+          input.className.includes('phone-number')) {
+          input.value = mobile;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          console.log('Found and filled mobile number input');
+          return true;
+        }
+      }
+      return false;
     }, mobileNumber);
-    
+
     // Find and click the next/submit button
     console.log('Looking for the submit button...');
 
     await page.evaluate(() => {
       const buttons = document.querySelectorAll('button');
       for (const button of buttons) {
-          if (button.type === 'submit' || 
-              button.innerText.includes('Next') || 
-              button.innerText.includes('Continue') ||
-              button.innerText.includes('Submit') ||
-              button.innerText.includes('Lanjutkan')) {
-            button.click();
-            console.log('Found and clicked button via JS evaluation');
-            return true;
-          }
+        if (button.type === 'submit' ||
+          button.innerText.includes('Next') ||
+          button.innerText.includes('Continue') ||
+          button.innerText.includes('Submit') ||
+          button.innerText.includes('Lanjutkan')) {
+          button.click();
+          console.log('Found and clicked button via JS evaluation');
+          return true;
         }
-        return false;
-      });
-      
-    
+      }
+      return false;
+    });
+
+
     // Wait for PIN input screen with longer timeout
     console.log('Waiting for PIN input screen...');
     await page.waitForTimeout(4000); // Increased wait time for page transition
-    
+
     // Directly check if we need to click the "Continue" button again
     const needToContinue = await page.evaluate(() => {
       // Look for continue button
@@ -139,12 +141,12 @@ async function automateOAuth() {
       }
       return false;
     });
-        
+
     if (needToContinue) {
       console.log('Clicked another continue button - waiting for PIN input to appear');
       await page.waitForTimeout(1500);
     }
-        
+
     const success = await page.evaluate((pinCode) => {
       const specificPinInput = document.querySelector('.txt-input-pin-field');
       if (specificPinInput) {
@@ -154,15 +156,15 @@ async function automateOAuth() {
         specificPinInput.dispatchEvent(new Event('change', { bubbles: true }));
         return true;
       }
-          
+
       const inputs = document.querySelectorAll('input');
-      
+
       // Approach 1: Look for an input with maxlength=6 (full PIN)
-      const singlePinInput = Array.from(inputs).find(input => 
-        input.maxLength === 6 && 
+      const singlePinInput = Array.from(inputs).find(input =>
+        input.maxLength === 6 &&
         (input.type === 'text' || input.type === 'tel' || input.type === 'number' || input.inputMode === 'numeric')
       );
-          
+
       if (singlePinInput) {
         console.log('Found single PIN input field with maxLength=6');
         singlePinInput.value = pinCode;
@@ -170,14 +172,14 @@ async function automateOAuth() {
         singlePinInput.dispatchEvent(new Event('change', { bubbles: true }));
         return true;
       }
-          
+
       // Approach 2: Look for multiple inputs with common PIN input characteristics
-      const pinInputs = Array.from(inputs).filter(input => 
-        input.maxLength === 1 || 
-        input.type === 'password' || 
+      const pinInputs = Array.from(inputs).filter(input =>
+        input.maxLength === 1 ||
+        input.type === 'password' ||
         input.className.includes('pin')
       );
-          
+
       if (pinInputs.length >= pinCode.length) {
         console.log(`Found ${pinInputs.length} PIN inputs via JS`);
         for (let i = 0; i < pinCode.length; i++) {
@@ -187,17 +189,17 @@ async function automateOAuth() {
         }
         return true;
       }
-          
+
       console.log('Could not find any suitable PIN input field');
       return false;
-    }, pin);
-        
+    }, pinToUse);
+
     if (success) {
       console.log('Successfully entered PIN via JavaScript');
     } else {
       console.log('Failed to enter PIN, no suitable input field found');
     }
-    
+
     // Helper function to find and click a confirm/submit button after PIN entry
     async function tryToFindAndClickConfirmButton() {
       // Try JavaScript approach if no button found
@@ -206,42 +208,42 @@ async function automateOAuth() {
         const buttonClicked = await page.evaluate(() => {
           const allButtons = document.querySelectorAll('button');
           console.log(`Found ${allButtons.length} buttons on page`);
-          
+
           let continueButton = null;
           let backButton = null;
-          
+
           allButtons.forEach((button) => {
-            const buttonText = button.innerText.trim().toLowerCase();            
+            const buttonText = button.innerText.trim().toLowerCase();
             // Identify buttons by text or class
-            if (buttonText.includes('lanjut') || 
-                buttonText.includes('continue') || 
-                buttonText.includes('submit') || 
-                buttonText.includes('confirm') || 
-                buttonText.includes('next') ||
-                button.className.includes('btn-continue') ||
-                button.className.includes('btn-submit') ||
-                button.className.includes('btn-confirm')) {
+            if (buttonText.includes('lanjut') ||
+              buttonText.includes('continue') ||
+              buttonText.includes('submit') ||
+              buttonText.includes('confirm') ||
+              buttonText.includes('next') ||
+              button.className.includes('btn-continue') ||
+              button.className.includes('btn-submit') ||
+              button.className.includes('btn-confirm')) {
               continueButton = button;
             }
-            
+
             // Avoid buttons with text 'kembali'
-            if (buttonText.includes('kembali') || 
-                buttonText.includes('back') || 
-                button.className.includes('btn-back')) {
+            if (buttonText.includes('kembali') ||
+              buttonText.includes('back') ||
+              button.className.includes('btn-back')) {
               backButton = button;
             }
           });
-          
+
           // Prioritize continue button if found
           if (continueButton) {
             console.log('Found continue button, clicking it: ' + continueButton.innerText);
             continueButton.click();
             return true;
           }
-          
+
           return false;
         });
-        
+
         if (buttonClicked) {
           console.log('Found and clicked confirm button via JS evaluation');
           await page.waitForTimeout(1000); // Wait after clicking
@@ -250,89 +252,54 @@ async function automateOAuth() {
       } catch (e) {
         console.error('Error with PIN confirm button:', e);
       }
-      
+
       return false;
     }
-    
+
     // Try to click a confirm button if one exists
     const buttonClicked = await tryToFindAndClickConfirmButton();
-    
+
     if (buttonClicked) {
       console.log('Confirm button was clicked, waiting for action to complete...');
       await page.waitForTimeout(1000); // Give time for the button click to take effect
     }
-    
-    console.log('Watching for redirects and URL changes...');
-    const redirectPromise = new Promise((resolve) => {
-      // Set up a listener for navigation events
+
+    // Watching for redirects and URL changes...
+    const authCodePromise = new Promise((resolve) => {
+      let resolved = false;
       const handleNavigation = async (frame) => {
+        if (resolved) return;
         if (frame === page.mainFrame()) {
           const url = frame.url();
-          
-          // Check if we've been redirected to Google
           if (url.includes('google.com')) {
-            console.log('Detected redirect to Google with URL:', url);
-            
             try {
-              // Parse the URL to extract parameters
               const urlObj = new URL(url);
               const params = urlObj.searchParams;
-              
-              // Check for auth_code parameter
               if (params.has('auth_code')) {
                 const authCode = params.get('auth_code');
-                console.log('\n✅ SUCCESS! Auth code found in redirect URL:', authCode);
-                console.log('\nTo use this auth code with your applyToken API:');
-                console.log(`const authCode = '${authCode}';`);
-                console.log('\nExample API call:');
-                console.log(`client.applyToken({
-  grantType: 'authorization_code',
-  authCode: '${authCode}'
-});\n`);
-                
-                resolve({ success: true, authCode });
+                resolved = true;
+                resolve(authCode);
                 return;
               }
-              
-              resolve({ success: false, message: 'No auth_code parameter found in redirect URL' });
             } catch (e) {
-              console.error('Error parsing URL parameters:', e);
-              resolve({ success: false, error: e.message });
+              // ignore
             }
           }
         }
       };
-      
-      // Register navigation handler
       page.on('framenavigated', handleNavigation);
     });
-    
     // timeout promise
     const timeoutPromise = new Promise((resolve) => {
       setTimeout(() => {
-        resolve({ success: false, message: 'Timeout waiting for redirect' });
-      }, 30000); // 30 second timeout
+        resolve(null);
+      }, 30000);
     });
-    
-    // Wait for either redirect or timeout
-    const result = await Promise.race([redirectPromise, timeoutPromise]);
-    
-    if (!result.success) {
-      console.log(`\n⚠️ ${result.message || 'Failed to get auth code'}`);
-
-      try {
-        const pageContent = await page.content();
-        if (pageContent.includes('auth_code') || pageContent.includes('authCode')) {
-          console.log('Found auth code reference in page content');
-        }
-      } catch (e) {
-        console.error('Error checking page content:', e);
-      }
-    }
-    
+    // Wait for either auth code or timeout
+    foundAuthCode = await Promise.race([authCodePromise, timeoutPromise]);
     // Allow some time to see the final state
     await new Promise(resolve => setTimeout(resolve, 5000));
-    
+
   } catch (error) {
     console.error('Error during automation:', error);
   } finally {
@@ -340,7 +307,19 @@ async function automateOAuth() {
     await browser.close();
     console.log('Browser closed');
   }
+
+  return foundAuthCode;
 }
 
 // Run the automation
-automateOAuth().catch(console.error);
+automateOAuth().then(authCode => {
+  if (authCode) {
+    console.log(`\n✅ SUCCESS! Auth code found: ${authCode}`);
+    console.log('To use this auth code with your applyToken API:');
+    console.log(`const authCode = '${authCode}';`);
+    console.log('Example API call:');
+    console.log(`client.applyToken({\n  grantType: 'authorization_code',\n  authCode: '${authCode}'\n});\n`);
+  } else {
+    console.log('No auth_code returned.');
+  }
+}).catch(console.error);

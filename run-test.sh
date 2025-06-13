@@ -235,11 +235,37 @@ run_php_runner(){
     elif [ -n "$caseName" ]; then
         # Run by test name across all tests
         echo "Running all tests matching '$caseName'..."
-        test/php/vendor/bin/phpunit --configuration=phpunit.xml --filter="^.*\\\\$caseName.*$" "test/php/payment_gateway"
+        
+        # Find all test directories (excluding helper)
+        TEST_DIRS=$(find test/php -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
+        
+        if [ -z "$TEST_DIRS" ]; then
+            echo "\033[31mERROR: No test directories found under test/php\033[0m" >&2
+            exit 1
+        fi
+        
+        # Run tests in all directories
+        for dir in $TEST_DIRS; do
+            echo "\033[36mRunning tests in $dir...\033[0m"
+            test/php/vendor/bin/phpunit --configuration=phpunit.xml --filter="^.*\\\$caseName.*$" "$dir"
+        done
     else
         # Run all PHP tests
         echo "Running all PHP tests..."
-        test/php/vendor/bin/phpunit --configuration=phpunit.xml "test/php/payment_gateway"
+        
+        # Find all test directories (excluding helper)
+        TEST_DIRS=$(find test/php -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
+        
+        if [ -z "$TEST_DIRS" ]; then
+            echo "\033[31mERROR: No test directories found under test/php\033[0m" >&2
+            exit 1
+        fi
+        
+        # Run tests in all directories
+        for dir in $TEST_DIRS; do
+            echo "\033[36mRunning tests in $dir...\033[0m"
+            test/php/vendor/bin/phpunit --configuration=phpunit.xml "$dir"
+        done
     fi
 }
 
