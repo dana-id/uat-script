@@ -1,5 +1,5 @@
 {
-    "name": "dana/self-integration-test",
+    "name": "dana/uat-script",
     "description": "Integration tests for Dana PHP SDK",
     "type": "project",
     "require": {

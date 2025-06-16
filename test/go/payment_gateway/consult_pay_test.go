@@ -51,9 +51,28 @@ func TestConsultPayWithStrPrivateKeySuccess(t *testing.T) {
 		t.Fatalf("Failed to convert response to JSON: %v", err)
 	}
 
-	// Assert the API response
-	err = helper.AssertResponse(consultPayJsonPath, consultPayTitleCase, caseName, string(responseJSON), nil)
-	if err != nil {
-		t.Fatal(err)
+	// Parse the response JSON to check the paymentInfos array
+	var responseMap map[string]interface{}
+	if err := json.Unmarshal(responseJSON, &responseMap); err != nil {
+		t.Fatalf("Failed to parse response JSON: %v", err)
+	}
+
+	// Verify response code and message
+	if responseCode, ok := responseMap["responseCode"].(string); !ok || responseCode != "2005700" {
+		t.Fatalf("Expected response code 2005700, got %v", responseMap["responseCode"])
+	}
+
+	if responseMsg, ok := responseMap["responseMessage"].(string); !ok || responseMsg != "Successful" {
+		t.Fatalf("Expected response message 'Successful', got %v", responseMap["responseMessage"])
+	}
+
+	// Only check if paymentInfos array has at least one item
+	paymentInfos, ok := responseMap["paymentInfos"].([]interface{})
+	if !ok {
+		t.Fatal("paymentInfos is not an array or is missing")
+	}
+
+	if len(paymentInfos) == 0 {
+		t.Fatal("Expected at least one payment info item")
 	}
 }

@@ -125,6 +125,27 @@ run_node_runner(){
     npm install --save dana-node dotenv
     npm install --save-dev jest ts-jest
     
+    # Install Playwright only when running IPG tests which require browser automation
+    if [ "$folderName" = "ipg" ] || [ -z "$folderName" ]; then
+        echo "IPG tests detected or all tests running. Installing Playwright..."
+        npm install --save-dev @playwright/test playwright
+        
+        # Check if we're running in CI (Alpine container)
+        if [ -n "${CI}" ] || command -v apk &> /dev/null; then
+            echo "Detected CI or Alpine environment, using system Chrome if available"
+            # Set environment variables to use system Chrome if available
+            export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+            
+            # In CI, we'll rely on the Docker image having chromium pre-installed
+            # If this is missing, tests will still run but browser automation will fail
+            echo "Playwright browser download skipped for CI environment"
+        else
+            # Regular non-CI environment, attempt standard installation
+            echo "Installing Playwright browsers..."
+            npx playwright install chromium || echo "Browser installation failed but tests will continue"
+        fi
+    fi
+    
     # Warn if ts-jest is not installed
     if ! npm list --depth=0 | grep -q ts-jest; then
         echo "\033[33mWARNING: ts-jest is not installed. TypeScript tests may not run.\033[0m"
@@ -212,6 +233,10 @@ run_php_runner(){
     # Change to the PHP test directory where composer.json is located
     echo "Changing to test/php directory..."
     cd test/php
+    
+    # Clear composer cache first
+    echo "Clearing Composer cache..."
+    composer clearcache
     
     # Install dependencies
     echo "Installing PHP dependencies..."

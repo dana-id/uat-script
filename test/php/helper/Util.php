@@ -2,6 +2,9 @@
 
 namespace DanaUat\Helper;
 
+use Dana\Utils\SnapHeader;
+use Dana\ApiException;
+
 class Util
 {
     /**
@@ -35,6 +38,36 @@ class Util
     }
     
     /**
+     * Get response data from a JSON file
+     *
+     * @param string $jsonPathFile Path to the JSON file
+     * @param string $titleCase The title case for the response
+     * @param string $caseName The case name for the response
+     * @return array Decoded JSON response data
+     */
+    public static function getResponse(string $jsonPathFile, string $titleCase, string $caseName): array
+    {
+        $jsonPath = dirname(dirname(dirname(__DIR__))) . '/' . $jsonPathFile;
+        
+        if (!file_exists($jsonPath)) {
+            throw new \Exception("JSON file not found: {$jsonPath}");
+        }
+        
+        $jsonString = file_get_contents($jsonPath);
+        $jsonData = json_decode($jsonString, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \Exception('Error parsing JSON file: ' . json_last_error_msg());
+        }
+        
+        if (!isset($jsonData[$titleCase][$caseName]['response'])) {
+            throw new \Exception("Response data not found for {$titleCase}.{$caseName}");
+        }
+        
+        return $jsonData[$titleCase][$caseName]['response'];
+    }
+    
+    /**
      * Function to add delay between test executions
      *
      * @param callable $callback The function to execute
@@ -48,136 +81,167 @@ class Util
     }
     
     /**
-     * Creates a model object from JSON request data
+     * Returns standard headers used in API requests
      *
-     * @param string $jsonPathFile Path to the JSON file
-     * @param string $titleCase The title case for the request
-     * @param string $caseName The case name for the request
-     * @param string $modelClass Fully qualified name of the model class
-     * @param array $overrides Optional key-value pairs to override in the request data
-     * @return object The instantiated model object
+     * @param bool $withTimestamp Whether to include X-TIMESTAMP (defaults to true)
+     * @return array Dict of standard headers
      */
-    public static function createModelFromJsonRequest(string $jsonPathFile, string $titleCase, string $caseName, string $modelClass, array $overrides = []): object
+    public static function getStandardHeaders(bool $withTimestamp = true): array
     {
-        // Get the request data from the JSON file
-        $jsonDict = self::getRequest($jsonPathFile, $titleCase, $caseName);
+        $headers = [
+            'X-PARTNER-ID' => getenv('X_PARTNER_ID'),
+            'CHANNEL-ID' => getenv('CHANNEL_ID'),
+            'ORIGIN' => getenv('ORIGIN'),
+            'X-EXTERNAL-ID' => uniqid(),
+            'Content-Type' => 'application/json'
+        ];
         
-        // Apply any overrides
-        foreach ($overrides as $key => $value) {
-            $jsonDict[$key] = $value;
+        if ($withTimestamp) {
+            // Set timezone to Jakarta (UTC+7)
+            $date = new \DateTime('now', new \DateTimeZone('+0700'));
+            $headers['X-TIMESTAMP'] = $date->format('Y-m-d\TH:i:sP');
         }
         
-        // Create a new instance of the model class
-        $modelObject = new $modelClass();
+        return $headers;
+    }
+    
+    /**
+     * Execute an API request and handle the response, especially for testing purposes
+     * This wrapper makes it easier to access error responses and verify them in tests
+     *
+     * @param string $method HTTP method (GET, POST, etc)
+     * @param string $url Full URL to the API endpoint
+     * @param array $headers Headers to send with the request
+     * @param mixed $requestBody Request body (will be converted to JSON)
+     * @param bool $throwOnError Whether to throw exceptions for non-2XX status codes (default: false)
+     * @return array Associative array with 'statusCode', 'headers', 'body' and 'jsonBody' (if applicable)
+     * @throws \Exception For unexpected errors or if $throwOnError=true and status code is outside 200-299 range
+     */
+    public static function executeApiRequest(string $method, string $url, array $headers, $requestBody = null): array
+    {
+        // Create GuzzleHttp client (avoiding dependency on specific SDK implementation)
+        $client = new \GuzzleHttp\Client(['http_errors' => false]); // Important: don't throw exceptions on HTTP errors
         
-        // Use reflection to get the model properties and setters
-        $reflectionClass = new \ReflectionClass($modelClass);
+        $options = [
+            'headers' => $headers
+        ];
         
-        // Set simple properties first
-        foreach ($jsonDict as $key => $value) {
-            $setterMethod = 'set' . self::camelize($key);
+        // Add request body if provided
+        if ($requestBody !== null) {
+            $options['json'] = $requestBody;
+        }
+        
+        try {
+            $response = $client->request($method, $url, $options);
             
-            if ($reflectionClass->hasMethod($setterMethod)) {
-                if (is_array($value) && !self::isAssociativeArray($value)) {
-                    // Handle array of objects
-                    continue; // Skip arrays for now, handle complex objects first
-                } else if (is_array($value) && self::isAssociativeArray($value)) {
-                    // This is likely a nested object - get the param type
-                    $method = $reflectionClass->getMethod($setterMethod);
-                    $params = $method->getParameters();
-                    if (isset($params[0]) && $params[0]->hasType()) {
-                        $type = $params[0]->getType();
-                        if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
-                            $nestedClass = $type->getName();
-                            $nestedObject = new $nestedClass();
-                            
-                            // Set properties on the nested object
-                            $nestedReflection = new \ReflectionClass($nestedClass);
-                            foreach ($value as $nestedKey => $nestedValue) {
-                                $nestedSetter = 'set' . self::camelize($nestedKey);
-                                if ($nestedReflection->hasMethod($nestedSetter)) {
-                                    $nestedObject->$nestedSetter($nestedValue);
-                                }
-                            }
-                            
-                            // Set the nested object on the parent
-                            $modelObject->$setterMethod($nestedObject);
-                            continue;
-                        }
-                    }
-                }
-                
-                // For simple types or if we couldn't determine the complex type
-                $modelObject->$setterMethod($value);
+            $statusCode = $response->getStatusCode();
+            $responseHeaders = $response->getHeaders();
+            $responseBody = (string)$response->getBody();
+            
+            if ($statusCode < 200 || $statusCode > 299) {                
+                throw new ApiException(
+                    sprintf(
+                        '[%d] Error connecting to the API (%s): %s',
+                        $statusCode,
+                        $url,
+                        $responseBody
+                    ),
+                    $statusCode,
+                    $responseHeaders,
+                    $responseBody
+                );
             }
-        }
-        
-        // Now handle array properties
-        foreach ($jsonDict as $key => $value) {
-            if (is_array($value) && !self::isAssociativeArray($value)) {
-                $setterMethod = 'set' . self::camelize($key);
-                
-                if ($reflectionClass->hasMethod($setterMethod)) {
-                    // Try to determine the type of objects in the array
-                    $method = $reflectionClass->getMethod($setterMethod);
-                    $params = $method->getParameters();
-                    
-                    // Create array of objects
-                    $objects = [];
-                    foreach ($value as $item) {
-                        if (is_array($item) && isset($params[0]) && $params[0]->hasType()) {
-                            $type = $params[0]->getType();
-                            if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
-                                // Extract the base type from the array type hint
-                                $itemClass = preg_replace('/\\\[]$/', '', $type->getName());
-                                if (class_exists($itemClass)) {
-                                    $itemObject = new $itemClass();
-                                    $itemReflection = new \ReflectionClass($itemClass);
-                                    
-                                    foreach ($item as $itemKey => $itemValue) {
-                                        $itemSetter = 'set' . self::camelize($itemKey);
-                                        if ($itemReflection->hasMethod($itemSetter)) {
-                                            $itemObject->$itemSetter($itemValue);
-                                        }
-                                    }
-                                    
-                                    $objects[] = $itemObject;
-                                    continue;
-                                }
-                            }
-                        }
-                        
-                        // Fallback: just add the raw value
-                        $objects[] = $item;
-                    }
-                    
-                    $modelObject->$setterMethod($objects);
+            
+            // Try to parse JSON response
+            $jsonBody = null;
+            if (!empty($responseBody)) {
+                try {
+                    $jsonBody = json_decode($responseBody, true);
+                } catch (\Exception $e) {
+                    // Failed to parse JSON, leave $jsonBody as null
                 }
             }
+            
+            return [
+                'statusCode' => $statusCode,
+                'headers' => $responseHeaders,
+                'body' => $responseBody,
+                'jsonBody' => $jsonBody
+            ];
+            
+        } catch (\Exception $e) {
+            throw $e;
         }
-        
-        return $modelObject;
     }
     
     /**
-     * Convert a string to camelCase
-     * 
-     * @param string $string String to convert
-     * @return string Camelized string
+     * Creates headers including the signature, handling all the signature generation internally
+     *
+     * @param string $method HTTP method (e.g., "POST", "GET")
+     * @param string $resourcePath API resource path (e.g., "/payment-gateway/v1.0/debit/status.htm")
+     * @param array|object $requestObj Request object or array
+     * @param bool $withTimestamp Whether to include X-TIMESTAMP (defaults to true)
+     * @param bool $invalidTimestamp If true, uses an invalid timestamp format
+     * @param bool $invalidSignature If true, uses an invalid signature
+     * @return array Dict of headers including the signature
+     * @throws \Exception If validation fails
      */
-    private static function camelize(string $string): string
-    {
-        return lcfirst(str_replace('_', '', ucwords($string, '_')));
-    }
-    
-    /**
-     * Check if an array is associative (has string keys)
-     * 
-     * @param array $array Array to check
-     * @return bool True if associative
-     */
-    private static function isAssociativeArray(array $array): bool
-    {
-        return array_keys($array) !== range(0, count($array) - 1);
+    public static function getHeadersWithSignature(
+        ?string $method = null, 
+        ?string $resourcePath = null, 
+        $requestObj = null, 
+        bool $withTimestamp = true, 
+        bool $invalidTimestamp = false,
+        bool $invalidSignature = false
+    ): array {
+        // Get the standard headers first
+        $headers = self::getStandardHeaders(false); // We'll handle timestamp specially
+        
+        // Add the signature
+        if ($invalidSignature) {
+            $headers['X-SIGNATURE'] = '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'; // Invalid signature
+        } else {
+            if ($method === null || $resourcePath === null || $requestObj === null) {
+                throw new \Exception('Method, resourcePath, and requestObj are required unless invalidSignature=true');
+            }
+            
+            // Convert request object to array if needed
+            $requestArray = $requestObj;
+            if (is_object($requestObj) && method_exists($requestObj, 'toArray')) {
+                $requestArray = $requestObj->toArray();
+            }
+        }
+        
+        // Generate timestamp with proper format
+        // Set timezone to Jakarta (UTC+7)
+        $date = new \DateTime('now', new \DateTimeZone('+0700'));
+        
+        // Generate timestamp value for signature or headers
+        $timestamp = $invalidTimestamp 
+            ? $date->format('Y-m-d H:i:sP') // Invalid format (space instead of T)
+            : $date->format('Y-m-d\TH:i:sP'); // Valid format
+            
+        // Always add timestamp for signature calculation
+        $timestampForSignature = $date->format('Y-m-d\TH:i:sP');
+        
+        // Only add timestamp to headers if withTimestamp is true
+        if ($withTimestamp) {
+            $headers['X-TIMESTAMP'] = $timestamp;
+        }
+        
+        // Generate signature based on what's available in the Dana SDK
+        try {
+            $headers['X-SIGNATURE'] = SnapHeader::generateSignature(
+                $method,
+                $resourcePath,
+                json_encode($requestArray),
+                $timestampForSignature,
+                SnapHeader::getPrivateKey(getenv('PRIVATE_KEY'))
+            );
+        } catch (\Exception $e) {
+            throw new \Exception("Failed to generate signature: " . $e->getMessage());
+        }
+        
+        return $headers;
     }
 }

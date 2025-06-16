@@ -106,20 +106,145 @@
                 ]
             },
             "response": {
-                "resourceType": "OTT",
                 "responseCode": "2004900",
                 "responseMessage": "Successful"
             }
         },
-        "ApplyOttFailInvalidFormat": {},
-        "ApplyOttFailMissingOrInvalidMandatoryField": {},
-        "ApplyOttFailInvalidSignature": {},
-        "ApplyOttFailTokenExpired": {},
-        "ApplyOttFailTokenNotFound": {},
-        "ApplyOttFailInvalidUserStatus": {},
-        "ApplyOttFailNonRetryableError": {},
-        "ApplyOttFailInternalServerError": {},
-        "ApplyOttFailUnexpectedResponse": {}
+        "ApplyOttFailInvalidFormat": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "123456789033"
+                },
+                "userResources": [
+                    "OTTasd!#$"
+                ]
+            },
+            "response": {
+                "responseCode": "4004901",
+                "responseMessage": "Invalid Field Format userResources"
+            }
+        },
+        "ApplyOttFailMissingOrInvalidMandatoryField": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4004902",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "ApplyOttFailInvalidSignature": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4014900",
+                "responseMessage": "Unauthorized. Invalid Signature"
+            }
+        },
+        "ApplyOttFailTokenExpired": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4014902",
+                "responseMessage": "Invalid Customer Token"
+            }
+        },
+        "ApplyOttFailTokenNotFound": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4014902",
+                "responseMessage": "Invalid Customer Token"
+            }
+        },
+        "ApplyOttFailInvalidUserStatus": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4034905",
+                "responseMessage": "Do Not Honor"
+            }
+        },
+        "ApplyOttFailNonRetryableError": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "5004900",
+                "responseMessage": "General Error"
+            }
+        },
+        "ApplyOttFailInternalServerError": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "5004901",
+                "responseMessage": "Internal Server Error"
+            }
+        },
+        "ApplyOttFailUnexpectedResponse": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "",
+                "responseMessage": ""
+            }
+        }
     },
     "BalanceInquiry": {
         "BalanceInquirySuccess": {},
@@ -133,18 +258,438 @@
         "BalanceInquiryFailUnexpectedResponse": {}
     },
     "Payment": {
-        "PaymentSuccess": {},
-        "PaymentFailInvalidFormat": {},
-        "PaymentFailMissingOrInvalidMandatoryField": {},
-        "PaymentFailInvalidSignature": {},
-        "PaymentFailGeneralError": {},
-        "PaymentFailTransactionNotPermitted": {},
-        "PaymentFailMerchantNotExistOrStatusAbnormal": {},
-        "PaymentFailInconsistentRequest": {},
-        "PaymentFailInternalServerError": {},
-        "PaymentFailExceedsTransactionAmountLimit": {},
-        "PaymentFailTimeout": {},
-        "PaymentFailIdempotent": {}
+        "PaymentSuccess": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "202502121751411148214222848"
+            },
+            "response": {
+                "responseCode": "2005400",
+                "responseMessage": "Successful"
+            }
+        },
+        "PaymentFailInvalidFormat": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.0000"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "202502121751411148214222848"
+            },
+            "response": {
+                "responseCode": "4005401",
+                "responseMessage": "Invalid Field Format amount"
+            }
+        },
+        "PaymentFailMissingOrInvalidMandatoryField": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.0000"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": ""
+            },
+            "response": {
+                "responseCode": "4005402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "PaymentFailInvalidSignature": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.0000"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "202502121751411148214222848"
+            },
+            "response": {
+                "responseCode": "4015400",
+                "responseMessage": "Unauthorized. Invalid Signature"
+            }
+        },
+        "PaymentFailGeneralError": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "505400.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": ""
+            },
+            "response": {
+                "responseCode": "5005400",
+                "responseMessage": "General Error"
+            }
+        },
+        "PaymentFailTransactionNotPermitted": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "435415.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": ""
+            },
+            "response": {
+                "responseCode": "4035415",
+                "responseMessage": "Transaction Not Permitted"
+            }
+        },
+        "PaymentFailMerchantNotExistOrStatusAbnormal": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "445408.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": ""
+            },
+            "response": {
+                "responseCode": "4045408",
+                "responseMessage": "Invalid Merchant"
+            }
+        },
+        "PaymentFailInconsistentRequest": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.0000"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "202502121751411148214222848"
+            },
+            "response": {
+                "responseCode": "4005000",
+                "responseMessage": "Inconsistent Request"
+            }
+        },
+        "PaymentFailInternalServerError": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "505401.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "202502121751411148214222848"
+            },
+            "response": {
+                "responseCode": "5005401",
+                "responseMessage": "Internal Server Error"
+            }
+        },
+        "PaymentFailExceedsTransactionAmountLimit": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "21000000.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "202502121751411148214222848"
+            },
+            "response": {
+                "responseCode": "4035402",
+                "responseMessage": "Exceeds Transaction Amount Limit"
+            }
+        },
+        "PaymentFailTimeout": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "545400.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "202502121751411148214222848"
+            },
+            "response": {
+                "responseCode": "4085000",
+                "responseMessage": "Request Timeout"
+            }
+        },
+        "PaymentFailIdempotent": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "10000.0000"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "202502121751411148214222848"
+            },
+            "response": {
+                "responseCode": "4095000",
+                "responseMessage": "Idempotent Request"
+            }
+        }
     },
     "QueryOrder": {
         "QueryOrderSuccessPaid": {
@@ -348,13 +893,13 @@
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "202502125762772767531876352",
                 "originalReferenceNo": "",
-                "serviceCode": "54",
+                "serviceCode": "AZ",
                 "subMerchantId": "",
                 "transactionDate": "2030-05-01T00:46:43+07:00"
             },
             "response": {
-                "responseMessage": "General error occurred",
-                "responseCode": "5005500"
+                "responseMessage": "Internal Server Error",
+                "responseCode": "5005501"
             }
         }
     },

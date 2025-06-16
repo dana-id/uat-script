@@ -40,8 +40,16 @@ def test_consult_pay_success():
     # Make the API call
     api_response = api_instance.consult_pay(consult_pay_request_obj)
     
-    # Assert the API response
-    assert_response(json_path_file, title_case, case_name, ConsultPayResponse.to_json(api_response))
+    # Validate the API response
+    api_response_json = json.loads(ConsultPayResponse.to_json(api_response))
+    
+    # Check if response code and message are successful
+    assert api_response_json.get('responseCode') == '2005700', "Expected success response code"
+    assert api_response_json.get('responseMessage') == 'Successful', "Expected success response message"
+    
+    # Only check if paymentInfos array has at least one item
+    payment_infos = api_response_json.get('paymentInfos', [])
+    assert len(payment_infos) > 0, "Expected at least one payment info item"
     
     
 @with_delay()

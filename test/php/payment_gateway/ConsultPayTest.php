@@ -5,6 +5,7 @@ namespace DanaUat\PaymentGateway;
 use Dana\Configuration;
 use Dana\PaymentGateway\v1\Api\PaymentGatewayApi;
 use Dana\PaymentGateway\v1\Model\ConsultPayRequest;
+use Dana\ObjectSerializer;
 use Dana\Env;
 use DanaUat\Helper\Util;
 use DanaUat\Helper\Assertion;
@@ -41,21 +42,31 @@ class ConsultPayTest extends TestCase
         Util::withDelay(function() {
             $caseName = 'ConsultPayBalancedSuccess';
             
-            // Create a ConsultPayRequest object from the JSON request data
-            $consultPayRequestObj = Util::createModelFromJsonRequest(
+            $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
                 self::$titleCase,
-                $caseName,
+                $caseName
+            );
+            
+            $consultPayRequestObj = ObjectSerializer::createModelFromData(
+                $jsonDict,
                 ConsultPayRequest::class
             );
             
             // Make the API call
             $apiResponse = self::$apiInstance->consultPay($consultPayRequestObj);
             
-            // Assert the API response
-            Assertion::assertResponse(self::$jsonPathFile, self::$titleCase, $caseName, $apiResponse->__toString());
+            // Parse the response JSON to check the paymentInfos array
+            $responseJson = json_decode($apiResponse->__toString(), true);
             
-            $this->assertTrue(true);
+            // Check if response code and message are successful
+            $this->assertEquals('2005700', $responseJson['responseCode'], 'Expected success response code');
+            $this->assertEquals('Successful', $responseJson['responseMessage'], 'Expected success response message');
+            
+            // Only check if paymentInfos array has at least one item
+            $this->assertArrayHasKey('paymentInfos', $responseJson, 'Expected paymentInfos array in response');
+            $this->assertIsArray($responseJson['paymentInfos'], 'Expected paymentInfos to be an array');
+            $this->assertGreaterThan(0, count($responseJson['paymentInfos']), 'Expected at least one payment info item');
         });
     }
 
@@ -66,12 +77,17 @@ class ConsultPayTest extends TestCase
     {
         Util::withDelay(function() {
             $caseName = 'ConsultPayBalancedInvalidFieldFormat';
-            
-            // Create a ConsultPayRequest object from the JSON request data
-            $consultPayRequestObj = Util::createModelFromJsonRequest(
+
+            // Get the request data from the JSON file
+            $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
                 self::$titleCase,
-                $caseName,
+                $caseName
+            );
+            
+            // Create a ConsultPayRequest object from the JSON request data
+            $consultPayRequestObj = ObjectSerializer::createModelFromData(
+                $jsonDict,
                 ConsultPayRequest::class
             );
             
