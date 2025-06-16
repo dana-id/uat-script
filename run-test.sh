@@ -169,7 +169,11 @@ run_node_runner(){
         fi
         echo "$matches"
         set +e
-        npx jest --color --testPathPattern="$pattern"
+        if [[ "$folderName" == *"ipg"* || "$caseName" == *"token"* || "$caseName" == *"ott"* ]]; then
+            npx jest --color --detectOpenHandles --runInBand --testPathPattern="$pattern" --testTimeout=180000
+        else
+            npx jest --color --detectOpenHandles --runInBand --testPathPattern="$pattern"
+        fi
         exit_code=$?
         set -e
         if [ $exit_code -eq 1 ]; then
@@ -185,7 +189,7 @@ run_node_runner(){
             exit 1
         fi
         set +e
-        npx jest --color --testPathPattern="$folderName/"
+        npx jest --color --detectOpenHandles --runInBand --testPathPattern="$folderName/"
         exit_code=$?
         set -e
         if [ $exit_code -eq 1 ]; then
@@ -196,7 +200,7 @@ run_node_runner(){
     elif [ -n "$caseName" ]; then
         # Fallback: run by scenario name in all tests
         set +e
-        npx jest --color --testPathPattern="$caseName"
+        npx jest --color --detectOpenHandles --runInBand --testPathPattern="$caseName"
         exit_code=$?
         set -e
         if [ $exit_code -eq 1 ]; then

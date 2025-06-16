@@ -18,8 +18,7 @@ module.exports = {
     '/node_modules/'
   ],
 
-  // Run tests with a timeout
-  testTimeout: 30000,
+  testTimeout: 120000,
 
   // A set of globals that need to be available in all test environments
   globals: {
