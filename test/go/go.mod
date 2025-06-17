@@ -4,7 +4,7 @@ go 1.18
 
 // Direct dependencies
 require (
-	github.com/dana-id/dana-go v1.0.1
+	github.com/dana-id/dana-go v1.0.2
 	github.com/google/uuid v1.6.0
 )
 

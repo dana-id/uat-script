@@ -5,8 +5,6 @@ namespace DanaUat\PaymentGateway;
 use PHPUnit\Framework\TestCase;
 use Dana\PaymentGateway\v1\Api\PaymentGatewayApi;
 use Dana\Configuration;
-use Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest;
-use Dana\PaymentGateway\v1\Model\CreateOrderByRedirectRequest;
 use Dana\ObjectSerializer;
 use Dana\Env;
 use Dana\ApiException;
@@ -21,14 +19,21 @@ class CreateOrderTest extends TestCase
     private static $apiInstance;
 
     /**
-     * Generate a unique partner reference number
+     * Generate a unique partner reference number using UUID v4
      * 
      * @return string
      */
-    private function generatePartnerReferenceNo(): string
+    private static function generatePartnerReferenceNo(): string
     {
-        // Format: prefix + timestamp + random number
-        return 'TEST' . time() . rand(1000, 9999);
+        // Generate a UUID v4
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
     }
 
     public static function setUpBeforeClass(): void
@@ -67,11 +72,12 @@ class CreateOrderTest extends TestCase
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
             
             // Create a CreateOrderByRedirectRequest object from the JSON request data
-            $createOrderRequestObj = ObjectSerializer::createModelFromData(
+            $createOrderRequestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                CreateOrderByRedirectRequest::class,
-                ['partnerReferenceNo' => $partnerReferenceNo]
+                'Dana\PaymentGateway\v1\Model\CreateOrderByRedirectRequest',
             );
+
+            $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
             
             try {
                 // Make the API call
@@ -114,11 +120,12 @@ class CreateOrderTest extends TestCase
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
             
             // Create a CreateOrderByApiRequest object from the JSON request data
-            $createOrderRequestObj = ObjectSerializer::createModelFromData(
+            $createOrderRequestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                CreateOrderByApiRequest::class,
-                ['partnerReferenceNo' => $partnerReferenceNo]
+                'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
             );
+
+            $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
             
             try {
                 // Make the API call
@@ -161,11 +168,12 @@ class CreateOrderTest extends TestCase
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
             
             // Create a CreateOrderByApiRequest object from the JSON request data
-            $createOrderRequestObj = ObjectSerializer::createModelFromData(
+            $createOrderRequestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                CreateOrderByApiRequest::class,
-                ['partnerReferenceNo' => $partnerReferenceNo]
+                'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
             );
+
+            $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
             
             try {
                 // Make the API call
@@ -214,11 +222,12 @@ class CreateOrderTest extends TestCase
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
                 
                 // Create a CreateOrderByApiRequest object from the JSON request data
-                $createOrderRequestObj = ObjectSerializer::createModelFromData(
+                $createOrderRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
-                    CreateOrderByApiRequest::class,
-                    ['partnerReferenceNo' => $partnerReferenceNo]
+                    'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
                 );
+
+                $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
                 
                 try {
                     // Make the API call
@@ -267,18 +276,14 @@ class CreateOrderTest extends TestCase
                     $caseName
                 );
                 
-                // Replace variables in the request data
                 foreach ($requestData as $key => $value) {
                     if (is_string($value) && $value === '${partnerReferenceNo}') {
                         $requestData[$key] = $partnerReferenceNo;
                     }
                 }
                 
-                // Create the request object
                 $createOrderRequestObj = $requestData;
-
-                // Get the expected response from our configuration files
-                $expectedResponse = Util::getResponse(
+                Util::getResponse(
                     self::$jsonPathFile,
                     self::$titleCase,
                     $caseName
@@ -306,6 +311,70 @@ class CreateOrderTest extends TestCase
 
                     // We expect a 400 Bad Request for missing timestamp
                     $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 BadRequest for missing X-TIMESTAMP, got {$e->getCode()}");
+
+                    // Get the response body from the exception
+                    $responseContent = (string)$e->getResponseBody();
+                    
+                    // Use assertFailResponse to validate the error response
+                    Assertion::assertFailResponse(
+                        self::$jsonPathFile, 
+                        self::$titleCase, 
+                        $caseName, 
+                        $responseContent,
+                        ['partnerReferenceNo' => $partnerReferenceNo]
+                    );
+                } catch (\Exception $e) {
+                    throw $e;
+                }
+            });
+        } catch (\Exception $e) {            
+            $this->fail("Unexpected exception: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Should fail when authorization fails (ex: wrong X-SIGNATURE)
+     */
+    public function testCreateOrderUnauthorized(): void
+    {
+        try {
+            Util::withDelay(function() {
+                $caseName = 'CreateOrderUnauthorized';
+                
+                // Get the request data from the JSON file
+                $requestData = Util::getRequest(
+                    self::$jsonPathFile, 
+                    self::$titleCase, 
+                    $caseName
+                );
+                
+                // Generate a unique partner reference number
+                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $requestData['partnerReferenceNo'] = $partnerReferenceNo;
+                
+                // Create regular headers but with an invalid signature
+                $headers = Util::getHeadersWithSignature(
+                    'POST', 
+                    '/payment-gateway/v1.0/debit/payment-host-to-host.htm',
+                    $requestData,
+                    true,
+                    false,
+                    true
+                );
+                
+                // Make direct API call with invalid signature
+                try {
+                    Util::executeApiRequest(
+                        'POST',
+                        'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm',
+                        $headers,
+                        $requestData
+                    );
+                    
+                    $this->fail('Expected ApiException for invalid signature but the API call succeeded');
+                } catch (ApiException $e) {
+                    // We expect a 401 Unauthorized for invalid signature
+                    $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();

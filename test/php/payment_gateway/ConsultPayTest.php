@@ -48,9 +48,9 @@ class ConsultPayTest extends TestCase
                 $caseName
             );
             
-            $consultPayRequestObj = ObjectSerializer::createModelFromData(
+            $consultPayRequestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                ConsultPayRequest::class
+                'Dana\PaymentGateway\v1\Model\ConsultPayRequest'
             );
             
             // Make the API call
@@ -86,9 +86,9 @@ class ConsultPayTest extends TestCase
             );
             
             // Create a ConsultPayRequest object from the JSON request data
-            $consultPayRequestObj = ObjectSerializer::createModelFromData(
+            $consultPayRequestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                ConsultPayRequest::class
+                'Dana\PaymentGateway\v1\Model\ConsultPayRequest'
             );
             
             try {

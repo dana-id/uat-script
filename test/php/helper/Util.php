@@ -8,6 +8,29 @@ use Dana\ApiException;
 class Util
 {
     /**
+     * Function to generate timestamp for Dana API
+     * 
+     * @param bool $invalidTimestamp Whether to generate an invalid timestamp format
+     * @return array [timestamp, timestampForSignature]
+     */
+    private static function generateTimestamp(bool $invalidTimestamp = false): array
+    {
+        // Generate timestamp with proper format
+        // Set timezone to Jakarta (UTC+7)
+        $date = new \DateTime('now', new \DateTimeZone('+0700'));
+        
+        // Generate timestamp value for signature or headers
+        $timestamp = $invalidTimestamp 
+            ? $date->format('Y-m-d H:i:sP') // Invalid format (space instead of T)
+            : $date->format('Y-m-d\TH:i:sP'); // Valid format
+            
+        // Always add timestamp for signature calculation
+        $timestampForSignature = $date->format('Y-m-d\TH:i:sP');
+        
+        return [$timestamp, $timestampForSignature];
+    }
+
+    /**
      * Get request data from a JSON file
      *
      * @param string $jsonPathFile Path to the JSON file
@@ -200,6 +223,13 @@ class Util
         // Add the signature
         if ($invalidSignature) {
             $headers['X-SIGNATURE'] = '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'; // Invalid signature
+            
+            $generatedTimestamp = self::generateTimestamp($invalidTimestamp);
+            if ($withTimestamp) {
+                $headers['X-TIMESTAMP'] = $generatedTimestamp[0];
+            } else {
+                $headers['X-TIMESTAMP'] = '';
+            }
         } else {
             if ($method === null || $resourcePath === null || $requestObj === null) {
                 throw new \Exception('Method, resourcePath, and requestObj are required unless invalidSignature=true');
@@ -210,36 +240,26 @@ class Util
             if (is_object($requestObj) && method_exists($requestObj, 'toArray')) {
                 $requestArray = $requestObj->toArray();
             }
-        }
-        
-        // Generate timestamp with proper format
-        // Set timezone to Jakarta (UTC+7)
-        $date = new \DateTime('now', new \DateTimeZone('+0700'));
-        
-        // Generate timestamp value for signature or headers
-        $timestamp = $invalidTimestamp 
-            ? $date->format('Y-m-d H:i:sP') // Invalid format (space instead of T)
-            : $date->format('Y-m-d\TH:i:sP'); // Valid format
+
+            $generatedTimestamp = self::generateTimestamp($invalidTimestamp);
+            $timestampForSignature = $generatedTimestamp[1];
+
+            if ($withTimestamp) {
+                $headers['X-TIMESTAMP'] = $generatedTimestamp[0];
+            }
             
-        // Always add timestamp for signature calculation
-        $timestampForSignature = $date->format('Y-m-d\TH:i:sP');
-        
-        // Only add timestamp to headers if withTimestamp is true
-        if ($withTimestamp) {
-            $headers['X-TIMESTAMP'] = $timestamp;
-        }
-        
-        // Generate signature based on what's available in the Dana SDK
-        try {
-            $headers['X-SIGNATURE'] = SnapHeader::generateSignature(
-                $method,
-                $resourcePath,
-                json_encode($requestArray),
-                $timestampForSignature,
-                SnapHeader::getPrivateKey(getenv('PRIVATE_KEY'))
-            );
-        } catch (\Exception $e) {
-            throw new \Exception("Failed to generate signature: " . $e->getMessage());
+            // Generate signature based on what's available in the Dana SDK
+            try {
+                $headers['X-SIGNATURE'] = SnapHeader::generateSignature(
+                    $method,
+                    $resourcePath,
+                    json_encode($requestArray),
+                    $timestampForSignature,
+                    SnapHeader::getPrivateKey(getenv('PRIVATE_KEY'))
+                );
+            } catch (\Exception $e) {
+                throw new \Exception("Failed to generate signature: " . $e->getMessage());
+            }
         }
         
         return $headers;
