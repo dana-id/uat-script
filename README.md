@@ -2,23 +2,24 @@
 
 ## Description
 
-This repository contains scenarios that can be run for UAT in Sandbox and E2E scenarios using DANA Client library with your choice of programming language (Python, Golang, Java, Node). You can use it to:
+This repository contains scenarios that can be run for UAT in Sandbox and E2E scenarios using DANA Client library with your choice of programming language (Python, Golang, PHP, Node). You can use it to:
 
-- Automate running UAT scenarios in Sandbox with your credentials and the result can be downloaded in your Merchant Portal dashboard
-- Find examples of E2E scenarios for each business solution
+- **Automate running UAT** scenarios in Sandbox with your credentials and the result can be downloaded in your Merchant Portal dashboard
+- **Find examples of E2E** scenarios for each business solution
 
 For documentation of each DANA Client library visit:
 - Python: https://github.com/dana-id/dana-python
 - Golang: https://github.com/dana-id/dana-go
 - Node: https://github.com/dana-id/dana-node
+- PHP: https://github.com/dana-id/dana-php
 
 ## How to Use
 
 1. **Set up your environment:**
    - Clone this repo to your deployed sandbox system (can be in Kubernetes, VM, etc.)
    ```bash
-   git clone git@github.com:dana-id/self_testing_scenario.git
-   cd self_testing_scenario
+   git clone git@github.com:dana-id/uat-script.git
+   cd uat-script
    ```
 
 2. **Configure your credentials:**

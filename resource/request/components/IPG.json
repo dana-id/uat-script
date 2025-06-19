@@ -1101,7 +1101,7 @@
     "RefundOrder": {
         "RefundOrderValidScenario": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1125,7 +1125,7 @@
         },
         "RefundInProcess": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1149,7 +1149,7 @@
         },
         "RefundFailExceedPaymentAmount": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1157,7 +1157,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "100000.00",
+                    "value": "21000000.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1173,7 +1173,7 @@
         },
         "RefundFailNotAllowedByAgreement": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1197,7 +1197,7 @@
         },
         "RefundFailExceedRefundWindowTime": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1221,7 +1221,7 @@
         },
         "RefundFailMultipleRefundNotAllowed": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1245,7 +1245,7 @@
         },
         "RefundFailDuplicateRequest": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1269,7 +1269,7 @@
         },
         "RefundFailOrderNotPaid": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1317,7 +1317,7 @@
         },
         "RefundFailMandatoryParameterInvalid": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1335,13 +1335,13 @@
                 }
             },
             "response": {
-                "responseCode": "4005702",
+                "responseCode": "4005802",
                 "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
             }
         },
         "RefundFailOrderNotExist": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "123123123123123",
                 "originalReferenceNo": "",
@@ -1360,12 +1360,12 @@
             },
             "response": {
                 "responseCode": "4045812",
-                "responseMessage": "Invalid Bill/Virtual Account"
+                "responseMessage": "Invalid Bill"
             }
         },
         "RefundFailInsufficientMerchantBalance": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1389,7 +1389,7 @@
         },
         "RefundFailInvalidSignature": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1407,13 +1407,13 @@
                 }
             },
             "response": {
-                "responseCode": "4015700",
+                "responseCode": "4015800",
                 "responseMessage": "Unauthorized. Invalid Signature"
             }
         },
         "RefundFailTimeout": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1437,7 +1437,7 @@
         },
         "RefundFailIdempotent": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1461,7 +1461,7 @@
         },
         "RefundFailMerchantStatusAbnormal": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1485,12 +1485,222 @@
         }
     },
     "TransactionList": {
-        "TransactionListSuccess": {},
-        "TransactionListFailInvalidParam": {},
-        "TransactionListFailDataNotAvailable": {},
-        "TransactionListFailSystemError": {},
-        "TransactionListFailInvalidSignature": {},
-        "TransactionListFailInvalidToken": {},
-        "TransactionListFailInvalidMandatoryParameter": {}
+        "TransactionListSuccess": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "fromDateTime": "2020-12-21T17:55:11Z",
+                "toDateTime": "2022-01-21T17:55:11Z",
+                "pageSize": "10",
+                "pageNumber": "1",
+                "additionalInfo": {
+                    "types": [
+                        "PAYMENT",
+                        "REFUND",
+                        "OFFLINE_TOPUP",
+                        "TOP_UP",
+                        "REBATE"
+                    ],
+                    "statuses": [
+                        "PROCESSING",
+                        "SUCCESS",
+                        "CLOSED",
+                        "FAILED",
+                        "INIT",
+                        "REVOKED"
+                    ],
+                    "accessToken": "${authCode}"
+                }
+            },
+            "response": {
+                "responseCode": "2006000",
+                "responseMessage": "Transaction List Retrieved Successfully"
+            }
+        },
+        "TransactionListFailInvalidParam": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "fromDateTime": "2020-12-21T17:55:11Z",
+                "toDateTime": "2022-01-21T17:55:11Z",
+                "pageSize": "10",
+                "pageNumber": "1",
+                "additionalInfo": {
+                    "types": [
+                        "PAYMENT",
+                        "REFUND",
+                        "OFFLINE_TOPUP",
+                        "TOP_UP",
+                        "REBATE"
+                    ],
+                    "statuses": [
+                        "PROCESSING",
+                        "SUCCESS",
+                        "CLOSED",
+                        "FAILED",
+                        "INIT",
+                        "REVOKED"
+                    ],
+                    "accessToken": "${authCode}"
+                }
+            },
+            "response": {
+                "responseCode": "4006001",
+                "responseMessage": "Invalid Parameter"
+            }
+        },
+        "TransactionListFailDataNotAvailable": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "fromDateTime": "2020-12-21T17:55:11Z",
+                "toDateTime": "2022-01-21T17:55:11Z",
+                "pageSize": "10",
+                "pageNumber": "1",
+                "additionalInfo": {
+                    "types": [
+                        "PAYMENT",
+                        "REFUND",
+                        "OFFLINE_TOPUP",
+                        "TOP_UP",
+                        "REBATE"
+                    ],
+                    "statuses": [
+                        "PROCESSING",
+                        "SUCCESS",
+                        "CLOSED",
+                        "FAILED",
+                        "INIT",
+                        "REVOKED"
+                    ],
+                    "accessToken": "${authCode}"
+                }
+            },
+            "response": {
+                "responseCode": "4046000",
+                "responseMessage": "Data Not Available"
+            }
+        },
+        "TransactionListFailSystemError": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "fromDateTime": "2020-12-21T17:55:11Z",
+                "toDateTime": "2022-01-21T17:55:11Z",
+                "pageSize": "10",
+                "pageNumber": "1",
+                "additionalInfo": {
+                    "types": [
+                        "PAYMENT",
+                        "REFUND",
+                        "OFFLINE_TOPUP",
+                        "TOP_UP",
+                        "REBATE"
+                    ],
+                    "statuses": [
+                        "PROCESSING",
+                        "SUCCESS",
+                        "CLOSED",
+                        "FAILED",
+                        "INIT",
+                        "REVOKED"
+                    ],
+                    "accessToken": "${authCode}"
+                }
+            },
+            "response": {
+                "responseCode": "5006000",
+                "responseMessage": "Internal Server Error"
+            }
+        },
+        "TransactionListFailInvalidSignature": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "fromDateTime": "2020-12-21T17:55:11Z",
+                "toDateTime": "2022-01-21T17:55:11Z",
+                "pageSize": "10",
+                "pageNumber": "1",
+                "additionalInfo": {
+                    "types": [
+                        "PAYMENT",
+                        "REFUND",
+                        "OFFLINE_TOPUP",
+                        "TOP_UP",
+                        "REBATE"
+                    ],
+                    "statuses": [
+                        "PROCESSING",
+                        "SUCCESS",
+                        "CLOSED",
+                        "FAILED",
+                        "INIT",
+                        "REVOKED"
+                    ],
+                    "accessToken": "${authCode}"
+                }
+            },
+            "response": {
+                "responseCode": "4016000",
+                "responseMessage": "Invalid Signature"
+            }
+        },
+        "TransactionListFailInvalidToken": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "fromDateTime": "2020-12-21T17:55:11Z",
+                "toDateTime": "2022-01-21T17:55:11Z",
+                "pageSize": "10",
+                "pageNumber": "1",
+                "additionalInfo": {
+                    "types": [
+                        "PAYMENT",
+                        "REFUND",
+                        "OFFLINE_TOPUP",
+                        "TOP_UP",
+                        "REBATE"
+                    ],
+                    "statuses": [
+                        "PROCESSING",
+                        "SUCCESS",
+                        "CLOSED",
+                        "FAILED",
+                        "INIT",
+                        "REVOKED"
+                    ],
+                    "accessToken": "${authCode}"
+                }
+            },
+            "response": {
+                "responseCode": "4016001",
+                "responseMessage": "Invalid Access Token"
+            }
+        },
+        "TransactionListFailInvalidMandatoryParameter": {
+            "request": {
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "fromDateTime": "2020-12-21T17:55:11Z",
+                "toDateTime": "2022-01-21T17:55:11Z",
+                "pageSize": "10",
+                "pageNumber": "1",
+                "additionalInfo": {
+                    "types": [
+                        "PAYMENT",
+                        "REFUND",
+                        "OFFLINE_TOPUP",
+                        "TOP_UP",
+                        "REBATE"
+                    ],
+                    "statuses": [
+                        "PROCESSING",
+                        "SUCCESS",
+                        "CLOSED",
+                        "FAILED",
+                        "INIT",
+                        "REVOKED"
+                    ],
+                    "accessToken": "${authCode}"
+                }
+            },
+            "response": {
+                "responseCode": "4006002",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        }
     }
 }

@@ -791,7 +791,7 @@
                 "originalReferenceNo": "${valueFromServer}",
                 "serviceCode": "54",
                 "latestTransactionStatus": "00",
-                "transactionStatusDesc": "INIT",
+                "transactionStatusDesc": "SUCCESS",
                 "transAmount": {
                     "value": "50001.00",
                     "currency": "IDR"
@@ -813,7 +813,7 @@
                         "expiryTime": "${valueFromServer}"
                     },
                     "statusDetail": {
-                        "acquirementStatus": "PAID"
+                        "acquirementStatus": "SUCCESS"
                     }
                 }
             }

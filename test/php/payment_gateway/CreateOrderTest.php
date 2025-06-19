@@ -258,6 +258,191 @@ class CreateOrderTest extends TestCase
     }
 
     /**
+     * Should create an order with API scenario using VA bank payment method
+     */
+    public function testCreateOrderNetworkPayPgOtherVaBank(): void
+    {
+        Util::withDelay(function() {
+            $caseName = 'CreateOrderNetworkPayPgOtherVaBank';
+            
+            // Get the request data from the JSON file
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName
+            );
+            
+            // Set a unique partner reference number
+            $partnerReferenceNo = $this->generatePartnerReferenceNo();
+            $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+            
+            // Create a CreateOrderByApiRequest object from the JSON request data
+            $createOrderRequestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
+            );
+
+            $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
+            
+            try {
+                // Make the API call
+                $apiResponse = self::$apiInstance->createOrder($createOrderRequestObj);
+                
+                // Assert the API response
+                Assertion::assertResponse(
+                    self::$jsonPathFile, 
+                    self::$titleCase, 
+                    $caseName, 
+                    $apiResponse->__toString(),
+                    ['partnerReferenceNo' => $partnerReferenceNo]
+                );
+                
+                $this->assertTrue(true);
+            } catch (ApiException $e) {
+                $this->fail('Failed to call create order API: ' . $e->getMessage());
+            } catch (\Exception $e) {
+                $this->fail('Failed to call create order API: ' . $e->getMessage());
+            }
+        });
+    }
+
+    /**
+     * Should fail when field format is invalid (ex: amount without decimal)
+     */
+    public function testCreateOrderInvalidFieldFormat(): void
+    {
+        try {
+            Util::withDelay(function() {
+                $caseName = 'CreateOrderInvalidFieldFormat';
+                
+                // Get the request data from the JSON file
+                $requestData = Util::getRequest(
+                    self::$jsonPathFile, 
+                    self::$titleCase, 
+                    $caseName
+                );
+                
+                // Generate a unique partner reference number
+                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $requestData['partnerReferenceNo'] = $partnerReferenceNo;
+                
+                // Create a CreateOrderByApiRequest object from the JSON request data
+                $createOrderRequestObj = ObjectSerializer::deserialize(
+                    $requestData,
+                    'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
+                );
+
+                $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
+                
+                try {
+                    // Make the API call
+                    self::$apiInstance->createOrder($createOrderRequestObj);
+                    
+                    $this->fail('Expected ApiException for invalid field format but the API call succeeded');
+                } catch (ApiException $e) {
+                    // We expect a 400 Bad Request for invalid field format
+                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 BadRequest for invalid field format, got {$e->getCode()}");
+
+                    // Get the response body from the exception
+                    $responseContent = (string)$e->getResponseBody();
+                    
+                    // Use assertFailResponse to validate the error response
+                    Assertion::assertFailResponse(
+                        self::$jsonPathFile, 
+                        self::$titleCase, 
+                        $caseName, 
+                        $responseContent,
+                        ['partnerReferenceNo' => $partnerReferenceNo]
+                    );
+                } catch (\Exception $e) {
+                    $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
+                }
+            });
+        } catch (\Exception $e) {            
+            $this->fail("Unexpected exception: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Should fail when request is inconsistent, for example duplicated partner_reference_no with different amount
+     */
+    public function testCreateOrderInconsistentRequest(): void
+    {
+        try {
+            Util::withDelay(function() {
+                $caseName = 'CreateOrderInconsistentRequest';
+                
+                // Get the request data from the JSON file
+                $requestData = Util::getRequest(
+                    self::$jsonPathFile, 
+                    self::$titleCase, 
+                    $caseName
+                );
+                
+                // Generate a unique partner reference number
+                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $requestData['partnerReferenceNo'] = $partnerReferenceNo;
+                
+                // Create request object for first call
+                $createOrderRequestObj = ObjectSerializer::deserialize(
+                    $requestData,
+                    'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
+                );
+
+                $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
+                
+                try {
+                    // Make the first API call
+                    self::$apiInstance->createOrder($createOrderRequestObj);
+                } catch (\Exception $e) {
+                    $this->fail("Failed to call first create order API: " . $e->getMessage());
+                }
+                
+                // Sleep for a second to ensure the first request is processed
+                sleep(1);
+                
+                try {
+                    // Preparing request with the same partner reference number but different amount
+                    $requestData['amount']['value'] = '100000.00';
+                    $requestData['payOptionDetails'][0]['transAmount']['value'] = '100000.00';
+
+                    // Create request object for second call
+                    $createOrderRequestObjSecond = ObjectSerializer::deserialize(
+                        $requestData,
+                        'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
+                    );
+
+                    $createOrderRequestObjSecond->setPartnerReferenceNo($partnerReferenceNo);
+                    
+                    // Make the second API call with the same reference number but different amount
+                    self::$apiInstance->createOrder($createOrderRequestObjSecond);
+                    
+                    $this->fail('Expected ApiException for inconsistent request but the API call succeeded');
+                } catch (ApiException $e) {
+                    // We expect a 404 Not Found for inconsistent request
+                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 NotFoundException for inconsistent request, got {$e->getCode()}");
+
+                    // Get the response body from the exception
+                    $responseContent = (string)$e->getResponseBody();
+                    
+                    // Use assertFailResponse to validate the error response
+                    Assertion::assertFailResponse(
+                        self::$jsonPathFile, 
+                        self::$titleCase, 
+                        $caseName, 
+                        $responseContent,
+                        ['partnerReferenceNo' => $partnerReferenceNo]
+                    );
+                } catch (\Exception $e) {
+                    $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
+                }
+            });
+        } catch (\Exception $e) {            
+            $this->fail("Unexpected exception: " . $e->getMessage());
+        }
+    }
+
+    /**
      * Should fail when mandatory field is missing (ex: X-TIMESTAMP in header)
      */
     public function testCreateOrderInvalidMandatoryField(): void
