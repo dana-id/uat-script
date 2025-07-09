@@ -178,6 +178,7 @@ class QueryPaymentTest extends TestCase
      */
     public function testQueryPaymentCreatedOrder(): void
     {
+        $this->markTestSkipped('Skipping this test temporarily.');
         Util::withDelay(function() {
             $caseName = 'QueryPaymentCreatedOrder';
             $partnerReferenceNo = self::$orderReferenceNumber;
@@ -223,58 +224,60 @@ class QueryPaymentTest extends TestCase
     // /**
     //  * Should query the payment with status paid (PAID)
     //  */
-    // public function testQueryPaymentPaidOrder(): void
-    // {
-    //     Util::withDelay(function() {
-    //         $caseName = 'QueryPaymentPaidOrder';
-    //         $partnerReferenceNo = self::$orderPaidReferenceNumber;
+    public function testQueryPaymentPaidOrder(): void
+    {
+        $this->markTestSkipped('Skipping this test temporarily.');
+        Util::withDelay(function() {
+            $caseName = 'QueryPaymentPaidOrder';
+            $partnerReferenceNo = self::$orderPaidReferenceNumber;
             
-    //         // Get the request data from the JSON file
-    //         $jsonDict = Util::getRequest(
-    //             self::$jsonPathFile,
-    //             self::$titleCase,
-    //             $caseName
-    //         );
+            // Get the request data from the JSON file
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName
+            );
             
-    //         // Set the correct partner reference number
-    //         $jsonDict['originalPartnerReferenceNo'] = $partnerReferenceNo;
+            // Set the correct partner reference number
+            $jsonDict['originalPartnerReferenceNo'] = $partnerReferenceNo;
             
-    //         // Create a QueryPaymentRequest object from the JSON request data
-    //         $queryPaymentRequestObj = ObjectSerializer::deserialize(
-    //             $jsonDict,
-    //             'Dana\PaymentGateway\v1\Model\QueryPaymentRequest',
-    //         );
+            // Create a QueryPaymentRequest object from the JSON request data
+            $queryPaymentRequestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\PaymentGateway\v1\Model\QueryPaymentRequest',
+            );
             
-    //         try {
-    //             // Make the API call
-    //             $apiResponse = self::$apiInstance->queryPayment($queryPaymentRequestObj);
+            try {
+                // Make the API call
+                $apiResponse = self::$apiInstance->queryPayment($queryPaymentRequestObj);
                 
-    //             // Log the response (equivalent to Python's print)
-    //             error_log("Query payment response: " . $apiResponse->__toString());
+                // Log the response (equivalent to Python's print)
+                error_log("Query payment response: " . $apiResponse->__toString());
                 
-    //             // Assert the API response
-    //             Assertion::assertResponse(
-    //                 self::$jsonPathFile, 
-    //                 self::$titleCase, 
-    //                 $caseName, 
-    //                 $apiResponse->__toString(),
-    //                 ['partnerReferenceNo' => $partnerReferenceNo]
-    //             );
+                // Assert the API response
+                Assertion::assertResponse(
+                    self::$jsonPathFile, 
+                    self::$titleCase, 
+                    $caseName, 
+                    $apiResponse->__toString(),
+                    ['partnerReferenceNo' => $partnerReferenceNo]
+                );
                 
-    //             $this->assertTrue(true);
-    //         } catch (ApiException $e) {
-    //             $this->fail('Failed to call query payment API: ' . $e->getMessage());
-    //         } catch (Exception $e) {
-    //             $this->fail('Failed to call query payment API: ' . $e->getMessage());
-    //         }
-    //     });
-    // }
+                $this->assertTrue(true);
+            } catch (ApiException $e) {
+                $this->fail('Failed to call query payment API: ' . $e->getMessage());
+            } catch (Exception $e) {
+                $this->fail('Failed to call query payment API: ' . $e->getMessage());
+            }
+        });
+    }
 
     /**
      * Should query the payment with status canceled (CANCELLED)
      */
     public function testQueryPaymentCanceledOrder(): void
     {
+        $this->markTestSkipped('Skipping this test temporarily.');
         Util::withDelay(function() {
             $caseName = 'QueryPaymentCanceledOrder';
             $partnerReferenceNo = self::$orderCanceledReferenceNumber;

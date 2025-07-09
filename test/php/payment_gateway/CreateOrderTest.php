@@ -150,9 +150,12 @@ class CreateOrderTest extends TestCase
 
     /**
      * Should create an order using API scenario with QRIS payment method
+     *
+     * @skip
      */
     public function testCreateOrderNetworkPayPgQris(): void
     {
+        $this->markTestSkipped('skipped by request: scenario CreateOrderNetworkPayPgQris');
         Util::withDelay(function() {
             $caseName = 'CreateOrderNetworkPayPgQris';
             

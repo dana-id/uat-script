@@ -91,7 +91,7 @@
                 }
             },
             "response": {
-                "responseMessage": "Invalid Field Format",
+                "responseMessage": "Invalid Field Format amount",
                 "responseCode": "4000001"
             }
         },
@@ -729,7 +729,7 @@
                     "value": "22200.00",
                     "currency": "IDR"
                 },
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "externalStoreId": "",
                 "additionalInfo": {}
@@ -779,7 +779,7 @@
                     "value": "50001.00",
                     "currency": "IDR"
                 },
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "externalStoreId": "",
                 "additionalInfo": {}
@@ -826,10 +826,10 @@
                 "serviceCode": "54",
                 "transactionDate": "2030-05-01T00:46:43+07:00",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "55001.00",
                     "currency": "IDR"
                 },
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "externalStoreId": "",
                 "additionalInfo": {}
@@ -879,7 +879,7 @@
                     "value": "22200.00",
                     "currency": "IDR"
                 },
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "externalStoreId": "",
                 "additionalInfo": {}
@@ -899,7 +899,7 @@
                     "value": "22200.00",
                     "currency": "IDR"
                 },
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "externalStoreId": "",
                 "additionalInfo": {}
@@ -920,7 +920,7 @@
                     "value": "22200.00",
                     "currency": "IDR"
                 },
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "externalStoreId": "",
                 "additionalInfo": {}
@@ -941,7 +941,7 @@
                     "value": "22200.00",
                     "currency": "IDR"
                 },
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "externalStoreId": "",
                 "additionalInfo": {}
@@ -1579,6 +1579,28 @@
             "response": {
                 "responseCode": "2025800",
                 "responseMessage": "Request In Progress"
+            }
+        },
+        "RefundOrderIdempotent": {
+            "request": {
+                "merchantId": "216620010016033632482",
+                "subMerchantId": "",
+                "originalPartnerReferenceNo": "123123123123124",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "originalCaptureNo": "",
+                "partnerRefundNo": "123123123123124",
+                "refundAmount": {
+                    "value": "10000.00",
+                    "currency": "IDR"
+                },
+                "externalStoreId": "",
+                "reason": "Idempotency test",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2005800",
+                "responseMessage": "Successful (Idempotent)"
             }
         }
     }

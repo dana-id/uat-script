@@ -58,14 +58,14 @@ describe('Payment Gateway - Refund Order Tests', () => {
         }
     });
 
-    // // Test case for successful refund
-    // test('should successfully refund an order', async () => {
-    //   const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, "RefundOrderValidScenario");
-    //   refundRequestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
+    // Test case for successful refund
+    test.skip('should successfully refund an order', async () => {
+        const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, "RefundOrderValidScenario");
+        refundRequestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
 
-    //   const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
-    //   await assertResponse(jsonPathFile, titleCase, "RefundOrderValidScenario", response, { 'partnerReferenceNo': sharedOriginalPartnerReference });
-    // });
+        const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
+        await assertResponse(jsonPathFile, titleCase, "RefundOrderValidScenario", response, { 'partnerReferenceNo': sharedOriginalPartnerReference });
+    });
 
 
     // Test case for refund in progress
@@ -92,29 +92,29 @@ describe('Payment Gateway - Refund Order Tests', () => {
         }
     });
 
-    // // Test case for refund exceeding transaction amount limit
-    // test('RefundOrderExceedsTransactionAmountLimit - should fail when refund amount exceeds transaction limit', async () => {
-    //     const refundOrderCaseName = "RefundOrderExceedsTransactionAmountLimit";
+    // Test case for refund exceeding transaction amount limit
+    test.skip('RefundOrderExceedsTransactionAmountLimit - should fail when refund amount exceeds transaction limit', async () => {
+        const refundOrderCaseName = "RefundOrderExceedsTransactionAmountLimit";
 
-    //     try {
-    //         // Retrieve the refund request data for the "exceeds amount limit" scenario
-    //         const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
+        try {
+            // Retrieve the refund request data for the "exceeds amount limit" scenario
+            const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
 
-    //         // Attempt to refund the order via the API
-    //         const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
+            // Attempt to refund the order via the API
+            const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
 
-    //         // Assert that the response matches the expected successful scenario (should not reach here if refund exceeds limit)
-    //         await assertResponse(jsonPathFile, titleCase, refundOrderCaseName, response, { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
-    //     } catch (error) {
-    //         if (error instanceof ResponseError) {
-    //             // Assert that the error response matches the expected failure for exceeding amount limit
-    //             await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, error);
-    //         } else {
-    //             // Fail the test if an unexpected error type is thrown
-    //             fail(`Unexpected error type: ${error}`);
-    //         }
-    //     }
-    // });
+            // Assert that the response matches the expected successful scenario (should not reach here if refund exceeds limit)
+            await assertResponse(jsonPathFile, titleCase, refundOrderCaseName, response, { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
+        } catch (error) {
+            if (error instanceof ResponseError) {
+                // Assert that the error response matches the expected failure for exceeding amount limit
+                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, error);
+            } else {
+                // Fail the test if an unexpected error type is thrown
+                fail(`Unexpected error type: ${error}`);
+            }
+        }
+    });
 
     // Test case for refund not allowed by agreement
     test('RefundOrderNotAllowed - should fail when refund is not allowed by agreement', async () => {
@@ -197,59 +197,59 @@ describe('Payment Gateway - Refund Order Tests', () => {
         }
     });
 
-    // // Test case for duplicate refund request
-    // test('RefundOrderDuplicateRequest - should fail when sending a duplicate refund request', async () => {
-    //     const refundOrderCaseName = "RefundOrderDuplicateRequest";
+    // Test case for duplicate refund request
+    test.skip('RefundOrderDuplicateRequest - should fail when sending a duplicate refund request', async () => {
+        const refundOrderCaseName = "RefundOrderDuplicateRequest";
 
-    //     // Retrieve the refund request data for the "duplicate request" scenario
-    //     const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
+        // Retrieve the refund request data for the "duplicate request" scenario
+        const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
 
-    //     try {
-    //         // Attempt to refund the order via the API
-    //         const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
+        try {
+            // Attempt to refund the order via the API
+            const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
 
-    //         // If the API call succeeds, this is unexpected
-    //         fail("Expected an error but the API call succeeded");
-    //     } catch (e: any) {
-    //         if (e instanceof ResponseError && Number(e.status) === 409) {
-    //             // Assert the error response matches expected conflict error
-    //             await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
-    //                 { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
-    //         } else if (e instanceof ResponseError) {
-    //             // If the error is not a 409, fail the test
-    //             fail("Expected conflict failed but got status code " + e.status);
-    //         } else {
-    //             throw e;
-    //         }
-    //     }
-    // });
+            // If the API call succeeds, this is unexpected
+            fail("Expected an error but the API call succeeded");
+        } catch (e: any) {
+            if (e instanceof ResponseError && Number(e.status) === 409) {
+                // Assert the error response matches expected conflict error
+                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
+                    { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
+            } else if (e instanceof ResponseError) {
+                // If the error is not a 409, fail the test
+                fail("Expected conflict failed but got status code " + e.status);
+            } else {
+                throw e;
+            }
+        }
+    });
 
-    // // Test case for refunding an order that has not been paid
-    // test('RefundOrderNotPaid - should fail when attempting to refund an unpaid order', async () => {
-    //     const refundOrderCaseName = "RefundOrderNotPaid";
+    // Test case for refunding an order that has not been paid
+    test.skip('RefundOrderNotPaid - should fail when attempting to refund an unpaid order', async () => {
+        const refundOrderCaseName = "RefundOrderNotPaid";
 
-    //     // Retrieve the refund request data for the "not paid" scenario
-    //     const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
+        // Retrieve the refund request data for the "not paid" scenario
+        const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
 
-    //     try {
-    //         // Attempt to refund the order via the API
-    //         const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
+        try {
+            // Attempt to refund the order via the API
+            const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
 
-    //         // If the API call succeeds, this is unexpected
-    //         fail("Expected an error but the API call succeeded");
-    //     } catch (e: any) {
-    //         if (e instanceof ResponseError && Number(e.status) === 403) {
-    //             // Assert the error response matches expected forbidden error
-    //             await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
-    //                 { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
-    //         } else if (e instanceof ResponseError && Number(e.status) !== 403) {
-    //             // If the error is not a 403, fail the test
-    //             fail("Expected forbidden failed but got status code " + e.status);
-    //         } else {
-    //             throw e;
-    //         }
-    //     }
-    // });
+            // If the API call succeeds, this is unexpected
+            fail("Expected an error but the API call succeeded");
+        } catch (e: any) {
+            if (e instanceof ResponseError && Number(e.status) === 403) {
+                // Assert the error response matches expected forbidden error
+                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
+                    { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
+            } else if (e instanceof ResponseError && Number(e.status) !== 403) {
+                // If the error is not a 403, fail the test
+                fail("Expected forbidden failed but got status code " + e.status);
+            } else {
+                throw e;
+            }
+        }
+    });
 
     // Test case for refund with illegal parameter
     test('RefundOrderIllegalParameter - should fail when illegal parameters are provided', async () => {
@@ -322,32 +322,32 @@ describe('Payment Gateway - Refund Order Tests', () => {
 
     });
 
-    // // Test case for refund with invalid bill parameter
-    // test('RefundOrderInvalidBill - should fail when invalid bill information is provided', async () => {
-    //     const refundOrderCaseName = "RefundOrderInvalidBill";
+    // Test case for refund with invalid bill parameter
+    test.skip('RefundOrderInvalidBill - should fail when invalid bill information is provided', async () => {
+        const refundOrderCaseName = "RefundOrderInvalidBill";
 
-    //     // Retrieve the refund request data for the "invalid bill" scenario
-    //     const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
+        // Retrieve the refund request data for the "invalid bill" scenario
+        const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
+        refundRequestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
+        refundRequestData.partnerRefundNo = sharedOriginalPartnerReference;
+        console.log(`Refund Request Data: ${JSON.stringify(refundRequestData)}`);
 
-    //     try {
-    //         // Attempt to refund the order via the API
-    //         const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
+        try {
+            // Attempt to refund the order via the API
+            const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
 
-    //         // If the API call succeeds, this is unexpected
-    //         fail("Expected an error but the API call succeeded");
-    //     } catch (e: any) {
-    //         if (e instanceof ResponseError && Number(e.status) === 400) {
-    //             // Assert the error response matches expected bad request error
-    //             await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
-    //                 { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
-    //         } else if (e instanceof ResponseError) {
-    //             // If the error is not a 400, fail the test
-    //             fail("Expected bad request failed but got status code " + e.status);
-    //         } else {
-    //             throw e;
-    //         }
-    //     }
-    // });
+            // If the API call succeeds, this is unexpected
+            fail("Expected an error but the API call succeeded");
+        } catch (e: any) {
+            if (e instanceof ResponseError) {
+                // Assert the error response matches expected bad request error
+                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
+                    { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
+            } else {
+                throw e;
+            }
+        }
+    });
 
     // Test case for refund with insufficient funds
     test('RefundOrderInsufficientFunds - should fail when merchant has insufficient funds for refund', async () => {
@@ -467,6 +467,32 @@ describe('Payment Gateway - Refund Order Tests', () => {
             } else if (e instanceof ResponseError) {
                 // If the error is not a 404, fail the test
                 fail("Expected not found failed but got status code " + e.status);
+            } else {
+                throw e;
+            }
+        }
+    });
+
+    // Test case for idempotent refund
+    test.skip('RefundOrderIdempotent - should succeed idempotently when refund is retried with same partnerRefundNo', async () => {
+        const refundOrderCaseName = "RefundOrderIdempotent";
+
+        // Retrieve the refund request data for the idempotent scenario
+        const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
+        // Optionally, set unique reference if needed
+        // refundRequestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
+        // refundRequestData.partnerRefundNo = sharedOriginalPartnerReference;
+
+        try {
+            // Attempt to refund the order via the API
+            const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
+
+            // Assert that the response matches the expected idempotent scenario
+            await assertResponse(jsonPathFile, titleCase, refundOrderCaseName, response, { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
+        } catch (e: any) {
+            if (e instanceof ResponseError) {
+                // If API returns error, fail the test
+                fail(`Expected idempotent refund to succeed but got error: ${e.status}`);
             } else {
                 throw e;
             }

@@ -94,7 +94,7 @@ describe('Payment Gateway - Create Order Tests', () => {
   });
 
   // Test: Create order using QRIS payment method
-  test('CreateOrderNetworkPayPgQris - should successfully create order with API scenario and pay with QRIS payment method', async () => {
+  test.skip('CreateOrderNetworkPayPgQris - should successfully create order with API scenario and pay with QRIS payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgQris";
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 

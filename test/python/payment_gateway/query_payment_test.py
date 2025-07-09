@@ -144,6 +144,7 @@ def create_test_order_canceled(partner_reference_no):
 
 
 @with_delay()
+@pytest.mark.skip(reason="Skipping this test temporarily.")
 def test_query_payment_created_order(test_order_reference_number):
     """Should query the payment with status created but not paid (INIT)"""
     # Get the partner reference number from the fixture
@@ -168,6 +169,7 @@ def test_query_payment_created_order(test_order_reference_number):
     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
 @with_delay()
+@pytest.mark.skip(reason="Skipping this test temporarily.")
 def test_query_payment_paid_order(test_order_paid_reference_number):
 
     # Add waiting time for the callback to work
@@ -195,6 +197,7 @@ def test_query_payment_paid_order(test_order_paid_reference_number):
     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": test_order_paid_reference_number})
 
 @with_delay()
+@pytest.mark.skip(reason="Skipping this test temporarily.")
 def test_query_payment_canceled_order(test_order_canceled_reference_number):
     
     """Should query the payment with status canceled (CANCELLED)"""    

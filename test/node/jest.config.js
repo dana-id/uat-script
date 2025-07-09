@@ -9,8 +9,8 @@ module.exports = {
   testMatch: [
     '**/payment_gateway/**/*.ts',
     '**/payment_gateway/**/*.js',
-    '**/ipg/**/*.ts',
-    '**/ipg/**/*.js'
+    '**/widget/**/*.ts',
+    '**/widget/**/*.js'
   ],
 
   // An array of regexp pattern strings that are matched against all test paths

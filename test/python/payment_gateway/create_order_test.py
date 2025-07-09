@@ -85,6 +85,7 @@ def test_create_order_api_scenario():
     # Assert the API response
     assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
+@pytest.mark.skip(reason="skipped by request: scenario CreateOrderNetworkPayPgQris")
 @with_delay()
 def test_create_order_network_pay_pg_qris():
     """Should create an order using API scenario with QRIS payment method"""

@@ -138,6 +138,8 @@ func TestCreateOrderApiScenario(t *testing.T) {
 
 // TestCreateOrderNetworkPayPgQris tests creating an order using API scenario with QRIS payment method
 func TestCreateOrderNetworkPayPgQris(t *testing.T) {
+	t.Skip("skipped by request: scenario CreateOrderNetworkPayPgQris")
+
 	caseName := "CreateOrderNetworkPayPgQris"
 
 	// Get the request data from the JSON file

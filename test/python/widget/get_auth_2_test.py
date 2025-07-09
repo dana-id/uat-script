@@ -1,18 +1,11 @@
 import os
 import pytest
+import asyncio
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
-from dana.ipg.v1.enum import *
-from dana.ipg.v1.models import *
-from dana.ipg.v1 import *
-from dana.ipg.v1.api import *
+from dana.ipg.v1.api import IPGApi
 from dana.api_client import ApiClient
-from dana.exceptions import *
-from uuid import uuid4
-from helper.util import get_request, with_delay
-from helper.assertion import assert_response, assert_fail_response
-
-title_case = "GetAuth"
-json_path_file = "resource/request/components/Widget.json"
+from helper.util import with_delay
+from automate_oauth import automate_oauth
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -26,15 +19,16 @@ configuration = SnapConfiguration(
 with ApiClient(configuration) as api_client:
     api_instance = IPGApi(api_client)
 
-def generate_partner_reference_no():
-    return str(uuid4())
-
 @pytest.fixture(scope="module")
 def test_get_auth_reference_number():
-    return generate_partner_reference_no()
+    from uuid import uuid4
+    return str(uuid4())
 
 @with_delay()
-def test_get_auth_success(test_get_auth_reference_number):
-    case_name = "GetAuthSuccess"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Placeholder test")
+def test_get_auth_success():
+    output = asyncio.run(automate_oauth())
+    if not output:
+        pytest.fail("automate_oauth() did not return any value.")
+    auth_code = output
+    if not auth_code:
+        pytest.fail("Auth Code was not returned by automate_oauth().")

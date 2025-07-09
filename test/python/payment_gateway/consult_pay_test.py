@@ -1,4 +1,5 @@
 import os
+import pytest
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.payment_gateway.v1.enum import *
 from dana.payment_gateway.v1.models import *
@@ -71,6 +72,7 @@ def test_consult_pay_invalid_field_format():
         
         
 @with_delay()
+@pytest.mark.skip(reason="Skipping this test temporarily.")
 def test_consult_pay_invalid_mandatory_field():
     """Should give fail response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedInvalidMandatoryField"

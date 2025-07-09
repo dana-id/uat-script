@@ -26,8 +26,6 @@ const dana = new Dana({
   env: process.env.ENV || 'sandbox'
 });
 
-const merchantId = process.env.MERCHANT_ID || "";
-
 // Utility function to generate unique reference numbers
 function generatePartnerReferenceNo(): string {
   return uuidv4();
@@ -41,33 +39,33 @@ describe('Query Payment Tests', () => {
 
   async function createOrder() {
     const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
-    createOrderRequestData.merchantId = merchantId;
     sharedOriginalPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference
     await dana.paymentGatewayApi.createOrder(createOrderRequestData);
   }
 
   async function createPaidOrder() {
-    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
-    createOrderRequestData.merchantId = merchantId;
+    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderNetworkPayPgOtherWallet");
     sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
     createOrderRequestData.amount.value = "50001.00"; // Set a valid amount to simulate a paid order
     await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+    await new Promise(resolve => setTimeout(resolve, 10000));
   }
 
   async function createCanceledOrder() {
-    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
-    createOrderRequestData.merchantId = merchantId;
+    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
     sharedOriginalCanceledPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalCanceledPartnerReference;
     await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+    // await new Promise(resolve => setTimeout(resolve, 4000));
 
     const cancelOrderRequestData = getRequest<CancelOrderRequest>(jsonPathFile, "CancelOrder", "CancelOrderValidScenario");
     cancelOrderRequestData.originalPartnerReferenceNo = sharedOriginalCanceledPartnerReference;
     await dana.paymentGatewayApi.cancelOrder(cancelOrderRequestData);
+    // await new Promise(resolve => setTimeout(resolve, 10000));
   }
-
+  
   // Create a shared order before all tests
   beforeAll(async () => {
 
@@ -81,7 +79,7 @@ describe('Query Payment Tests', () => {
 
     try {
       await createPaidOrder()
-      console.log(`Shared paid order created with reference: ${sharedOriginalPartnerReference}`);
+      console.log(`Shared paid order created with reference: ${sharedOriginalPaidPartnerReference}`);
     } catch (e) {
       console.error('Failed to create shared paid order - tests cannot continue:', e);
     }
@@ -92,6 +90,25 @@ describe('Query Payment Tests', () => {
       console.log(`Shared canceled order created with reference: ${sharedOriginalCanceledPartnerReference}`);
     } catch (e) {
       console.error('Failed to create shared canceled order - tests cannot continue:', e);
+    }
+  });
+  
+  // Test successful query paid
+  test.skip('should successfully query payment with status paid (PAID)', async () => {
+    const queryPaymentCaseName = "QueryPaymentPaidOrder";
+
+    try {
+      // Now query that same paid order
+      const queryRequestData: QueryPaymentRequest = getRequest<QueryPaymentRequest>(jsonPathFile, titleCase, queryPaymentCaseName);
+      queryRequestData.originalPartnerReferenceNo = sharedOriginalPaidPartnerReference;
+
+      const response = await dana.paymentGatewayApi.queryPayment(queryRequestData);
+
+      // Assert the response matches the expected data using our helper function
+      await assertResponse(jsonPathFile, titleCase, queryPaymentCaseName, response, { 'partnerReferenceNo': sharedOriginalPaidPartnerReference });
+    } catch (e) {
+      console.error('Query payment test failed:', e);
+      throw e;
     }
   });
 
@@ -117,12 +134,12 @@ describe('Query Payment Tests', () => {
   // Test successful query payment
   test('should successfully query payment with status canceled (CANCELLED)', async () => {
     const queryPaymentCaseName = "QueryPaymentCanceledOrder";
-
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for cancellation to propagate
     try {
       // Now query that same order
       const queryRequestData: QueryPaymentRequest = getRequest<QueryPaymentRequest>(jsonPathFile, titleCase, queryPaymentCaseName);
       queryRequestData.originalPartnerReferenceNo = sharedOriginalCanceledPartnerReference;
-
+            
       const response = await dana.paymentGatewayApi.queryPayment(queryRequestData);
 
       // Assert the response matches the expected data using our helper function

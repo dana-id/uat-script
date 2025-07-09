@@ -29,10 +29,10 @@ run_node_runner(){
     echo "Installing dependencies..."
     npm install --save dana-node dotenv
     npm install --save-dev jest ts-jest
-    
-    # Install Playwright only when running IPG tests which require browser automation
-    if [ "$folderName" = "ipg" ] || [ -z "$folderName" ]; then
-        echo "IPG tests detected or all tests running. Installing Playwright..."
+
+    # Install Playwright only when running Widget tests which require browser automation
+    if [ "$folderName" = "widget" ] || [ -z "$folderName" ]; then
+        echo "Widget tests detected or all tests running. Installing Playwright..."
         npm install --save-dev @playwright/test playwright
         
         # Check if we're running in CI (Alpine container)

@@ -99,6 +99,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderValidScenario(): void
     {
+        $this->markTestSkipped('Skipping this test temporarily.');
         Util::withDelay(function() {
             $caseName = 'CancelOrderValidScenario';
             

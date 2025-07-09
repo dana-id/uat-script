@@ -25,7 +25,12 @@ function getRequestWithDelimiter(inputString: string, delimiter: string): string
 function getRequest<T = Record<string, any>>(jsonPathFile: string, title: string, caseName: string): T {
   try {
     const jsonData: Record<string, any> = JSON.parse(fs.readFileSync(jsonPathFile, 'utf8'));
-    return (jsonData[title]?.[caseName]?.request || {}) as T;
+    const request = (jsonData[title]?.[caseName]?.request || {}) as T;
+    const merchantId = process.env.MERCHANT_ID;
+    if (merchantId && typeof request === 'object' && request !== null && 'merchantId' in request) {
+      (request as any).merchantId = merchantId;
+    }
+    return request;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`Error reading request data from ${jsonPathFile}: ${errorMessage}`);

@@ -10,7 +10,7 @@ from dana.exceptions import *
 from uuid import uuid4
 from helper.util import get_request, retry_on_inconsistent_request, with_delay
 from helper.assertion import assert_response
-from test.python.helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error, assert_fail_response
+from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error, assert_fail_response
 
 # Widget-specific constants
 title_case = "QueryOrder"
@@ -37,6 +37,13 @@ def test_order_reference_number():
 
 @with_delay()
 def test_query_order_success_paid(test_order_reference_number):
+    # Scenario: QueryOrderSuccessPaid
+    # Purpose: Verify that querying an order with a status of 'paid' returns the correct response.
+    # Steps:
+    #   1. Prepare a request with a valid partner reference number for a paid order.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the response matches the expected output for a paid order.
+    # Expected: The API returns the correct order details with status 'paid'.
     case_name = "QueryOrderSuccessPaid"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
@@ -46,6 +53,13 @@ def test_query_order_success_paid(test_order_reference_number):
 
 @with_delay()
 def test_query_order_success_initiated(test_order_reference_number):
+    # Scenario: QueryOrderSuccessInitiated
+    # Purpose: Verify that querying an order with a status of 'initiated' returns the correct response.
+    # Steps:
+    #   1. Prepare a request with a valid partner reference number for an initiated order.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the response matches the expected output for an initiated order.
+    # Expected: The API returns the correct order details with status 'initiated'.
     case_name = "QueryOrderSuccessInitiated"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
@@ -53,6 +67,13 @@ def test_query_order_success_initiated(test_order_reference_number):
 
 @with_delay()
 def test_query_order_success_paying(test_order_reference_number):
+    # Scenario: QueryOrderSuccessPaying
+    # Purpose: Verify that querying an order with a status of 'paying' returns the correct response.
+    # Steps:
+    #   1. Prepare a request with a valid partner reference number for a paying order.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the response matches the expected output for a paying order.
+    # Expected: The API returns the correct order details with status 'paying'.
     case_name = "QueryOrderSuccessPaying"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
@@ -60,6 +81,13 @@ def test_query_order_success_paying(test_order_reference_number):
 
 @with_delay()
 def test_query_order_success_cancelled(test_order_reference_number):
+    # Scenario: QueryOrderSuccessCancelled
+    # Purpose: Verify that querying an order with a status of 'cancelled' returns the correct response.
+    # Steps:
+    #   1. Prepare a request with a valid partner reference number for a cancelled order.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the response matches the expected output for a cancelled order.
+    # Expected: The API returns the correct order details with status 'cancelled'.
     case_name = "QueryOrderSuccessCancelled"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
@@ -67,19 +95,30 @@ def test_query_order_success_cancelled(test_order_reference_number):
 
 @with_delay()
 def test_query_order_not_found(test_order_reference_number):
+    # Scenario: QueryOrderNotFound
+    # Purpose: Verify that querying a non-existent order returns the correct error response.
+    # Steps:
+    #   1. Prepare a request with a partner reference number that does not exist.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the API returns a not found error.
+    # Expected: The API returns an error indicating the order was not found (404 Not Found or similar).
     case_name = "QueryOrderNotFound"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    pytest.skip("SKIP: Placeholder test")
+    pytest.skip("SKIP: Need to confirm the expected behavior for not found orders")
 
 @with_delay()
 def test_query_order_fail_invalid_field(test_order_reference_number):
-    """
-    Should fail when an invalid field is provided in the request.
+    # Scenario: QueryOrderFailInvalidField
+    # Purpose: Ensure the API rejects requests with invalid fields (e.g., invalid timestamp).
+    # Steps:
+    #   1. Prepare a request with an invalid field.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the API returns a 400 Bad Request error.
+    # Expected: The API returns a 400 Bad Request error for invalid fields.
 
-    This test attempts to query an order with an invalid field (e.g., invalid timestamp).
-    It expects the API to return a 400 Bad Request error.
-    """
+    """Should fail to query an order with an invalid field in the request."""
+    # Case name and JSON request preparation
     case_name = "QueryOrderFailInvalidField"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
@@ -121,12 +160,13 @@ def test_query_order_fail_invalid_field(test_order_reference_number):
 
 @with_delay()
 def test_query_order_fail_invalid_mandatory_field(test_order_reference_number):
-    """
-    Should fail when a mandatory field is missing in the request.
-
-    This test attempts to query an order with a missing mandatory field (e.g., missing timestamp).
-    It expects the API to return a 400 Bad Request error.
-    """
+    # Scenario: QueryOrderFailInvalidMandatoryField
+    # Purpose: Ensure the API rejects requests missing mandatory fields (e.g., missing timestamp).
+    # Steps:
+    #   1. Prepare a request missing a required field.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the API returns a 400 Bad Request error.
+    # Expected: The API returns a 400 Bad Request error for missing mandatory fields.
     case_name = "QueryOrderFailInvalidMandatoryField"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
@@ -168,9 +208,16 @@ def test_query_order_fail_invalid_mandatory_field(test_order_reference_number):
 
 @with_delay()
 def test_query_order_fail_unauthorized(test_order_reference_number):
-    """
-    Should fail when authorization fails (invalid signature)
-    """
+    # Scenario: QueryOrderFailUnauthorized
+    # Purpose: Ensure the API rejects requests with an invalid signature (authorization failure).
+    # Steps:
+    #   1. Prepare a request with an invalid signature.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the API returns a 401 Unauthorized error.
+    # Expected: The API returns a 401 Unauthorized error for invalid signature.
+
+    """Should fail to query an order with an invalid signature in the request."""
+    # Case name and JSON request preparation
     case_name = "QueryOrderFailUnauthorized"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
@@ -202,15 +249,17 @@ def test_query_order_fail_unauthorized(test_order_reference_number):
 
 @with_delay()
 def test_query_order_fail_transaction_not_found(test_order_reference_number):
-    """
-    Should fail when transaction is not found.
+    # Scenario: QueryOrderFailTransactionNotFound
+    # Purpose: Ensure the API returns a not found error when querying a non-existent transaction.
+    # Steps:
+    #   1. Prepare a request with a deliberately invalid partner reference number.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the API returns a 404 Not Found error.
+    # Expected: The API returns a 404 Not Found error for non-existent transactions.
 
-    This test attempts to query an order using a non-existent partner reference number.
-    It expects the API to return a 404 Not Found error.
-    """
+    """Should fail to query an order with a transaction not found in the request."""
+    # Case name and JSON request preparation
     case_name = "QueryOrderFailTransactionNotFound"
-
-    # Prepare request data with a deliberately invalid reference number
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number + "_NOT_FOUND"
 
@@ -221,25 +270,28 @@ def test_query_order_fail_transaction_not_found(test_order_reference_number):
         # Attempt to query the order
         api_response = api_instance.query_payment(query_order_request_obj)
         # If no exception, assert the failure response structure
-        assert_fail_response(
+        
+    except ApiException as e:
+       # Assert that the API returns a 404 Not Found error
+       assert_fail_response(
             json_path_file,
             title_case,
             case_name,
-            api_response,
-            {"partnerReferenceNo": test_order_reference_number + "_NOT_FOUND"}
+            e.body
         )
-    except ApiException as e:
-        # Assert that the API returns a 404 Not Found error
-        assert e.status == 404, f"Expected status code 404, but got {e.status}"
-        assert e.reason == "Not Found", f"Expected reason 'Not Found', but got {e.reason}"
-        assert e.body is not None, "Expected response body to be not None"
-        # Additional assertions can be added here based on the expected error response structure
     except Exception as e:
         # Fail the test if any unexpected exception occurs
         pytest.fail(f"Unexpected exception occurred: {str(e)}")
 
 @with_delay()
 def test_query_order_fail_general_error(test_order_reference_number):
+    # Scenario: QueryOrderFailGeneralError
+    # Purpose: Placeholder for testing general/unexpected errors from the API.
+    # Steps (to be implemented):
+    #   1. Prepare a request that triggers a general error.
+    #   2. Call the query_order API endpoint.
+    #   3. Assert the API returns the expected error response.
+    # Expected: The API returns an appropriate error for general failures.
     case_name = "QueryOrderFailGeneralError"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number

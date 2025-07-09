@@ -45,6 +45,7 @@ Currently, the following programming languages are supported:
 - Python
 - Golang
 - Node
+- PHP
 
 Additional language support will be added in future updates.
 
