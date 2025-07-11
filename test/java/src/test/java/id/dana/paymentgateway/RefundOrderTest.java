@@ -89,19 +89,15 @@ class RefundOrderTest {
     @Test
     void testRefundOrderInProgress() throws IOException {
         String caseName = "RefundOrderInProgress";
+        Map<String, Object> variableDict = new HashMap<>();
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
+
         requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
-<<<<<<< Updated upstream
-        System.out.println("requestData: " + requestData);
-=======
-        Map<String, Object> variableDict = new HashMap<>();
         variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
->>>>>>> Stashed changes
-
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
