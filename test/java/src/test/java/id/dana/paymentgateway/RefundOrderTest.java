@@ -1,7 +1,10 @@
 package id.dana.paymentgateway;
 
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
@@ -18,10 +21,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import id.dana.util.ConfigUtil;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -38,7 +45,10 @@ class RefundOrderTest {
     private final String merchantId = "216620010016033632482";
 
     private PaymentGatewayApi api;
-    private static String partnerReferenceNoPaid,partnerReferenceNoCancel,partnerReferenceNoInit;
+    private static String
+            partnerReferenceNoPaid,
+            partnerReferenceNoCancel,
+            partnerReferenceNoInit;
 
     @BeforeEach
     void setUp() {
@@ -69,8 +79,11 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoPaid);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -82,10 +95,15 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+<<<<<<< Updated upstream
         System.out.println("requestData: " + requestData);
+=======
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+>>>>>>> Stashed changes
 
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -97,8 +115,11 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -110,8 +131,11 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -143,8 +167,11 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -156,8 +183,11 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -169,19 +199,37 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
     void testRefundOrderInvalidMandatoryField() throws IOException {
-        Map<String, String> headers = new HashMap<>();
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "RefundOrderInvalidMandatoryParameter";
+        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                RefundOrderRequest.class);
 
-        headers.put("X-TIMESTAMP", "");
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
 
-        Response response = customHeaderRefundOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        customHeaders.put(
+                DanaHeader.X_SIGNATURE,
+                "");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        PaymentGatewayApi apiWithCustomHeader = new PaymentGatewayApi(client);
+
+        RefundOrderResponse response = apiWithCustomHeader.refundOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -194,8 +242,11 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -207,23 +258,36 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
-    void testRefundOrderUnauthorized() {
-        Map<String, String> headers = new HashMap<>();
+    void testRefundOrderUnauthorized() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "RefundOrderUnauthorized";
 
-        headers.put("X-SIGNATURE", "testing");
-        headers.put("X-TIMESTAMP", "2023-08-31T22:27:48+00:00");
-        headers.put("X-EXTERNAL-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("X-PARTNER-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("CHANNEL-ID", ConfigUtil.getConfig("CHANNEL_ID", ""));
+        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                RefundOrderRequest.class);
 
-        Response response = customHeaderRefundOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
+
+        customHeaders.put(
+                DanaHeader.X_SIGNATURE,
+                "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        PaymentGatewayApi apiWithCustomHeader = new PaymentGatewayApi(client);
+
+        RefundOrderResponse response = apiWithCustomHeader.refundOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
     }
 
     @Test
@@ -235,8 +299,11 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -248,8 +315,84 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
         RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    }
+
+    @Test
+    void testRefundOrderDuplicateRequest() throws IOException {
+        String caseName = "RefundOrderDuplicateRequest";
+        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                RefundOrderRequest.class);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        Money money = new Money();
+        money.setValue("190098.00");
+        money.setCurrency("IDR");
+
+        api.refundOrder(requestData);
+        requestData.setRefundAmount(money);
+        RefundOrderResponse response = api.refundOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    }
+
+    @Test
+    void testRefundOrderIndempotent() throws InterruptedException {
+        Map<String, Object> variableDict = new HashMap<>();
+        String caseName = "RefundOrderIndempotent";
+        int numberOfThreads = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+
+        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                RefundOrderRequest.class);
+
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        for (int i = 0; i < numberOfThreads; i++) {
+            executor.submit(() -> {
+                try {
+                    RefundOrderResponse response = api.refundOrder(requestData);
+                    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+                    System.out.println("Thread: " + Thread.currentThread().getId()
+                            + " - Status: " + response.getResponseCode());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        // Wait for all threads to complete
+        latch.await();
+        executor.shutdown();
+    }
+
+    @Test
+    void testRefundOrderExceedsTransactionAmountLimit() throws IOException {
+        String caseName = "RefundOrderExceedsTransactionAmountLimit";
+        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                RefundOrderRequest.class);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        RefundOrderResponse response = api.refundOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     private void createOrder(String status){
@@ -299,32 +442,5 @@ class RefundOrderTest {
             default:
                 throw new IllegalArgumentException("Unknown status: " + status);
         }
-    }
-
-    private Response customHeaderRefundOrder(Map<String, String> headers) {
-        String baseUrl = "https://api.sandbox.dana.id";
-        String path = "/payment-gateway/v1.0/debit/cancel.htm";
-        RequestSpecBuilder builder = new RequestSpecBuilder();
-        JsonPath jsonPath = JsonPath.from(
-                new File("src/test/resources/request/components/PaymentGateway.json"));
-        Map<String, Object> request = jsonPath.get("RefundOrder.RefundOrderValidScenario.request");
-
-        log.info("Request: {}", request);
-
-        RequestSpecification requestSpecification = builder.setBody(
-                        request, ObjectMapperType.JACKSON_2)
-                .setContentType(ContentType.JSON)
-                .addHeaders(headers)
-                .build();
-
-        Response response = RestAssured.given(requestSpecification)
-                .relaxedHTTPSValidation()
-                .when()
-                .request("POST", baseUrl + path)
-                .then()
-                .extract()
-                .response();
-
-        return response;
     }
 }

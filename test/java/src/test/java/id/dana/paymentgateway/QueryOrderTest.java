@@ -1,8 +1,11 @@
 package id.dana.paymentgateway;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
@@ -16,6 +19,7 @@ import io.restassured.mapper.ObjectMapperType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -121,40 +125,75 @@ class QueryOrderTest {
     }
 
     @Test
-    void testQueryPaymentInvalidFieldFormat() {
-        Map<String, String> headers = new HashMap<>();
+    void testQueryPaymentInvalidFieldFormat() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "QueryPaymentInvalidFormat";
 
-        headers.put("X-TIMESTAMP", "TESTTIMESTAMP");
+        QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                QueryPaymentRequest.class);
 
-        Response response = customHeaderQueryOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        customHeaders.put(
+                DanaHeader.X_TIMESTAMP,
+                "TIMESTAMP");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        PaymentGatewayApi apiWithCustomHeader = new PaymentGatewayApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        QueryPaymentResponse response = apiWithCustomHeader.queryPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
-    void testQueryPaymentInvalidMandatoryField() {
-        Map<String, String> headers = new HashMap<>();
+    void testQueryPaymentInvalidMandatoryField() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "QueryPaymentInvalidMandatoryField";
 
-        headers.put("X-TIMESTAMP", "");
+        QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                QueryPaymentRequest.class);
 
-        Response response = customHeaderQueryOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        customHeaders.put(
+                DanaHeader.X_TIMESTAMP,
+                "");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        PaymentGatewayApi apiWithCustomHeader = new PaymentGatewayApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        QueryPaymentResponse response = apiWithCustomHeader.queryPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
-    void testQueryPaymentUnauthorized() {
-        Map<String, String> headers = new HashMap<>();
+    void testQueryPaymentUnauthorized() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "QueryPaymentUnauthorized";
 
-        headers.put("X-SIGNATURE", "testing");
-        headers.put("X-TIMESTAMP", "2023-08-31T22:27:48+00:00");
-        headers.put("X-EXTERNAL-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("X-PARTNER-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("CHANNEL-ID", ConfigUtil.getConfig("CHANNEL_ID", ""));
+        QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                QueryPaymentRequest.class);
 
-        Response response = customHeaderQueryOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        customHeaders.put(
+                DanaHeader.X_SIGNATURE,
+                "testing");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        PaymentGatewayApi apiWithCustomHeader = new PaymentGatewayApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        QueryPaymentResponse response = apiWithCustomHeader.queryPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test

@@ -123,7 +123,6 @@ public class CreateOrderTest {
   }
 
   @Test
-  @Disabled
   void testCreateOrderNetworkPayPgQris() {
     String caseName = "CreateOrderNetworkPayPgQris";
     CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -148,6 +147,23 @@ public class CreateOrderTest {
 
   @Test
   void testCreateOrderNetworkPayPgOtherWallet() {
+<<<<<<< Updated upstream
+=======
+    String caseName = "CreateOrderNetworkPayPgOtherWallet";
+    CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+        CreateOrderByApiRequest.class);
+
+    // Assign unique reference and merchant ID
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+    requestData.setMerchantId(merchantId);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    System.out.println("Request Data: " + requestData);
+
+>>>>>>> Stashed changes
     try {
       String caseName = "CreateOrderNetworkPayPgOtherWallet";
       CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,

@@ -1,7 +1,10 @@
 package id.dana.widget;
 
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.CreateOrderTest;
@@ -20,6 +23,7 @@ import io.restassured.mapper.ObjectMapperType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -145,40 +149,81 @@ public class QueryOrderTest {
     }
 
     @Test
-    void testQueryOrderFailInvalidField() {
-        Map<String, String> headers = new HashMap<>();
+    void testQueryOrderFailInvalidField() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "QueryOrderFailInvalidField";
+        QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                QueryPaymentRequest.class);
 
-        headers.put("X-TIMESTAMP", "TESTTIMESTAMP");
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
 
-        Response response = customHeaderQueryOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        customHeaders.put(
+                DanaHeader.X_TIMESTAMP,
+                "X_TIMESTAMP");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        WidgetApi apiWithCustomHeader = new WidgetApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        QueryPaymentResponse response = apiWithCustomHeader.queryPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
-    void testQueryOrderFailInvalidMandatoryField() {
-        Map<String, String> headers = new HashMap<>();
+    void testQueryOrderFailInvalidMandatoryField() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "QueryOrderFailInvalidMandatoryField";
+        QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                QueryPaymentRequest.class);
 
-        headers.put("X-TIMESTAMP", "");
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
 
-        Response response = customHeaderQueryOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        customHeaders.put(
+                DanaHeader.X_TIMESTAMP,
+                "");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        WidgetApi apiWithCustomHeader = new WidgetApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        QueryPaymentResponse response = apiWithCustomHeader.queryPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
-    void testQueryOrderFailUnauthorized() {
-        Map<String, String> headers = new HashMap<>();
+    void testQueryOrderFailUnauthorized() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "QueryOrderFailUnauthorized";
+        QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                QueryPaymentRequest.class);
 
-        headers.put("X-SIGNATURE", "testing");
-        headers.put("X-TIMESTAMP", "2023-08-31T22:27:48+00:00");
-        headers.put("X-EXTERNAL-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("X-PARTNER-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("CHANNEL-ID", ConfigUtil.getConfig("CHANNEL_ID", ""));
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
 
-        Response response = customHeaderQueryOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        customHeaders.put(
+                DanaHeader.X_SIGNATURE,
+                "testing");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        WidgetApi apiWithCustomHeader = new WidgetApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        QueryPaymentResponse response = apiWithCustomHeader.queryPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test

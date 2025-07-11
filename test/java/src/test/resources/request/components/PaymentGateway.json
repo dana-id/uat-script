@@ -1257,7 +1257,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "100000.00",
+                    "value": "22000.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "test",
@@ -1419,8 +1419,8 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4005702",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseCode": "4005802",
+                "responseMessage": "Invalid Mandatory Field X-SIGNATURE"
             }
         },
         "RefundOrderInvalidBill": {
@@ -1485,7 +1485,7 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4015700",
+                "responseCode": "4015800",
                 "responseMessage": "Unauthorized. Invalid Signature"
             }
         },
@@ -1552,6 +1552,28 @@
             },
             "response": {
                 "responseCode": "2025800",
+                "responseMessage": "Request In Progress"
+            }
+        },
+        "RefundOrderIndempotent": {
+            "request": {
+                "merchantId": "${merchantId}",
+                "subMerchantId": "",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "originalCaptureNo": "",
+                "partnerRefundNo": "${partnerReferenceNo}",
+                "refundAmount": {
+                    "value": "225800.00",
+                    "currency": "IDR"
+                },
+                "externalStoreId": "",
+                "reason": "Customer complain",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2025812",
                 "responseMessage": "Request In Progress"
             }
         }

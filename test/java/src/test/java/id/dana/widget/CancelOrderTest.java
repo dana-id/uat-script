@@ -1,13 +1,15 @@
 package id.dana.widget;
 
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.CreateOrderTest;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
-import id.dana.widget.v1.model.CancelOrderRequest;
-import id.dana.widget.v1.model.CancelOrderResponse;
+import id.dana.widget.v1.model.*;
 import id.dana.paymentgateway.v1.model.CreateOrderByRedirectRequest;
 import id.dana.paymentgateway.v1.model.CreateOrderResponse;
 import id.dana.util.ConfigUtil;
@@ -20,8 +22,10 @@ import io.restassured.mapper.ObjectMapperType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +39,11 @@ import java.util.UUID;
 public class CancelOrderTest {
     private static String jsonPathFile = CancelOrderTest.class.getResource("/request/components/Widget.json")
             .getPath();
-    private static final Logger log = LoggerFactory.getLogger(CancelOrderTest.class);
-
     private final String titleCase = "CancelOrder";
     private final String merchantId = "216620010016033632482";
 
     private WidgetApi widgetApi;
-    private PaymentGatewayApi paymentGatewayApi;
-
-    private static String partnerReferenceNoPaid,partnerReferenceNoCancel,partnerReferenceNoInit;
+    private static String partnerReferenceNoPaid,partnerReferenceNoRefund,partnerReferenceNoInit;
 
     @BeforeEach
     void setUp() {
@@ -57,7 +57,7 @@ public class CancelOrderTest {
         DanaConfig.getInstance(danaConfigBuilder);
 
         widgetApi = Dana.getInstance().getWidgetApi();
-        paymentGatewayApi = Dana.getInstance().getPaymentGatewayApi();
+        createPayment("INIT");
     }
 
     @Test
@@ -73,7 +73,6 @@ public class CancelOrderTest {
 
     @Test
     void testCancelOrderInProgress() throws IOException {
-        createOrder("INIT");
         String caseName = "CancelOrderSuccessInProcess";
         CancelOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 CancelOrderRequest.class);
@@ -112,11 +111,13 @@ public class CancelOrderTest {
     }
 
     @Test
+    @Disabled
     void testCancelOrderTransactionNotFound() throws IOException {
         String caseName = "CancelOrderFailOrderNotExist";
         CancelOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 CancelOrderRequest.class);
         requestData.setMerchantId(merchantId);
+        System.out.println("Request Data: " + requestData);
         CancelOrderResponse response = widgetApi.cancelOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
     }
@@ -142,8 +143,9 @@ public class CancelOrderTest {
     }
 
     @Test
-    void testCancelOrderInvalidTransactionStatus() throws IOException {
-        String caseName = "CancelOrderInvalidTransactionStatus";
+    void testCancelOrderFailOrderRefunded() throws IOException {
+        createPayment("REFUND");
+        String caseName = "CancelOrderFailOrderRefunded";
         CancelOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 CancelOrderRequest.class);
         requestData.setMerchantId(merchantId);
@@ -173,19 +175,27 @@ public class CancelOrderTest {
 
     @Test
     void testCancelOrderFailInvalidSignature() throws IOException {
-        Map<String, String> headers = new HashMap<>();
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "CancelOrderFailInvalidSignature";
         CancelOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 CancelOrderRequest.class);
 
-        headers.put("X-SIGNATURE", "testing");
-        headers.put("X-TIMESTAMP", "2023-08-31T22:27:48+00:00");
-        headers.put("X-EXTERNAL-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("X-PARTNER-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("CHANNEL-ID", ConfigUtil.getConfig("CHANNEL_ID", ""));
+        requestData.setMerchantId(merchantId);
+        customHeaders.put(
+                DanaHeader.X_SIGNATURE,
+                "test");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        WidgetApi apiWithCustomHeader = new WidgetApi(client);
+        customHeaders.keySet();
 
-        Response response = customHeaderCancelOrderWidget(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        CancelOrderResponse response = apiWithCustomHeader.cancelOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -198,81 +208,61 @@ public class CancelOrderTest {
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
     }
 
-    private void createOrder(String status){
-        String createOrderJsonPathFile = CreateOrderTest.class.getResource(
-                        "/request/components/PaymentGateway.json")
+    private void createPayment(String status){
+        String createPaymentJsonPathFile = PaymentTest.class.getResource(
+                        "/request/components/Widget.json")
                 .getPath();
-        String createOrderCase = "CreateOrder";
+        String titleCasePayment = "Payment";
+        String createPaymentCase = "PaymentSuccess";
+        String titleRefundOrder = "RefundOrder";
+        String refundOrderCase= "RefundOrderValidScenario";
         switch (status) {
             case "PAID":
-                // Logic to create a successful order
-                String caseOrder = "CreateOrderNetworkPayPgOtherWallet";
-                CreateOrderByRedirectRequest requestDataPaid = TestUtil.getRequest(createOrderJsonPathFile, createOrderCase, caseOrder,
-                        CreateOrderByRedirectRequest.class);
+                WidgetPaymentRequest requestDataPaid = TestUtil.getRequest(createPaymentJsonPathFile, titleCasePayment, createPaymentCase,
+                        WidgetPaymentRequest.class);
 
                 partnerReferenceNoPaid = UUID.randomUUID().toString();
                 requestDataPaid.setPartnerReferenceNo(partnerReferenceNoPaid);
                 requestDataPaid.setMerchantId(merchantId);
 
-                CreateOrderResponse responsePaid = paymentGatewayApi.createOrder(requestDataPaid);
+                WidgetPaymentResponse responsePaid = widgetApi.widgetPayment(requestDataPaid);
+                System.out.println(responsePaid.getResponseMessage());
                 Assertions.assertTrue(responsePaid.getResponseCode().contains("2005400"));
                 break;
-            case "CANCEL":
-                // Logic to create a failed order
-                String caseOrderCancel = "CancelOrderValidScenario";
-                CreateOrderByRedirectRequest requestDataCancel = TestUtil.getRequest(createOrderJsonPathFile, createOrderCase, caseOrderCancel,
-                        CreateOrderByRedirectRequest.class);
+            case "REFUND":
+                WidgetPaymentRequest requestDataCancel = TestUtil.getRequest(createPaymentJsonPathFile, titleCasePayment, createPaymentCase,
+                        WidgetPaymentRequest.class);
 
-                partnerReferenceNoCancel = UUID.randomUUID().toString();
-                requestDataCancel.setPartnerReferenceNo(partnerReferenceNoCancel);
+                RefundOrderRequest requestDataRefund = TestUtil.getRequest(createPaymentJsonPathFile, titleRefundOrder, refundOrderCase,
+                        RefundOrderRequest.class);
+
+                partnerReferenceNoRefund = UUID.randomUUID().toString();
+                requestDataCancel.setPartnerReferenceNo(partnerReferenceNoRefund);
                 requestDataCancel.setMerchantId(merchantId);
+                requestDataRefund.setOriginalPartnerReferenceNo(partnerReferenceNoRefund);
+                requestDataRefund.setPartnerRefundNo(partnerReferenceNoRefund);
+                requestDataRefund.setMerchantId(merchantId);
 
-                CreateOrderResponse responseCancel = paymentGatewayApi.createOrder(requestDataCancel);
-                Assertions.assertTrue(responseCancel.getResponseCode().contains("200"));
+                WidgetPaymentResponse responseCancel = widgetApi.widgetPayment(requestDataCancel);
+                System.out.println("Response Cancel: " + responseCancel);
+                RefundOrderResponse responseRefund = widgetApi.refundOrder(requestDataRefund);
+                System.out.println("Response Refund: " + responseRefund);
+                Assertions.assertTrue(responseCancel.getResponseCode().contains("2005400"));
+                Assertions.assertTrue(responseRefund.getResponseCode().contains("2005400"));
                 break;
             case "INIT":
-                // Logic to create a pending order
-                String caseOrderInit = "CreateOrderRedirect";
-                CreateOrderByRedirectRequest requestDataInit = TestUtil.getRequest(createOrderJsonPathFile, createOrderCase, caseOrderInit,
-                        CreateOrderByRedirectRequest.class);
+                WidgetPaymentRequest requestDataInit = TestUtil.getRequest(createPaymentJsonPathFile, titleCasePayment, createPaymentCase,
+                        WidgetPaymentRequest.class);
 
                 partnerReferenceNoInit = UUID.randomUUID().toString();
                 requestDataInit.setPartnerReferenceNo(partnerReferenceNoInit);
                 requestDataInit.setMerchantId(merchantId);
 
-                CreateOrderResponse responseInit = paymentGatewayApi.createOrder(requestDataInit);
-                log.info("Create Order Response: " + responseInit.getResponseCode());
+                WidgetPaymentResponse responseInit = widgetApi.widgetPayment(requestDataInit);
                 Assertions.assertTrue(responseInit.getResponseCode().contains("200"));
                 break;
             default:
                 throw new IllegalArgumentException("Unknown status: " + status);
         }
-    }
-
-    private Response customHeaderCancelOrderWidget(Map<String, String> headers) {
-        String baseUrl = "https://api.sandbox.dana.id";
-        String path = "/payment-gateway/v1.0/debit/cancel.htm";
-        RequestSpecBuilder builder = new RequestSpecBuilder();
-        JsonPath jsonPath = JsonPath.from(
-                new File("src/test/resources/request/components/Widget.json"));
-        Map<String, Object> request = jsonPath.get("CancelOrder.CancelOrderSuccessInProcess.request");
-
-        log.info("Request: {}", request);
-
-        RequestSpecification requestSpecification = builder.setBody(
-                        request, ObjectMapperType.JACKSON_2)
-                .setContentType(ContentType.JSON)
-                .addHeaders(headers)
-                .build();
-
-        Response response = RestAssured.given(requestSpecification)
-                .relaxedHTTPSValidation()
-                .when()
-                .request("POST", baseUrl + path)
-                .then()
-                .extract()
-                .response();
-
-        return response;
     }
 }

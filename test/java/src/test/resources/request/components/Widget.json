@@ -333,7 +333,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10088.00"
+                    "value": "10000.00"
                 },
                 "merchantId": "${merchantId}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -483,8 +483,8 @@
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
-                "responseCode": "5005400",
-                "responseMessage": "General Error"
+                "responseCode": "4015400",
+                "responseMessage": "Unauthorized. Invalid Signature"
             }
         },
         "PaymentFailTransactionNotPermitted": {
@@ -958,6 +958,26 @@
         "FinishNotifyFailOrderNotPaid": {}
     },
     "CancelOrder": {
+        "CancelOrderValidScenario": {
+            "request": {
+                "originalPartnerReferenceNo": "2382938123",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "${merchantId}",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "2005700",
+                "responseMessage": "Successful"
+            }
+        },
         "CancelOrderSuccessInProcess": {
             "request": {
                 "originalPartnerReferenceNo": "2025700",
@@ -1027,15 +1047,15 @@
         },
         "CancelOrderFailOrderNotExist": {
             "request": {
-                "originalPartnerReferenceNo": "2382938123",
+                "originalPartnerReferenceNo": "1234-1234-43123-3124-4213",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "123123123",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "40470.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1109,7 +1129,28 @@
                 "responseMessage": "Insufficient Funds"
             }
         },
-        "CancelOrderFailOrderRefunded": {},
+        "CancelOrderFailOrderRefunded": {
+
+            "request": {
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "${merchantId}",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4015700",
+                "responseMessage": "Unauthorized. Invalid Signature"
+            }
+
+        },
         "CancelOrderFailInvalidSignature": {
             "request": {
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
@@ -1484,7 +1525,7 @@
                 "responseMessage": "Internal Server Error"
             }
         },
-        "RefundFailIdempotent": {
+        "RefundIdempotent": {
             "request": {
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",

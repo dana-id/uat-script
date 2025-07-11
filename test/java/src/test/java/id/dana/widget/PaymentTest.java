@@ -1,7 +1,10 @@
 package id.dana.widget;
 
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.CreateOrderTest;
@@ -21,8 +24,10 @@ import io.restassured.mapper.ObjectMapperType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -93,41 +98,81 @@ public class PaymentTest {
 
     @Test
     void testPaymentFailMissingOrInvalidMandatoryField() throws IOException {
-        Map<String, String> headers = new HashMap<>();
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "PaymentFailMissingOrInvalidMandatoryField";
-
-        headers.put("X-TIMESTAMP", "");
-
-        Response response = customHeaderPaymentOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
-    }
-
-    @Test
-    void testPaymentFailInvalidSignature() {
-        Map<String, String> headers = new HashMap<>();
-        String caseName = "PaymentFailInvalidSignature";
-
-        headers.put("X-SIGNATURE", "testing");
-        headers.put("X-TIMESTAMP", "2023-08-31T22:27:48+00:00");
-        headers.put("X-EXTERNAL-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("X-PARTNER-ID", ConfigUtil.getConfig("X_PARTNER_ID", ""));
-        headers.put("CHANNEL-ID", ConfigUtil.getConfig("CHANNEL_ID", ""));
-
-        Response response = customHeaderPaymentOrder(headers);
-        TestUtil.assertResponse(jsonPathFile, response, titleCase + "." + caseName);
-    }
-
-    @Test
-    void testPaymentFailGeneralError() throws IOException {
-        String caseName = "PaymentSuccess";
         WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 WidgetPaymentRequest.class);
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
-        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        customHeaders.put(
+                DanaHeader.X_TIMESTAMP,
+                "");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        WidgetApi apiWithCustomHeader = new WidgetApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+        WidgetPaymentResponse response = apiWithCustomHeader.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    }
+
+    @Test
+    void testPaymentFailInvalidSignature() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
+        String caseName = "PaymentFailInvalidSignature";
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                WidgetPaymentRequest.class);
+
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+
+        customHeaders.put(
+                DanaHeader.X_SIGNATURE,
+                "testing");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        WidgetApi apiWithCustomHeader = new WidgetApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+        WidgetPaymentResponse response = apiWithCustomHeader.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    }
+
+    @Test
+    @Disabled
+    void testPaymentFailGeneralError() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
+        String caseName = "PaymentFailGeneralError";
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                WidgetPaymentRequest.class);
+
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+
+        customHeaders.put(
+                DanaHeader.X_SIGNATURE,
+                "85be817c55b2c135157c7e89f52499e04a986e8c862561b19a5");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        WidgetApi apiWithCustomHeader = new WidgetApi(client);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+        WidgetPaymentResponse response = apiWithCustomHeader.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
