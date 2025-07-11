@@ -5,10 +5,7 @@ import id.dana.invoker.model.DanaConfig;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
-import id.dana.paymentgateway.v1.model.CreateOrderByRedirectRequest;
-import id.dana.paymentgateway.v1.model.CreateOrderResponse;
-import id.dana.paymentgateway.v1.model.RefundOrderResponse;
-import id.dana.paymentgateway.v1.model.RefundOrderRequest;
+import id.dana.paymentgateway.v1.model.*;
 import id.dana.util.TestUtil;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -85,6 +82,8 @@ class RefundOrderTest {
         requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
+        System.out.println("requestData: " + requestData);
+
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
     }
@@ -113,6 +112,25 @@ class RefundOrderTest {
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+    }
+
+    @Test
+    void testRefundOrderDueToExceed() throws IOException {
+        String caseName = "RefundOrderExceedsTransactionAmountLimit";
+        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                RefundOrderRequest.class);
+
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setMerchantId(merchantId);
+
+        System.out.println("parccscscs " + requestData);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+
+        RefundOrderResponse response = api.refundOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -240,14 +258,15 @@ class RefundOrderTest {
             case "PAID":
                 // Logic to create a successful order
                 String caseOrder = "CreateOrderNetworkPayPgOtherWallet";
-                CreateOrderByRedirectRequest requestDataPaid = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrder,
-                        CreateOrderByRedirectRequest.class);
+                CreateOrderByApiRequest requestDataPaid = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrder,
+                        CreateOrderByApiRequest.class);
 
                 partnerReferenceNoPaid = UUID.randomUUID().toString();
                 requestDataPaid.setPartnerReferenceNo(partnerReferenceNoPaid);
                 requestDataPaid.setMerchantId(merchantId);
 
                 CreateOrderResponse responsePaid = api.createOrder(requestDataPaid);
+                responsePaid.getResponseMessage();
                 Assertions.assertTrue(responsePaid.getResponseCode().contains("2005400"));
                 break;
             case "CANCEL":

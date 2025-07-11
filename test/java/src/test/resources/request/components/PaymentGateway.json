@@ -385,7 +385,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "50001.00",
                     "currency": "IDR"
                 },
                 "payOptionDetails": [
@@ -393,11 +393,11 @@
                         "payMethod": "NETWORK_PAY",
                         "payOption": "NETWORK_PAY_PG_GOPAY",
                         "transAmount": {
-                            "value": "22200.00",
+                            "value": "50001.00",
                             "currency": "IDR"
                         },
                         "feeAmount": {
-                            "value": "22200.00",
+                            "value": "50001.00",
                             "currency": "IDR"
                         },
                         "cardToken": "",
@@ -782,7 +782,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "${valueFromServer}",
                 "serviceCode": "54",
-                "latestTransactionStatus": "00",
+                "latestTransactionStatus": "01",
                 "transactionStatusDesc": "SUCCESS",
                 "transAmount": {
                     "value": "50001.00",
@@ -1260,7 +1260,7 @@
                     "value": "100000.00",
                     "currency": "IDR"
                 },
-                "externalStoreId": "",
+                "externalStoreId": "test",
                 "reason": "Customer complain",
                 "additionalInfo": {}
             },

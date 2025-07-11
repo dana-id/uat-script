@@ -1,10 +1,20 @@
 {
-    "GetAuth": {
-        "GetAuthSuccess": {}
+    "GetOauth": {
+        "GetOauthSuccess": {
+            "request": {
+                "mobileNumber": "62811742234",
+                "bizScenario": "PAYMENT",
+                "verifiedTime": "2020-12-23T07:44:11+07:00",
+                "externalUid": "7381273821udasudy712368213",
+                "deviceId": "637216gygd76712313",
+                "skipRegisterConsult": true
+            }
+        }
     },
     "ApplyToken": {
         "ApplyTokenSuccess": {
             "request": {
+                "@type": "ApplyTokenAuthorizationCodeRequest",
                 "grantType": "AUTHORIZATION_CODE",
                 "authCode": "${authCode}",
                 "refreshToken": "",
@@ -89,10 +99,49 @@
         }
     },
     "AccountUnbinding": {
-        "AccountUnbindSuccess": {},
-        "AccountUnbindFailAccessTokenNotExist": {},
-        "AccountUnbindFailInvalidUserStatus": {},
-        "AccountUnbindFailInvalidParams": {}
+        "AccountUnbindSuccess": {
+            "@type": "AccountUnbindingRequest",
+            "partnerReferenceNo": "partnerReferenceNo",
+            "linkId": "linkId",
+            "subMerchantId": "210000123",
+            "merchantId": "${merchantId}",
+            "tokenId": "tokenId",
+            "additionalInfo": {
+                "accessToken" : "${accessToken}"
+            }
+        },
+        "AccountUnbindFailAccessTokenNotExist": {
+            "@type": "AccountUnbindingRequest",
+            "partnerReferenceNo": "partnerReferenceNo",
+            "linkId": "linkId",
+            "subMerchantId": "210000123",
+            "merchantId": "${merchantId}",
+            "tokenId": "tokenId",
+            "additionalInfo": {
+                "accessToken" : "${accessToken}"
+            }
+        },
+        "AccountUnbindFailInvalidUserStatus": {
+            "@type": "AccountUnbindingRequest",
+            "partnerReferenceNo": "partnerReferenceNo",
+            "linkId": "linkId",
+            "subMerchantId": "210000123",
+            "merchantId": "${merchantId}",
+            "tokenId": "tokenId",
+            "additionalInfo": {
+                "accessToken" : "${accessToken}"
+            }
+        },
+        "AccountUnbindFailInvalidParams": {
+            "@type": "AccountUnbindingRequest",
+            "partnerReferenceNo": "partnerReferenceNo",
+            "linkId": "linkId",
+            "subMerchantId": "210000123",
+            "tokenId": "tokenId",
+            "additionalInfo": {
+                "accessToken" : "${accessToken}"
+            }
+        }
     },
     "ApplyOtt": {
         "ApplyOttSuccess": {

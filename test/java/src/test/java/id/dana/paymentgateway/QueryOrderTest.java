@@ -190,8 +190,8 @@ class QueryOrderTest {
             case "PAID":
                 // Logic to create a successful order
                 String caseOrder = "CreateOrderNetworkPayPgOtherWallet";
-                CreateOrderByRedirectRequest requestDataPaid = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrder,
-                        CreateOrderByRedirectRequest.class);
+                CreateOrderByApiRequest requestDataPaid = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrder,
+                        CreateOrderByApiRequest.class);
 
                 partnerReferenceNoPaid = UUID.randomUUID().toString();
                 requestDataPaid.setPartnerReferenceNo(partnerReferenceNoPaid);
