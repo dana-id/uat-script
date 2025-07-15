@@ -28,6 +28,16 @@ func GetRequest(jsonPath, titleCase, caseName string) (map[string]interface{}, e
 		if caseMap, ok := titleMap[caseName].(map[string]interface{}); ok {
 			// Look for request section
 			if request, ok := caseMap["request"].(map[string]interface{}); ok {
+				// Check for merchantId or mid and replace with value from .env if present
+				merchantIdEnv := os.Getenv("MERCHANT_ID")
+				if merchantIdEnv != "" {
+					if _, ok := request["merchantId"]; ok {
+						request["merchantId"] = merchantIdEnv
+					}
+					if _, ok := request["mid"]; ok {
+						request["mid"] = merchantIdEnv
+					}
+				}
 				return request, nil
 			}
 			return nil, fmt.Errorf("case %s not found in request", caseName)
@@ -72,13 +82,14 @@ func GetResponse(jsonPath, titleCase, caseName string) (map[string]interface{}, 
 // Retries on error or if the returned error/message indicates a general/internal error.
 //
 // Example usage:
-//   result, err := RetryOnInconsistentRequest(func() (interface{}, error) {
-//       return client.CreateOrder(requestObj) // or any API call
-//   }, 3, 2*time.Second)
 //
-//   if err != nil {
-//       // handle error
-//   }
+//	result, err := RetryOnInconsistentRequest(func() (interface{}, error) {
+//	    return client.CreateOrder(requestObj) // or any API call
+//	}, 3, 2*time.Second)
+//
+//	if err != nil {
+//	    // handle error
+//	}
 func RetryOnInconsistentRequest(apiCall func() (interface{}, error), maxAttempts int, delay time.Duration) (interface{}, error) {
 	var lastErr error
 	for attempt := 1; attempt <= maxAttempts; attempt++ {
