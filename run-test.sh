@@ -24,7 +24,7 @@ main() {
         sh "$RUNNERS_DIR/run-test-python.sh" "$2" "$3"
         ;;
     "go")
-        sh "$RUNNERS_DIR/run-test-go.sh" "$2"
+        sh "$RUNNERS_DIR/run-test-go.sh" "$2" "$3"
         ;;
     "node")
         sh "$RUNNERS_DIR/run-test-node.sh" "$2" "$3"
