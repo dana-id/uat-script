@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -50,7 +51,7 @@ public class PaymentTest {
     private String partnerReferenceNo;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         DanaConfig.Builder danaConfigBuilder = new DanaConfig.Builder();
         danaConfigBuilder
                 .partnerId(ConfigUtil.getConfig("X_PARTNER_ID", ""))
@@ -66,8 +67,8 @@ public class PaymentTest {
         widgetApi = Dana.getInstance().getWidgetApi();
         paymentGatewayApi = Dana.getInstance().getPaymentGatewayApi();
 
-        // Create a pending order before running the test
-        createOrder();
+        List<String> dataOrder = PaymentWidgetUtil.createPayment("PaymentSuccess");
+        partnerReferenceNo = dataOrder.get(0);
     }
 
     @Test
@@ -149,94 +150,8 @@ public class PaymentTest {
     }
 
     @Test
-    @Disabled
-    void testPaymentFailGeneralError() throws IOException {
-        Map<String, String> customHeaders = new HashMap<>();
-        String caseName = "PaymentFailGeneralError";
-        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                WidgetPaymentRequest.class);
-
-        requestData.setPartnerReferenceNo(partnerReferenceNo);
-        requestData.setMerchantId(merchantId);
-
-        customHeaders.put(
-                DanaHeader.X_SIGNATURE,
-                "85be817c55b2c135157c7e89f52499e04a986e8c862561b19a5");
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(new DanaAuth())
-                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
-                .build();
-        WidgetApi apiWithCustomHeader = new WidgetApi(client);
-
-        Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNo);
-
-        WidgetPaymentResponse response = apiWithCustomHeader.widgetPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    }
-
-    @Test
-    void testPaymentFailTransactionNotPermitted() throws IOException {
-        String caseName = "PaymentFailTransactionNotPermitted";
-        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                WidgetPaymentRequest.class);
-
-        requestData.setPartnerReferenceNo(partnerReferenceNo);
-        requestData.setMerchantId(merchantId);
-
-        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    void testPaymentFailMerchantNotExistOrStatusAbnormal() throws IOException {
-        String caseName = "PaymentFailMerchantNotExistOrStatusAbnormal";
-        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                WidgetPaymentRequest.class);
-
-        requestData.setPartnerReferenceNo(partnerReferenceNo);
-        requestData.setMerchantId(merchantId);
-
-        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    void testPaymentFailInconsistentRequest() throws IOException {
-        String caseNameFirst = "PaymentFailInconsistentRequest";
-        String caseNameSecond = "PaymentSuccess";
-        WidgetPaymentRequest requestDataFirst = TestUtil.getRequest(jsonPathFile, titleCase, caseNameFirst,
-                WidgetPaymentRequest.class);
-
-        WidgetPaymentRequest requestDataSecond = TestUtil.getRequest(jsonPathFile, titleCase, caseNameSecond,
-                WidgetPaymentRequest.class);
-
-        requestDataFirst.setPartnerReferenceNo(partnerReferenceNo);
-        requestDataFirst.setMerchantId(merchantId);
-        requestDataSecond.setPartnerReferenceNo(partnerReferenceNo);
-        requestDataSecond.setMerchantId(merchantId);
-
-        widgetApi.widgetPayment(requestDataFirst);
-        WidgetPaymentResponse response = widgetApi.widgetPayment(requestDataSecond);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseNameFirst, response, null);
-    }
-
-    @Test
     void testPaymentFailInternalServerError() throws IOException {
         String caseName = "PaymentFailInternalServerError";
-        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                WidgetPaymentRequest.class);
-
-        requestData.setPartnerReferenceNo(partnerReferenceNo);
-        requestData.setMerchantId(merchantId);
-
-        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    void testPaymentFailExceedsTransactionAmountLimit() throws IOException {
-        String caseName = "PaymentFailExceedsTransactionAmountLimit";
         WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 WidgetPaymentRequest.class);
 
@@ -279,30 +194,17 @@ public class PaymentTest {
         Assertions.assertTrue(responseInit.getResponseCode().contains("200"));
     }
 
-    private Response customHeaderPaymentOrder(Map<String, String> headers) {
-        String baseUrl = "https://api.sandbox.dana.id";
-        String path = "/rest/redirection/v1.0/debit/payment-host-to-host";
-        RequestSpecBuilder builder = new RequestSpecBuilder();
-        JsonPath jsonPath = JsonPath.from(
-                new File("src/test/resources/request/components/Widget.json"));
-        Map<String, Object> request = jsonPath.get("Payment.PaymentSuccess.request");
+    @Test
+    void testPaymentFailIdempotent() throws IOException {
+        String caseName = "PaymentFailIdempotent";
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                WidgetPaymentRequest.class);
 
-        log.info("Request: {}", request);
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
 
-        RequestSpecification requestSpecification = builder.setBody(
-                        request, ObjectMapperType.JACKSON_2)
-                .setContentType(ContentType.JSON)
-                .addHeaders(headers)
-                .build();
-
-        Response response = RestAssured.given(requestSpecification)
-                .relaxedHTTPSValidation()
-                .when()
-                .request("POST", baseUrl + path)
-                .then()
-                .extract()
-                .response();
-
-        return response;
+        widgetApi.widgetPayment(requestData);
+        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
     }
 }

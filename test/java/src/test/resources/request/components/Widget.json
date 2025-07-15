@@ -343,6 +343,42 @@
                 "responseMessage": "Successful"
             }
         },
+        "PaymentPaying": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "205502.00"
+                },
+                "merchantId": "${merchantId}",
+                "partnerReferenceNo": "${partnerReferenceNo}"
+            },
+            "response": {
+                "responseCode": "2005400",
+                "responseMessage": "Successful"
+            }
+        },
         "PaymentFailInvalidFormat": {
             "request": {
                 "additionalInfo": {
@@ -758,7 +794,7 @@
                 "transactionDate": ""
             },
             "response": {
-                "responseMessage": "Order paid successfully",
+                "transactionStatusDesc": "SUCCESS",
                 "responseCode": "2005500"
             }
         },
@@ -779,8 +815,9 @@
                 "transactionDate": ""
             },
             "response": {
-                "responseMessage": "Order initiated successfully",
-                "responseCode": "2005501"
+                "responseMessage": "Successful",
+                "responseCode": "2005500",
+                "transactionStatusDesc": "INIT"
             }
         },
         "QueryOrderSuccessPaying": {
@@ -800,8 +837,8 @@
                 "transactionDate": ""
             },
             "response": {
-                "responseMessage": "Order is in paying status",
-                "responseCode": "2005502"
+                "transactionStatusDesc": "INIT",
+                "responseCode": "2005500"
             }
         },
         "QueryOrderSuccessCancelled": {
@@ -821,8 +858,9 @@
                 "transactionDate": ""
             },
             "response": {
-                "responseMessage": "Order cancelled successfully",
-                "responseCode": "2005503"
+                "responseMessage": "Successful",
+                "responseCode": "2005500",
+                "transactionStatusDesc": "CANCELLED"
             }
         },
         "QueryOrderNotFound": {
@@ -960,7 +998,7 @@
     "CancelOrder": {
         "CancelOrderValidScenario": {
             "request": {
-                "originalPartnerReferenceNo": "2382938123",
+                "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "${merchantId}",
@@ -968,7 +1006,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "10000.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1047,7 +1085,7 @@
         },
         "CancelOrderFailOrderNotExist": {
             "request": {
-                "originalPartnerReferenceNo": "1234-1234-43123-3124-4213",
+                "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "123123123",
@@ -1055,7 +1093,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "40470.00",
+                    "value": "50000.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1130,7 +1168,6 @@
             }
         },
         "CancelOrderFailOrderRefunded": {
-
             "request": {
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1146,8 +1183,8 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4015700",
-                "responseMessage": "Unauthorized. Invalid Signature"
+                "responseCode": "4045700",
+                "responseMessage": "Invalid Transaction Status"
             }
 
         },

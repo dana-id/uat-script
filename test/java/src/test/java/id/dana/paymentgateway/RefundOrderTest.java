@@ -19,6 +19,7 @@ import io.restassured.path.json.JsonPath;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -40,18 +41,19 @@ class RefundOrderTest {
     private static String jsonPathFile = RefundOrderTest.class.getResource("/request/components/PaymentGateway.json")
             .getPath();
     private static final Logger log = LoggerFactory.getLogger(RefundOrderTest.class);
-
+    private static String userPin = "123321";
+    private static String userPhone = "0811742234";
     private final String titleCase = "RefundOrder";
-    private final String merchantId = "216620010016033632482";
+    private final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
 
     private PaymentGatewayApi api;
     private static String
             partnerReferenceNoPaid,
             partnerReferenceNoCancel,
-            partnerReferenceNoInit;
+            partnerReferenceNo;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         DanaConfig.Builder danaConfigBuilder = new DanaConfig.Builder();
         danaConfigBuilder
                 .partnerId(ConfigUtil.getConfig("X_PARTNER_ID", ""))
@@ -63,20 +65,21 @@ class RefundOrderTest {
 
         api = Dana.getInstance().getPaymentGatewayApi();
 
-        createOrder("INIT");
+//        Create order with status "PAID"
+        partnerReferenceNo = OrderPGUtil.payOrderWithDana(
+                userPhone,
+                userPin,
+                "CreateOrderRedirect");
     }
 
-    //Must be paid but found INIT ORDER_STATUS_INVALID::pgOrder.status must be PAID, bud found INIT
     @Test
-    @Disabled
     void testRefundOrderValid() throws IOException {
         String caseName = "RefundOrderValidScenario";
 
-        createOrder("PAID");
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
             RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
@@ -93,11 +96,11 @@ class RefundOrderTest {
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
 
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
@@ -107,12 +110,12 @@ class RefundOrderTest {
         String caseName = "RefundOrderNotAllowed";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -123,12 +126,12 @@ class RefundOrderTest {
         String caseName = "RefundOrderDueToExceedRefundWindowTime";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -140,14 +143,12 @@ class RefundOrderTest {
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
 
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
-        System.out.println("parccscscs " + requestData);
-
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -155,17 +156,19 @@ class RefundOrderTest {
 
     @Test
     void testRefundOrderMultipleRefund() throws IOException {
-        // First refund
         String caseName = "RefundOrderMultipleRefund";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
+        // First refund
+        api.refundOrder(requestData);
+        // Second refund
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
@@ -173,14 +176,17 @@ class RefundOrderTest {
     @Test
     void testRefundOrderNotPaid() throws IOException {
         String caseName = "RefundOrderNotPaid";
+        List<String> dataOrder = OrderPGUtil.createOrder("CreateOrderRedirect");
+
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+
+        requestData.setOriginalPartnerReferenceNo(dataOrder.get(0));
+        requestData.setPartnerRefundNo(dataOrder.get(0));
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -191,12 +197,12 @@ class RefundOrderTest {
         String caseName = "RefundOrderIllegalParameter";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -209,11 +215,11 @@ class RefundOrderTest {
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
 
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         customHeaders.put(
                 DanaHeader.X_SIGNATURE,
@@ -229,17 +235,16 @@ class RefundOrderTest {
     }
 
     @Test
-    @Disabled
     void testRefundOrderNotExist() throws IOException {
         String caseName = "RefundOrderInvalidBill";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -250,12 +255,12 @@ class RefundOrderTest {
         String caseName = "RefundOrderInsufficientFunds";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -269,8 +274,8 @@ class RefundOrderTest {
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
 
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         customHeaders.put(
@@ -291,12 +296,12 @@ class RefundOrderTest {
         String caseName = "RefundOrderMerchantStatusAbnormal";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -307,12 +312,12 @@ class RefundOrderTest {
         String caseName = "RefundOrderTimeout";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -323,12 +328,12 @@ class RefundOrderTest {
         String caseName = "RefundOrderDuplicateRequest";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         Money money = new Money();
         money.setValue("190098.00");
@@ -351,10 +356,10 @@ class RefundOrderTest {
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
 
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         for (int i = 0; i < numberOfThreads; i++) {
             executor.submit(() -> {
@@ -373,70 +378,5 @@ class RefundOrderTest {
         // Wait for all threads to complete
         latch.await();
         executor.shutdown();
-    }
-
-    @Test
-    void testRefundOrderExceedsTransactionAmountLimit() throws IOException {
-        String caseName = "RefundOrderExceedsTransactionAmountLimit";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
-
-        RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    }
-
-    private void createOrder(String status){
-        String createOrderCase = "CreateOrder";
-        switch (status) {
-            case "PAID":
-                // Logic to create a successful order
-                String caseOrder = "CreateOrderNetworkPayPgOtherWallet";
-                CreateOrderByApiRequest requestDataPaid = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrder,
-                        CreateOrderByApiRequest.class);
-
-                partnerReferenceNoPaid = UUID.randomUUID().toString();
-                requestDataPaid.setPartnerReferenceNo(partnerReferenceNoPaid);
-                requestDataPaid.setMerchantId(merchantId);
-
-                CreateOrderResponse responsePaid = api.createOrder(requestDataPaid);
-                responsePaid.getResponseMessage();
-                Assertions.assertTrue(responsePaid.getResponseCode().contains("2005400"));
-                break;
-            case "CANCEL":
-                // Logic to create a failed order
-                String caseOrderCancel = "CancelOrderValidScenario";
-                CreateOrderByRedirectRequest requestDataCancel = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrderCancel,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoCancel = UUID.randomUUID().toString();
-                requestDataCancel.setPartnerReferenceNo(partnerReferenceNoCancel);
-                requestDataCancel.setMerchantId(merchantId);
-
-                CreateOrderResponse responseCancel = api.createOrder(requestDataCancel);
-                Assertions.assertTrue(responseCancel.getResponseCode().contains("200"));
-                break;
-            case "INIT":
-                // Logic to create a pending order
-                String caseOrderInit = "CreateOrderRedirect";
-                CreateOrderByRedirectRequest requestDataInit = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrderInit,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoInit = UUID.randomUUID().toString();
-                requestDataInit.setPartnerReferenceNo(partnerReferenceNoInit);
-                requestDataInit.setMerchantId(merchantId);
-
-                CreateOrderResponse responseInit = api.createOrder(requestDataInit);
-                log.info("Create Order Response: " + responseInit.getResponseCode());
-                Assertions.assertTrue(responseInit.getResponseCode().contains("200"));
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown status: " + status);
-        }
     }
 }

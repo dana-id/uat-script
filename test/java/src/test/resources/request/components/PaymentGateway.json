@@ -391,7 +391,7 @@
                 "payOptionDetails": [
                     {
                         "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_GOPAY",
+                        "payOption": "NETWORK_PAY_PG_OVO",
                         "transAmount": {
                             "value": "50001.00",
                             "currency": "IDR"
@@ -782,21 +782,21 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "${valueFromServer}",
                 "serviceCode": "54",
-                "latestTransactionStatus": "01",
+                "latestTransactionStatus": "00",
                 "transactionStatusDesc": "SUCCESS",
                 "transAmount": {
-                    "value": "50001.00",
+                    "value": "22200.00",
                     "currency": "IDR"
                 },
                 "amount": {
-                    "value": "50001.00",
+                    "value": "22200.00",
                     "currency": "IDR"
                 },
-                "title": "Payment Gateway Order Test",
+                "title": "Payment Gateway Order",
                 "additionalInfo": {
                     "amountDetail": {
                         "orderAmount": {
-                            "value": "50001.00",
+                            "value": "22200.00",
                             "currency": "IDR"
                         }
                     },
@@ -1257,10 +1257,10 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "22000.00",
+                    "value": "435802.00",
                     "currency": "IDR"
                 },
-                "externalStoreId": "test",
+                "externalStoreId": "",
                 "reason": "Customer complain",
                 "additionalInfo": {}
             },

@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -41,8 +42,9 @@ public class QueryOrderTest {
     private static final String titleCase = "QueryOrder";
     private static final String jsonPathFile = QueryOrderTest.class.getResource("/request/components/Widget.json")
             .getPath();
-
     private final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
+    private static String userPin = "123321";
+    private static String userPhone = "0811742234";
     private WidgetApi widgetApi;
     private PaymentGatewayApi paymentGatewayApi;
     private static String partnerReferenceNoPaid,partnerReferenceNoCancel,partnerReferenceNoInit;
@@ -65,7 +67,7 @@ public class QueryOrderTest {
     @Test
     void testQueryOrderSuccessInitiated() throws IOException {
         // Create an order with an initial status
-        createOrder("INIT");
+        List<String> dataOrder= PaymentWidgetUtil.createPayment("PaymentSuccess");
 
         // Create an order with an initial status
         Map<String, Object> variableDict = new HashMap<>();
@@ -74,10 +76,10 @@ public class QueryOrderTest {
                 QueryPaymentRequest.class);
 
         // Assign unique reference and merchant ID
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(dataOrder.get(0));
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", dataOrder.get(0));
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
@@ -86,8 +88,11 @@ public class QueryOrderTest {
 
     @Test
     void testQueryOrderSuccessPaid() throws IOException {
-        // Create an order with a paid status
-        createOrder("PAID");
+        // Create an order with an initial status
+        String partnerReferenceNo= PaymentWidgetUtil.payOrderWithDana(
+                userPhone,
+                userPin,
+                "PaymentSuccess");
 
         Map<String, Object> variableDict = new HashMap<>();
         String caseName = "QueryOrderSuccessPaid";
@@ -95,10 +100,10 @@ public class QueryOrderTest {
                 QueryPaymentRequest.class);
 
         // Assign unique reference and merchant ID
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
@@ -107,8 +112,8 @@ public class QueryOrderTest {
 
     @Test
     void testQueryOrderSuccessPaying() throws IOException {
-        // Create an order with a paid status
-        createOrder("PAID");
+        // Create an order with a paying status
+        List<String> orderData = PaymentWidgetUtil.createPayment("PaymentPaying");
 
         Map<String, Object> variableDict = new HashMap<>();
         String caseName = "QueryOrderSuccessPaying";
@@ -116,10 +121,10 @@ public class QueryOrderTest {
                 QueryPaymentRequest.class);
 
         // Assign unique reference and merchant ID
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
+        requestData.setOriginalPartnerReferenceNo(orderData.get(0));
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
+        variableDict.put("partnerReferenceNo", orderData.get(0));
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
@@ -129,7 +134,7 @@ public class QueryOrderTest {
     @Test
     void testQueryOrderSuccessCancelled() throws IOException {
         // Create an order with a cancelled status
-        createOrder("CANCEL");
+        String partnerReferenceNo = PaymentWidgetUtil.cancelOrder("PaymentSuccess");
 
         Map<String, Object> variableDict = new HashMap<>();
         // Create an order with a cancelled status
@@ -138,10 +143,10 @@ public class QueryOrderTest {
                 QueryPaymentRequest.class);
 
         // Use the reference number for a canceled order
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoCancel);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", partnerReferenceNoCancel);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
@@ -264,89 +269,5 @@ public class QueryOrderTest {
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    private void createOrder(String status){
-        String createOrderJsonPathFile = CreateOrderTest.class.getResource(
-                        "/request/components/PaymentGateway.json")
-                .getPath();
-        String createOrderCase = "CreateOrder";
-        switch (status) {
-            case "PAID":
-                // Logic to create a successful order
-                String caseOrder = "CreateOrderNetworkPayPgOtherWallet";
-                CreateOrderByRedirectRequest requestDataPaid = TestUtil.getRequest(createOrderJsonPathFile, createOrderCase, caseOrder,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoPaid = UUID.randomUUID().toString();
-                requestDataPaid.setPartnerReferenceNo(partnerReferenceNoPaid);
-                requestDataPaid.setMerchantId(merchantId);
-
-                CreateOrderResponse responsePaid = paymentGatewayApi.createOrder(requestDataPaid);
-                Assertions.assertTrue(responsePaid.getResponseCode().contains("2005400"));
-                break;
-            case "CANCEL":
-                // Logic to create a cancel order
-                CreateOrderByRedirectRequest requestDataOrder = TestUtil.getRequest(createOrderJsonPathFile, "CreateOrder", "CreateOrderRedirect",
-                        CreateOrderByRedirectRequest.class);
-                CancelOrderRequest requestDataCancel = TestUtil.getRequest(jsonPathFile, "CancelOrder", "CancelOrderValidScenario",
-                        CancelOrderRequest.class);
-
-                // Assign unique reference and merchant ID
-                partnerReferenceNoCancel = UUID.randomUUID().toString();
-                requestDataOrder.setPartnerReferenceNo(partnerReferenceNoCancel);
-                requestDataOrder.setMerchantId(merchantId);
-                requestDataCancel.setOriginalPartnerReferenceNo(partnerReferenceNoCancel);
-                requestDataCancel.setMerchantId(merchantId);
-
-                // Hit API to create an order first and then cancel it
-                CreateOrderResponse responseOrderInit = paymentGatewayApi.createOrder(requestDataOrder);
-                CancelOrderResponse responseCancel = widgetApi.cancelOrder(requestDataCancel);
-                Assertions.assertTrue(responseOrderInit.getResponseCode().contains("200"));
-                Assertions.assertTrue(responseCancel.getResponseCode().contains("200"));
-                break;
-            case "INIT":
-                // Logic to create a pending order
-                String caseOrderInit = "CreateOrderRedirect";
-                CreateOrderByRedirectRequest requestDataInit = TestUtil.getRequest(createOrderJsonPathFile, createOrderCase, caseOrderInit,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoInit = UUID.randomUUID().toString();
-                requestDataInit.setPartnerReferenceNo(partnerReferenceNoInit);
-                requestDataInit.setMerchantId(merchantId);
-
-                CreateOrderResponse responseInit = paymentGatewayApi.createOrder(requestDataInit);
-                Assertions.assertTrue(responseInit.getResponseCode().contains("2005400"));
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown status: " + status);
-        }
-    }
-
-    private Response customHeaderQueryOrder(Map<String, String> headers) {
-        String baseUrl = "https://api.sandbox.dana.id";
-        String path = "/payment-gateway/v1.0/debit/status.htm";
-        RequestSpecBuilder builder = new RequestSpecBuilder();
-        JsonPath jsonPath = JsonPath.from(
-                new File("src/test/resources/request/components/Widget.json"));
-        Map<String, Object> request = jsonPath.get("QueryOrder.QueryOrderSuccessPaid.request");
-
-        log.info("Request: {}", request);
-
-        RequestSpecification requestSpecification = builder.setBody(
-                        request, ObjectMapperType.JACKSON_2)
-                .setContentType(ContentType.JSON)
-                .addHeaders(headers)
-                .build();
-
-        Response response = RestAssured.given(requestSpecification)
-                .relaxedHTTPSValidation()
-                .when()
-                .request("POST", baseUrl + path)
-                .then()
-                .extract()
-                .response();
-
-        return response;
     }
 }

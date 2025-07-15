@@ -15,6 +15,7 @@ import id.dana.paymentgateway.v1.model.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,23 +32,17 @@ import org.slf4j.LoggerFactory;
 
 class CancelOrderTest {
 
+    private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
     private static String jsonPathFile = CancelOrderTest.class.getResource("/request/components/PaymentGateway.json")
             .getPath();
-    private static final Logger log = LoggerFactory.getLogger(CancelOrderTest.class);
-
+    private final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
+    private static String userPin = "123321";
+    private static String userPhone = "0811742234";
     private final String titleCase = "CancelOrder";
-    private final String merchantId = "216620010016033632482";
-
     private PaymentGatewayApi api;
-
-    private static String
-            partnerReferenceNoPaid,
-            partnerReferenceNoCancel,
-            partnerReferenceNoInit,
-            partnerReferenceNoRefund;
-
+    private static String partnerReferenceNoInit;
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
         DanaConfig.Builder danaConfigBuilder = new DanaConfig.Builder();
         danaConfigBuilder
                 .partnerId(ConfigUtil.getConfig("X_PARTNER_ID", ""))
@@ -59,9 +54,9 @@ class CancelOrderTest {
 
         api = Dana.getInstance().getPaymentGatewayApi();
 
-        createOrder("INIT");
-
-        createOrder("REFUND");
+//        Create order INIT
+        List<String> dataOrder= OrderPGUtil.createOrder("CreateOrderRedirect");
+        partnerReferenceNoInit = dataOrder.get(0);
     }
 
     @Test
@@ -261,85 +256,21 @@ class CancelOrderTest {
         String caseName = "CancelOrderInvalidTransactionStatus";
         CancelOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 CancelOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoRefund);
+
+//        Create order with status refunded
+        log.info("Creating order to be refunded");
+        String partnerReferenceNo = OrderPGUtil.refundOrder(
+                userPhone,
+                userPin,
+                "CreateOrderRedirect");
+
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoRefund);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         CancelOrderResponse response = api.cancelOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    }
-
-    private void createOrder(String status){
-        String createOrderCase = "CreateOrder";
-        String refundOrderCase = "RefundOrder";
-        switch (status) {
-            case "PAID":
-                // Logic to create a successful order
-                String caseOrder = "CreateOrderNetworkPayPgOtherWallet";
-                CreateOrderByRedirectRequest requestDataPaid = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrder,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoPaid = UUID.randomUUID().toString();
-                requestDataPaid.setPartnerReferenceNo(partnerReferenceNoPaid);
-                requestDataPaid.setMerchantId(merchantId);
-
-                CreateOrderResponse responsePaid = api.createOrder(requestDataPaid);
-                Assertions.assertTrue(responsePaid.getResponseCode().contains("2005400"));
-                break;
-            case "CANCEL":
-                // Logic to create a failed order
-                String caseOrderCancel = "CancelOrderValidScenario";
-                CreateOrderByRedirectRequest requestDataCancel = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrderCancel,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoCancel = UUID.randomUUID().toString();
-                requestDataCancel.setPartnerReferenceNo(partnerReferenceNoCancel);
-                requestDataCancel.setMerchantId(merchantId);
-
-                CreateOrderResponse responseCancel = api.createOrder(requestDataCancel);
-                Assertions.assertTrue(responseCancel.getResponseCode().contains("200"));
-                break;
-            case "INIT":
-                // Logic to create a pending order
-                String caseOrderInit = "CreateOrderRedirect";
-                CreateOrderByRedirectRequest requestDataInit = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrderInit,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoInit = UUID.randomUUID().toString();
-                requestDataInit.setPartnerReferenceNo(partnerReferenceNoInit);
-                requestDataInit.setMerchantId(merchantId);
-
-                CreateOrderResponse responseInit = api.createOrder(requestDataInit);
-                log.info("Create Order Response: " + responseInit.getResponseCode());
-                Assertions.assertTrue(responseInit.getResponseCode().contains("200"));
-                break;
-            case "REFUND":
-                // Logic to create a pending order
-                String caseOrderRefund = "CreateOrderRedirect";
-                String caseValidRefund = "RefundOrderValidScenario";
-
-                CreateOrderByRedirectRequest requestOrderRefund = TestUtil.getRequest(jsonPathFile, createOrderCase, caseOrderRefund,
-                        CreateOrderByRedirectRequest.class);
-
-                RefundOrderRequest requestValidRefund = TestUtil.getRequest(jsonPathFile, refundOrderCase, caseValidRefund,
-                        RefundOrderRequest.class);
-
-                partnerReferenceNoRefund = UUID.randomUUID().toString();
-                requestOrderRefund.setPartnerReferenceNo(partnerReferenceNoRefund);
-                requestOrderRefund.setMerchantId(merchantId);
-                requestValidRefund.setOriginalPartnerReferenceNo(partnerReferenceNoRefund);
-                requestValidRefund.setMerchantId(merchantId);
-
-                CreateOrderResponse responseOrderRefund = api.createOrder(requestOrderRefund);
-                RefundOrderResponse responseValidRefund = api.refundOrder(requestValidRefund);
-
-                log.info("Refund Order Response: " + responseValidRefund.getResponseCode());
-                Assertions.assertTrue(responseOrderRefund.getResponseCode().contains("200"));
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown status: " + status);
-        }
     }
 }

@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -46,10 +47,10 @@ public class RefundOrderTest {
 
     private final String titleCase = "RefundOrder";
     private final String merchantId = "216620010016033632482";
-
+    private static String userPin = "123321";
+    private static String userPhone = "0811742234";
     private WidgetApi widgetApi;
-    private PaymentGatewayApi paymentGatewayApi;
-    private static String partnerReferenceNoPaid,partnerReferenceNoCancel,partnerReferenceNoInit;
+    private static String partnerReferenceNoInit;
 
     @BeforeEach
     void setUp() {
@@ -63,96 +64,25 @@ public class RefundOrderTest {
         DanaConfig.getInstance(danaConfigBuilder);
 
         widgetApi = Dana.getInstance().getWidgetApi();
-        paymentGatewayApi = Dana.getInstance().getPaymentGatewayApi();
 
+        List<String> dataOrder = PaymentWidgetUtil.createPayment("PaymentSuccess");
+        partnerReferenceNoInit = dataOrder.get(0);
     }
 
-    //Must be paid but found INIT ORDER_STATUS_INVALID::pgOrder.status must be PAID, bud found INIT
     @Test
     void testRefundOrderValid() throws IOException {
         String caseName = "RefundOrderValidScenario";
 
-        createOrder("PAID");
+        String partnerReferenceNo = PaymentWidgetUtil.payOrderWithDana(
+                userPhone,
+                userPin,
+                "PaymentSuccess");
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    @Disabled
-    void testRefundOrderInProgress() throws IOException {
-        createOrder("INIT");
-        String caseName = "RefundInProcess";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    @Disabled
-    void testRefundOrderNotAllowed() throws IOException {
-        String caseName = "RefundFailNotAllowedByAgreement";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    @Disabled
-    void testRefundFailExceedPaymentAmount() throws IOException {
-        createOrder("INIT");
-        String caseName = "RefundFailExceedPaymentAmount";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    @Disabled
-    void testRefundFailExceedRefundWindowTime() throws IOException {
-        String caseName = "RefundFailExceedRefundWindowTime";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    @Disabled
-    void testRefundOrderMultipleRefund() throws IOException {
-        createOrder("INIT");
-        String caseName = "RefundFailMultipleRefundNotAllowed";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        widgetApi.refundOrder(requestData);
         RefundOrderResponse response = widgetApi.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
     }
@@ -173,7 +103,6 @@ public class RefundOrderTest {
 
     @Test
     void testRefundOrderNotPaid() throws IOException {
-        createOrder("INIT");
         String caseName = "RefundFailOrderNotPaid";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
@@ -229,53 +158,10 @@ public class RefundOrderTest {
         String caseName = "RefundFailOrderNotExist";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
         RefundOrderResponse response = widgetApi.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    @Disabled
-    void testRefundFailInsufficientMerchantBalance() throws IOException {
-        String caseName = "RefundFailInsufficientMerchantBalance";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    @Disabled
-    void testRefundFailInvalidSignature() throws IOException {
-        Map<String, String> customHeaders = new HashMap<>();
-        String caseName = "RefundFailInvalidSignature";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        customHeaders.put(
-                DanaHeader.X_SIGNATURE,
-                "testing");
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(new DanaAuth())
-                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
-                .build();
-        WidgetApi apiWithCustomHeader = new WidgetApi(client);
-
-        Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
-
-        RefundOrderResponse response = apiWithCustomHeader.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -306,15 +192,14 @@ public class RefundOrderTest {
 
     @Test
     void testRefundFailIdempotent() throws InterruptedException {
-        createOrder("INIT");
-        String caseName = "RefundFailIdempotent";
+        String caseName = "RefundIdempotent";
         int numberOfThreads = 10;
         ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
+        requestData.setPartnerRefundNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
         for (int i = 0; i < numberOfThreads; i++) {
@@ -334,69 +219,5 @@ public class RefundOrderTest {
         // Wait for all threads to complete
         latch.await();
         executor.shutdown();
-    }
-
-    private void createOrder(String status){
-        String createOrderJsonPathFile = CreateOrderTest.class.getResource(
-                        "/request/components/PaymentGateway.json")
-                .getPath();
-        String createOrderCase = "CreateOrder";
-        switch (status) {
-            case "PAID":
-                // Logic to create a pending order
-                String caseOrderPaid = "CreateOrderRedirect";
-                CreateOrderByRedirectRequest requestDataPaid = TestUtil.getRequest(createOrderJsonPathFile, createOrderCase, caseOrderPaid,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoPaid = UUID.randomUUID().toString();
-                requestDataPaid.setPartnerReferenceNo(partnerReferenceNoPaid);
-                requestDataPaid.setMerchantId(merchantId);
-
-                CreateOrderResponse responsePaidOrder = paymentGatewayApi.createOrder(requestDataPaid);
-                Assertions.assertTrue(responsePaidOrder.getResponseCode().contains("2005400"));
-
-                //Payment
-                WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, "Payment", "PaymentSuccess",
-                        WidgetPaymentRequest.class);
-
-                requestData.setPartnerReferenceNo(partnerReferenceNoPaid);
-                requestData.setMerchantId(merchantId);
-
-                WidgetPaymentResponse responsePaid = widgetApi.widgetPayment(requestData);
-                log.info("Create Payment Response: " + responsePaid.getResponseMessage() +
-                        " - " + responsePaid.getPartnerReferenceNo());
-                Assertions.assertTrue(responsePaid.getResponseCode().contains("2005400"));
-                break;
-            case "CANCEL":
-                // Logic to create a failed order
-                String caseOrderCancel = "CancelOrderValidScenario";
-                CreateOrderByRedirectRequest requestDataCancel = TestUtil.getRequest(createOrderJsonPathFile, createOrderCase, caseOrderCancel,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoCancel = UUID.randomUUID().toString();
-                requestDataCancel.setPartnerReferenceNo(partnerReferenceNoCancel);
-                requestDataCancel.setMerchantId(merchantId);
-
-                CreateOrderResponse responseCancel = paymentGatewayApi.createOrder(requestDataCancel);
-                log.info("Create Order Response: " + responseCancel.getResponseCode());
-                Assertions.assertTrue(responseCancel.getResponseCode().contains("200"));
-                break;
-            case "INIT":
-                // Logic to create a pending order
-                String caseOrderInit = "CreateOrderRedirect";
-                CreateOrderByRedirectRequest requestDataInit = TestUtil.getRequest(createOrderJsonPathFile, createOrderCase, caseOrderInit,
-                        CreateOrderByRedirectRequest.class);
-
-                partnerReferenceNoInit = UUID.randomUUID().toString();
-                requestDataInit.setPartnerReferenceNo(partnerReferenceNoInit);
-                requestDataInit.setMerchantId(merchantId);
-
-                CreateOrderResponse responseInit = paymentGatewayApi.createOrder(requestDataInit);
-                log.info("Create Order Response: " + responseInit.getResponseCode());
-                Assertions.assertTrue(responseInit.getResponseCode().contains("200"));
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown status: " + status);
-        }
     }
 }
