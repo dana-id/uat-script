@@ -7,7 +7,7 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 import { getRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
-import { RefundOrderRequest } from 'dana-node/dist/widget/v1';
+import { RefundOrderRequest } from 'dana-node/widget/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 
 // Load environment variables from .env file

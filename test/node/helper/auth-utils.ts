@@ -1,4 +1,6 @@
-const { automateOAuth } = require('../automate-oauth');
+import { automateOAuth } from '../automate-oauth';
+import { WidgetUtils, Oauth2UrlData } from 'dana-node/widget/v1';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Generates an OAuth authorization code with automatic retries
@@ -18,10 +20,25 @@ export async function generateAuthCode(phoneNumber?: string, pinCode?: string): 
             if (attempt > 1) {
                 console.log(`Auth code generation attempt ${attempt}/${MAX_RETRIES}`);
             }
+
+            const oauthData: Oauth2UrlData = {
+                scopes: ['CASHIER', 'AGREEMENT_PAY', 'QUERY_BALANCE', 'DEFAULT_BASIC_PROFILE', 'MINI_DANA'],
+                externalId: uuidv4(),
+                state: uuidv4(),
+                redirectUrl: 'https://google.com',
+                seamlessData: {
+                    mobileNumber: phoneNumber
+                },
+                merchantId: process.env.MERCHANT_ID || '',
+            };
+
+            const oauthUrl = WidgetUtils.generateOauthUrl(oauthData);
+
+            console.log(`OAuth URL: ${oauthUrl}`);
             
             // Wrap in a timeout to prevent hanging
             const authCode = await Promise.race([
-                automateOAuth(phoneNumber, pinCode, { log: false }),
+                automateOAuth(oauthUrl, phoneNumber, pinCode, { log: false }),
                 new Promise<null>((_, reject) => {
                     const timeout = setTimeout(() => {
                         clearTimeout(timeout); // Clear the timeout to prevent memory leaks

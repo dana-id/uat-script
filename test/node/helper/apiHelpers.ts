@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import dotenv from 'dotenv';
 import axios from 'axios';
-import { BaseAPI, Configuration, DanaSignatureUtil } from 'dana-node/dist/runtime';
-import { HTTPMethod } from 'dana-node/dist/runtime';
+import { BaseAPI, Configuration, DanaSignatureUtil } from 'dana-node/runtime';
+import { HTTPMethod } from 'dana-node/runtime';
 
 // Load environment variables
 dotenv.config();

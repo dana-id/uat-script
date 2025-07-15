@@ -8,7 +8,7 @@ import { fail } from 'assert';
 import { getRequest } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
-import { CreateOrderByApiRequest, QueryPaymentRequest, CancelOrderRequest } from 'dana-node/dist/payment_gateway/v1';
+import { CreateOrderByApiRequest, QueryPaymentRequest, CancelOrderRequest } from 'dana-node/payment_gateway/v1';
 import { ResponseError } from 'dana-node';
 
 // Load environment variables

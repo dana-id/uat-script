@@ -5,7 +5,7 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 import { getRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
-import { CancelOrderRequest } from 'dana-node/dist/widget/v1';
+import { CancelOrderRequest } from 'dana-node/widget/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 
 dotenv.config();

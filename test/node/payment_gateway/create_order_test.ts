@@ -9,7 +9,7 @@ import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
-import { CreateOrderByApiRequest, CreateOrderByRedirectRequest } from 'dana-node/dist/payment_gateway/v1';
+import { CreateOrderByApiRequest, CreateOrderByRedirectRequest } from 'dana-node/payment_gateway/v1';
 
 // Load environment variables from .env file
 dotenv.config();
