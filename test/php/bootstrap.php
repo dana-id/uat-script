@@ -18,6 +18,7 @@ if (class_exists('\Dotenv\Dotenv')) {
 // Explicitly require helper files to ensure they're loaded in any environment
 require_once __DIR__ . '/helper/Util.php';
 require_once __DIR__ . '/helper/Assertion.php';
+require_once __DIR__ . '/payment_gateway/Scripts/WebAutomation.php';
 
 // Clear any opcache issues that might prevent class reloading
 if (function_exists('opcache_reset')) {

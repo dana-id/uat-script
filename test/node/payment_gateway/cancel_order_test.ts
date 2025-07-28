@@ -5,10 +5,10 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 
 // Import helper functions
-import { getRequest, retryOnInconsistentRequest } from '../helper/util';
+import { getRequest, retryOnInconsistentRequest, automatePayment } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
-import { CreateOrderByApiRequest, CancelOrderRequest } from 'dana-node/payment_gateway/v1';
+import { CreateOrderByApiRequest, CreateOrderByRedirectRequest, CancelOrderRequest, RefundOrderRequest, QueryPaymentRequest } from 'dana-node/payment_gateway/v1';
 import { ResponseError } from 'dana-node';
 
 // Load environment variables
@@ -39,38 +39,81 @@ describe('Cancel Order Tests', () => {
   // Create a shared order before all tests
   beforeAll(async () => {
     const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
-    
+
     // Set a unique partner reference number for create order
     sharedOriginalPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference;
     createOrderRequestData.merchantId = merchantId;
-    
+
     try {
       // Create the order
       await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(createOrderRequestData), 3, 2000);
-      
+
       // Wait to ensure the order is processed in the system
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       console.log(`Shared order created with reference: ${sharedOriginalPartnerReference}`);
     } catch (e) {
       console.error('Failed to create shared order - tests cannot continue:', e);
     }
   });
-  
+
   // Test successful cancel order
-  test.skip('should successfully cancel order', async () => {    
+  // NOTE: This test can be flaky as it depends on payment automation which may fail due to security reasons,
+  test('should successfully cancel order', async () => {
     const cancelOrderCaseName = "CancelOrderValidScenario";
-    
+
     try {
-      // Now cancel the order
+      // Add delay before creating order
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Step 1: Create a paid order
+      const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
+      const paidPartnerReference = generatePartnerReferenceNo();
+      createOrderRequestData.partnerReferenceNo = paidPartnerReference;
+      createOrderRequestData.merchantId = merchantId;
+
+      console.log(`Creating order for payment automation...`);
+      const createOrderResponse = await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+
+      if (createOrderResponse.webRedirectUrl) {
+        console.log(`Order created successfully. WebRedirectUrl: ${createOrderResponse.webRedirectUrl}`);
+        console.log(`Starting payment automation...`);
+
+        // Automate the payment using the webRedirectUrl
+        const automationResult = await automatePayment(
+          '0811742234', // phoneNumber
+          '123321',     // pin
+          createOrderResponse.webRedirectUrl, // redirectUrl from create order response
+          3,            // maxRetries
+          2000,         // retryDelay
+          true         // headless mode
+        );
+
+        if (automationResult.success) {
+          console.log(`Payment automation successful after ${automationResult.attempts} attempts`);
+        } else {
+          console.log(`Payment automation failed: ${automationResult.error}`);
+          throw new Error(`Payment automation failed: ${automationResult.error}`);
+        }
+      } else {
+        throw new Error('No webRedirectUrl in create order response');
+      }
+
+      // Wait a bit for payment to be processed
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      // Step 2: Now cancel the paid order
       const cancelRequestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, cancelOrderCaseName);
-      cancelRequestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
-      
+      cancelRequestData.originalPartnerReferenceNo = paidPartnerReference;
+      cancelRequestData.merchantId = merchantId;
+      cancelRequestData.amount = createOrderRequestData.amount; // Use the same amount as the original order
+
+      console.log(`Attempting to cancel paid order with reference: ${paidPartnerReference}`);
       const response = await dana.paymentGatewayApi.cancelOrder(cancelRequestData);
-      
+
       // Assert the response matches the expected data using our helper function
-      await assertResponse(jsonPathFile, titleCase, cancelOrderCaseName, response, { 'partnerReferenceNo': sharedOriginalPartnerReference });
+      await assertResponse(jsonPathFile, titleCase, cancelOrderCaseName, response, { 'partnerReferenceNo': paidPartnerReference });
+      console.log(`Successfully canceled paid order with reference: ${paidPartnerReference}`);
     } catch (e) {
       console.error('Cancel order test failed:', e);
       throw e;
@@ -78,16 +121,16 @@ describe('Cancel Order Tests', () => {
   });
 
   // Test cancel order with in-progress status
-  test('should cancel order in progress', async () => {    
+  test('should cancel order in progress', async () => {
     const caseName = "CancelOrderInProgress";
-    
+
     try {
       // Get the request data from the JSON file
       const cancelRequestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
-      
+
       // Make the API call
       const response = await dana.paymentGatewayApi.cancelOrder(cancelRequestData);
-      
+
       // Assert the response matches the expected data using our helper function
       await assertResponse(jsonPathFile, titleCase, caseName, response, { 'partnerReferenceNo': "2025700" });
     } catch (e) {
@@ -111,7 +154,7 @@ describe('Cancel Order Tests', () => {
     } catch (e: any) {
       if (e instanceof ResponseError && Number(e.status) === 403) {
         // Assert the error response matches expected format
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), 
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': "4035705" });
       } else if (e instanceof ResponseError && Number(e.status) !== 403) {
         fail("Expected forbidden failed but got status code " + e.status);
@@ -136,7 +179,7 @@ describe('Cancel Order Tests', () => {
     } catch (e: any) {
       if (e instanceof ResponseError && Number(e.status) === 404) {
         // Assert the error response matches expected format
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), 
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': "4045708" });
       } else if (e instanceof ResponseError && Number(e.status) !== 404) {
         fail("Expected not found failed but got status code " + e.status);
@@ -149,23 +192,23 @@ describe('Cancel Order Tests', () => {
   // Test missing mandatory field using manual API call
   test('should fail when mandatory field is missing (manual API call)', async () => {
     const caseName = "CancelOrderInvalidMandatoryField";
-    
+
     try {
       // Get the request data from the JSON file
       const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
-      
+
       // Set the partner reference number
       requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
-      
+
       // Define base URL and API path
       const baseUrl: string = 'https://api.sandbox.dana.id';
       const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
-      
+
       // Define custom headers without X-TIMESTAMP to trigger mandatory field error
       const customHeaders: Record<string, string> = {
         'X-TIMESTAMP': ''
-      };  
-      
+      };
+
       // Make direct API call - this should fail
       await executeManualApiRequest(
         caseName,
@@ -175,12 +218,12 @@ describe('Cancel Order Tests', () => {
         requestData,
         customHeaders
       );
-      
+
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
       if (Number(e.status) === 400) {
         // Assert the error response matches expected format
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), 
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': sharedOriginalPartnerReference });
       } else if (e instanceof ResponseError && Number(e.status) !== 400) {
         fail("Expected bad request failed but got status code " + e.status);
@@ -311,7 +354,7 @@ describe('Cancel Order Tests', () => {
     }
   });
 
-// Test unauthorized access using manual API call
+  // Test unauthorized access using manual API call
   test('should fail when authorization fails (manual API call)', async () => {
     const caseName = "CancelOrderUnauthorized";
 
@@ -386,5 +429,97 @@ describe('Cancel Order Tests', () => {
       }
     }
   });
-  
+
+  // Test cancel order after refunding a paid transaction
+  test.skip('should successfully cancel order after refunding a paid transaction', async () => {
+    const caseName = "CancelOrderRefundedTransaction";
+
+    try {
+      // Step 1: Create a paid order using payment automation
+      const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
+      const paidPartnerReference = generatePartnerReferenceNo();
+      createOrderRequestData.partnerReferenceNo = paidPartnerReference;
+      createOrderRequestData.merchantId = merchantId;
+
+      console.log(`Creating order for payment automation with reference: ${paidPartnerReference}...`);
+      const createOrderResponse = await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+
+      if (createOrderResponse.webRedirectUrl) {
+        console.log(`Order created successfully. WebRedirectUrl: ${createOrderResponse.webRedirectUrl}`);
+        console.log(`Starting payment automation...`);
+
+        // Automate the payment using the webRedirectUrl
+        const automationResult = await automatePayment(
+          '0811742234', // phoneNumber
+          '123321',     // pin
+          createOrderResponse.webRedirectUrl, // redirectUrl from create order response
+          3,            // maxRetries
+          2000,         // retryDelay
+          true         // headless mode
+        );
+
+        if (automationResult.success) {
+          console.log(`Payment automation successful after ${automationResult.attempts} attempts`);
+        } else {
+          console.log(`Payment automation failed: ${automationResult.error}`);
+          throw new Error(`Payment automation failed: ${automationResult.error}`);
+        }
+      } else {
+        throw new Error('No webRedirectUrl in create order response');
+      }
+
+      // Wait for payment to be processed
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      // Step 2: Refund the paid order
+      console.log(`Refunding paid order with reference: ${paidPartnerReference}`);
+      const refundRequestData: RefundOrderRequest = getRequest<RefundOrderRequest>(jsonPathFile, "RefundOrder", "RefundOrderValidScenario");
+      refundRequestData.originalPartnerReferenceNo = paidPartnerReference;
+      refundRequestData.partnerRefundNo = generatePartnerReferenceNo(); // Use different reference for refund
+      refundRequestData.merchantId = merchantId;
+      refundRequestData.refundAmount = createOrderRequestData.amount; // Use same amount as original order
+
+      let refundSuccessful = false;
+      let refundResponse;
+
+      try {
+        refundResponse = await dana.paymentGatewayApi.refundOrder(refundRequestData);
+        console.log(`Refund response: ${JSON.stringify(refundResponse)}`);
+
+        // If refund is successful, mark it as such
+        if (refundResponse && refundResponse.responseCode === "2005800") {
+          refundSuccessful = true;
+          console.log(`Refund successful for paid transaction`);
+        }
+      } catch (refundError: any) {
+        console.log(`Refund failed with error: ${JSON.stringify(refundError.response)}`);
+        // If refund fails, we still want to try canceling the order
+      }
+
+      // Wait a bit after refund
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Step 3: Cancel the order after refund
+      console.log(`Proceeding to cancel order with reference: ${paidPartnerReference}`);
+      const cancelRequestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
+      cancelRequestData.originalPartnerReferenceNo = paidPartnerReference;
+      cancelRequestData.merchantId = merchantId;
+      cancelRequestData.amount = createOrderRequestData.amount; // Use original order amount for cancellation
+
+      console.log(`Cancelling order with reference: ${paidPartnerReference}`);
+      const cancelResponse = await dana.paymentGatewayApi.cancelOrder(cancelRequestData);
+
+      // Assert the cancellation response
+      await assertResponse(jsonPathFile, titleCase, caseName, cancelResponse, {
+        'partnerReferenceNo': paidPartnerReference
+      });
+
+      console.log(`Successfully completed CancelOrderRefundedTransaction scenario`);
+      console.log(`Refund was ${refundSuccessful ? 'successful' : 'failed'}, and cancellation succeeded`);
+    } catch (e) {
+      console.error('CancelOrderRefundedTransaction test failed:', e);
+      throw e;
+    }
+  });
+
 });

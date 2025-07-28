@@ -1,15 +1,16 @@
 <?php
 
-namespace DanaUat\Ipg\v1;
+namespace DanaUat\Widget\v1;
 
 use PHPUnit\Framework\TestCase;
-use Dana\IPG\v1\Api\IPGApi;
+use Dana\Widget\v1\Api\WidgetApi;
 use Dana\Configuration;
 use Dana\ObjectSerializer;
 use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
+use DanaUat\Widget\PaymentUtil;
 use Exception;
 
 class QueryOrderTest extends TestCase
@@ -19,7 +20,10 @@ class QueryOrderTest extends TestCase
     private static $apiInstance;
     private static $merchantId;
     private static $queryOrderUrl;
+    private static $userPin = "123321";
+    private static $userPhoneNumber = "0811742234";
     private static $sandboxUrl;
+    private static $originalPartnerReferenceCancel, $originalPartnerReferencePaid, $originalPartnerReferenceInit, $originalPartnerReferencePaying;
 
     public static function setUpBeforeClass(): void
     {
@@ -28,35 +32,22 @@ class QueryOrderTest extends TestCase
         $configuration->setApiKey('ORIGIN', getenv('ORIGIN'));
         $configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
         $configuration->setApiKey('ENV', Env::SANDBOX);
-        self::$apiInstance = new IpgApi(null, $configuration);
+        self::$apiInstance = new WidgetApi(null, $configuration);
         self::$merchantId = getenv('MERCHANT_ID');
         self::$queryOrderUrl = '/1.0/debit/status.htm';
         self::$sandboxUrl = 'https://api.sandbox.dana.id';
-    }
 
-    /**
-     * @skip
-     * Should give success response for query order scenario
-     */
-    public function testQueryOrderSuccess(): void
-    {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderSuccess';
-            $jsonDict = Util::getRequest(
-                self::$jsonPathFile,
-                self::$titleCase,
-                $caseName
-            );
-            $requestObj = ObjectSerializer::deserialize(
-                $jsonDict,
-                'Dana\IPG\v1\Model\QueryOrderRequest'
-            );
-            $apiResponse = self::$apiInstance->queryOrder($requestObj);
-            $responseJson = json_decode($apiResponse->__toString(), true);
-            $this->assertEquals('2000000', $responseJson['responseCode'], 'Expected success response code');
-            $this->assertEquals('Successful', $responseJson['responseMessage'], 'Expected success response message');
-        });
+        self::$originalPartnerReferenceCancel = self::createCancelPayment();
+        self::$originalPartnerReferencePaid = self::createPaymentPaid();
+        $dataOrder = self::createPaymentOrder();
+        self::$originalPartnerReferenceInit = $dataOrder['partnerReferenceNo'];
+        $dataOrderPaying = self::createPaymentOrder("PaymentPaying");
+        self::$originalPartnerReferencePaying = $dataOrderPaying['partnerReferenceNo'];
+
+        echo "Original Partner Reference Cancel: " . self::$originalPartnerReferenceCancel . PHP_EOL;
+        echo "Original Partner Reference Paid: " . self::$originalPartnerReferencePaid . PHP_EOL;
+        echo "Original Partner Reference Init: " . self::$originalPartnerReferenceInit . PHP_EOL;
+        echo "Original Partner Reference Paying: " . self::$originalPartnerReferencePaying . PHP_EOL;
     }
 
     /**
@@ -65,15 +56,22 @@ class QueryOrderTest extends TestCase
      */
     public function testQueryOrderSuccessPaid(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'QueryOrderSuccessPaid';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            $apiResponse = self::$apiInstance->queryOrder($requestObj);
-            $responseJson = json_decode($apiResponse->__toString(), true);
-            $this->assertEquals('2000000', $responseJson['responseCode'], 'Expected success response code');
-            $this->assertEquals('Successful', $responseJson['responseMessage'], 'Expected success response message');
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['transactionDate'] = self::generateDate();
+            $jsonDict['originalPartnerReferenceNo'] = self::$originalPartnerReferencePaid;
+
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\QueryPaymentRequest');
+            $apiResponse = self::$apiInstance->queryPayment($requestObj);
+            Assertion::assertResponse(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName,
+                $apiResponse->__toString(),
+            );
         });
     }
 
@@ -83,15 +81,23 @@ class QueryOrderTest extends TestCase
      */
     public function testQueryOrderSuccessInitiated(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'QueryOrderSuccessInitiated';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            $apiResponse = self::$apiInstance->queryOrder($requestObj);
-            $responseJson = json_decode($apiResponse->__toString(), true);
-            $this->assertEquals('2000000', $responseJson['responseCode'], 'Expected success response code');
-            $this->assertEquals('Successful', $responseJson['responseMessage'], 'Expected success response message');
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['transactionDate'] = self::generateDate();
+            $jsonDict['originalPartnerReferenceNo'] = self::$originalPartnerReferenceInit;
+
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\QueryPaymentRequest');
+            $apiResponse = self::$apiInstance->queryPayment($requestObj);
+
+            Assertion::assertResponse(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName,
+                $apiResponse->__toString(),
+            );
         });
     }
 
@@ -101,33 +107,49 @@ class QueryOrderTest extends TestCase
      */
     public function testQueryOrderSuccessPaying(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'QueryOrderSuccessPaying';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            $apiResponse = self::$apiInstance->queryOrder($requestObj);
-            $responseJson = json_decode($apiResponse->__toString(), true);
-            $this->assertEquals('2000000', $responseJson['responseCode'], 'Expected success response code');
-            $this->assertEquals('Successful', $responseJson['responseMessage'], 'Expected success response message');
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['transactionDate'] = self::generateDate();
+            $jsonDict['originalPartnerReferenceNo'] = self::$originalPartnerReferencePaying;
+
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\QueryPaymentRequest');
+            $apiResponse = self::$apiInstance->queryPayment($requestObj);
+
+            Assertion::assertResponse(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName,
+                $apiResponse->__toString(),
+            );
         });
     }
 
     /**
-     * @skip
      * Should give success response for query order (cancelled)
      */
     public function testQueryOrderSuccessCancelled(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'QueryOrderSuccessCancelled';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            $apiResponse = self::$apiInstance->queryOrder($requestObj);
-            $responseJson = json_decode($apiResponse->__toString(), true);
-            $this->assertEquals('2000000', $responseJson['responseCode'], 'Expected success response code');
-            $this->assertEquals('Successful', $responseJson['responseMessage'], 'Expected success response message');
+
+            $jsonDict['transactionDate'] = self::generateDate();
+            $jsonDict['originalPartnerReferenceNo'] = self::$originalPartnerReferenceCancel;
+            $jsonDict['merchantId'] = self::$merchantId;
+
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\QueryPaymentRequest');
+
+            $apiResponse = self::$apiInstance->queryPayment($requestObj);
+
+            Assertion::assertResponse(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName,
+                $apiResponse->__toString(),
+            );
         });
     }
 
@@ -137,13 +159,16 @@ class QueryOrderTest extends TestCase
      */
     public function testQueryOrderNotFound(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'QueryOrderNotFound';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
+            $jsonDict['transactionDate'] = self::generateDate();
+            $jsonDict['originalPartnerReferenceNo'] = "tesr12124";
+            $jsonDict['merchantId'] = self::$merchantId;
+
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\QueryPaymentRequest');
             try {
-                self::$apiInstance->queryOrder($requestObj);
+                $apiResponse = self::$apiInstance->queryPayment($requestObj);
                 $this->fail('Expected ApiException was not thrown. API response: ' . print_r($apiResponse, true));
             } catch (ApiException $e) {
                 Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
@@ -157,43 +182,45 @@ class QueryOrderTest extends TestCase
      */
     public function testQueryOrderFailInvalidField(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        $this->markTestSkipped('Skipping testQueryOrderFailInvalidField as requested.');
+        Util::withDelay(function () {
             $caseName = 'QueryOrderFailInvalidField';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
             $headers = Util::getHeadersWithSignature(
-                'POST', 
+                'POST',
                 self::$queryOrderUrl,
                 $jsonDict,
-                false
+                true,
+                true
             );
 
             try {
-                    Util::executeApiRequest(
-                        'POST',
-                        self::$sandboxUrl . self::$queryOrderUrl,
-                        $headers,
-                        $jsonDict
-                    );
-                    
-                    $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
-                } catch (ApiException $e) {
-                    // We expect a 400 Bad Request for missing timestamp
-                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 BadRequest for missing X-TIMESTAMP, got {$e->getCode()}");
+                Util::executeApiRequest(
+                    'POST',
+                    self::$sandboxUrl . self::$queryOrderUrl,
+                    $headers,
+                    $jsonDict
+                );
 
-                    // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
-                    
-                    // Use assertFailResponse to validate the error response
-                    Assertion::assertFailResponse(
-                        self::$jsonPathFile, 
-                        self::$titleCase, 
-                        $caseName, 
-                        $responseContent
-                    );
-                } catch (Exception $e) {
-                    throw $e;
-                }
+                $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
+            } catch (ApiException $e) {
+                // We expect a 400 Bad Request for invalid format
+                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid timestamp format, got {$e->getCode()}");
+
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
+                    $responseContent,
+                    ['partnerReferenceNo' => self::$originalPartnerReferenceCancel]
+                );
+            } catch (ApiException $e) {
+                $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
+            }
         });
     }
 
@@ -201,40 +228,44 @@ class QueryOrderTest extends TestCase
      * @skip
      * Should fail with missing or invalid mandatory field
      */
-    public function testQueryOrderFailMissingOrInvalidMandatoryField(): void
+    public function testQueryOrderFailInvalidMandatoryField(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderFailMissingOrInvalidMandatoryField';
+        $this->markTestSkipped('Skipping testQueryOrderFailInvalidMandatoryField as requested.');
+        Util::withDelay(function () {
+            $caseName = 'QueryOrderFailInvalidMandatoryField';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            try {
-                self::$apiInstance->queryOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
-            }
-        });
-    }
+            $headers = Util::getHeadersWithSignature(
+                'POST',
+                self::$queryOrderUrl,
+                $jsonDict
+            );
 
-    /**
-     * @skip
-     * Should fail with invalid signature
-     */
-    public function testQueryOrderFailInvalidSignature(): void
-    {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderFailInvalidSignature';
-            $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
             try {
-                self::$apiInstance->queryOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
+                Util::executeApiRequest(
+                    'POST',
+                    self::$sandboxUrl . self::$queryOrderUrl,
+                    $headers,
+                    $jsonDict
+                );
+
+                $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
             } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
+                // We expect a 400 Bad Request for invalid format
+                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid timestamp format, got {$e->getCode()}");
+
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
+                    $responseContent,
+                    ['partnerReferenceNo' => self::$originalPartnerReferenceCancel]
+                );
+            } catch (Exception $e) {
+                $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
     }
@@ -245,13 +276,13 @@ class QueryOrderTest extends TestCase
      */
     public function testQueryOrderFailGeneralError(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'QueryOrderFailGeneralError';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
+            $jsonDict['transactionDate'] = self::generateDate();
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\QueryPaymentRequest');
             try {
-                self::$apiInstance->queryOrder($requestObj);
+                self::$apiInstance->queryPayment($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
                 Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
@@ -260,129 +291,75 @@ class QueryOrderTest extends TestCase
         });
     }
 
-    /**
-     * @skip
-     * Should fail with transaction not permitted
-     */
-    public function testQueryOrderFailTransactionNotPermitted(): void
+    public static function createCancelPayment(): string
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderFailTransactionNotPermitted';
-            $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            try {
-                self::$apiInstance->queryOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
-            }
-        });
+        $dataOrder = PaymentUtil::createPaymentWidget(
+            'PaymentSuccess'
+        );
+
+        $jsonDict = Util::getRequest(
+            self::$jsonPathFile,
+            "CancelOrder",
+            "CancelOrderValidScenario"
+        );
+        $jsonDict['originalPartnerReferenceNo'] = $dataOrder['partnerReferenceNo'];
+        $jsonDict['merchantId'] = self::$merchantId;
+
+        $requestObj = ObjectSerializer::deserialize(
+            $jsonDict,
+            'Dana\Widget\v1\Model\CancelOrderRequest'
+        );
+        self::$apiInstance->cancelOrder($requestObj);
+        return $dataOrder['partnerReferenceNo'];
     }
 
-    /**
-     * @skip
-     * Should fail with merchant not exist or status abnormal
-     */
-    public function testQueryOrderFailMerchantNotExistOrStatusAbnormal(): void
-    {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderFailMerchantNotExistOrStatusAbnormal';
-            $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            try {
-                self::$apiInstance->queryOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
-            }
-        });
+    public static function createPaymentOrder(
+        string $originOrder = "PaymentSuccess"
+    ): array {
+        // Get the request data from the JSON file
+        $jsonDict = Util::getRequest(
+            self::$jsonPathFile,
+            "Payment",
+            $originOrder
+        );
+
+        // Set a unique partner reference number
+        $partnerReferenceNo = Util::generatePartnerReferenceNo();
+        $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+        $jsonDict['merchantId'] = self::$merchantId;
+
+        // Create a CreateOrderByRedirectRequest object from the JSON request data
+        $createOrderRequestObj = ObjectSerializer::deserialize(
+            $jsonDict,
+            'Dana\Widget\v1\Model\WidgetPaymentRequest',
+        );
+
+        $apiResponse = self::$apiInstance->widgetPayment($createOrderRequestObj);
+
+        $responseArray = json_decode($apiResponse->__toString(), true);
+        return [
+            'partnerReferenceNo' => $responseArray['partnerReferenceNo'] ?? '',
+            'webRedirectUrl' => $responseArray['webRedirectUrl'] ?? ''
+        ];
     }
 
-    /**
-     * @skip
-     * Should fail with inconsistent request
-     */
-    public function testQueryOrderFailInconsistentRequest(): void
+    private static function createPaymentPaid(): string
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderFailInconsistentRequest';
-            $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            try {
-                self::$apiInstance->queryOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
-            }
-        });
+        $dataOrder = self::createPaymentOrder();
+
+        PaymentUtil::payOrderWidget(
+            self::$userPhoneNumber,
+            self::$userPin,
+            $dataOrder['webRedirectUrl']
+        );
+
+        return (string)$dataOrder['partnerReferenceNo'];
     }
 
-    /**
-     * @skip
-     * Should fail with internal server error
-     */
-    public function testQueryOrderFailInternalServerError(): void
+    private static function generateDate(): string
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderFailInternalServerError';
-            $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            try {
-                self::$apiInstance->queryOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
-            }
-        });
-    }
-
-    /**
-     * @skip
-     * Should fail with timeout
-     */
-    public function testQueryOrderFailTimeout(): void
-    {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderFailTimeout';
-            $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            try {
-                self::$apiInstance->queryOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
-            }
-        });
-    }
-
-    /**
-     * @skip
-     * Should fail with idempotent
-     */
-    public function testQueryOrderFailIdempotent(): void
-    {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
-            $caseName = 'QueryOrderFailIdempotent';
-            $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\QueryOrderRequest');
-            try {
-                self::$apiInstance->queryOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
-            }
-        });
+        $date = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
+        $formattedDate = $date->format('Y-m-d\TH:i:s+07:00');
+        return $formattedDate;
     }
 }

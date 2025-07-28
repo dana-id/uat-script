@@ -3,6 +3,7 @@ package id.dana.util;
 import com.microsoft.playwright.*;
 import com.microsoft.playwright.assertions.LocatorAssertions;
 import com.microsoft.playwright.impl.AssertionsTimeout;
+import id.dana.widget.ApplyToken;
 import id.dana.widget.GetOauthUrl;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.Cookie;
@@ -34,8 +35,8 @@ import static io.restassured.RestAssured.given;
 
 public class OauthUtil {
     private static String authCode;
-    private final static String USER_PIN = "123321";
-    private final static String USER_PHONENUMBER = "0811742234";
+    private final static String DEFAULT_USER_PIN = "123321";
+    private final static String DEFAULT_USER_PHONENUMBER = "0811742234";
     private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
     public static String generateSeamlessData(
             String phoneNumber,
@@ -200,5 +201,22 @@ public class OauthUtil {
             throw new RuntimeException(e);
         }
         return authCode;
+    }
+
+    public static String getAccessToken(String phoneNumberUser, String pinUser) throws
+            UnsupportedEncodingException,
+            NoSuchAlgorithmException,
+            InvalidKeySpecException,
+            SignatureException,
+            InvalidKeyException {
+
+        authCode = OauthUtil.getAuthCode(
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                phoneNumberUser,
+                pinUser);
+
+        String accessToken = ApplyToken.applyToken(authCode);
+        return accessToken;
     }
 }

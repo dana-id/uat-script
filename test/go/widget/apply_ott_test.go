@@ -8,32 +8,32 @@ import (
 
 // ApplyOtt
 func TestApplyOttSuccess(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailInvalidFormat(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailMissingOrInvalidMandatoryField(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailInvalidSignature(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailTokenExpired(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailTokenNotFound(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailInvalidUserStatus(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailNonRetryableError(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailInternalServerError(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyOttFailUnexpectedResponse(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }

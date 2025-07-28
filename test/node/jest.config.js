@@ -20,6 +20,13 @@ module.exports = {
 
   testTimeout: 120000,
 
+  // SEQUENTIAL EXECUTION CONFIGURATION
+  // Run tests sequentially instead of in parallel
+  maxWorkers: 1,
+  
+  // Disable parallel execution within test files
+  maxConcurrency: 1,
+
   // A set of globals that need to be available in all test environments
   globals: {
     // Add any test-wide globals here

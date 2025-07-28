@@ -11,29 +11,16 @@ import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
 import id.dana.paymentgateway.v1.model.*;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
-import io.restassured.RestAssured;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.mapper.ObjectMapperType;
-import io.restassured.path.json.JsonPath;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.jupiter.api.Assertions.fail;
 
 class QueryOrderTest {
     private static final Logger log = LoggerFactory.getLogger(QueryOrderTest.class);
@@ -42,14 +29,12 @@ class QueryOrderTest {
     private static final String titleCase = "QueryPayment";
     private static String userPin = "123321";
     private static String userPhone = "0811742234";
+    private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
+    private static PaymentGatewayApi api;
+    private static String partnerReferenceNoInit,partnerReferenceNoPaid,partnerReferenceNoCancel;
 
-    private final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
-
-    private PaymentGatewayApi api;
-    private static String partnerReferenceNoInit;
-
-    @BeforeEach
-    void setUp() throws IOException {
+    @BeforeAll
+    static void setUpBeforeAll() throws IOException, InterruptedException {
         DanaConfig.Builder danaConfigBuilder = new DanaConfig.Builder();
         danaConfigBuilder
                 .partnerId(ConfigUtil.getConfig("X_PARTNER_ID", ""))
@@ -61,9 +46,13 @@ class QueryOrderTest {
 
         api = Dana.getInstance().getPaymentGatewayApi();
 
-//        Create order with status "INIT"
-        List<String> dataOrder = OrderPGUtil.createOrder("CreateOrderRedirect");
+//        Create order
+        List<String> dataOrder = createOrder();
         partnerReferenceNoInit = dataOrder.get(0);
+        partnerReferenceNoCancel = cancelOrder();
+        partnerReferenceNoPaid = payOrder(
+                userPhone,
+                userPin);
     }
 
     @Test
@@ -91,12 +80,6 @@ class QueryOrderTest {
         QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 QueryPaymentRequest.class);
 
-//        Create paid order
-        String partnerReferenceNoPaid = OrderPGUtil.payOrderWithDana(
-                userPhone,
-                userPin,
-                "CreateOrderRedirect");
-
 //        Assign unique reference and merchant ID
         requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
         requestData.setMerchantId(merchantId);
@@ -104,6 +87,7 @@ class QueryOrderTest {
         variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
         variableDict.put("merchantId", merchantId);
 
+        Thread.sleep(5000); // Wait for the payment to be processed
         QueryPaymentResponse response = api.queryPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
@@ -115,13 +99,10 @@ class QueryOrderTest {
         QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 QueryPaymentRequest.class);
 
-//        Create order with status "CANCEL"
-        String dataOrder = OrderPGUtil.cancelOrder("CreateOrderRedirect");
-
-        requestData.setOriginalPartnerReferenceNo(dataOrder);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoCancel);
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", dataOrder);
+        variableDict.put("partnerReferenceNo", partnerReferenceNoCancel);
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = api.queryPayment(requestData);
@@ -224,5 +205,58 @@ class QueryOrderTest {
 
         QueryPaymentResponse response = api.queryPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+    }
+
+    public static List<String> createOrder() {
+        List<String> dataOrder = new ArrayList<>();
+
+        CreateOrderByRedirectRequest requestData = TestUtil.getRequest(
+                jsonPathFile,
+                "CreateOrder",
+                "CreateOrderRedirect",
+                CreateOrderByRedirectRequest.class);
+
+        // Assign unique reference and merchant ID
+        String partnerReferenceNo = UUID.randomUUID().toString();
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+        CreateOrderResponse response = api.createOrder(requestData);
+        Assertions.assertTrue(response.getResponseCode().contains("200"),
+                "Response code should be 200, but was: " + response.getResponseCode());
+
+        //Index 0 is partnerReferenceNo
+        dataOrder.add(partnerReferenceNo);
+        //Index 1 is the web redirect URL
+        dataOrder.add(response.getWebRedirectUrl());
+
+        return dataOrder;
+    }
+
+    public static String cancelOrder() {
+        List<String> tempDataOrder = createOrder();
+
+        CancelOrderRequest requestDataCancel = TestUtil.getRequest(
+                jsonPathFile,
+                "CancelOrder",
+                "CancelOrderValidScenario",
+                CancelOrderRequest.class);
+
+        requestDataCancel.setOriginalPartnerReferenceNo(tempDataOrder.get(0));
+        requestDataCancel.setMerchantId(merchantId);
+
+        CancelOrderResponse responseCancel = api.cancelOrder(requestDataCancel);
+        Assertions.assertTrue(responseCancel.getResponseCode().contains("200"));
+        return tempDataOrder.get(0);
+    }
+
+    public static String payOrder(String phoneNumber, String pin) throws InterruptedException {
+        List<String> dataOrder = createOrder();
+        PaymentPGUtil.payOrder(phoneNumber,pin,dataOrder.get(1));
+        Thread.sleep(5000); // Wait for the payment to be processed
+        return dataOrder.get(0);
     }
 }

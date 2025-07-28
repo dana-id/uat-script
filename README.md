@@ -29,7 +29,7 @@ For documentation of each DANA Client library visit:
    ```
    - Edit the `.env` file with your credential information
    
-   > **Note:** You can fill `PRIVATE_KEY` and `PRIVATE_KEY_PATH` simultaneously, but if you fill both and the key values are different, we will prioritize the key in `PRIVATE_KEY_PATH`. Remember that the string in `PRIVATE_KEY` must be separated by `\n` for each new line.
+   > **Note:** You can fill `PRIVATE_KEY` and `PRIVATE_KEY_PATH` simultaneously, but if you fill both and the key values are different, we will prioritize the key in `PRIVATE_KEY_PATH`. The same applied to `DANA_PUBLIC_KEY` and `DANA_PUBLIC_KEY_PATH`. The `CLIENT_SECRET` env is for `disbursement` business solution.
 
 3. **Run the tests:**
    - Run the command with your preferred programming language

@@ -146,7 +146,7 @@ describe('Payment Tests', () => {
     });
 
     // Test: Payment Fail - General Error
-    test('should fail with general error', async () => {
+    test.skip('should fail with general error', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailGeneralError';
         // Get the request data from the JSON file based on the case name

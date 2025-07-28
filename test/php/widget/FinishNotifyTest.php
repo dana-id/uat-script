@@ -1,9 +1,9 @@
 <?php
 
-namespace DanaUat\Ipg\v1;
+namespace DanaUat\Widget\v1;
 
 use PHPUnit\Framework\TestCase;
-use Dana\IPG\v1\Api\IPGApi;
+use Dana\Widget\v1\Api\WidgetApi;
 use Dana\Configuration;
 use Dana\ObjectSerializer;
 use Dana\Env;
@@ -25,7 +25,7 @@ class FinishNotifyTest extends TestCase
         $configuration->setApiKey('ORIGIN', getenv('ORIGIN'));
         $configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
         $configuration->setApiKey('ENV', Env::SANDBOX);
-        self::$apiInstance = new IpgApi(null, $configuration);
+        self::$apiInstance = new WidgetApi(null, $configuration);
     }
 
     /**
@@ -44,7 +44,7 @@ class FinishNotifyTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\FinishNotifyRequest'
+                'Dana\Widget\v1\Model\FinishNotifyRequest'
             );
             $apiResponse = self::$apiInstance->finishNotify($requestObj);
             $responseJson = json_decode($apiResponse->__toString(), true);
@@ -69,7 +69,7 @@ class FinishNotifyTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\FinishNotifyRequest'
+                'Dana\Widget\v1\Model\FinishNotifyRequest'
             );
             try {
                 self::$apiInstance->finishNotify($requestObj);
@@ -97,7 +97,7 @@ class FinishNotifyTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\FinishNotifyRequest'
+                'Dana\Widget\v1\Model\FinishNotifyRequest'
             );
             try {
                 self::$apiInstance->finishNotify($requestObj);
@@ -125,7 +125,7 @@ class FinishNotifyTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\FinishNotifyRequest'
+                'Dana\Widget\v1\Model\FinishNotifyRequest'
             );
             try {
                 self::$apiInstance->finishNotify($requestObj);
@@ -153,7 +153,7 @@ class FinishNotifyTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\FinishNotifyRequest'
+                'Dana\Widget\v1\Model\FinishNotifyRequest'
             );
             try {
                 self::$apiInstance->finishNotify($requestObj);
@@ -181,7 +181,7 @@ class FinishNotifyTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\FinishNotifyRequest'
+                'Dana\Widget\v1\Model\FinishNotifyRequest'
             );
             try {
                 self::$apiInstance->finishNotify($requestObj);
@@ -209,7 +209,7 @@ class FinishNotifyTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\FinishNotifyRequest'
+                'Dana\Widget\v1\Model\FinishNotifyRequest'
             );
             try {
                 self::$apiInstance->finishNotify($requestObj);

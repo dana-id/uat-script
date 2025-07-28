@@ -8,29 +8,29 @@ import (
 
 // BalanceInquiry
 func TestBalanceInquirySuccess(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailInvalidFormat(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailMissingOrInvalidMandatoryField(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailInvalidSignature(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailTokenExpired(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailTokenNotFound(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailInvalidUserStatus(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailInternalServerError(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailUnexpectedResponse(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }

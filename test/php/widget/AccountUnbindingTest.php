@@ -1,9 +1,9 @@
 <?php
 
-namespace DanaUat\Ipg\v1;
+namespace DanaUat\Widget;
 
 use PHPUnit\Framework\TestCase;
-use Dana\IPG\v1\Api\IPGApi;
+use Dana\Widget\v1\Api\WidgetApi;
 use Dana\Configuration;
 use Dana\ObjectSerializer;
 use Dana\Env;
@@ -25,7 +25,7 @@ class AccountUnbindingTest extends TestCase
         $configuration->setApiKey('ORIGIN', getenv('ORIGIN'));
         $configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
         $configuration->setApiKey('ENV', Env::SANDBOX);
-        self::$apiInstance = new IpgApi(null, $configuration);
+        self::$apiInstance = new WidgetApi(null, $configuration);
     }
 
     /**
@@ -44,7 +44,7 @@ class AccountUnbindingTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\AccountUnbindingRequest'
+                'Dana\Widget\v1\Model\AccountUnbindingRequest'
             );
             $apiResponse = self::$apiInstance->accountUnbinding($requestObj);
             $responseJson = json_decode($apiResponse->__toString(), true);
@@ -69,7 +69,7 @@ class AccountUnbindingTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\AccountUnbindingRequest'
+                'Dana\Widget\v1\Model\AccountUnbindingRequest'
             );
             try {
                 self::$apiInstance->accountUnbinding($requestObj);
@@ -97,7 +97,7 @@ class AccountUnbindingTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\AccountUnbindingRequest'
+                'Dana\Widget\v1\Model\AccountUnbindingRequest'
             );
             try {
                 self::$apiInstance->accountUnbinding($requestObj);
@@ -125,7 +125,7 @@ class AccountUnbindingTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\AccountUnbindingRequest'
+                'Dana\Widget\v1\Model\AccountUnbindingRequest'
             );
             try {
                 self::$apiInstance->accountUnbinding($requestObj);
@@ -153,7 +153,7 @@ class AccountUnbindingTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\AccountUnbindingRequest'
+                'Dana\Widget\v1\Model\AccountUnbindingRequest'
             );
             try {
                 self::$apiInstance->accountUnbinding($requestObj);

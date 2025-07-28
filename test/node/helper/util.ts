@@ -125,10 +125,105 @@ async function retryOnInconsistentRequest<T>(
  * @returns {Function} Function that adds delay to the original function
  */
 
+/**
+ * Execute payment automation using playwright
+ *
+ * @param {string} phoneNumber - User's phone number for payment
+ * @param {string} pin - User's PIN for payment
+ * @param {string} redirectUrl - Redirect URL from create order response
+ * @param {number} maxRetries - Maximum number of retry attempts (default: 3)
+ * @param {number} retryDelay - Delay between retries in milliseconds (default: 2000)
+ * @param {boolean} headless - Whether to run browser in headless mode (default: false)
+ * @returns {Promise<Object>} Payment automation result
+ */
+async function automatePayment(
+  phoneNumber: string = '0811742234',
+  pin: string = '123321',
+  redirectUrl: string,
+  maxRetries: number = 3,
+  retryDelay: number = 2000,
+  headless: boolean = false
+): Promise<{
+  success: boolean;
+  authCode: string | null;
+  error: string | null;
+  attempts: number;
+}> {
+  try {
+    // Use child_process.spawn to call the script with proper arguments
+    const { spawn } = require('child_process');
+    const path = require('path');
+    const automationScriptPath = path.resolve(__dirname, '../automate-payment.js');
+    console.log(`Loading automation script from: ${automationScriptPath}`);
+
+    const params = {
+      phoneNumber,
+      pin,
+      redirectUrl,
+      maxRetries,
+      retryDelay,
+      headless
+    };
+
+    console.log(`Starting payment automation with params:`, JSON.stringify(params, null, 2));
+
+    return new Promise((resolve, reject) => {
+      const child = spawn('node', [automationScriptPath, JSON.stringify(params)], {
+        stdio: ['pipe', 'pipe', 'pipe']
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on('data', (data) => {
+        stdout += data.toString();
+      });
+
+      child.stderr.on('data', (data) => {
+        stderr += data.toString();
+        console.error('Payment automation stderr:', data.toString());
+      });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          try {
+            // Parse the JSON result from stdout
+            const lines = stdout.trim().split('\n');
+            const lastLine = lines[lines.length - 1];
+            const result = JSON.parse(lastLine);
+            console.log(`Payment automation result:`, JSON.stringify(result, null, 2));
+            resolve(result);
+          } catch (parseError) {
+            console.error('Failed to parse automation result:', parseError);
+            console.error('Stdout was:', stdout);
+            reject(new Error(`Failed to parse automation result: ${parseError}`));
+          }
+        } else {
+          console.error(`Payment automation process exited with code ${code}`);
+          console.error('Stderr:', stderr);
+          console.error('Stdout:', stdout);
+          reject(new Error(`Payment automation process exited with code ${code}`));
+        }
+      });
+
+      child.on('error', (error) => {
+        console.error('Failed to start payment automation process:', error);
+        reject(new Error(`Failed to start payment automation process: ${error.message}`));
+      });
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Payment automation error:', errorMessage);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    throw new Error(`Payment automation failed: ${errorMessage}`);
+  }
+}
+
 export {
   getRequestWithDelimiter,
   getRequest,
   getResponse,
   getResponseCode,
   retryOnInconsistentRequest,
+  automatePayment,
 };

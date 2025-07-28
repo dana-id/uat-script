@@ -1,17 +1,19 @@
 <?php
 
-namespace DanaUat\Ipg\v1;
+namespace DanaUat\Widget\v1;
 
 use PHPUnit\Framework\TestCase;
-use Dana\IPG\v1\Api\IPGApi;
+use Dana\Widget\v1\Api\WidgetApi;
 use Dana\Configuration;
-use Dana\IPG\v1\Model\CancelOrderRequest;
+use Dana\Widget\v1\Model\CancelOrderRequest;
 use Dana\ObjectSerializer;
 use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 use Exception;
+use DanaUat\Widget\PaymentUtil;
+use DanaUat\Widget\AutomateOauth;
 
 class CancelOrderTest extends TestCase
 {
@@ -20,6 +22,8 @@ class CancelOrderTest extends TestCase
     private static $apiInstance;
     private static $merchantId;
     private static $cancelUrl;
+    private static $phoneNumber = '0811742234';
+    private static $userPin = '123321';
 
     public static function setUpBeforeClass(): void
     {
@@ -28,9 +32,47 @@ class CancelOrderTest extends TestCase
         $configuration->setApiKey('ORIGIN', getenv('ORIGIN'));
         $configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
         $configuration->setApiKey('ENV', Env::SANDBOX);
-        self::$apiInstance = new IpgApi(null, $configuration);
+        self::$apiInstance = new WidgetApi(null, $configuration);
         self::$merchantId = getenv('MERCHANT_ID');
         self::$cancelUrl = '/payment-gateway/v1.0/debit/cancel.htm';
+    }
+
+    public function testCancelOrderValidScenario(): void
+    {
+        Util::withDelay(function () {
+            $caseName = 'CancelOrderValidScenario';
+            try {
+                $partnerReferenceNo = PaymentUtil::createPaymentWidget(
+                    'PaymentSuccess'
+                );
+
+                $jsonDict = Util::getRequest(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName
+                );
+                $jsonDict['originalPartnerReferenceNo'] = (string)$partnerReferenceNo['partnerReferenceNo'];
+                $jsonDict['merchantId'] = self::$merchantId;
+
+                $requestObj = ObjectSerializer::deserialize(
+                    $jsonDict,
+                    'Dana\Widget\v1\Model\CancelOrderRequest'
+                );
+
+                $apiResponse = self::$apiInstance->cancelOrder($requestObj);
+                Assertion::assertResponse(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
+                    $apiResponse->__toString(),
+                );
+                $this->assertTrue(true);
+            } catch (ApiException $e) {
+                $this->fail('Failed to cancel order in progress: ' . $e->getMessage());
+            } catch (Exception $e) {
+                $this->fail('Unexpected exception: ' . $e->getMessage());
+            }
+        });
     }
 
     /**
@@ -38,7 +80,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderSuccessInProcess(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderSuccessInProcess';
             try {
                 $jsonDict = Util::getRequest(
@@ -46,15 +88,16 @@ class CancelOrderTest extends TestCase
                     self::$titleCase,
                     $caseName
                 );
+
                 $requestObj = ObjectSerializer::deserialize(
                     $jsonDict,
-                    'Dana\IPG\v1\Model\CancelOrderRequest'
+                    'Dana\Widget\v1\Model\CancelOrderRequest'
                 );
                 $apiResponse = self::$apiInstance->cancelOrder($requestObj);
                 Assertion::assertResponse(
-                    self::$jsonPathFile, 
-                    self::$titleCase, 
-                    $caseName, 
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
                     $apiResponse->__toString(),
                 );
                 $this->assertTrue(true);
@@ -71,7 +114,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailUserStatusAbnormal(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailUserStatusAbnormal';
             try {
                 $jsonDict = Util::getRequest(
@@ -81,7 +124,7 @@ class CancelOrderTest extends TestCase
                 );
                 $requestObj = ObjectSerializer::deserialize(
                     $jsonDict,
-                    'Dana\IPG\v1\Model\CancelOrderRequest'
+                    'Dana\Widget\v1\Model\CancelOrderRequest'
                 );
                 self::$apiInstance->cancelOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -91,12 +134,12 @@ class CancelOrderTest extends TestCase
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
-                
+
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
-                    self::$jsonPathFile, 
-                    self::$titleCase, 
-                    $caseName, 
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
                     $responseContent
                 );
             } catch (Exception $e) {
@@ -110,7 +153,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailMerchantStatusAbnormal(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailMerchantStatusAbnormal';
             try {
                 $jsonDict = Util::getRequest(
@@ -120,7 +163,7 @@ class CancelOrderTest extends TestCase
                 );
                 $requestObj = ObjectSerializer::deserialize(
                     $jsonDict,
-                    'Dana\IPG\v1\Model\CancelOrderRequest'
+                    'Dana\Widget\v1\Model\CancelOrderRequest'
                 );
                 self::$apiInstance->cancelOrder($requestObj);
                 $this->fail('Expected ApiException for merchant status abnormal was not thrown');
@@ -130,12 +173,12 @@ class CancelOrderTest extends TestCase
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
-                
+
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
-                    self::$jsonPathFile, 
-                    self::$titleCase, 
-                    $caseName, 
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
                     $responseContent
                 );
             } catch (Exception $e) {
@@ -150,7 +193,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailMissingParameter(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailMissingParameter';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -158,38 +201,38 @@ class CancelOrderTest extends TestCase
                 $caseName
             );
             // Create headers without timestamp to test validation
-                $headers = Util::getHeadersWithSignature(
-                    'POST', 
-                    self::$cancelUrl,
-                    $jsonDict,
-                    false
-                );
+            $headers = Util::getHeadersWithSignature(
+                'POST',
+                self::$cancelUrl,
+                $jsonDict,
+                false
+            );
             try {
-                    Util::executeApiRequest(
-                        'POST',
-                        'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm',
-                        $headers,
-                        $jsonDict
-                    );
-                    
-                    $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
-                } catch (ApiException $e) {
-                    // We expect a 400 Bad Request for missing timestamp
-                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 BadRequest for missing X-TIMESTAMP, got {$e->getCode()}");
+                Util::executeApiRequest(
+                    'POST',
+                    'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm',
+                    $headers,
+                    $jsonDict
+                );
 
-                    // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
-                    
-                    // Use assertFailResponse to validate the error response
-                    Assertion::assertFailResponse(
-                        self::$jsonPathFile, 
-                        self::$titleCase, 
-                        $caseName, 
-                        $responseContent
-                    );
-                } catch (Exception $e) {
-                    throw $e;
-                }
+                $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
+            } catch (ApiException $e) {
+                // We expect a 400 Bad Request for missing timestamp
+                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 BadRequest for missing X-TIMESTAMP, got {$e->getCode()}");
+
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
+                    $responseContent
+                );
+            } catch (Exception $e) {
+                throw $e;
+            }
         });
     }
 
@@ -200,7 +243,7 @@ class CancelOrderTest extends TestCase
     public function testCancelOrderFailOrderNotExist(): void
     {
         $this->markTestSkipped('Skipping testCancelOrderFailOrderNotExist due to API changes that prevent testing with non-existent orders.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailOrderNotExist';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -210,7 +253,7 @@ class CancelOrderTest extends TestCase
             $jsonDict['originalPartnerReferenceId'] = 'nonexistent-order-id'; // Simulate non-existent order]
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\CancelOrderRequest'
+                'Dana\Widget\v1\Model\CancelOrderRequest'
             );
             try {
                 self::$apiInstance->cancelOrder($requestObj);
@@ -227,7 +270,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailExceedCancelWindowTime(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailExceedCancelWindowTime';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -236,7 +279,7 @@ class CancelOrderTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\CancelOrderRequest'
+                'Dana\Widget\v1\Model\CancelOrderRequest'
             );
             try {
                 self::$apiInstance->cancelOrder($requestObj);
@@ -253,7 +296,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailNotAllowedByAgreement(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailNotAllowedByAgreement';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -262,7 +305,7 @@ class CancelOrderTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\CancelOrderRequest'
+                'Dana\Widget\v1\Model\CancelOrderRequest'
             );
             try {
                 self::$apiInstance->cancelOrder($requestObj);
@@ -279,7 +322,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailAccountStatusAbnormal(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailAccountStatusAbnormal';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -288,7 +331,7 @@ class CancelOrderTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\CancelOrderRequest'
+                'Dana\Widget\v1\Model\CancelOrderRequest'
             );
             try {
                 self::$apiInstance->cancelOrder($requestObj);
@@ -305,7 +348,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailInsufficientMerchantBalance(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailInsufficientMerchantBalance';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -314,7 +357,7 @@ class CancelOrderTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\CancelOrderRequest'
+                'Dana\Widget\v1\Model\CancelOrderRequest'
             );
             try {
                 self::$apiInstance->cancelOrder($requestObj);
@@ -333,7 +376,7 @@ class CancelOrderTest extends TestCase
     public function testCancelOrderFailOrderRefunded(): void
     {
         $this->markTestSkipped('Skipping testCancelOrderFailOrderRefunded due to waiting for functionality to be implemented.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailOrderRefunded';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -342,7 +385,7 @@ class CancelOrderTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\CancelOrderRequest'
+                'Dana\Widget\v1\Model\CancelOrderRequest'
             );
             try {
                 self::$apiInstance->cancelOrder($requestObj);
@@ -360,7 +403,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailInvalidSignature(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailInvalidSignature';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -369,7 +412,7 @@ class CancelOrderTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\CancelOrderRequest'
+                'Dana\Widget\v1\Model\CancelOrderRequest'
             );
             $headers = Util::getHeadersWithSignature(
                 'POST',
@@ -380,32 +423,32 @@ class CancelOrderTest extends TestCase
                 true
             );
             // Make direct API call with invalid signature
-                try {
-                    Util::executeApiRequest(
-                        'POST',
-                        'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm',
-                        $headers,
-                        $jsonDict
-                    );
-                    
-                    $this->fail('Expected ApiException for invalid signature but the API call succeeded');
-                } catch (ApiException $e) {
-                    // We expect a 401 Unauthorized for invalid signature
-                    $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
+            try {
+                Util::executeApiRequest(
+                    'POST',
+                    'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm',
+                    $headers,
+                    $jsonDict
+                );
 
-                    // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
-                    
-                    // Use assertFailResponse to validate the error response
-                    Assertion::assertFailResponse(
-                        self::$jsonPathFile, 
-                        self::$titleCase, 
-                        $caseName, 
-                        $responseContent
-                    );
-                } catch (Exception $e) {
-                    throw $e;
-                }
+                $this->fail('Expected ApiException for invalid signature but the API call succeeded');
+            } catch (ApiException $e) {
+                // We expect a 401 Unauthorized for invalid signature
+                $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
+
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
+                    $responseContent
+                );
+            } catch (Exception $e) {
+                throw $e;
+            }
         });
     }
 
@@ -414,7 +457,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailTimeout(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'CancelOrderFailTimeout';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -423,7 +466,7 @@ class CancelOrderTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\CancelOrderRequest'
+                'Dana\Widget\v1\Model\CancelOrderRequest'
             );
             try {
                 self::$apiInstance->cancelOrder($requestObj);

@@ -15,31 +15,19 @@ use Exception;
 class QueryPaymentTest extends TestCase
 {
     private static $titleCase = 'QueryPayment';
-    private static $createOrderTitleCase = 'CreateOrder';
-    private static $cancelOrderTitleCase = 'CancelOrder';
     private static $jsonPathFile = 'resource/request/components/PaymentGateway.json';
     private static $apiInstance;
     private static $orderReferenceNumber;
     private static $orderPaidReferenceNumber;
     private static $orderCanceledReferenceNumber;
-    
+    private static $userPin = "123321";
+    private static $userPhoneNumber = "0811742234";
+
     /**
      * Generate a unique partner reference number using UUID v4
      * 
      * @return string
      */
-    private static function generatePartnerReferenceNo(): string
-    {
-        // Generate a UUID v4
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-        );
-    }
 
     public static function setUpBeforeClass(): void
     {
@@ -58,16 +46,15 @@ class QueryPaymentTest extends TestCase
 
         // Create test orders for different statuses
         // Order in created status (INIT)
-        self::$orderReferenceNumber = self::generatePartnerReferenceNo();
-        self::createTestOrder(self::$orderReferenceNumber);
+        $dataOrder = self::createOrder();
+        self::$orderReferenceNumber = $dataOrder['partnerReferenceNo'];
 
         // Order in paid status (PAID) - using OtherWallet payment method with specific amount
-        self::$orderPaidReferenceNumber = self::generatePartnerReferenceNo();
-        self::createTestOrderPaid(self::$orderPaidReferenceNumber);
+        self::$orderPaidReferenceNumber = self::createTestOrderPaid();
 
         // Order in canceled status (CANCELLED)
-        self::$orderCanceledReferenceNumber = self::generatePartnerReferenceNo();
-        self::createTestOrderCanceled(self::$orderCanceledReferenceNumber);
+        self::$orderCanceledReferenceNumber = Util::generatePartnerReferenceNo();
+        self::createTestOrderCanceled();
     }
 
     /**
@@ -80,7 +67,7 @@ class QueryPaymentTest extends TestCase
         // Get the request data from the JSON file
         $jsonDict = Util::getRequest(
             self::$jsonPathFile,
-            self::$createOrderTitleCase,
+            self::$titleCase,
             $caseName
         );
         
@@ -109,58 +96,37 @@ class QueryPaymentTest extends TestCase
     /**
      * Create a test order with status PAID for query payment tests
      */
-    private static function createTestOrderPaid($partnerReferenceNo)
+    private static function createTestOrderPaid():string 
     {
-        $caseName = 'CreateOrderNetworkPayPgOtherWallet';
-        
-        // Get the request data from the JSON file
-        $jsonDict = Util::getRequest(
-            self::$jsonPathFile,
-            self::$createOrderTitleCase,
-            $caseName
-        );
-        
-        // Set the partner reference number and specific amount to mock a paid status
-        $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
-        $jsonDict['amount']['value'] = '50001.00';
-        $jsonDict['payOptionDetails'][0]['transAmount']['value'] = '50001.00';
-        
-        // Create a CreateOrderByApiRequest object from the JSON request data
-        $createOrderRequestObj = ObjectSerializer::deserialize(
-            $jsonDict,
-            'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
+        $dataOrder = self::createOrder();
+
+        Util::payOrderPG(
+            self::$userPhoneNumber,
+            self::$userPin,
+            $dataOrder['webRedirectUrl']
         );
 
-        $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
-        
-        try {
-            // Make the API call
-            self::$apiInstance->createOrder($createOrderRequestObj);
-        } catch (Exception $e) {
-            throw new Exception("Failed to create paid test order: " . $e->getMessage());
-        }
+        return (string)$dataOrder['partnerReferenceNo'];
     }
 
     /**
      * Create a test order and then cancel it to get CANCELLED status for query payment tests
      */
-    private static function createTestOrderCanceled($partnerReferenceNo)
+    private static function createTestOrderCanceled():string
     {
         // First create a regular order
-        self::createTestOrder($partnerReferenceNo);
-        
-        // Then cancel it
-        $caseName = 'CancelOrderValidScenario';
+        $dataOrder = self::createOrder();
         
         // Get the request data for canceling the order
         $jsonDict = Util::getRequest(
             self::$jsonPathFile,
-            self::$cancelOrderTitleCase,
-            $caseName
+            "CancelOrder",
+            "CancelOrderValidScenario"
         );
         
         // Set the original partner reference number
-        $jsonDict['originalPartnerReferenceNo'] = $partnerReferenceNo;
+        $jsonDict['originalPartnerReferenceNo'] = $dataOrder['partnerReferenceNo'];
+        $jsonDict['merchantId'] = getenv('MERCHANT_ID');
         
         // Create a CancelOrderRequest object from the JSON request data
         $cancelOrderRequestObj = ObjectSerializer::deserialize(
@@ -174,6 +140,8 @@ class QueryPaymentTest extends TestCase
         } catch (Exception $e) {
             throw new Exception("Failed to cancel test order: " . $e->getMessage());
         }
+
+        return (string)$dataOrder['partnerReferenceNo'];
     }
 
     /**
@@ -280,7 +248,7 @@ class QueryPaymentTest extends TestCase
      */
     public function testQueryPaymentCanceledOrder(): void
     {
-        // $this->markTestSkipped('Skipping this test temporarily.');
+        $this->markTestSkipped('Skipping this test temporarily.');
         Util::withDelay(function() {
             $caseName = 'QueryPaymentCanceledOrder';
             $partnerReferenceNo = self::$orderCanceledReferenceNumber;
@@ -618,5 +586,34 @@ class QueryPaymentTest extends TestCase
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
+    }
+
+    public static function createOrder(): array
+    {
+        // Get the request data from the JSON file
+        $jsonDict = Util::getRequest(
+            self::$jsonPathFile,
+            "CreateOrder",
+            "CreateOrderRedirect"
+        );
+
+        // Set a unique partner reference number
+        $partnerReferenceNo = Util::generatePartnerReferenceNo();
+        $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+
+        // Create a CreateOrderByRedirectRequest object from the JSON request data
+        $createOrderRequestObj = ObjectSerializer::deserialize(
+            $jsonDict,
+            'Dana\PaymentGateway\v1\Model\CreateOrderByRedirectRequest',
+        );
+
+        $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
+        $apiResponse = self::$apiInstance->createOrder($createOrderRequestObj);
+        
+        $responseArray = json_decode($apiResponse->__toString(), true);
+        return [
+            'partnerReferenceNo' => $responseArray['partnerReferenceNo'] ?? '',
+            'webRedirectUrl' => $responseArray['webRedirectUrl'] ?? ''
+        ];
     }
 }

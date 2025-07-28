@@ -1,10 +1,12 @@
 module uat-script
 
-go 1.18
+go 1.22
+
+toolchain go1.24.3
 
 // Direct dependencies
 require (
-	github.com/dana-id/dana-go v1.1.0
+	github.com/dana-id/dana-go v1.1.2
 	github.com/google/uuid v1.6.0
 )
 

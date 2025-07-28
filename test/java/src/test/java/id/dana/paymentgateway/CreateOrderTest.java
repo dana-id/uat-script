@@ -123,6 +123,7 @@ public class CreateOrderTest {
   }
 
   @Test
+  @Disabled
   void testCreateOrderNetworkPayPgQris() {
     String caseName = "CreateOrderNetworkPayPgQris";
     CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,

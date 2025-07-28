@@ -1,15 +1,16 @@
 <?php
 
-namespace DanaUat\Ipg\v1;
+namespace DanaUat\Widget\v1;
 
 use PHPUnit\Framework\TestCase;
-use Dana\IPG\v1\Api\IPGApi;
+use Dana\Widget\v1\Api\WidgetApi;
 use Dana\Configuration;
 use Dana\ObjectSerializer;
 use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
+use DanaUat\Widget\PaymentUtil;
 use Exception;
 
 class RefundOrderTest extends TestCase
@@ -17,28 +18,12 @@ class RefundOrderTest extends TestCase
     private static $titleCase = 'RefundOrder';
     private static $jsonPathFile = 'resource/request/components/Widget.json';
     private static $apiInstance;
-    private static $sharedOriginalPartnerReference;
+    private static $sharedOriginalPartnerReference, $sharedOriginalPartnerReferencePaid;
     private static $merchantId;
     private static $refundUrl;
     private static $sandboxUrl;
-
-    /**
-     * Generate a unique partner reference number using UUID v4
-     * 
-     * @return string
-     */
-    private static function generatePartnerReferenceNo(): string
-    {
-        // Generate a UUID v4
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-        );
-    }
+    private static $phoneNumber = '0811742234';
+    private static $userPin = '123321';
 
     public static function setUpBeforeClass(): void
     {
@@ -47,10 +32,14 @@ class RefundOrderTest extends TestCase
         $configuration->setApiKey('ORIGIN', getenv('ORIGIN'));
         $configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
         $configuration->setApiKey('ENV', Env::SANDBOX);
-        self::$apiInstance = new IpgApi(null, $configuration);
+        self::$apiInstance = new WidgetApi(null, $configuration);
         self::$merchantId = getenv('MERCHANT_ID');
         self::$refundUrl = '/v1.0/debit/refund.htm';
         self::$sandboxUrl = 'https://api.sandbox.dana.id';
+        $dataOrder = self::createPayment();
+        self::$sharedOriginalPartnerReference = $dataOrder['partnerReferenceNo'];
+        
+        self::$sharedOriginalPartnerReferencePaid = self::paidPayment();
     }
 
     /**
@@ -61,11 +50,12 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundOrderValidScenario(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(callback: function () {
             $caseName = 'RefundOrderValidScenario';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+            $jsonDict['originalPartnerReferenceNo'] = self::$sharedOriginalPartnerReferencePaid;
+            $jsonDict['merchantId'] = self::$merchantId;
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
             $apiResponse = self::$apiInstance->refundOrder($requestObj);
             $responseJson = json_decode($apiResponse->__toString(), true);
             $this->assertEquals('2005800', $responseJson['responseCode'], 'Expected success response code');
@@ -80,11 +70,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundInProcess(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundInProcess';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 $apiResponse = self::$apiInstance->refundOrder($requestObj);
                 $responseJson = json_decode($apiResponse->__toString(), true);
                 Assertion::assertResponse(self::$jsonPathFile, self::$titleCase, $caseName, $apiResponse->__toString(), ['partnerReferenceNo' => '2025700']);
@@ -106,10 +96,10 @@ class RefundOrderTest extends TestCase
     public function testRefundFailExceedPaymentAmount(): void
     {
         $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailExceedPaymentAmount';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
             try {
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -127,11 +117,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailNotAllowedByAgreement(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailNotAllowedByAgreement';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
@@ -140,7 +130,7 @@ class RefundOrderTest extends TestCase
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
-                
+
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
             } catch (Exception $e) {
@@ -156,11 +146,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailExceedRefundWindowTime(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailExceedRefundWindowTime';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
@@ -180,11 +170,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailMultipleRefundNotAllowed(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailMultipleRefundNotAllowed';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
@@ -205,11 +195,10 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailDuplicateRequest(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailDuplicateRequest';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
             try {
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -228,11 +217,12 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailOrderNotPaid(): void
     {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailOrderNotPaid';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+            $jsonDict['originalPartnerReferenceNo'] = self::$sharedOriginalPartnerReference;
+            $jsonDict['merchantId'] = getenv('MERCHANT_ID');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
             try {
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -250,11 +240,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailParameterIllegal(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailParameterIllegal';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
@@ -263,7 +253,7 @@ class RefundOrderTest extends TestCase
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
-                
+
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
             } catch (Exception $e) {
@@ -280,11 +270,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailMandatoryParameterInvalid(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailMandatoryParameterInvalid';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
             $headers = Util::getHeadersWithSignature(
-                'POST', 
+                'POST',
                 self::$refundUrl,
                 $jsonDict,
                 false
@@ -293,17 +283,17 @@ class RefundOrderTest extends TestCase
                 Util::executeApiRequest('POST', self::$sandboxUrl . self::$refundUrl, $headers, $jsonDict);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
-                    // We expect a 400 Bad Request for missing timestamp
-                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 BadRequest for missing X-TIMESTAMP, got {$e->getCode()}");
+                // We expect a 400 Bad Request for missing timestamp
+                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 BadRequest for missing X-TIMESTAMP, got {$e->getCode()}");
 
-                    // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
-                    
-                    // Use assertFailResponse to validate the error response
-                    Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
-                } catch (Exception $e) {
-                    throw $e;
-                }
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
+            } catch (Exception $e) {
+                throw $e;
+            }
         });
     }
 
@@ -314,11 +304,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailOrderNotExist(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailOrderNotExist';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
@@ -327,7 +317,7 @@ class RefundOrderTest extends TestCase
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
-                
+
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
             } catch (Exception $e) {
@@ -343,11 +333,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailInsufficientMerchantBalance(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailInsufficientMerchantBalance';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
@@ -356,7 +346,7 @@ class RefundOrderTest extends TestCase
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
-                
+
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
             } catch (Exception $e) {
@@ -372,26 +362,26 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailInvalidSignature(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailInvalidSignature';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
             $headers = Util::getHeadersWithSignature('POST', self::$refundUrl, $jsonDict, true, false, true);
             try {
                 Util::executeApiRequest('POST', self::$sandboxUrl . self::$refundUrl, $headers, $jsonDict);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
-                    // We expect a 401 Unauthorized for invalid signature
-                    $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
+                // We expect a 401 Unauthorized for invalid signature
+                $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
 
-                    // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
-                    
-                    // Use assertFailResponse to validate the error response
-                    Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
-                } catch (Exception $e) {
-                    throw $e;
-                }
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
+            } catch (Exception $e) {
+                throw $e;
+            }
         });
     }
 
@@ -402,11 +392,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailTimeout(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailTimeout';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
@@ -428,10 +418,10 @@ class RefundOrderTest extends TestCase
     public function testRefundFailIdempotent(): void
     {
         $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailIdempotent';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
             try {
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -449,11 +439,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailMerchantStatusAbnormal(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'RefundFailMerchantStatusAbnormal';
             try {
                 $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\RefundOrderRequest');
+                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                 self::$apiInstance->refundOrder($requestObj);
                 $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
@@ -462,12 +452,51 @@ class RefundOrderTest extends TestCase
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
-                
+
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
             } catch (Exception $e) {
                 $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
+    }
+
+    public static function createPayment():array
+    {
+        $jsonDict = Util::getRequest(
+                self::$jsonPathFile,
+                "Payment",
+                "PaymentSuccess"
+            );
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
+
+            $requestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\Widget\v1\Model\RefundOrderRequest'
+            );
+
+            echo "Request: " . $requestObj->__toString() . "\n";
+
+            $apiResponse = self::$apiInstance->widgetPayment($requestObj);
+            $responseArray = json_decode($apiResponse->__toString(), true);
+            return [
+                'partnerReferenceNo' => $responseArray['partnerReferenceNo'] ?? '',
+                'webRedirectUrl' => $responseArray['webRedirectUrl'] ?? ''
+            ];
+    }
+
+    public static function paidPayment():string
+    {
+        $dataOrder = self::createPayment();
+
+        PaymentUtil::payOrderWidget(
+            self::$phoneNumber,
+            self::$userPin,
+            $dataOrder['webRedirectUrl'],
+        );
+
+        return (string)$dataOrder['partnerReferenceNo'];
     }
 }
