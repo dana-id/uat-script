@@ -1,3 +1,36 @@
+/**
+ * @fileoverview DANA Payment Gateway Refund Order API Integration Tests
+ * 
+ * This test suite provides comprehensive validation of the DANA Payment Gateway's
+ * refund order functionality through automated integration testing. It covers
+ * both positive scenarios (successful refunds) and extensive negative scenarios
+ * (validation errors, business rule violations, authorization failures, and edge cases).
+ * 
+ * Key Features:
+ * - Complete refund workflow testing including payment automation for setup
+ * - Business rule validation (refund windows, amount limits, merchant status)
+ * - Error handling validation (authentication, authorization, invalid parameters)
+ * - Edge case testing (duplicate refunds, timeouts, insufficient funds)
+ * - Idempotency testing for concurrent refund requests
+ * - Manual API testing for authentication and validation bypass scenarios
+ * 
+ * Test Structure:
+ * - Uses shared order creation (paid and unpaid) in beforeAll for test efficiency
+ * - Validates refund functionality across different order states and conditions
+ * - Tests comprehensive error conditions including business logic violations
+ * - Provides detailed assertions using helper validation functions
+ * 
+ * Dependencies:
+ * - DANA Node.js SDK for payment API interactions
+ * - Browser automation scripts for payment completion during setup
+ * - JSON test data files for request/response validation
+ * - Helper utilities for API testing and response validation
+ * 
+ * @requires dana-node DANA Payment Gateway SDK
+ * @requires uuid Unique identifier generation for test isolation
+ * @requires dotenv Environment configuration management
+ */
+
 import Dana from 'dana-node';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
@@ -11,14 +44,14 @@ import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { CreateOrderByRedirectRequest, CreateOrderByApiRequest, RefundOrderRequest } from 'dana-node/payment_gateway/v1';
 import { ResponseError } from 'dana-node';
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
-// Setup constants
+// Test configuration constants
 const titleCase = "RefundOrder";
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/PaymentGateway.json');
 
-// Initialize DANA client
+// Initialize DANA Payment Gateway client with environment credentials
 const dana = new Dana({
     partnerId: process.env.X_PARTNER_ID || '',
     privateKey: process.env.PRIVATE_KEY || '',
@@ -27,22 +60,49 @@ const dana = new Dana({
 });
 
 const merchantId = process.env.MERCHANT_ID || "";
+
+// Shared test data for cross-test dependencies
 let sharedOriginalPartnerReference: string;
 let sharedOriginalPaidPartnerReference: string;
 
 /**
- * Generates unique reference number using UUID v4
+ * Generates a unique partner reference number for test isolation
+ * 
+ * This utility function creates UUID-based reference numbers to ensure
+ * each test operation has a unique identifier, preventing conflicts
+ * between concurrent test runs and ensuring test isolation.
+ * 
+ * @returns {string} A unique UUID-based reference number
  */
 function generatePartnerReferenceNo(): string {
     return uuidv4();
 }
 
 
+/**
+ * DANA Payment Gateway Refund Order Integration Test Suite
+ * 
+ * This test suite validates the refund order functionality of the DANA Payment Gateway API.
+ * It includes comprehensive testing of various refund scenarios and error conditions to ensure
+ * robust refund processing capabilities and proper business rule enforcement.
+ * 
+ * Test Coverage:
+ * - Successful refund processing for paid orders
+ * - Business rule validation: refund windows, amount limits, merchant status
+ * - Error handling: invalid parameters, unauthorized access, insufficient funds
+ * - Edge cases: duplicate refunds, timeouts, concurrent requests
+ * - Security validation: authentication and authorization testing
+ */
 describe('Payment Gateway - Refund Order Tests', () => {
 
     /**
-     * Helper function to create an unpaid order
-     * This is used for negative test cases where we need an order that has not been paid
+     * Creates a basic unpaid order for negative testing scenarios
+     * 
+     * This helper function creates an order that remains in unpaid state,
+     * which is used for testing refund scenarios that should fail when
+     * attempting to refund an order that hasn't been paid.
+     * 
+     * @returns {Promise<void>} Resolves when unpaid order is successfully created
      */
     async function createOrder() {
         const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
@@ -52,8 +112,14 @@ describe('Payment Gateway - Refund Order Tests', () => {
     }
 
     /**
-     * Helper function to create a paid order
-     * This is used for positive test cases where we need an order that has been paid
+     * Creates and completes payment for an order using browser automation
+     * 
+     * This helper function creates an order using the redirect flow and then
+     * automates the payment process using browser automation. This results
+     * in a PAID order that can be used for testing successful refund scenarios.
+     * 
+     * @returns {Promise<void>} Resolves when order is created and payment is completed
+     * @throws {Error} If order creation or payment automation fails
      */
     async function createPaidOrder() {
         const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
@@ -61,7 +127,7 @@ describe('Payment Gateway - Refund Order Tests', () => {
         createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
 
         try {
-            // Add shorter delay before creating order
+            // Add delay before creating order to ensure system readiness
             await new Promise(resolve => setTimeout(resolve, 2000));
             console.log(`Creating order for payment automation...`);
             const response = await dana.paymentGatewayApi.createOrder(createOrderRequestData);
@@ -90,7 +156,7 @@ describe('Payment Gateway - Refund Order Tests', () => {
                 throw new Error('No webRedirectUrl in create order response');
             }
 
-            // Wait a bit for payment to be processed
+            // Wait for payment to be processed by the payment system
             await new Promise(resolve => setTimeout(resolve, 5000));
 
         } catch (error) {
@@ -100,9 +166,12 @@ describe('Payment Gateway - Refund Order Tests', () => {
     }
 
     /**
-     * Setup: Create shared orders for testing
-     * - Creates unpaid order for negative tests
-     * - Creates paid order for refund tests
+     * Test Setup: Create shared orders for testing different refund scenarios
+     * 
+     * This setup creates two different order states that will be used across
+     * multiple test cases to validate refund functionality:
+     * 1. Unpaid order - for testing refund attempts on non-paid orders (should fail)
+     * 2. Paid order - for testing successful refund scenarios and business rules
      */
     beforeAll(async () => {
         try {
@@ -122,8 +191,15 @@ describe('Payment Gateway - Refund Order Tests', () => {
     });
 
     /**
-     * Test: Successful refund of paid order
-     * Expected: HTTP 200, successful refund response
+     * Test Case: Successful Refund of Paid Order
+     * 
+     * This test validates the successful refund functionality for a paid order.
+     * It uses a pre-created paid order (from beforeAll setup) that was completed
+     * using browser automation, ensuring the refund can be processed successfully.
+     * 
+     * @scenario Positive test case for successful refund processing
+     * @technique Uses shared paid order reference from test setup
+     * @expectedResult HTTP 200 OK with successful refund response
      */
     test('RefundOrderValidScenario- should successfully refund an order', async () => {
         const refundOrderCaseName = "RefundOrderValidScenario";
@@ -137,10 +213,16 @@ describe('Payment Gateway - Refund Order Tests', () => {
         await assertResponse(jsonPathFile, titleCase, refundOrderCaseName, response, { 'partnerReferenceNo': sharedOriginalPaidPartnerReference });
     });
 
-
     /**
-     * Test: Refund order that is currently in progress
-     * Expected: HTTP 400/403, error response for in-progress order
+     * Test Case: Refund Order In Progress Validation
+     * 
+     * This test validates the API's handling of refund attempts on orders that are
+     * currently being processed. It ensures proper error handling when attempting
+     * to refund an order that is in an intermediate processing state.
+     * 
+     * @scenario Negative test case for refund timing validation
+     * @technique Tests refund attempt on order in processing state
+     * @expectedError HTTP 400/403 due to order being in progress
      */
     test('RefundOrderInProgress - should fail to refund an order that is in process', async () => {
         const refundOrderCaseName = "RefundOrderInProgress";
@@ -164,8 +246,16 @@ describe('Payment Gateway - Refund Order Tests', () => {
     });
 
     /**
-     * Test: Refund amount exceeds transaction limit
-     * Expected: HTTP 400/403, error response for amount exceeding limit
+     * Test Case: Refund Amount Exceeds Transaction Limit
+     * 
+     * This test validates the API's enforcement of refund amount limits by
+     * attempting to refund an amount that exceeds the original transaction amount.
+     * This ensures proper business rule validation for refund operations.
+     * 
+     * @scenario Negative test case for refund amount validation
+     * @technique Tests refund with amount exceeding original transaction
+     * @expectedError HTTP 400/403 due to amount exceeding transaction limit
+     * @note Skipped test - may need specific test data configuration
      */
     test.skip('RefundOrderExceedsTransactionAmountLimit - should fail when refund amount exceeds transaction limit', async () => {
         const refundOrderCaseName = "RefundOrderExceedsTransactionAmountLimit";
@@ -189,8 +279,15 @@ describe('Payment Gateway - Refund Order Tests', () => {
     });
 
     /**
-     * Test: Refund not allowed by merchant agreement
-     * Expected: HTTP 403, forbidden error response
+     * Test Case: Refund Not Allowed by Merchant Agreement
+     * 
+     * This test validates the API's enforcement of merchant agreement restrictions
+     * on refund operations. It ensures that refunds are properly blocked when
+     * the merchant's agreement or configuration doesn't allow refund processing.
+     * 
+     * @scenario Negative test case for merchant agreement validation
+     * @technique Tests refund attempt with merchant restrictions
+     * @expectedError HTTP 403 Forbidden due to merchant agreement restrictions
      */
     test('RefundOrderNotAllowed - should fail when refund is not allowed by agreement', async () => {
         const refundOrderCaseName = "RefundOrderNotAllowed";
@@ -212,8 +309,15 @@ describe('Payment Gateway - Refund Order Tests', () => {
     });
 
     /**
-     * Test: Refund exceeds time window limit
-     * Expected: HTTP 403, forbidden error for expired time window
+     * Test Case: Refund Window Time Exceeded
+     * 
+     * This test validates the API's enforcement of refund time window policies.
+     * It ensures that refunds are properly rejected when attempted outside
+     * the allowed time window for refund operations.
+     * 
+     * @scenario Negative test case for refund window validation
+     * @technique Tests refund attempt outside allowed time window
+     * @expectedError HTTP 403 Forbidden due to exceeded refund window time
      */
     test('RefundOrderDueToExceedRefundWindowTime - should fail when refund window time is exceeded', async () => {
         const refundOrderCaseName = "RefundOrderDueToExceedRefundWindowTime";

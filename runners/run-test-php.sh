@@ -36,9 +36,9 @@ run_php_runner(){
         if ! command -v chromedriver &> /dev/null; then
             echo "Installing Chrome and ChromeDriver..."
             if command -v apt-get &> /dev/null; then
-                sudo apt-get update && sudo apt-get install -y chromium chromium-driver
+                apt-get update && apt-get install -y chromium chromium-driver
             elif command -v dnf &> /dev/null; then
-                sudo dnf install -y chromium chromedriver
+                dnf install -y chromium chromedriver
             else
                 echo "Unsupported Linux distribution. Please install ChromeDriver manually."
             fi
@@ -48,9 +48,9 @@ run_php_runner(){
         if ! command -v java &> /dev/null; then
             echo "Java not found, installing..."
             if command -v apt-get &> /dev/null; then
-                sudo apt-get install -y default-jre
+                apt-get install -y default-jre
             elif command -v dnf &> /dev/null; then
-                sudo dnf install -y java-latest-openjdk
+                dnf install -y java-latest-openjdk
             else
                 echo "Unsupported Linux distribution. Please install Java manually."
             fi
@@ -60,8 +60,8 @@ run_php_runner(){
         if ! php -m | grep -q "zip"; then
             echo "PHP ZIP extension not found, installing..."
             if command -v apt-get &> /dev/null; then
-                sudo apt-get install -y libzip-dev
-                sudo docker-php-ext-install zip 2>/dev/null || echo "Not in Docker environment, skipping PHP extension installation"
+                apt-get install -y libzip-dev
+                docker-php-ext-install zip 2>/dev/null || echo "Not in Docker environment, skipping PHP extension installation"
             else
                 echo "Please install PHP ZIP extension manually for your distribution."
             fi
