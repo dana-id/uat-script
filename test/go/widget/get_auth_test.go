@@ -8,5 +8,5 @@ import (
 
 // GetAuth
 func TestGetAuthSuccess(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }

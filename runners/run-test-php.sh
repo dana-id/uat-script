@@ -35,6 +35,17 @@ run_php_runner(){
     # Install dependencies
     echo "Installing PHP dependencies..."
     rm composer.lock || true
+    
+    # Force update to latest stable danaid/dana-php package
+    echo "Updating danaid/dana-php to latest stable version..."
+    if [ -f ../../composer.phar ]; then
+        COMPOSER_PROCESS_TIMEOUT=600 php ../../composer.phar require danaid/dana-php:"^0.1" --update-with-dependencies --no-interaction
+    else
+        COMPOSER_PROCESS_TIMEOUT=600 composer require danaid/dana-php:"^0.1" --update-with-dependencies --no-interaction
+    fi
+    
+    # Install remaining dependencies
+    echo "Installing remaining dependencies..."
     if [ -f ../../composer.phar ]; then
         COMPOSER_PROCESS_TIMEOUT=600 php ../../composer.phar install --no-interaction
     else

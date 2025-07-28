@@ -1016,6 +1016,26 @@
                 "responseMessage": "Success"
             }
         },
+        "CancelOrderTimeout": {
+            "request": {
+                "originalPartnerReferenceNo": "5005701",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "merchantId": "${merchantId}",
+                "subMerchantId": "",
+                "reason": "Network timeout",
+                "externalStoreId": "",
+                "amount": {
+                    "value": "22200.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "5005701",
+                "responseMessage": "Internal Server Error"
+            }
+        },
         "CancelOrderInProgress": {
             "request": {
                 "originalPartnerReferenceNo": "2025700",
@@ -1257,7 +1277,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "435802.00",
+                    "value": "30000.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",

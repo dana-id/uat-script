@@ -8,11 +8,11 @@ import (
 
 // FinishNotify
 func TestFinishNotifySuccess(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestFinishNotifyFailInternalServerError(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestFinishNotifyFailOrderNotPaid(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }

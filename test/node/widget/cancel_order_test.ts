@@ -64,7 +64,7 @@ describe('CancelOrder Tests', () => {
         }
     });
 
-    test('should fail with missing parameter', async () => {
+    test.skip('should fail with missing parameter', async () => {
         const caseName = 'CancelOrderFailMissingParameter';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         try {

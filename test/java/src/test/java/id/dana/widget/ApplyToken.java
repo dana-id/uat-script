@@ -93,11 +93,10 @@ public class ApplyToken {
 
     @Test
     void testApplyTokenFailInvalidSignature() throws IOException {
-        // Create an order with an initial status
-
         Map<String, String> customHeaders = new HashMap<>();
         Map<String, Object> variableDict = new HashMap<>();
-        customHeaders.put(DanaHeader.X_SIGNATURE, "andjansdsnka");
+        
+        customHeaders.put(DanaHeader.X_SIGNATURE, RandomStringUtils.randomAlphanumeric(300));
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(new DanaAuth())
                 .addInterceptor(new CustomHeaderInterceptor(customHeaders))

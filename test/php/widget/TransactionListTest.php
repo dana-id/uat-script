@@ -1,9 +1,9 @@
 <?php
 
-namespace DanaUat\Ipg\v1;
+namespace DanaUat\Widget\v1;
 
 use PHPUnit\Framework\TestCase;
-use Dana\IPG\v1\Api\IPGApi;
+use Dana\Widget\v1\Api\WidgetApi;
 use Dana\Configuration;
 use Dana\ObjectSerializer;
 use Dana\Env;
@@ -25,7 +25,7 @@ class TransactionListTest extends TestCase
         $configuration->setApiKey('ORIGIN', getenv('ORIGIN'));
         $configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
         $configuration->setApiKey('ENV', Env::SANDBOX);
-        self::$apiInstance = new IpgApi(null, $configuration);
+        self::$apiInstance = new WidgetApi(null, $configuration);
     }
 
     /**
@@ -44,7 +44,7 @@ class TransactionListTest extends TestCase
             );
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                'Dana\IPG\v1\Model\TransactionListRequest'
+                'Dana\Widget\v1\Model\TransactionListRequest'
             );
             $apiResponse = self::$apiInstance->transactionList($requestObj);
             $responseJson = json_decode($apiResponse->__toString(), true);
@@ -63,7 +63,7 @@ class TransactionListTest extends TestCase
         Util::withDelay(function() {
             $caseName = 'TransactionListFailInvalidParam';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\TransactionListRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\TransactionListRequest');
             try {
                 self::$apiInstance->transactionList($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -84,7 +84,7 @@ class TransactionListTest extends TestCase
         Util::withDelay(function() {
             $caseName = 'TransactionListFailDataNotAvailable';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\TransactionListRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\TransactionListRequest');
             try {
                 self::$apiInstance->transactionList($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -105,7 +105,7 @@ class TransactionListTest extends TestCase
         Util::withDelay(function() {
             $caseName = 'TransactionListFailSystemError';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\TransactionListRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\TransactionListRequest');
             try {
                 self::$apiInstance->transactionList($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -126,7 +126,7 @@ class TransactionListTest extends TestCase
         Util::withDelay(function() {
             $caseName = 'TransactionListFailInvalidSignature';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\TransactionListRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\TransactionListRequest');
             try {
                 self::$apiInstance->transactionList($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -147,7 +147,7 @@ class TransactionListTest extends TestCase
         Util::withDelay(function() {
             $caseName = 'TransactionListFailInvalidToken';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\TransactionListRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\TransactionListRequest');
             try {
                 self::$apiInstance->transactionList($requestObj);
                 $this->fail('Expected ApiException was not thrown');
@@ -168,7 +168,7 @@ class TransactionListTest extends TestCase
         Util::withDelay(function() {
             $caseName = 'TransactionListFailInvalidMandatoryParameter';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\IPG\v1\Model\TransactionListRequest');
+            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\TransactionListRequest');
             try {
                 self::$apiInstance->transactionList($requestObj);
                 $this->fail('Expected ApiException was not thrown');

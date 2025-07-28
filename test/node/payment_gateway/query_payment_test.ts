@@ -5,10 +5,10 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 
 // Import helper functions
-import { getRequest } from '../helper/util';
+import { getRequest, automatePayment } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
-import { CreateOrderByApiRequest, QueryPaymentRequest, CancelOrderRequest } from 'dana-node/payment_gateway/v1';
+import { CreateOrderByRedirectRequest, CreateOrderByApiRequest, QueryPaymentRequest, CancelOrderRequest } from 'dana-node/payment_gateway/v1';
 import { ResponseError } from 'dana-node';
 
 // Load environment variables
@@ -45,12 +45,47 @@ describe('Query Payment Tests', () => {
   }
 
   async function createPaidOrder() {
-    const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderNetworkPayPgOtherWallet");
+    const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
     sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
-    createOrderRequestData.amount.value = "50001.00"; // Set a valid amount to simulate a paid order
-    await dana.paymentGatewayApi.createOrder(createOrderRequestData);
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    
+    try {
+      // Add delay before creating order
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log(`Creating order for payment automation...`);
+      const response = await dana.paymentGatewayApi.createOrder(createOrderRequestData);
+      
+      if (response.webRedirectUrl) {
+        console.log(`Order created successfully. WebRedirectUrl: ${response.webRedirectUrl}`);
+        console.log(`Starting payment automation...`);
+        
+        // Automate the payment using the webRedirectUrl
+        const automationResult = await automatePayment(
+          '0811742234', // phoneNumber
+          '123321',     // pin
+          response.webRedirectUrl, // redirectUrl from create order response
+          3,            // maxRetries
+          2000,         // retryDelay
+          true         // headless (set to true for CI/CD)
+        );
+        
+        if (automationResult.success) {
+          console.log(`Payment automation successful after ${automationResult.attempts} attempts`);
+        } else {
+          console.log(`Payment automation failed: ${automationResult.error}`);
+          throw new Error(`Payment automation failed: ${automationResult.error}`);
+        }
+      } else {
+        throw new Error('No webRedirectUrl in create order response');
+      }
+      
+      // Wait a bit for payment to be processed
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+    } catch (error) {
+      console.error('Failed to create and pay order:', error);
+      throw error;
+    }
   }
 
   async function createCanceledOrder() {
@@ -94,7 +129,8 @@ describe('Query Payment Tests', () => {
   });
   
   // Test successful query paid
-  test.skip('should successfully query payment with status paid (PAID)', async () => {
+  // NOTE: This test can be flaky as it depends on payment automation which may fail due to security reasons,
+  test('should successfully query payment with status paid (PAID)', async () => {
     const queryPaymentCaseName = "QueryPaymentPaidOrder";
 
     try {
@@ -134,7 +170,7 @@ describe('Query Payment Tests', () => {
   // Test successful query payment
   test('should successfully query payment with status canceled (CANCELLED)', async () => {
     const queryPaymentCaseName = "QueryPaymentCanceledOrder";
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for cancellation to propagate
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for cancellation to propagate
     try {
       // Now query that same order
       const queryRequestData: QueryPaymentRequest = getRequest<QueryPaymentRequest>(jsonPathFile, titleCase, queryPaymentCaseName);

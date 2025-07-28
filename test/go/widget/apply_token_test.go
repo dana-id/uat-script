@@ -8,23 +8,23 @@ import (
 
 // ApplyToken
 func TestApplyTokenSuccess(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyTokenFailExpiredAuthcode(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyTokenFailAuthcodeInvalid(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyTokenFailInvalidParams(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyTokenFailInvalidMandatoryFields(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestApplyTokenFailInvalidSignature(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }

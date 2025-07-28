@@ -4,8 +4,9 @@
     "type": "project",
     "require": {
         "php": "^7.4 || ^8.0",
-        "danaid/dana-php": "*",
-        "phpunit/phpunit": "^9.0"
+        "danaid/dana-php": "^0.1",
+        "phpunit/phpunit": "^9.0",
+        "php-webdriver/webdriver": "^1.0"
     },
     "autoload": {
         "psr-4": {

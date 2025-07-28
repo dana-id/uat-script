@@ -100,51 +100,70 @@
     },
     "AccountUnbinding": {
         "AccountUnbindSuccess": {
-            "@type": "AccountUnbindingRequest",
-            "partnerReferenceNo": "partnerReferenceNo",
-            "linkId": "linkId",
-            "subMerchantId": "210000123",
-            "merchantId": "${merchantId}",
-            "tokenId": "tokenId",
-            "additionalInfo": {
-                "accessToken" : "${accessToken}"
+            "request": {
+                "@type": "AccountUnbindingRequest",
+                "merchantId": "${merchantId}",
+                "additionalInfo": {
+                    "@type": "AccountUnbindingRequestAdditionalInfo"
+                }
             }
         },
         "AccountUnbindFailAccessTokenNotExist": {
-            "@type": "AccountUnbindingRequest",
-            "partnerReferenceNo": "partnerReferenceNo",
-            "linkId": "linkId",
-            "subMerchantId": "210000123",
-            "merchantId": "${merchantId}",
-            "tokenId": "tokenId",
-            "additionalInfo": {
-                "accessToken" : "${accessToken}"
+            "request": {
+                "@type": "AccountUnbindingRequest",
+                "partnerReferenceNo": "partnerReferenceNo",
+                "linkId": "linkId",
+                "subMerchantId": "210000123",
+                "merchantId": "${merchantId}",
+                "tokenId": "tokenId",
+                "additionalInfo": {
+                    "accessToken" : "${accessToken}"
+                }
             }
         },
         "AccountUnbindFailInvalidUserStatus": {
-            "@type": "AccountUnbindingRequest",
-            "partnerReferenceNo": "partnerReferenceNo",
-            "linkId": "linkId",
-            "subMerchantId": "210000123",
-            "merchantId": "${merchantId}",
-            "tokenId": "tokenId",
-            "additionalInfo": {
-                "accessToken" : "${accessToken}"
+            "request": {
+                "@type": "AccountUnbindingRequest",
+                "partnerReferenceNo": "partnerReferenceNo",
+                "linkId": "linkId",
+                "subMerchantId": "210000123",
+                "merchantId": "${merchantId}",
+                "tokenId": "tokenId",
+                "additionalInfo": {
+                    "accessToken" : "${accessToken}"
+                }
             }
         },
         "AccountUnbindFailInvalidParams": {
-            "@type": "AccountUnbindingRequest",
-            "partnerReferenceNo": "partnerReferenceNo",
-            "linkId": "linkId",
-            "subMerchantId": "210000123",
-            "tokenId": "tokenId",
-            "additionalInfo": {
-                "accessToken" : "${accessToken}"
+            "request": {
+                "@type": "AccountUnbindingRequest",
+                "partnerReferenceNo": "partnerReferenceNo",
+                "linkId": "linkId",
+                "subMerchantId": "210000123",
+                "tokenId": "tokenId",
+                "additionalInfo": {
+                    "accessToken" : "${accessToken}"
+                }
             }
         }
     },
     "ApplyOtt": {
         "ApplyOttSuccess": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "2004900",
+                "responseMessage": "Successful"
+            }
+        },
+        "ApplyOttCustomerTokenNotFound": {
             "request": {
                 "additionalInfo": {
                     "accessToken": "${authCode}",

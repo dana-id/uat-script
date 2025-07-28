@@ -8,14 +8,14 @@ import (
 
 // AccountUnbinding
 func TestAccountUnbindSuccess(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestAccountUnbindFailAccessTokenNotExist(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestAccountUnbindFailInvalidUserStatus(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestAccountUnbindFailInvalidParams(t *testing.T) {
-	// ...skeleton...
+	t.Skip("Skip: Skeleton test not implemented")
 }
