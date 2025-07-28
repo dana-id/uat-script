@@ -1,9 +1,28 @@
+/**
+ * @fileoverview Widget Payment Test Suite for DANA Widget API Integration
+ * 
+ * This test suite validates the payment functionality of the DANA Widget API.
+ * The Widget API provides a lightweight integration approach for payment processing
+ * that can be embedded directly into merchant applications and websites.
+ * 
+ * Key Features Tested:
+ * - Direct payment processing through Widget API
+ * - Error handling for various payment failure scenarios
+ * - Authentication and authorization validation
+ * - Input validation and business rule enforcement
+ * 
+ * The Widget Payment API differs from the Payment Gateway API by providing:
+ * - Simpler integration with fewer required fields
+ * - Direct host-to-host communication
+ * - Optimized for mobile and web widget implementations
+ */
+
 import Dana, { ResponseError } from 'dana-node';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-// Import helper functions and assertions utilities
+// Import helper functions and assertion utilities for comprehensive testing
 import { fail } from 'assert';
 import { getRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
@@ -13,40 +32,65 @@ import { executeManualApiRequest } from '../helper/apiHelpers';
 // Load environment variables from .env file
 dotenv.config();
 
-// Constants for test configuration
-const titleCase = 'Payment';
-const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Widget.json');
-const merchantId = process.env.MERCHANT_ID || '';
-const apiUrl: string = '/rest/redirection/v1.0/debit/payment-host-to-host';
-const baseUrl: string = 'https://api.sandbox.dana.id/';
+// Test configuration constants
+const titleCase = 'Payment'; // Main test category identifier
+const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Widget.json'); // Widget test data file
+const merchantId = process.env.MERCHANT_ID || ''; // Merchant configuration
+const apiUrl: string = '/rest/redirection/v1.0/debit/payment-host-to-host'; // Widget payment endpoint
+const baseUrl: string = 'https://api.sandbox.dana.id/'; // DANA API base URL
 
-// Initialize DANA API client with credentials from environment variables
+// Initialize DANA SDK client with environment configuration
 const dana = new Dana({
-    partnerId: process.env.X_PARTNER_ID || '',
-    privateKey: process.env.PRIVATE_KEY || '',
-    origin: process.env.ORIGIN || '',
-    env: process.env.ENV || 'sandbox',
+    partnerId: process.env.X_PARTNER_ID || '',  // Partner ID from environment
+    privateKey: process.env.PRIVATE_KEY || '',  // RSA private key for authentication
+    origin: process.env.ORIGIN || '',            // Request origin URL
+    env: process.env.ENV || 'sandbox',          // Environment (sandbox/production)
 });
 
-// Utility function to generate a unique reference number for each payment request
+/**
+ * Generates a unique reference number for each payment request
+ * This ensures each test has a unique transaction identifier to avoid conflicts
+ * 
+ * @returns {string} A unique UUID string for payment reference
+ */
 function generateReferenceNo(): string {
     return uuidv4();
 }
 
+/**
+ * Widget Payment Test Suite
+ * 
+ * This comprehensive test suite validates all aspects of the DANA Widget Payment API,
+ * ensuring robust behavior across various payment scenarios and error conditions.
+ */
 describe('Payment Tests', () => {
-    // Test: Payment Success
+
+    /**
+     * Test Case: Successful Widget Payment
+     * 
+     * This test validates the complete successful payment flow through the Widget API.
+     * It verifies that valid payment requests are processed correctly and return
+     * appropriate success responses with required payment confirmation data.
+     * 
+     * @scenario Positive test case for successful payment processing
+     * @paymentMethod Widget-based payment integration
+     */
     test('should successfully perform payment', async () => {
-        // Define the case name for the test
+        // Define the test case name for data extraction
         const caseName = 'PaymentSuccess';
-        // Get the request data from the JSON file based on the case name
+
+        // Extract request data from test data file based on case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
-        // Generate a unique reference number and set the merchant ID
+
+        // Configure request with unique reference number and merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
         requestData.merchantId = merchantId;
+
         try {
-            // Call the widget payment API with the request data
+            // Execute widget payment API call
             const response = await dana.widgetApi.widgetPayment(requestData);
-            // Assert the response against the expected result
+
+            // Validate response against expected result from test data
             await assertResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
         } catch (e: any) {
             // If an error occurs, fail the test with the error message
