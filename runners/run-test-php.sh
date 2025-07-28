@@ -4,6 +4,91 @@
 set -e
 
 run_php_runner(){
+    # Check and install Selenium WebDriver dependencies if needed
+    echo "Checking Selenium WebDriver dependencies..."
+    
+    # Check if running on macOS or Linux
+    OS=$(uname)
+    if [ "$OS" = "Darwin" ]; then
+        # macOS-specific installations
+        if ! command -v chromedriver &> /dev/null; then
+            echo "ChromeDriver not found, installing..."
+            if command -v brew &> /dev/null; then
+                brew install --cask chromedriver
+            else
+                echo "Homebrew not found. Please install ChromeDriver manually."
+                echo "You can use: brew install --cask chromedriver"
+            fi
+        fi
+        
+        # Check for Java (needed for Selenium server)
+        if ! command -v java &> /dev/null; then
+            echo "Java not found, installing..."
+            if command -v brew &> /dev/null; then
+                brew install --cask temurin
+            else
+                echo "Homebrew not found. Please install Java manually."
+                echo "You can use: brew install --cask temurin"
+            fi
+        fi
+    elif [ "$OS" = "Linux" ]; then
+        # Linux-specific installations (similar to CI script)
+        if ! command -v chromedriver &> /dev/null; then
+            echo "Installing Chrome and ChromeDriver..."
+            if command -v apt-get &> /dev/null; then
+                sudo apt-get update && sudo apt-get install -y chromium chromium-driver
+            elif command -v dnf &> /dev/null; then
+                sudo dnf install -y chromium chromedriver
+            else
+                echo "Unsupported Linux distribution. Please install ChromeDriver manually."
+            fi
+        fi
+        
+        # Check for Java
+        if ! command -v java &> /dev/null; then
+            echo "Java not found, installing..."
+            if command -v apt-get &> /dev/null; then
+                sudo apt-get install -y default-jre
+            elif command -v dnf &> /dev/null; then
+                sudo dnf install -y java-latest-openjdk
+            else
+                echo "Unsupported Linux distribution. Please install Java manually."
+            fi
+        fi
+        
+        # PHP ZIP extension (for WebDriver)
+        if ! php -m | grep -q "zip"; then
+            echo "PHP ZIP extension not found, installing..."
+            if command -v apt-get &> /dev/null; then
+                sudo apt-get install -y libzip-dev
+                sudo docker-php-ext-install zip 2>/dev/null || echo "Not in Docker environment, skipping PHP extension installation"
+            else
+                echo "Please install PHP ZIP extension manually for your distribution."
+            fi
+        fi
+    fi
+    
+    # Download Selenium server if not present
+    SELENIUM_JAR="$HOME/.selenium/selenium-server.jar"
+    SELENIUM_DIR=$(dirname "$SELENIUM_JAR")
+    
+    if [ ! -f "$SELENIUM_JAR" ]; then
+        echo "Selenium server not found, downloading..."
+        mkdir -p "$SELENIUM_DIR"
+        wget -q -O "$SELENIUM_JAR" https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.10.0/selenium-server-4.10.0.jar || \
+        curl -L -o "$SELENIUM_JAR" https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.10.0/selenium-server-4.10.0.jar
+    fi
+    
+    # Check if Selenium is already running
+    if ! pgrep -f "selenium-server" > /dev/null; then
+        echo "Starting Selenium server..."
+        java -jar "$SELENIUM_JAR" standalone > /dev/null 2>&1 &
+        # Give Selenium time to start
+        sleep 5
+        echo "Selenium server started"
+    else
+        echo "Selenium server is already running"
+    fi
     folderName=$1
     caseName=$2
     ROOT_DIR=$(pwd)
