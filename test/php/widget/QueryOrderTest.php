@@ -350,82 +350,13 @@ class QueryOrderTest extends TestCase
 
     private static function createPaymentPaid(): string
     {
-        // 1. Create payment order as before
-        $dataOrder = self::createPaymentOrder();
-        $partnerId = getenv('X_PARTNER_ID');
-        $phoneNumber = self::$userPhoneNumber;
-        $userPin = self::$userPin;
-
-        // 2. Get OAuth authorization code
-        $authCode = OauthUtil::getAuthCode(
-            $partnerId,
-            null,
-            $phoneNumber,
-            $userPin,
-            null
+        // Use the shared utility method to create a paid payment
+        // This eliminates duplicate code across test classes
+        return PaymentUtil::createPaidPaymentWidget(
+            self::$userPhoneNumber,
+            self::$userPin,
+            "PaymentSuccess"
         );
-        if (!$authCode) {
-            throw new \Exception("Failed to obtain OAuth authorization code");
-        }
-
-        // 3. ApplyToken: Exchange auth code for access token
-        $tokenCaseName = 'ApplyTokenSuccess';
-        $tokenJsonDict = \DanaUat\Helper\Util::getRequest(
-            'resource/request/components/Widget.json',
-            'ApplyToken',
-            $tokenCaseName
-        );
-        $tokenRequestObj = ObjectSerializer::deserialize(
-            $tokenJsonDict,
-            'Dana\\Widget\\v1\\Model\\ApplyTokenRequest'
-        );
-        $tokenRequestObj->setAuthCode($authCode);
-        $apiInstance = self::$apiInstance;
-        try {
-            $apiResponse = $apiInstance->applyToken($tokenRequestObj);
-            $responseJson = json_decode($apiResponse->__toString(), true);
-            $accessToken = $responseJson['accessToken'] ?? null;
-        } catch (\Exception $e) {
-            throw new \Exception("Failed to obtain access token: " . $e->getMessage());
-        }
-        if (!$accessToken) {
-            throw new \Exception("Access token not found in ApplyToken response");
-        }
-
-        // 4. ApplyOtt: Use access token to get OTT
-        $ottCaseName = 'ApplyOttSuccess';
-        $ottJsonDict = \DanaUat\Helper\Util::getRequest(
-            'resource/request/components/Widget.json',
-            'ApplyOtt',
-            $ottCaseName
-        );
-        // Set the access token in the request
-        if (!isset($ottJsonDict['additionalInfo'])) {
-            $ottJsonDict['additionalInfo'] = [];
-        }
-        $ottJsonDict['additionalInfo']['accessToken'] = $accessToken;
-        $ottRequestObj = ObjectSerializer::deserialize(
-            $ottJsonDict,
-            'Dana\\Widget\\v1\\Model\\ApplyOTTRequest'
-        );
-        try {
-            $apiResponse = $apiInstance->applyOTT($ottRequestObj);
-            echo "\nObtained OTT: " . $apiResponse->__toString() . "\n";
-            $responseJson = json_decode($apiResponse->__toString(), true);
-            $ott = $responseJson['userResources'][0]['value'] ?? null;
-        } catch (\Exception $e) {
-            throw new \Exception("Failed to obtain OTT: " . $e->getMessage());
-        }
-        if (!$ott) {
-            throw new \Exception("OTT not found in ApplyOtt response");
-        }
-
-        // 5. Append OTT to payment widget URL and automate payment
-        $webRedirectUrl = $dataOrder['webRedirectUrl'] . "&ott=" . $ott;
-        WebAutomation::automatePaymentWidget(
-            $webRedirectUrl
-        );
-        return (string)$dataOrder['partnerReferenceNo'];
     }
 
     private static function generateDate(): string
