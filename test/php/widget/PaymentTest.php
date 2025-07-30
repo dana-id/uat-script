@@ -63,8 +63,6 @@ class PaymentTest extends TestCase
                 'Dana\Widget\v1\Model\WidgetPaymentRequest'
             );
 
-            echo "Request: " . $requestObj->__toString() . "\n";
-
             $apiResponse = self::$apiInstanceWidget->widgetPayment($requestObj);
             // Assert the response matches the expected data
                 Assertion::assertResponse(
@@ -144,8 +142,6 @@ class PaymentTest extends TestCase
                 'Dana\Widget\v1\Model\WidgetPaymentRequest'
             );
 
-            echo "Request: " . $requestObj->__toString() . "\n";
-
             try {
                 Util::executeApiRequest(
                     'POST',
@@ -199,8 +195,6 @@ class PaymentTest extends TestCase
                 'Dana\Widget\v1\Model\WidgetPaymentRequest'
             );
 
-            echo "Request: " . $requestObj->__toString() . "\n";
-
             try {
                 Util::executeApiRequest(
                     'POST',
@@ -244,8 +238,6 @@ class PaymentTest extends TestCase
                 'Dana\Widget\v1\Model\WidgetPaymentRequest'
             );
 
-            echo "Request: " . $requestObj->__toString() . "\n";
-
             try {
                 self::$apiInstanceWidget->widgetPayment($requestObj);
             } catch (ApiException $e) {
@@ -277,7 +269,6 @@ class PaymentTest extends TestCase
                 'Dana\Widget\v1\Model\WidgetPaymentRequest'
             );
 
-            echo "Request: " . $requestObj->__toString() . "\n";
             self::$apiInstanceWidget->widgetPayment($requestObj);
 
             try {
