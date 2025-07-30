@@ -55,9 +55,7 @@ class RefundOrderTest extends TestCase
             $jsonDict['partnerRefundNo'] = self::$sharedOriginalPartnerReferencePaid;
             $jsonDict['merchantId'] = self::$merchantId;
             $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-            
-            echo "Request Object: " . $requestObj->__toString() . PHP_EOL;
-            
+                        
             $apiResponse = self::$apiInstance->refundOrder($requestObj);
             $responseJson = json_decode($apiResponse->__toString(), true);
             $this->assertEquals('2005800', $responseJson['responseCode'], 'Expected success response code');

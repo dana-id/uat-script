@@ -770,7 +770,6 @@ class CancelOrderTest extends TestCase
             "CreateOrder",
             "CreateOrderRedirect"
         );
-
         // Set a unique partner reference number
         $partnerReferenceNo = Util::generatePartnerReferenceNo();
         $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
