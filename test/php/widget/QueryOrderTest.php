@@ -406,10 +406,10 @@ class QueryOrderTest extends TestCase
         $ottJsonDict['additionalInfo']['accessToken'] = $accessToken;
         $ottRequestObj = ObjectSerializer::deserialize(
             $ottJsonDict,
-            'Dana\\Widget\\v1\\Model\\ApplyOttRequest'
+            'Dana\\Widget\\v1\\Model\\ApplyOTTRequest'
         );
         try {
-            $apiResponse = $apiInstance->applyOtt($ottRequestObj);
+            $apiResponse = $apiInstance->applyOTT($ottRequestObj);
             echo "\nObtained OTT: " . $apiResponse->__toString() . "\n";
             $responseJson = json_decode($apiResponse->__toString(), true);
             $ott = $responseJson['userResources'][0]['value'] ?? null;
