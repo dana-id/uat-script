@@ -3,6 +3,7 @@
 namespace DanaUat\PaymentGateway;
 
 use PHPUnit\Framework\TestCase;
+use DanaUat\PaymentGateway\PaymentUtil;
 use Dana\PaymentGateway\v1\Api\PaymentGatewayApi;
 use Dana\Configuration;
 use Dana\ObjectSerializer;
@@ -98,86 +99,18 @@ class QueryPaymentTest extends TestCase
     /**
      * Create a test order with status PAID for query payment tests
      */
-    private static function createTestOrderPaid():string 
+    private static function createTestOrderPaid(): string 
     {
         $partnerReferenceNo = Util::generatePartnerReferenceNo();
-        $caseName = 'CreateOrderRedirect';
-
-        // Get the request data from the JSON file
-        $jsonDict = Util::getRequest(
+        
+        // Use the shared utility with a cache key specific to query payment tests
+        return PaymentUtil::getOrCreatePaidOrder(
+            self::$apiInstance,
             self::$jsonPathFile,
             self::$createOrderTitleCase,
-            $caseName
+            'query_test',
+            $partnerReferenceNo
         );
-
-        // Create a CreateOrderByRedirectRequest object from the JSON request data
-        $createOrderRequestObj = ObjectSerializer::deserialize(
-            $jsonDict,
-            'Dana\PaymentGateway\v1\Model\CreateOrderByRedirectRequest',
-        );
-
-        $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
-
-        try {
-            // Make the API call
-            $response = self::$apiInstance->createOrder($createOrderRequestObj);
-            error_log("CreateOrder for query test API response: " . $response->__toString());
-
-            // Add delay to allow order to be processed
-            sleep(2);
-
-            // Run the web automation to complete the payment
-            $webUrl = $response->getWebRedirectUrl();
-            if ($webUrl) {
-                echo "Starting web automation for payment at URL: {$webUrl}" . PHP_EOL;
-                WebAutomation::automatePayment($webUrl);
-                echo "Web automation completed" . PHP_EOL;
-
-                // Query payment status to confirm it's completed
-                echo "Querying payment status..." . PHP_EOL;
-                $maxRetries = 3;
-                $querySucceeded = false;
-
-                // Create query payment request
-                $queryRequest = new \Dana\PaymentGateway\v1\Model\QueryPaymentRequest();
-                $queryRequest->setOriginalPartnerReferenceNo($partnerReferenceNo);
-                $queryRequest->setMerchantId(getenv('MERCHANT_ID'));
-
-                // Try querying payment status a few times
-                for ($i = 0; $i < $maxRetries; $i++) {
-                    try {
-                        echo "Query payment attempt " . ($i + 1) . " of {$maxRetries}..." . PHP_EOL;
-                        $respQueryPayment = self::$apiInstance->queryPayment($queryRequest);
-
-                        echo "Query payment response: status=" .
-                            ($respQueryPayment->getTransactionStatusDesc() ?? 'unknown') .
-                            ", code=" . $respQueryPayment->getResponseCode() . PHP_EOL;
-
-                        if ($respQueryPayment->getTransactionStatusDesc() === 'SUCCESS') {
-                            echo "Payment completed successfully!" . PHP_EOL;
-                            $querySucceeded = true;
-                            break;
-                        }
-
-                        // Wait before trying again
-                        sleep(5);
-                    } catch (\Exception $e) {
-                        echo "Query payment attempt " . ($i + 1) . " failed: " . $e->getMessage() . PHP_EOL;
-                        sleep(2);
-                    }
-                }
-
-                if (!$querySucceeded) {
-                    echo "Warning: Could not confirm payment success. Continuing anyway..." . PHP_EOL;
-                }
-            } else {
-                echo "No web URL found in the response, skipping automation" . PHP_EOL;
-            }
-        } catch (Exception $e) {
-            throw new Exception("Failed to create paid test order: " . $e->getMessage());
-        }
-        
-        return $partnerReferenceNo;
     }
 
     /**
