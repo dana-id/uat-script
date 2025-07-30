@@ -10,7 +10,6 @@ use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
-use Exception;
 
 class AccountUnbindingTest extends TestCase
 {

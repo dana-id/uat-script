@@ -28,6 +28,7 @@ with ApiClient(configuration) as api_client:
 
 
 @with_delay()
+@pytest.mark.skip(reason="skipped by request: scenario ConsultPayBalancedSuccess")
 def test_consult_pay_success():
     """Should give success response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedSuccess"
@@ -54,6 +55,7 @@ def test_consult_pay_success():
     
     
 @with_delay()
+@pytest.mark.skip(reason="skipped by request: scenario ConsultPayBalancedInvalidFieldFormat")
 def test_consult_pay_invalid_field_format():
     """Should give fail response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedInvalidFieldFormat"

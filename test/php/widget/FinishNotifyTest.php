@@ -1,6 +1,6 @@
 <?php
 
-namespace DanaUat\Widget\v1;
+namespace DanaUat\Widget;
 
 use PHPUnit\Framework\TestCase;
 use Dana\Widget\v1\Api\WidgetApi;
@@ -10,7 +10,6 @@ use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
-use Exception;
 
 class FinishNotifyTest extends TestCase
 {

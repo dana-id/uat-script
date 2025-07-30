@@ -8,7 +8,6 @@ use Dana\Env;
 use Dana\Widget\v1\Api\WidgetApi;
 use DanaUat\Helper\Util;
 use Dana\ObjectSerializer;
-use \Exception;
 class PaymentUtil extends TestCase
 {
     private static $apiInstanceWidget;

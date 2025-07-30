@@ -5,7 +5,6 @@ import id.dana.invoker.model.DanaConfig;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
-import id.dana.util.OauthUtil;
 import id.dana.util.TestUtil;
 import id.dana.widget.v1.api.WidgetApi;
 import id.dana.widget.v1.model.*;
@@ -18,8 +17,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class AccountUnbindingTest {
     private final static String USER_PIN = "123321";

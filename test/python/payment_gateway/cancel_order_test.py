@@ -17,6 +17,7 @@ from helper.assertion import *
 title_case = "CancelOrder"
 create_order_title_case = "CreateOrder"
 json_path_file = "resource/request/components/PaymentGateway.json"
+merchant_id = os.environ.get("MERCHANT_ID", "1234567890")  # Default to a test merchant ID if not set
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -26,6 +27,8 @@ configuration = SnapConfiguration(
         ENV=Env.SANDBOX
     )
 )
+
+
 
 with ApiClient(configuration) as api_client:
     api_instance = PaymentGatewayApi(api_client)
@@ -44,7 +47,8 @@ def create_test_order(partner_reference_no):
     
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = partner_reference_no
-    
+    json_dict["merchantId"] = merchant_id
+
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
     
@@ -90,7 +94,8 @@ def test_cancel_order(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    
+    json_dict["merchantId"] = merchant_id
+
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
     
@@ -173,6 +178,7 @@ def test_cancel_order_invalid_mandatory_field(test_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
@@ -205,6 +211,8 @@ def test_cancel_order_transaction_not_found():
     
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
+    json_dict["originalPartnerReferenceNo"] = "123wererw"
+    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
@@ -264,6 +272,31 @@ def test_cancel_order_with_agreement_not_allowed():
         pytest.fail("Expected ForbiddenException but the API call give another exception")
 
 @with_delay()
+@pytest.mark.skip(reason="skipped by request: scenario CancelOrderInvalidTransactionStatus")
+def test_cancel_order_with_invalid_transaction_status():
+    """Should fail to cancel the order when transaction status is invalid"""
+    # Cancel order
+    case_name = "CancelOrderInvalidTransactionStatus"
+    
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    # Convert the request data to a CancelOrderRequest object
+    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    
+    # Make the API call
+    try:
+        api_instance.cancel_order(cancel_order_request_obj)
+
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": "4035715"})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception")
+
+
+
+@with_delay()
 def test_cancel_order_with_account_status_abnormal():
     """Should fail to cancel the order when account status is abnormal"""
     # Cancel order
@@ -317,6 +350,7 @@ def test_cancel_order_unauthorized(test_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)

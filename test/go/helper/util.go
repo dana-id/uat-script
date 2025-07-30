@@ -3,6 +3,8 @@ package helper
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -118,4 +120,28 @@ func RetryOnInconsistentRequest(apiCall func() (interface{}, error), maxAttempts
 		break
 	}
 	return nil, lastErr
+}
+
+func GetValueFromResponseBody(response *http.Response, key string) (string, error) {
+	defer response.Body.Close()
+	bodyBytes, err := io.ReadAll(response.Body)
+	// Get the full response body as string
+	responseBodyStr := string(bodyBytes)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	// Parse the response body as JSON
+	var responseData map[string]interface{}
+	if err := json.Unmarshal([]byte(responseBodyStr), &responseData); err != nil {
+		return "", fmt.Errorf("failed to parse JSON response: %v", err)
+	}
+
+	// Check if the key exists
+	value, exists := responseData[key]
+	if !exists {
+		return "", fmt.Errorf("key '%s' not found in response", key)
+	}
+
+	return value.(string), nil
 }

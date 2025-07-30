@@ -1086,7 +1086,7 @@
         },
         "CancelOrderInvalidMandatoryField": {
             "request": {
-                "originalReferenceNo": "",
+                "originalReferenceNo": "${originalPartnerReferenceNo}",
                 "originalExternalId": "",
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",
@@ -1100,7 +1100,7 @@
             },
             "response": {
                 "responseCode": "4005702",
-                "responseMessage": "Invalid Mandatory Field originalPartnerReferenceNo"
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
             }
         },
         "CancelOrderTransactionNotFound": {

@@ -2,7 +2,7 @@
     "ConsultPay": {
         "ConsultPayBalancedSuccess": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "amount": {
                     "value": "100000.00",
                     "currency": "IDR"
@@ -62,7 +62,7 @@
         },
         "ConsultPayBalancedInvalidFieldFormat": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "amount": {
                     "value": "",
                     "currency": "IDR"
@@ -134,7 +134,7 @@
         },
         "ConsultPayBalancedUnauthorized": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "amount": {
                     "value": "12345678.00",
                     "currency": "IDR"
@@ -171,8 +171,9 @@
     "CreateOrder": {
         "CreateOrderRedirect": {
             "request": {
+                "@type": "CreateOrderByRedirectRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "amount": {
                     "value": "22200.00",
@@ -216,7 +217,7 @@
         "CreateOrderApi": {
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "amount": {
                     "value": "22200.00",
@@ -269,8 +270,9 @@
         },
         "CreateOrderBalance": {
             "request": {
+                
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "amount": {
                     "value": "22200.00",
@@ -324,8 +326,8 @@
         "CreateOrderNetworkPayPgQris": {
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
-                "subMerchantId": "",
+                "merchantId": "${merchantId}",
+                "subMerchantId": "${subMerchantId}",
                 "amount": {
                     "value": "22200.00",
                     "currency": "IDR"
@@ -377,22 +379,23 @@
         },
         "CreateOrderNetworkPayPgOtherWallet": {
             "request": {
+                
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "50001.00",
                     "currency": "IDR"
                 },
                 "payOptionDetails": [
                     {
                         "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_GOPAY",
+                        "payOption": "NETWORK_PAY_PG_OVO",
                         "transAmount": {
-                            "value": "22200.00",
+                            "value": "50001.00",
                             "currency": "IDR"
                         },
                         "feeAmount": {
-                            "value": "22200.00",
+                            "value": "50001.00",
                             "currency": "IDR"
                         },
                         "cardToken": "",
@@ -456,8 +459,9 @@
         },
         "CreateOrderNetworkPayPgOtherVaBank": {
             "request": {
+                
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "amount": {
                     "value": "222000.00",
                     "currency": "IDR"
@@ -510,6 +514,7 @@
         },
         "CreateOrderInvalidFieldFormat": {
             "request": {
+                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "",
                 "subMerchantId": "",
@@ -565,8 +570,9 @@
         },
         "CreateOrderInconsistentRequest": {
             "request": {
+                
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "amount": {
                     "value": "22200.00",
@@ -620,8 +626,9 @@
         },
         "CreateOrderInvalidMandatoryField": {
             "request": {
+                
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "amount": {
                     "value": "222000.00",
                     "currency": "IDR"
@@ -669,8 +676,9 @@
         },
         "CreateOrderUnauthorized": {
             "request": {
+                
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "amount": {
                     "value": "222000.00",
                     "currency": "IDR"
@@ -721,18 +729,9 @@
         "QueryPaymentCreatedOrder": {
             "request": {
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
-                "originalReferenceNo": "",
-                "originalExternalId": "",
+                "originalReferenceNo": null,
                 "serviceCode": "54",
-                "transactionDate": "2030-05-01T00:46:43+07:00",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
-                "merchantId": "${merchantId}",
-                "subMerchantId": "",
-                "externalStoreId": "",
-                "additionalInfo": {}
+                "merchantId": "${merchantId}"
             },
             "response": {
                 "responseCode": "2005500",
@@ -771,18 +770,9 @@
         "QueryPaymentPaidOrder": {
             "request": {
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
-                "originalReferenceNo": "",
-                "originalExternalId": "",
+                "originalReferenceNo": null,
                 "serviceCode": "54",
-                "transactionDate": "2030-05-01T00:46:43+07:00",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
-                "merchantId": "${merchantId}",
-                "subMerchantId": "",
-                "externalStoreId": "",
-                "additionalInfo": {}
+                "merchantId": "${merchantId}"
             },
             "response": {
                 "responseCode": "2005500",
@@ -821,18 +811,9 @@
         "QueryPaymentCanceledOrder": {
             "request": {
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
-                "originalReferenceNo": "",
-                "originalExternalId": "",
+                "originalReferenceNo": null,
                 "serviceCode": "54",
-                "transactionDate": "2030-05-01T00:46:43+07:00",
-                "amount": {
-                    "value": "55001.00",
-                    "currency": "IDR"
-                },
-                "merchantId": "${merchantId}",
-                "subMerchantId": "",
-                "externalStoreId": "",
-                "additionalInfo": {}
+                "merchantId": "${merchantId}"
             },
             "response": {
                 "responseCode": "2005500",
@@ -870,19 +851,10 @@
         },
         "QueryPaymentInvalidFormat": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
-                "originalReferenceNo": "",
-                "originalExternalId": "",
+                "originalPartnerReferenceNo": "211232131231",
+                "originalReferenceNo": null,
                 "serviceCode": "54",
-                "transactionDate": "2030-05-01T00:46:43+07:00",
-                "amount": {
-                    "value": "22200.00",
-                    "currency": "IDR"
-                },
-                "merchantId": "${merchantId}",
-                "subMerchantId": "",
-                "externalStoreId": "",
-                "additionalInfo": {}
+                "merchantId": "211232131231"
             },
             "response": {
                 "responseCode": "4005501",
@@ -891,7 +863,7 @@
         },
         "QueryPaymentInvalidMandatoryField": {
             "request": {
-                "originalReferenceNo": "",
+                "originalReferenceNo": "${partnerReferenceNo}",
                 "originalExternalId": "",
                 "serviceCode": "54",
                 "transactionDate": "2030-05-01T00:46:43+07:00",
@@ -911,7 +883,7 @@
         },
         "QueryPaymentTransactionNotFound": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}test",
+                "originalPartnerReferenceNo": "123456789",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "serviceCode": "54",
@@ -1044,7 +1016,7 @@
         },
         "CancelOrderTimeout": {
             "request": {
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalPartnerReferenceNo": "5005701",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "${merchantId}",
@@ -1052,14 +1024,14 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "5005701.00",
+                    "value": "22200.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
             },
             "response": {
                 "responseCode": "5005701",
-                "responseMessage": "Request Timeout"
+                "responseMessage": "Internal Server Error"
             }
         },
         "CancelOrderInProgress": {
@@ -1112,6 +1084,7 @@
         },
         "CancelOrderInvalidMandatoryField": {
             "request": {
+                "originalReferenceNo": "${originalPartnerReferenceNo}",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalExternalId": "",
                 "merchantId": "${merchantId}",
@@ -1131,7 +1104,7 @@
         },
         "CancelOrderTransactionNotFound": {
             "request": {
-                "originalPartnerReferenceNo": "1232143242342",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "${merchantId}",
@@ -1293,13 +1266,18 @@
     "RefundOrder": {
         "RefundOrderValidScenario": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
+                "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
                     "value": "22200.00",
                     "currency": "IDR"
                 },
+                "externalStoreId": "",
                 "reason": "Customer complain",
                 "additionalInfo": {}
             },
@@ -1310,7 +1288,8 @@
         },
         "RefundOrderExceedsTransactionAmountLimit": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
+                "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
@@ -1327,7 +1306,7 @@
         },
         "RefundOrderNotAllowed": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1349,7 +1328,7 @@
         },
         "RefundOrderDueToExceedRefundWindowTime": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1371,7 +1350,7 @@
         },
         "RefundOrderMultipleRefund": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1393,13 +1372,18 @@
         },
         "RefundOrderDuplicateRequest": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
+                "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "22200.00",
+                    "value": "435817.00",
                     "currency": "IDR"
                 },
+                "externalStoreId": "",
                 "reason": "Customer complain",
                 "additionalInfo": {}
             },
@@ -1410,13 +1394,18 @@
         },
         "RefundOrderNotPaid": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
+                "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
                     "value": "22200.00",
                     "currency": "IDR"
                 },
+                "externalStoreId": "",
                 "reason": "Customer complain",
                 "additionalInfo": {}
             },
@@ -1449,7 +1438,7 @@
         },
         "RefundOrderInvalidMandatoryParameter": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1465,21 +1454,21 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4005702",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseCode": "4005802",
+                "responseMessage": "Invalid Mandatory Field X-SIGNATURE"
             }
         },
         "RefundOrderInvalidBill": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
-                "originalPartnerReferenceNo": "123123123123123",
+                "originalPartnerReferenceNo": "12312312",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "originalCaptureNo": "",
-                "partnerRefundNo": "123123123123123",
+                "partnerRefundNo": "1231",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "22200.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1493,7 +1482,7 @@
         },
         "RefundOrderInsufficientFunds": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1515,7 +1504,7 @@
         },
         "RefundOrderUnauthorized": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1531,13 +1520,13 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4015700",
+                "responseCode": "4015800",
                 "responseMessage": "Unauthorized. Invalid Signature"
             }
         },
         "RefundOrderTimeout": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1559,7 +1548,7 @@
         },
         "RefundOrderMerchantStatusAbnormal": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1581,7 +1570,7 @@
         },
         "RefundOrderInProgress": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1601,26 +1590,26 @@
                 "responseMessage": "Request In Progress"
             }
         },
-        "RefundOrderIdempotent": {
+        "RefundOrderIndempotent": {
             "request": {
-                "merchantId": "216620010016033632482",
+                "merchantId": "${merchantId}",
                 "subMerchantId": "",
-                "originalPartnerReferenceNo": "123123123123124",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "originalCaptureNo": "",
-                "partnerRefundNo": "123123123123124",
+                "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "225800.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
-                "reason": "Idempotency test",
+                "reason": "Customer complain",
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "2005800",
-                "responseMessage": "Successful (Idempotent)"
+                "responseCode": "2025800",
+                "responseMessage": "Request In Progress"
             }
         }
     }

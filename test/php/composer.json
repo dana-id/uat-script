@@ -11,6 +11,11 @@
     "autoload": {
         "psr-4": {
             "DanaUat\\": "./"
-        }
+        },
+        "classmap": [
+            "widget/OauthUtil.php",
+            "widget/PaymentUtil.php",
+            "widget/Scripts/WebAutomation.php"
+        ]
     }
 }

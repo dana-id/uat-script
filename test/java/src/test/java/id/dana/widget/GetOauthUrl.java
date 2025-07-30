@@ -1,34 +1,17 @@
 package id.dana.widget;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import id.dana.invoker.Dana;
-import id.dana.invoker.model.DanaConfig;
-import id.dana.invoker.model.constant.EnvKey;
-import id.dana.invoker.model.enumeration.DanaEnvironment;
-import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
 import id.dana.util.ConfigUtil;
-import id.dana.util.OauthUtil;
-import id.dana.util.TestUtil;
-import id.dana.widget.v1.api.WidgetApi;
-import id.dana.widget.v1.model.RefundOrderRequest;
-import id.dana.widget.v1.model.RefundOrderResponse;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
