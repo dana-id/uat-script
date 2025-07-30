@@ -10,6 +10,7 @@ import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
 import id.dana.paymentgateway.v1.model.*;
 import id.dana.util.ConfigUtil;
+import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assertions;
@@ -50,9 +51,6 @@ class QueryOrderTest {
         List<String> dataOrder = createOrder();
         partnerReferenceNoInit = dataOrder.get(0);
         partnerReferenceNoCancel = cancelOrder();
-        partnerReferenceNoPaid = payOrder(
-                userPhone,
-                userPin);
     }
 
     @Test
@@ -74,7 +72,12 @@ class QueryOrderTest {
     }
 
     @Test
-    void testQueryPaymentPaidOrder() throws IOException, InterruptedException {
+    @RetryTestUtil.Retry
+    void testQueryPaymentPaidOrder() throws InterruptedException {
+        partnerReferenceNoPaid = payOrder(
+                userPhone,
+                userPin);
+
         Map<String, Object> variableDict = new HashMap<>();
         String caseName = "QueryPaymentPaidOrder";
         QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -210,11 +213,11 @@ class QueryOrderTest {
     public static List<String> createOrder() {
         List<String> dataOrder = new ArrayList<>();
 
-        CreateOrderByRedirectRequest requestData = TestUtil.getRequest(
+        CreateOrderByApiRequest requestData = TestUtil.getRequest(
                 jsonPathFile,
                 "CreateOrder",
-                "CreateOrderRedirect",
-                CreateOrderByRedirectRequest.class);
+                "CreateOrderApi",
+                CreateOrderByApiRequest.class);
 
         // Assign unique reference and merchant ID
         String partnerReferenceNo = UUID.randomUUID().toString();
@@ -242,7 +245,7 @@ class QueryOrderTest {
         CancelOrderRequest requestDataCancel = TestUtil.getRequest(
                 jsonPathFile,
                 "CancelOrder",
-                "CancelOrderValidScenario",
+                "CreateOrderApi",
                 CancelOrderRequest.class);
 
         requestDataCancel.setOriginalPartnerReferenceNo(tempDataOrder.get(0));

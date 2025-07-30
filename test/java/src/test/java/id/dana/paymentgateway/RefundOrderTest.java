@@ -9,6 +9,7 @@ import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
 import id.dana.paymentgateway.v1.model.*;
+import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
 
 import java.io.IOException;
@@ -34,7 +35,6 @@ class RefundOrderTest {
     private static PaymentGatewayApi api;
     private static String
             partnerReferenceNoPaid,
-            partnerReferenceNoCancel,
             partnerReferenceNoInit;
 
     @BeforeAll
@@ -52,12 +52,12 @@ class RefundOrderTest {
 
         List<String> dataOrder = createOrder();
         partnerReferenceNoInit = dataOrder.get(0);
-        partnerReferenceNoPaid = payOrder(userPhone, userPin);
-        partnerReferenceNoCancel = cancelOrder();
     }
 
     @Test
+    @RetryTestUtil.Retry
     void testRefundOrderValid() throws IOException {
+        partnerReferenceNoPaid = payOrder(userPhone, userPin);
         String caseName = "RefundOrderValidScenario";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
             RefundOrderRequest.class);
@@ -124,6 +124,7 @@ class RefundOrderTest {
     @Test
     @Disabled
     void testRefundOrderDueToExceed() throws IOException {
+        partnerReferenceNoPaid = payOrder(userPhone, userPin);
         String caseName = "RefundOrderExceedsTransactionAmountLimit";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
@@ -218,13 +219,13 @@ class RefundOrderTest {
     }
 
     @Test
-    @Disabled
     void testRefundOrderNotExist() throws IOException {
+        String orderNotExist = "f77466d6-1825-4091-8002-ed71165500da";
         String caseName = "RefundOrderInvalidBill";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(orderNotExist);
+        requestData.setPartnerRefundNo(orderNotExist);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
@@ -368,11 +369,11 @@ class RefundOrderTest {
     public static List<String> createOrder() {
         List<String> dataOrder = new ArrayList<>();
 
-        CreateOrderByRedirectRequest requestData = TestUtil.getRequest(
+        CreateOrderByApiRequest requestData = TestUtil.getRequest(
                 jsonPathFile,
                 "CreateOrder",
-                "CreateOrderRedirect",
-                CreateOrderByRedirectRequest.class);
+                "CreateOrderApi",
+                CreateOrderByApiRequest.class);
 
         // Assign unique reference and merchant ID
         String partnerReferenceNo = UUID.randomUUID().toString();

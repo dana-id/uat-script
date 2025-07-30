@@ -7,7 +7,7 @@ use Dana\ApiException;
 use DanaUat\Helper\Exception;
 
 class Util
-{
+{   
     /**
      * Function to generate timestamp for Dana API
      * 
@@ -56,6 +56,10 @@ class Util
 
         if (!isset($jsonData[$titleCase][$caseName]['request'])) {
             throw new \Exception("Request data not found for {$titleCase}.{$caseName}");
+        }
+
+        if (isset($jsonData[$titleCase][$caseName]['request']['merchantId'])) {
+            $jsonData[$titleCase][$caseName]['request']['merchantId'] = getenv('MERCHANT_ID');
         }
 
         return $jsonData[$titleCase][$caseName]['request'];

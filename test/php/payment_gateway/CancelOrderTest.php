@@ -22,27 +22,6 @@ class CancelOrderTest extends TestCase
     private static $sharedOriginalPartnerReference;
     private static $merchantId;
 
-    /**
-     * Generate a unique partner reference number using UUID v4
-     * 
-     * @return string
-     */
-    private static function generatePartnerReferenceNo(): string
-    {
-        // Generate a UUID v4
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff)
-        );
-    }
-
     public static function setUpBeforeClass(): void
     {
         // Set up configuration with authentication settings
@@ -256,7 +235,7 @@ class CancelOrderTest extends TestCase
                 $caseName = 'CancelOrderInvalidMandatoryField';
 
                 // Generate a unique partner reference number
-                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $partnerReferenceNo = Util::generatePartnerReferenceNo();
 
                 // Get and prepare the request
                 $requestData = Util::getRequest(
@@ -681,7 +660,7 @@ class CancelOrderTest extends TestCase
                     'CreateOrderRedirect'
                 );
 
-                $newPartnerReference = self::generatePartnerReferenceNo();
+                $newPartnerReference = Util::generatePartnerReferenceNo();
                 $createOrderRequestData['partnerReferenceNo'] = $newPartnerReference;
                 $createOrderRequestData['merchantId'] = self::$merchantId;
 
@@ -706,7 +685,7 @@ class CancelOrderTest extends TestCase
                 );
 
                 $refundRequestData['originalPartnerReferenceNo'] = $newPartnerReference;
-                $refundRequestData['partnerRefundNo'] = self::generatePartnerReferenceNo(); // Use different reference for refund
+                $refundRequestData['partnerRefundNo'] = Util::generatePartnerReferenceNo(); // Use different reference for refund
                 $refundRequestData['merchantId'] = self::$merchantId;
                 $refundRequestData['refundAmount'] = $createOrderRequestData['amount']; // Use same amount as original order
 

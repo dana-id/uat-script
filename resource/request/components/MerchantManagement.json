@@ -1,0 +1,107 @@
+{
+    "Shop": {
+        "CreateShop": {
+            "request": {
+                "apiVersion": "3",
+                "merchantId": "${merchantId}",
+                "shopParentType": "MERCHANT",
+                "mainName": "${mainName}",
+                "shopAddress": {
+                    "country": "country",
+                    "province": "province",
+                    "city": "city",
+                    "area": "area",
+                    "address1": "address1",
+                    "address2": "address2",
+                    "postcode": "postcode",
+                    "subDistrict": "subDistrict"
+                },
+                "shopDesc": "description",
+                "externalShopId": "${externalShopId}",
+                "logoUrlMap": {
+                    "PC_LOGO": "base64ImageCodexxxxxxxxxxx"
+                },
+                "extInfo": {
+                    "PIC_EMAIL": "${mainName}@email.com",
+                    "PIC_PHONENUMBER": "62-81234567890",
+                    "SUBMITTER_EMAIL": "admin_merchant@email.com",
+                    "GOODS_SOLD_TYPE": "DIGITAL",
+                    "USECASE": "QRIS_DIGITAL",
+                    "USER_PROFILING": "B2B",
+                    "AVG_TICKET": "100000-500000",
+                    "OMZET": "5BIO-10BIO",
+                    "EXT_URLS": "https://www.instagram.com"
+                },
+                "sizeType": "UMI",
+                "ownerAddress": {
+                    "country": "country",
+                    "province": "province",
+                    "city": "city",
+                    "area": "area",
+                    "address1": "address1",
+                    "address2": "address2",
+                    "postcode": "postcode",
+                    "subDistrict": "subDistrict"
+                },
+                "ownerName": {
+                    "firstName": "Jane",
+                    "lastName": "Doe"
+                },
+                "ownerPhoneNumber": {
+                    "mobileNo": "62800000000",
+                    "mobileId": "mobileId",
+                    "verified": "true"
+                },
+                "ownerIdType": "KTP",
+                "ownerIdNo": "3172010000000000",
+                "deviceNumber": "0",
+                "posNumber": "0",
+                "mccCodes": [
+                    "0783"
+                ],
+                "businessEntity": "individu",
+                "shopOwning": "DIRECT_OWNED",
+                "shopBizType": "ONLINE",
+                "businessDocs": [
+                    {
+                        "docType": "KTP",
+                        "docId": "3172010000000000",
+                        "docFile": "stringbase64value"
+                    }
+                ],
+                "taxNo": "123456789012345",
+                "taxAddress": {
+                    "country": "Indonesia",
+                    "province": "DKI Jakarta",
+                    "city": "Jakarta",
+                    "area": "area",
+                    "address1": "address1",
+                    "address2": "address2",
+                    "postcode": "14123"
+                },
+                "brandName": "XXX",
+                "directorPics": [
+                    {
+                        "picName": "Agus",
+                        "picPosition": "DIRECTOR_FINANCE"
+                    }
+                ],
+                "nonDirectorPics": [
+                    {
+                        "picName": "Budi",
+                        "picPosition": "OPERATION"
+                    }
+                ]
+            },
+            "response": {
+                "resultInfo": {
+                    "resultStatus": "S",
+                    "resultCodeId": "00000000",
+                    "resultCode": "SUCCESS",
+                    "resultMsg": "success"
+                },
+                "shopId": "2166522222222222"
+            }
+        }
+    }
+}

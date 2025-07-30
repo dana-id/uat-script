@@ -3,6 +3,7 @@ package payment_gateway_test
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"uat-script/helper"
+	payment "uat-script/payment_gateway"
 )
 
 const (
@@ -19,9 +21,14 @@ const (
 	cancelOrderForQueryTitleCase = "CancelOrder"
 )
 
+var merchantId = os.Getenv("MERCHANT_ID")
+var phoneNumber = "0811742234"
+var pin = "123321"
+
 // createTestOrder creates a test order for querying with INIT status
-func createTestOrder() (string, error) {
+func createTestOrder() (string, string, error) {
 	var partnerReferenceNo string
+	var webRedirectUrl string
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
 		// Get the request data from the JSON file
 		caseName := "CreateOrderApi"
@@ -33,6 +40,7 @@ func createTestOrder() (string, error) {
 		// Set a unique partner reference number
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
+		jsonDict["merchantId"] = merchantId
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
@@ -55,61 +63,26 @@ func createTestOrder() (string, error) {
 		if err != nil {
 			return "", err
 		}
+
+		webRedirectUrl, err = helper.GetValueFromResponseBody(httpResponse, "webRedirectUrl")
+		if err != nil {
+			return "", err
+		}
+
 		defer httpResponse.Body.Close()
 
 		return partnerReferenceNo, nil
 	}, 3, 2*time.Second)
 	if err != nil {
 	}
-	return result.(string), nil
+	return result.(string), webRedirectUrl, nil
 }
 
 // createTestOrderCanceled creates a test order and then cancels it to achieve canceled status
 func createTestOrderCanceled() (string, error) {
 	var partnerReferenceNo string
-	_, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
-		// Get the request data from the JSON file
-		caseName := "CreateOrderApi"
-		jsonDict, err := helper.GetRequest(queryPaymentJsonPath, createOrderForQueryTitleCase, caseName)
-		if err != nil {
-			return "", err
-		}
-
-		// Set a unique partner reference number
-		partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the CreateOrderRequest object and populate it with JSON data
-		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			return "", err
-		}
-
-		err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
-		if err != nil {
-			return "", err
-		}
-
-		// Make the API call to create an order
-		ctx := context.Background()
-		createOrderReq := pg.CreateOrderRequest{
-			CreateOrderByApiRequest: createOrderByApiRequest,
-		}
-		_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
-		if err != nil {
-			return "", err
-		}
-		defer httpResponse.Body.Close()
-
-		return partnerReferenceNo, nil
-	}, 3, 2*time.Second)
-	if err != nil {
-		return "", err
-	}
-
-	// Give time for the order to be processed
-	time.Sleep(2 * time.Second)
+	// Create the order first
+	partnerReferenceNo, _, err := createTestOrder()
 
 	// Now cancel the order
 	caseName := "CancelOrderValidScenario"
@@ -120,6 +93,7 @@ func createTestOrderCanceled() (string, error) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -140,17 +114,19 @@ func createTestOrderCanceled() (string, error) {
 		return "", err
 	}
 	httpResponse.Body.Close()
-
-	// Give time for the cancellation to be processed
-	time.Sleep(2 * time.Second)
-
 	return partnerReferenceNo, nil
+}
+
+func createTestPaidOrder(phoneNumber, pin string) (string, error) {
+	partnerReferenceNo, webRedirectUrl, err := createTestOrder()
+	payment.PayOrder(phoneNumber, pin, webRedirectUrl)
+	return partnerReferenceNo, err
 }
 
 // TestQueryPaymentCreatedOrder tests query the payment with status created but not paid (INIT)
 func TestQueryPaymentCreatedOrder(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestOrder()
+	partnerReferenceNo, _, err := createTestOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -169,6 +145,65 @@ func TestQueryPaymentCreatedOrder(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
+
+	// Create the QueryPaymentRequest object and populate it with JSON data
+	queryPaymentRequest := &pg.QueryPaymentRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, queryPaymentRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.QueryPayment(ctx).QueryPaymentRequest(*queryPaymentRequest).Execute()
+	if err != nil {
+		t.Fatalf("API call failed: %v", err)
+	}
+	defer httpResponse.Body.Close()
+
+	// Convert the response to JSON for assertion
+	responseJSON, err := apiResponse.MarshalJSON()
+	if err != nil {
+		t.Fatalf("Failed to convert response to JSON: %v", err)
+	}
+
+	// Create variable dictionary for dynamic values
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": partnerReferenceNo,
+	}
+
+	// Assert the API response with variable substitution
+	err = helper.AssertResponse(queryPaymentJsonPath, queryPaymentTitleCase, caseName, string(responseJSON), variableDict)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestQueryPaymentPaidOrder(t *testing.T) {
+	// Create an order first
+	partnerReferenceNo, err := createTestPaidOrder(phoneNumber, pin)
+	if err != nil {
+		t.Fatalf("Failed to create test order: %v", err)
+	}
+
+	// Now query the payment
+	caseName := "QueryPaymentPaidOrder"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(queryPaymentJsonPath, queryPaymentTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Set the correct partner reference number
+	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -230,6 +265,7 @@ func TestQueryPaymentCanceledOrder(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -272,7 +308,7 @@ func TestQueryPaymentCanceledOrder(t *testing.T) {
 // TestQueryPaymentInvalidFormat tests if the query fails when using invalid format (ex: X-TIMESTAMP header format not correct)
 func TestQueryPaymentInvalidFormat(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestOrder()
+	partnerReferenceNo, _, err := createTestOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -291,6 +327,7 @@ func TestQueryPaymentInvalidFormat(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -327,7 +364,7 @@ func TestQueryPaymentInvalidFormat(t *testing.T) {
 // TestQueryPaymentInvalidMandatoryField tests if the query fails when missing mandatory field (ex: request without X-TIMESTAMP header)
 func TestQueryPaymentInvalidMandatoryField(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestOrder()
+	partnerReferenceNo, _, err := createTestOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -346,6 +383,7 @@ func TestQueryPaymentInvalidMandatoryField(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -382,7 +420,7 @@ func TestQueryPaymentInvalidMandatoryField(t *testing.T) {
 // TestQueryPaymentUnauthorized tests if the query fails when unauthorized due to invalid signature
 func TestQueryPaymentUnauthorized(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestOrder()
+	partnerReferenceNo, _, err := createTestOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -401,6 +439,7 @@ func TestQueryPaymentUnauthorized(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -447,7 +486,7 @@ func TestQueryPaymentUnauthorized(t *testing.T) {
 // TestQueryPaymentTransactionNotFound tests if the query fails when transaction is not found
 func TestQueryPaymentTransactionNotFound(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestOrder()
+	partnerReferenceNo, _, err := createTestOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -466,6 +505,7 @@ func TestQueryPaymentTransactionNotFound(t *testing.T) {
 
 	// Set the partner reference number with a modification to ensure it's not found
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo + "test"
+	jsonDict["merchantId"] = merchantId
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -497,7 +537,7 @@ func TestQueryPaymentTransactionNotFound(t *testing.T) {
 // // TestQueryPaymentGeneralError tests the query payment API with general error
 // func TestQueryPaymentGeneralError(t *testing.T) {
 // 	// Create an order first
-// 	partnerReferenceNo, err := createTestOrder()
+// 	partnerReferenceNo, _, err := createTestOrder()
 // 	if err != nil {
 // 		t.Fatalf("Failed to create test order: %v", err)
 // 	}

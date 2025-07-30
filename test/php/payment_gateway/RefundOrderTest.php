@@ -188,7 +188,6 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundOrderValidScenario(): void
     {
-        $this->markTestSkipped('Skipping valid refund order scenario test temporarily.');
         Util::withDelay(function () {
             $caseName = 'RefundOrderValidScenario';
             $partnerReferenceNo = self::$paidOrderReferenceNumber;

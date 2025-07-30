@@ -18,24 +18,6 @@ class CreateOrderTest extends TestCase
     private static $jsonPathFile = 'resource/request/components/PaymentGateway.json';
     private static $apiInstance;
 
-    /**
-     * Generate a unique partner reference number using UUID v4
-     * 
-     * @return string
-     */
-    private static function generatePartnerReferenceNo(): string
-    {
-        // Generate a UUID v4
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-        );
-    }
-
     public static function setUpBeforeClass(): void
     {
         // Set up configuration with authentication settings
@@ -68,7 +50,7 @@ class CreateOrderTest extends TestCase
             );
             
             // Set a unique partner reference number
-            $partnerReferenceNo = $this->generatePartnerReferenceNo();
+            $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
             
             // Create a CreateOrderByRedirectRequest object from the JSON request data
@@ -116,7 +98,7 @@ class CreateOrderTest extends TestCase
             );
             
             // Set a unique partner reference number
-            $partnerReferenceNo = $this->generatePartnerReferenceNo();
+            $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
             
             // Create a CreateOrderByApiRequest object from the JSON request data
@@ -167,7 +149,7 @@ class CreateOrderTest extends TestCase
             );
             
             // Set a unique partner reference number
-            $partnerReferenceNo = $this->generatePartnerReferenceNo();
+            $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
             
             // Create a CreateOrderByApiRequest object from the JSON request data
@@ -221,7 +203,7 @@ class CreateOrderTest extends TestCase
                 );
                 
                 // Set a unique partner reference number
-                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
                 
                 // Create a CreateOrderByApiRequest object from the JSON request data
@@ -276,7 +258,7 @@ class CreateOrderTest extends TestCase
             );
             
             // Set a unique partner reference number
-            $partnerReferenceNo = $this->generatePartnerReferenceNo();
+            $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
             
             // Create a CreateOrderByApiRequest object from the JSON request data
@@ -326,7 +308,7 @@ class CreateOrderTest extends TestCase
                 );
                 
                 // Generate a unique partner reference number
-                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $requestData['partnerReferenceNo'] = $partnerReferenceNo;
                 
                 // Create a CreateOrderByApiRequest object from the JSON request data
@@ -383,7 +365,7 @@ class CreateOrderTest extends TestCase
                 );
                 
                 // Generate a unique partner reference number
-                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $requestData['partnerReferenceNo'] = $partnerReferenceNo;
                 
                 // Create request object for first call
@@ -455,7 +437,7 @@ class CreateOrderTest extends TestCase
                 $caseName = 'CreateOrderInvalidMandatoryField';
                 
                 // Generate a unique partner reference number
-                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 
                 // Get and prepare the request
                 $requestData = Util::getRequest(
@@ -537,7 +519,7 @@ class CreateOrderTest extends TestCase
                 );
                 
                 // Generate a unique partner reference number
-                $partnerReferenceNo = $this->generatePartnerReferenceNo();
+                $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $requestData['partnerReferenceNo'] = $partnerReferenceNo;
                 
                 // Create regular headers but with an invalid signature

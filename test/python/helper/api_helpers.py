@@ -72,6 +72,9 @@ def get_headers_with_signature(method=None, resource_path=None, request_obj=None
     # Add the signature
     if invalid_signature:
         headers["X-SIGNATURE"] = "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5"  # Invalid signature
+    elif invalid_signature is None:
+        headers["X-SIGNATURE"] = ""
+        print("Warning: Invalid signature, using None")
     else:
         if method is None or resource_path is None or request_obj is None:
             raise ValueError("Method, resource_path, and request_obj are required unless invalid_signature=True")

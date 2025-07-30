@@ -88,11 +88,13 @@ class WebAutomation
             
             // Navigate to the checkout URL
             $driver->get($webRedirectUrl);
-            $driver->wait(10, 500)->until(
+            $driver->wait(10)->until(
                 WebDriverExpectedCondition::urlContains('checkout')
             );
             
             echo "Looking for DANA payment option..." . PHP_EOL;
+
+            sleep(10);
             
             // Attempt to find and click DANA payment option using multiple selector strategies
             $danaPaymentButton = null;

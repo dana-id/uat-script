@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.util.*;
 
 import id.dana.util.ConfigUtil;
+import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.*;
@@ -50,11 +51,6 @@ class CancelOrderTest {
 //        Create order
         List<String> dataOrder= createOrder();
         partnerReferenceNoInit = dataOrder.get(0);
-        partnerReferenceNoRefunded = refundOrder(
-                userPhone,
-                userPin);
-        String hasil = queryOrder(partnerReferenceNoRefunded);
-        System.out.println("Query Order Result: " + hasil);
     }
 
     @Test
@@ -218,25 +214,22 @@ class CancelOrderTest {
     }
 
     @Test
-    @Disabled
+    @RetryTestUtil.Retry
     @DisplayName("Cancel Order with Order Has Been Refunded")
     void testCancelOrderInvalidTransactionStatus() throws IOException {
+        partnerReferenceNoRefunded = refundOrder(
+                userPhone,
+                userPin);
+
         String caseName = "CancelOrderInvalidTransactionStatus";
         CancelOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 CancelOrderRequest.class);
 
-//        Create order with status refunded
-        log.info("Creating order to be refunded");
-        String partnerReferenceNo = PaymentPGUtil.refundOrder(
-                userPhone,
-                userPin,
-                "CreateOrderRedirect");
-
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoRefunded);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+        variableDict.put("partnerReferenceNo", partnerReferenceNoRefunded);
 
         CancelOrderResponse response = api.cancelOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -245,11 +238,11 @@ class CancelOrderTest {
     public static List<String> createOrder() {
         List<String> dataOrder = new ArrayList<>();
 
-        CreateOrderByRedirectRequest requestData = TestUtil.getRequest(
+        CreateOrderByApiRequest requestData = TestUtil.getRequest(
                 jsonPathFile,
                 "CreateOrder",
-                "CreateOrderRedirect",
-                CreateOrderByRedirectRequest.class);
+                "CreateOrderApi",
+                CreateOrderByApiRequest.class);
 
         // Assign unique reference and merchant ID
         String partnerReferenceNo = UUID.randomUUID().toString();

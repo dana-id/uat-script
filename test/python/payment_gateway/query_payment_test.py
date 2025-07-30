@@ -1,5 +1,6 @@
 import os
 import pytest
+import asyncio
 import time
 from uuid import uuid4
 from datetime import datetime, timedelta, timezone
@@ -11,6 +12,7 @@ from dana.payment_gateway.v1 import *
 from dana.api_client import ApiClient
 from dana.exceptions import *
 from dana.utils.snap_header import SnapHeader
+from payment_gateway.payment_pg_util import automate_payment_pg
 
 from helper.util import get_request, with_delay, retry_on_inconsistent_request
 from helper.api_helpers import execute_api_request_directly, get_standard_headers, execute_and_assert_api_error, get_headers_with_signature
@@ -20,6 +22,9 @@ title_case = "QueryPayment"
 create_order_title_case = "CreateOrder"
 cancel_order_title_case = "CancelOrder"
 json_path_file = "resource/request/components/PaymentGateway.json"
+user_phone_number = "0811742234"
+user_pin = "123321"
+merchant_id = os.environ.get("MERCHANT_ID", "216620010016033632482")
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -40,29 +45,20 @@ def generate_partner_reference_no():
 @pytest.fixture(scope="module")
 def test_order_reference_number():
     """Fixture that creates a test order once per module and shares the reference number"""
-    partner_reference_no = generate_partner_reference_no()
-    print(f"\nCreating shared test order with reference number: {partner_reference_no}")
-    create_test_order(partner_reference_no)
-    return partner_reference_no
-
-@pytest.fixture(scope="module")
-def test_order_paid_reference_number():
-    """Fixture that creates a test order once per module and shares the reference number"""
-    partner_reference_no = generate_partner_reference_no()
-    print(f"\nCreating shared test order with reference number: {partner_reference_no}")
-    create_test_order_paid(partner_reference_no)
-    return partner_reference_no
+    data_order = create_test_order_init()
+    print(f"\nCreating shared test order with reference number: {data_order[0]}")
+    return data_order[0]
 
 @pytest.fixture(scope="module")
 def test_order_canceled_reference_number():
     """Fixture that creates a test order once per module and shares the reference number"""
-    partner_reference_no = generate_partner_reference_no()
-    print(f"\nCreating shared test order with reference number: {partner_reference_no}")
-    create_test_order_canceled(partner_reference_no)
+    partner_reference_no = create_test_order_canceled()
+    print(f"\nCreating shared test order with reference number cancelllll: {partner_reference_no}")
     return partner_reference_no
 
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
-def create_test_order(partner_reference_no):
+def create_test_order_init():
+    data_order = []
     """Helper function to create a test order"""
     case_name = "CreateOrderApi"
     
@@ -70,81 +66,52 @@ def create_test_order(partner_reference_no):
     json_dict = get_request(json_path_file, create_order_title_case, case_name)
     
     # Set the partner reference number
-    json_dict["partnerReferenceNo"] = partner_reference_no
-    
+    json_dict["partnerReferenceNo"] = generate_partner_reference_no()
+    json_dict["merchantId"] = merchant_id
+
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
     
     # Make the API call
-    api_instance.create_order(create_order_request_obj)
+    api_response = api_instance.create_order(create_order_request_obj)
+    data_order.append(api_response.partner_reference_no)
+    data_order.append(api_response.web_redirect_url)
+    print(f"Created order with reference number: {api_response.partner_reference_no}")
+    print(f"Web redirect URL: {api_response.web_redirect_url}")
+    return data_order
 
 
-@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
-def create_test_order_paid(partner_reference_no):
-    """Helper function to create a test order"""
-    case_name = "CreateOrderNetworkPayPgOtherWallet"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, create_order_title_case, case_name)
-    
-    # Set the partner reference number and amount mock
-    json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["amount"]["value"] = "50001.00"
-    json_dict["payOptionDetails"][0]["transAmount"]["value"] = "50001.00"
-    
-    # Convert the request data to a CreateOrderRequest object
-    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
-    
-    # Make the API call
-    api_instance.create_order(create_order_request_obj)
-
-def create_test_order_canceled(partner_reference_no):
+def create_test_order_canceled():
     """Helper function to create a test order with short expiration date to have canceled status"""
-    case_name = "CreateOrderApi"
-    
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, create_order_title_case, case_name)
-    
-    # Set the partner reference number
-    json_dict["partnerReferenceNo"] = partner_reference_no
-    
-    # Convert the request data to a CreateOrderRequest object
-    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
-    
-    # Make the API call
-    api_instance.create_order(create_order_request_obj)
-
+    # Cancel order
+    data_order = create_test_order_init()
     # Get the request data for canceling the order
     json_dict_cancel = get_request(json_path_file, cancel_order_title_case, "CancelOrderValidScenario")
     
     # Set the original partner reference number
-    json_dict_cancel["originalPartnerReferenceNo"] = partner_reference_no
-    
+    json_dict_cancel["originalPartnerReferenceNo"] = data_order[0]
+    json_dict_cancel["merchantId"] = merchant_id
+
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict_cancel)
-    
-    # Make the API call to cancel the order
-    api_instance.cancel_order(cancel_order_request_obj)
-
-    # Cancel order
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, "CancelOrder", "CancelOrderValidScenario")
-    
-    # Set the correct partner reference number
-    json_dict["originalPartnerReferenceNo"] = partner_reference_no
-    
-    # Convert the request data to a CancelOrderRequest object
-    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
+    print(f"Cancel order request object: {cancel_order_request_obj.to_json()}")
     
     # Make the API call
-    try:
-        api_instance.cancel_order(cancel_order_request_obj)
-    except Exception as e:
-        pytest.fail(f"Fail to call cancel order API {e}")
-
+    api_response = api_instance.cancel_order(cancel_order_request_obj)
+    return data_order[0]
+    
+def create_test_order_paid():
+    """Helper function to create a test order with short expiration date to have paid status"""
+    data_order = create_test_order_init()
+    asyncio.run(automate_payment_pg(
+        phone_number=user_phone_number,
+        pin=user_pin,
+        redirectUrlPayment=data_order[1],
+        show_log=True
+    ))
+    return data_order[0]
 
 @with_delay()
-@pytest.mark.skip(reason="Skipping this test temporarily.")
 def test_query_payment_created_order(test_order_reference_number):
     """Should query the payment with status created but not paid (INIT)"""
     # Get the partner reference number from the fixture
@@ -158,7 +125,8 @@ def test_query_payment_created_order(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = partner_reference_no
-    
+    json_dict["merchantId"] = merchant_id
+
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
@@ -169,12 +137,12 @@ def test_query_payment_created_order(test_order_reference_number):
     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
 @with_delay()
-@pytest.mark.skip(reason="Skipping this test temporarily.")
-def test_query_payment_paid_order(test_order_paid_reference_number):
+@retry_test(max_retries=3, delay_seconds=5)
+def test_query_payment_paid_order():
+    # Create a test order paid and get the reference number
+    test_order_paid_reference_number = create_test_order_paid()
+    print(f"\nCreating shared test order with reference number: {test_order_paid_reference_number}")
 
-    # Add waiting time for the callback to work
-    time.sleep(5)
-    
     """Should query the payment with status paid (PAID)"""    
     # Query payment
     case_name = "QueryPaymentPaidOrder"
@@ -184,20 +152,18 @@ def test_query_payment_paid_order(test_order_paid_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_paid_reference_number
+    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call
     api_response = api_instance.query_payment(query_payment_request_obj)
-
-    print("Query payment response object: ", api_response.to_json())
     
     # Assert the API response
     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": test_order_paid_reference_number})
 
 @with_delay()
-@pytest.mark.skip(reason="Skipping this test temporarily.")
 def test_query_payment_canceled_order(test_order_canceled_reference_number):
     
     """Should query the payment with status canceled (CANCELLED)"""    
@@ -209,6 +175,7 @@ def test_query_payment_canceled_order(test_order_canceled_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_canceled_reference_number
+    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -230,6 +197,7 @@ def test_query_payment_invalid_format(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -271,6 +239,7 @@ def test_query_payment_invalid_mandatory_field(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -309,6 +278,7 @@ def test_query_payment_unauthorized(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -342,6 +312,7 @@ def test_query_payment_transaction_not_found(test_order_reference_number):
     
     # Modify the reference number to ensure it's not found
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number + "_NOT_FOUND"
+    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -369,6 +340,7 @@ def test_query_payment_general_error(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)

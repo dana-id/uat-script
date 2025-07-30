@@ -1,6 +1,6 @@
 <?php
 
-namespace DanaUat\Widget\v1;
+namespace DanaUat\Widget;
 
 use PHPUnit\Framework\TestCase;
 use Dana\Widget\v1\Api\WidgetApi;
@@ -11,9 +11,8 @@ use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
-use Exception;
 use DanaUat\Widget\PaymentUtil;
-use DanaUat\Widget\AutomateOauth;
+use Exception;
 
 class CancelOrderTest extends TestCase
 {
@@ -205,7 +204,9 @@ class CancelOrderTest extends TestCase
                 'POST',
                 self::$cancelUrl,
                 $jsonDict,
-                false
+                true,
+                false,
+                false    
             );
             try {
                 Util::executeApiRequest(

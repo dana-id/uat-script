@@ -2,7 +2,7 @@ import os
 import pytest
 import asyncio
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
-from dana.ipg.v1.api import IPGApi
+from dana.widget.v1.api import WidgetApi
 from dana.api_client import ApiClient
 from helper.util import with_delay
 from automate_oauth import automate_oauth
@@ -17,7 +17,7 @@ configuration = SnapConfiguration(
 )
 
 with ApiClient(configuration) as api_client:
-    api_instance = IPGApi(api_client)
+    api_instance = WidgetApi(api_client)
 
 @pytest.fixture(scope="module")
 def test_get_auth_reference_number():
