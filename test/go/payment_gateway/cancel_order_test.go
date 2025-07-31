@@ -3,6 +3,7 @@ package payment_gateway_test
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"testing"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/google/uuid"
 
 	"uat-script/helper"
+	payment "uat-script/payment_gateway"
 )
 
 const (
@@ -18,56 +20,14 @@ const (
 	createOrderForCancelTitleCase = "CreateOrder"
 )
 
-// createTestOrderForCancel creates a test order to be canceled
-func createTestOrderForCancel() (string, error) {
-	var partnerReferenceNo string
-	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
-		// Get the request data from the JSON file
-		caseName := "CreateOrderApi"
-		jsonDict, err := helper.GetRequest(cancelOrderJsonPath, createOrderForCancelTitleCase, caseName)
-		if err != nil {
-			return nil, err
-		}
-
-		// Set a unique partner reference number
-		partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the CreateOrderRequest object and populate it with JSON data
-		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			return nil, err
-		}
-
-		err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
-		if err != nil {
-			return nil, err
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		createOrderReq := pg.CreateOrderRequest{
-			CreateOrderByApiRequest: createOrderByApiRequest,
-		}
-		_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
-		if err != nil {
-			return nil, err
-		}
-		defer httpResponse.Body.Close()
-
-		return partnerReferenceNo, nil
-	}, 3, 2*time.Second)
-	if err != nil {
-		return "", err
-	}
-	return result.(string), nil
-}
+var merchantId = os.Getenv("MERCHANT_ID")
+var phoneNumber = "0811742234"
+var pin = "123321"
 
 // TestCancelOrder tests canceling the order
 func TestCancelOrder(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestOrderForCancel()
+	partnerReferenceNo, _, err := createTestOrderInit()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -86,6 +46,7 @@ func TestCancelOrder(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -257,7 +218,7 @@ func TestCancelOrderWithMerchantStatusAbnormal(t *testing.T) {
 // TestCancelOrderInvalidMandatoryField tests if the cancel fails when mandatory field is invalid (ex: request without X-TIMESTAMP header)
 func TestCancelOrderInvalidMandatoryField(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestOrderForCancel()
+	partnerReferenceNo, _, err := createTestOrderInit()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -399,6 +360,45 @@ func TestCancelOrderWithExpiredTransaction(t *testing.T) {
 	}
 }
 
+func TestCancelOrderWithAgreementNotAllowed(t *testing.T) {
+	// Use a specific case for agreement not allowed
+	caseName := "CancelOrderNotAllowed"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
+}
+
 // TestCancelOrderWithAccountStatusAbnormal tests if the cancel fails when account status is abnormal
 func TestCancelOrderWithAccountStatusAbnormal(t *testing.T) {
 	// Use a specific case for account status abnormal
@@ -409,6 +409,55 @@ func TestCancelOrderWithAccountStatusAbnormal(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
+
+	// Create the CancelOrderRequest object and populate it with JSON data
+	cancelOrderRequest := &pg.CancelOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, cancelOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CancelOrder(ctx).CancelOrderRequest(*cancelOrderRequest).Execute()
+	if err != nil {
+		// Assert the API error response
+		err = helper.AssertFailResponse(cancelOrderJsonPath, cancelOrderTitleCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
+	}
+}
+
+func TestCancelOrderInvalidTransactionStatus(t *testing.T) {
+	// Create an order first
+	partnerReferenceNo, err := createOrderRefunded()
+	if err != nil {
+		t.Fatalf("Failed to create test order: %v", err)
+	}
+
+	// Use a specific case for invalid transaction status
+	caseName := "CancelOrderInvalidTransactionStatus"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(cancelOrderJsonPath, cancelOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["partnerRefundNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -482,7 +531,7 @@ func TestCancelOrderWithInsufficientFunds(t *testing.T) {
 // TestCancelOrderUnauthorized tests if the cancel fails with unauthorized error
 func TestCancelOrderUnauthorized(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestOrderForCancel()
+	partnerReferenceNo, _, err := createTestOrderInit()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -581,4 +630,110 @@ func TestCancelOrderTimeout(t *testing.T) {
 		httpResponse.Body.Close()
 		t.Fatal("Expected error but got successful response")
 	}
+}
+
+// createTestOrderInit creates a test order for querying with INIT status
+func createTestOrderInit() (string, string, error) {
+	var partnerReferenceNo string
+	var webRedirectUrl string
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		// Get the request data from the JSON file
+		jsonDict, err := helper.GetRequest(cancelOrderJsonPath, "CreateOrder", "CreateOrderApi")
+		if err != nil {
+			return "", err
+		}
+
+		// Set a unique partner reference number
+		partnerReferenceNo = uuid.New().String()
+		jsonDict["partnerReferenceNo"] = partnerReferenceNo
+		jsonDict["merchantId"] = merchantId
+
+		// Create the CreateOrderRequest object and populate it with JSON data
+		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
+		jsonBytes, err := json.Marshal(jsonDict)
+		if err != nil {
+			return "", err
+		}
+
+		err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
+		if err != nil {
+			return "", err
+		}
+
+		// Make the API call
+		ctx := context.Background()
+		createOrderReq := pg.CreateOrderRequest{
+			CreateOrderByApiRequest: createOrderByApiRequest,
+		}
+		_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return "", err
+		}
+
+		webRedirectUrl, err = helper.GetValueFromResponseBody(httpResponse, "webRedirectUrl")
+		if err != nil {
+			return "", err
+		}
+
+		defer httpResponse.Body.Close()
+
+		return partnerReferenceNo, nil
+	}, 3, 2*time.Second)
+	if err != nil {
+	}
+	return result.(string), webRedirectUrl, nil
+}
+
+// createTestOrderRefunded creates a test order and then refunds it to achieve refunded status
+func createOrderRefunded() (string, error) {
+	partnerReferenceNo, err := createOrderPaid(phoneNumber, pin)
+
+	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		// Get the request data from the JSON file
+		jsonDict, err := helper.GetRequest(cancelOrderJsonPath, "RefundOrder", "RefundOrderValidScenario")
+		if err != nil {
+			return "", err
+		}
+
+		// Set a unique partner reference number
+		partnerReferenceNo = uuid.New().String()
+		jsonDict["partnerReferenceNo"] = partnerReferenceNo
+		jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+		jsonDict["merchantId"] = merchantId
+
+		// Create the CreateOrderRequest object and populate it with JSON data
+		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
+		jsonBytes, err := json.Marshal(jsonDict)
+		if err != nil {
+			return "", err
+		}
+
+		err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
+		if err != nil {
+			return "", err
+		}
+
+		// Make the API call
+		ctx := context.Background()
+		createOrderReq := pg.CreateOrderRequest{
+			CreateOrderByApiRequest: createOrderByApiRequest,
+		}
+		_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		if err != nil {
+			return "", err
+		}
+		defer httpResponse.Body.Close()
+
+		return partnerReferenceNo, nil
+	}, 3, 2*time.Second)
+	if err != nil {
+		return "", err
+	}
+	return result.(string), nil
+}
+
+func createOrderPaid(phoneNumber, pin string) (string, error) {
+	partnerReferenceNo, webRedirectUrl, err := createTestOrderInit()
+	payment.PayOrder(phoneNumber, pin, webRedirectUrl)
+	return partnerReferenceNo, err
 }

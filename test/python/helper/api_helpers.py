@@ -39,6 +39,7 @@ def get_standard_headers(with_timestamp=True):
         "CHANNEL-ID": os.getenv("CHANNEL_ID"),
         "ORIGIN": os.getenv("ORIGIN"),
         "X-EXTERNAL-ID": str(uuid4()),
+        "CLIENT_SECRET": os.getenv("CLIENT_SECRET"),
         "Content-Type": "application/json"
     }
     

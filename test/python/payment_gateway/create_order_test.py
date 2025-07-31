@@ -8,6 +8,7 @@ from dana.payment_gateway.v1.models import *
 from dana.payment_gateway.v1 import *
 from dana.api_client import ApiClient
 from dana.exceptions import *
+from dana.merchant_management.v1 import MerchantManagementApi
 
 from helper.util import get_request, with_delay
 from helper.api_helpers import execute_and_assert_api_error, get_headers_with_signature
@@ -15,6 +16,7 @@ from helper.assertion import *
 
 title_case = "CreateOrder"
 json_path_file = "resource/request/components/PaymentGateway.json"
+json_path_file_merchant_management = "resource/request/components/MerchantManagement.json"
 merchant_id = os.environ.get("MERCHANT_ID", "default_merchant_id")
 
 configuration = SnapConfiguration(
@@ -22,12 +24,16 @@ configuration = SnapConfiguration(
         PRIVATE_KEY=os.environ.get("PRIVATE_KEY"),
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
+        CLIENT_SECRET=os.environ.get("CLIENT_SECRET"),
         ENV=Env.SANDBOX
     )
 )
 
 with ApiClient(configuration) as api_client:
     api_instance = PaymentGatewayApi(api_client)
+    
+with ApiClient(configuration) as api_client:
+    api_instance_merchant = MerchantManagementApi(api_client)
 
 def generate_partner_reference_no():
     return str(uuid4())
@@ -91,6 +97,7 @@ def test_create_order_api_scenario():
 @pytest.mark.skip(reason="skipped by request: scenario CreateOrderNetworkPayPgQris")
 @with_delay()
 def test_create_order_network_pay_pg_qris():
+    shop_id = create_shop()
     """Should create an order using API scenario with QRIS payment method"""
     case_name = "CreateOrderNetworkPayPgQris"
     
@@ -101,6 +108,7 @@ def test_create_order_network_pay_pg_qris():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["subMerchantId"] = shop_id
     
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -305,3 +313,22 @@ def test_create_order_unauthorized():
         case_name,
         {"partnerReferenceNo": partner_reference_no}
     )
+
+def create_shop():
+    """Helper function to create a shop and return its ID and external store ID"""
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file_merchant_management, "Shop", "CreateShop")
+    
+    # Set a unique partner reference number
+    partner_reference_no = generate_partner_reference_no()
+    json_dict["mainName"] = partner_reference_no
+    json_dict["merchantId"] = merchant_id
+    
+    # Convert the request data to a CreateShopRequest object
+    create_shop_request_obj = CreateShopRequest.from_dict(json_dict)
+
+    # Make the API call
+    api_response = api_instance_merchant.create_shop(create_shop_request_obj)
+
+    shopId = api_response.shop_id
+    return shopId
