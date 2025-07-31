@@ -220,7 +220,7 @@ class RefundOrderTest {
 
     @Test
     void testRefundOrderNotExist() throws IOException {
-        String orderNotExist = "f77466d6-1825-4091-8002-ed71165500da";
+        String orderNotExist = "f77466d6-1825-4091";
         String caseName = "RefundOrderInvalidBill";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
@@ -309,26 +309,21 @@ class RefundOrderTest {
     }
 
     @Test
-    @Disabled
     void testRefundOrderDuplicateRequest() throws IOException {
+        partnerReferenceNoPaid = payOrder(userPhone, userPin);
         String caseName = "RefundOrderDuplicateRequest";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
+        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
+        variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
 
-        Money money = new Money();
-        money.setValue("190098.00");
-        money.setCurrency("IDR");
-
-        api.refundOrder(requestData);
-        requestData.setRefundAmount(money);
-        RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+        RefundOrderResponse response1 = api.refundOrder(requestData);
+        RefundOrderResponse response2 = api.refundOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response2, variableDict);
     }
 
     @Test
@@ -393,23 +388,6 @@ class RefundOrderTest {
         dataOrder.add(response.getWebRedirectUrl());
 
         return dataOrder;
-    }
-
-    public static String cancelOrder() {
-        List<String> tempDataOrder = createOrder();
-
-        CancelOrderRequest requestDataCancel = TestUtil.getRequest(
-                jsonPathFile,
-                "CancelOrder",
-                "CancelOrderValidScenario",
-                CancelOrderRequest.class);
-
-        requestDataCancel.setOriginalPartnerReferenceNo(tempDataOrder.get(0));
-        requestDataCancel.setMerchantId(merchantId);
-
-        CancelOrderResponse responseCancel = api.cancelOrder(requestDataCancel);
-        Assertions.assertTrue(responseCancel.getResponseCode().contains("200"));
-        return tempDataOrder.get(0);
     }
 
     public static String payOrder(String phoneNumber, String pin) {

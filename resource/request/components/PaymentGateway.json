@@ -269,8 +269,7 @@
             }
         },
         "CreateOrderBalance": {
-            "request": {
-                
+            "request": {                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",
@@ -327,12 +326,10 @@
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
-                "subMerchantId": "${subMerchantId}",
                 "amount": {
                     "value": "22200.00",
                     "currency": "IDR"
                 },
-                "externalStoreId": "",
                 "urlParams": [
                     {
                         "url": "https://tinknet.my.id/v1/test",
@@ -366,9 +363,15 @@
                         "payMethod": "NETWORK_PAY",
                         "payOption": "NETWORK_PAY_PG_QRIS",
                         "transAmount": {
-                            "value": "10000.00",
-                            "currency": "IDR"
-                        }
+                            "currency": "IDR",
+                            "value": "10000.00"
+                        },
+                        "feeAmount": {
+                            "currency": "IDR",
+                            "value": "0"
+                        },
+                        "cardToken": "",
+                        "merchantToken": ""
                     }
                 ]
             },
@@ -379,7 +382,6 @@
         },
         "CreateOrderNetworkPayPgOtherWallet": {
             "request": {
-                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
@@ -459,7 +461,6 @@
         },
         "CreateOrderNetworkPayPgOtherVaBank": {
             "request": {
-                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
@@ -514,7 +515,6 @@
         },
         "CreateOrderInvalidFieldFormat": {
             "request": {
-                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "",
                 "subMerchantId": "",
@@ -570,7 +570,6 @@
         },
         "CreateOrderInconsistentRequest": {
             "request": {
-                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",
@@ -626,7 +625,6 @@
         },
         "CreateOrderInvalidMandatoryField": {
             "request": {
-                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
@@ -676,7 +674,6 @@
         },
         "CreateOrderUnauthorized": {
             "request": {
-                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {

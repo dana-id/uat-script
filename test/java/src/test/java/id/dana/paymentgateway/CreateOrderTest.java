@@ -10,17 +10,28 @@ import id.dana.invoker.model.DanaConfig;
 import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
+import id.dana.merchantmanagement.v1.api.MerchantManagementApi;
+import id.dana.merchantmanagement.v1.model.CreateDivisionRequestExtInfo;
+import id.dana.merchantmanagement.v1.model.CreateShopRequest;
+import id.dana.merchantmanagement.v1.model.CreateShopResponse;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
-import id.dana.paymentgateway.v1.model.CreateOrderByApiRequest;
-import id.dana.paymentgateway.v1.model.CreateOrderByRedirectRequest;
-import id.dana.paymentgateway.v1.model.CreateOrderResponse;
+import id.dana.paymentgateway.v1.model.*;
 import id.dana.util.ConfigUtil;
+import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
+
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.security.SecureRandom;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import okhttp3.OkHttpClient;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -34,10 +45,11 @@ public class CreateOrderTest {
   private static final String titleCase = "CreateOrder";
   private static final String jsonPathFile = CreateOrderTest.class.getResource(
       "/request/components/PaymentGateway.json").getPath();
-
+  private static final String jsonPathFileMerchantManagement = CreateOrderTest.class.getResource(
+          "/request/components/MerchantManagement.json").getPath();
   private PaymentGatewayApi api;
-
-  private final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
+  private static MerchantManagementApi managementMerchantApi;
+  private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
 
   @BeforeEach
   void setUp() {
@@ -51,6 +63,8 @@ public class CreateOrderTest {
     DanaConfig.getInstance(danaConfigBuilder);
 
     api = Dana.getInstance().getPaymentGatewayApi();
+    managementMerchantApi = Dana.getInstance().getMerchantManagementApi();
+
   }
 
   @Test
@@ -125,6 +139,7 @@ public class CreateOrderTest {
   @Test
   @Disabled
   void testCreateOrderNetworkPayPgQris() {
+    String shopId = createShop();
     String caseName = "CreateOrderNetworkPayPgQris";
     CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
         CreateOrderByApiRequest.class);
@@ -133,6 +148,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
+    requestData.setSubMerchantId(shopId);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -351,4 +367,32 @@ public class CreateOrderTest {
     }
   }
 
+  private static String generateRandomString(int length) {
+    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    SecureRandom random = new SecureRandom();
+    StringBuilder sb = new StringBuilder(length);
+
+    for (int i = 0; i < length; i++) {
+      sb.append(chars.charAt(random.nextInt(chars.length())));
+    }
+    return sb.toString();
+  }
+  public static String createShop() {
+    CreateShopRequest requestData = TestUtil.getRequest(jsonPathFileMerchantManagement, "Shop", "CreateShop",
+            CreateShopRequest.class);
+    String mainName = generateRandomString(8);
+    String externalShopId =  generateRandomString(10);
+
+    Map<String, Object> extInfoMap = new HashMap<>();
+    extInfoMap.put("mainName", mainName + "@mailinator.com");
+
+//        Assign unique reference and merchant ID
+    requestData.setMainName(mainName);
+    requestData.setMerchantId(merchantId);
+    requestData.setExternalShopId(externalShopId);
+    requestData.setExtInfo(extInfoMap);
+
+    CreateShopResponse response = managementMerchantApi.createShop(requestData);
+    return response.getResponse().getBody().getShopId();
+  }
 }

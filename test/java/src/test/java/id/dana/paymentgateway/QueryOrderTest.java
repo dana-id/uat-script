@@ -73,7 +73,7 @@ class QueryOrderTest {
 
     @Test
     @RetryTestUtil.Retry
-    void testQueryPaymentPaidOrder() throws InterruptedException {
+    void testQueryPaymentPaidOrder() throws InterruptedException, IOException {
         partnerReferenceNoPaid = payOrder(
                 userPhone,
                 userPin);

@@ -56,6 +56,8 @@ public class PaymentPGUtil {
             log.info("Click button pay");
 //            Click button pay
             page.locator(buttonPay).click();
+//            Wait payemnt success
+            log.info("Wait for URL success payment: {}", urlSuccessPaid);
             page.waitForURL(urlSuccessPaid);
         }
     }

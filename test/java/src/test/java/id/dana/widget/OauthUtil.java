@@ -153,7 +153,7 @@ public class OauthUtil {
     public static String getOauthViaView(String urlRedirectLinkAuthCode, String phoneNumber, String pin) {
         try (Playwright playwright = Playwright.create()) {
             Browser browser = playwright.webkit().launch();
-            playwright.firefox().launch(new BrowserType.LaunchOptions().setHeadless(false));
+            playwright.firefox().launch(new BrowserType.LaunchOptions().setHeadless(true));
             Page page = browser.newPage();
 //            Redirect to page login user with phone number
             page.navigate(urlRedirectLinkAuthCode);

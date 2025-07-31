@@ -107,12 +107,22 @@ class CancelOrderTest {
     @Test
     @DisplayName("Cancel Order with Invalid Mandatory Field")
     void testCancelOrderInvalidMandatoryField() throws IOException {
+        Map<String, String> customHeaders = new HashMap<>();
         String caseName = "CancelOrderInvalidMandatoryField";
         CancelOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 CancelOrderRequest.class);
-        requestData.setMerchantId(merchantId);
 
-        CancelOrderResponse response = api.cancelOrder(requestData);
+        requestData.setMerchantId(merchantId);
+        customHeaders.put(
+                DanaHeader.X_TIMESTAMP,
+                "");
+        OkHttpClient client = new OkHttpClient.Builder()
+                .addInterceptor(new DanaAuth())
+                .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+                .build();
+        PaymentGatewayApi apiWithCustomHeader = new PaymentGatewayApi(client);
+
+        CancelOrderResponse response = apiWithCustomHeader.cancelOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
     }
 
@@ -288,17 +298,5 @@ class CancelOrderTest {
         List<String> dataOrder = createOrder();
         PaymentPGUtil.payOrder(phoneNumber,pin,dataOrder.get(1));
         return dataOrder.get(0);
-    }
-
-    public static String queryOrder(String partnerReferenceNo) throws IOException {
-        QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, "QueryPayment", "QueryPaymentCreatedOrder",
-                QueryPaymentRequest.class);
-
-//        Assign unique reference and merchant ID
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
-        requestData.setMerchantId(merchantId);
-
-        QueryPaymentResponse response = api.queryPayment(requestData);
-        return response.getResponseCode();
     }
 }

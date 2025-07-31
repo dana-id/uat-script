@@ -21,11 +21,12 @@ func init() {
 
 		// Set API keys
 		configuration.APIKey = &config.APIKey{
-			ENV:          config.ENV_SANDBOX,
-			X_PARTNER_ID: os.Getenv("X_PARTNER_ID"),
-			CHANNEL_ID:   os.Getenv("CHANNEL_ID"),
-			PRIVATE_KEY:  os.Getenv("PRIVATE_KEY"),
-			ORIGIN:       os.Getenv("ORIGIN"),
+			ENV:           config.ENV_SANDBOX,
+			X_PARTNER_ID:  os.Getenv("X_PARTNER_ID"),
+			CHANNEL_ID:    os.Getenv("CHANNEL_ID"),
+			PRIVATE_KEY:   os.Getenv("PRIVATE_KEY"),
+			ORIGIN:        os.Getenv("ORIGIN"),
+			CLIENT_SECRET: os.Getenv("CLIENT_SECRET"),
 		}
 
 		// Create API client with config

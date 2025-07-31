@@ -3,10 +3,16 @@ package payment_gateway_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"math/rand"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
+	merchantManagement "github.com/dana-id/dana-go/merchant_management/v1"
 	pg "github.com/dana-id/dana-go/payment_gateway/v1"
+
 	"github.com/google/uuid"
 
 	"uat-script/helper"
@@ -15,11 +21,24 @@ import (
 const (
 	createOrderTitleCase = "CreateOrder"
 	createOrderJsonPath  = "../../../resource/request/components/PaymentGateway.json"
+	shopJsonPath         = "../../../resource/request/components/MerchantManagement.json"
 )
+
+var merchantId = os.Getenv("MERCHANT_ID")
 
 // generatePartnerReferenceNo generates a unique partner reference number
 func generatePartnerReferenceNo() string {
 	return uuid.New().String()
+}
+
+// RandomString generates a random string of the specified length
+func RandomString(length int) string {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
 }
 
 // TestCreateOrderRedirectScenario tests creating an order using redirect scenario and pay with DANA
@@ -35,6 +54,7 @@ func TestCreateOrderRedirectScenario(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -92,6 +112,7 @@ func TestCreateOrderApiScenario(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -110,6 +131,10 @@ func TestCreateOrderApiScenario(t *testing.T) {
 	createOrderReq := pg.CreateOrderRequest{
 		CreateOrderByApiRequest: createOrderByApiRequest,
 	}
+
+	print("Creating order with partner reference number: ", partnerReferenceNo)
+	// Print the request for debugging
+	fmt.Printf("Request JSON: %s\n", string(jsonBytes))
 
 	// Make the API call with retry on inconsistent request
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
@@ -138,9 +163,10 @@ func TestCreateOrderApiScenario(t *testing.T) {
 
 // TestCreateOrderNetworkPayPgQris tests creating an order using API scenario with QRIS payment method
 func TestCreateOrderNetworkPayPgQris(t *testing.T) {
-	t.Skip("skipped by request: scenario CreateOrderNetworkPayPgQris")
-
+	t.Skip("Skip: Test not capable to do automation, need to be run manually CreateOrderNetworkPayPgQris")
 	caseName := "CreateOrderNetworkPayPgQris"
+
+	// fmt.Print("Creating order with shopId: ", shopId, " and externalStoreId: ", externalStoreId)
 
 	// Get the request data from the JSON file
 	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
@@ -151,6 +177,7 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -170,13 +197,20 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 		CreateOrderByApiRequest: createOrderByApiRequest,
 	}
 
+	// Print the request for debugging
+	fmt.Printf("Request JSON: %s\n", string(jsonBytes))
+
 	// Make the API call with retry on inconsistent request
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
 		ctx := context.Background()
+		fmt.Printf("Creating order with partner reference number: %s\n", partnerReferenceNo)
 		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
 		if err != nil {
 			return nil, err
 		}
+
+		fmt.Printf("API Response: %+v\n", apiResponse)
+		fmt.Print("HTTP Response: ", httpResponse.StatusCode, "\n")
 		defer httpResponse.Body.Close()
 		responseJSON, err := apiResponse.MarshalJSON()
 		if err != nil {
@@ -200,14 +234,14 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 // This test is configured to always pass regardless of outcome
 func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 	t.Log("Running wallet payment test - this test will always pass even if it fails")
-	
+
 	defer func() {
 		// Catch any panics and continue
 		if r := recover(); r != nil {
 			t.Logf("⚠️ Wallet test recovered from panic: %v", r)
 		}
 	}()
-	
+
 	try := func() (success bool) {
 		defer func() {
 			if r := recover(); r != nil {
@@ -215,7 +249,7 @@ func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 				success = false
 			}
 		}()
-		
+
 		caseName := "CreateOrderNetworkPayPgOtherWallet"
 
 		// Get the request data from the JSON file
@@ -228,6 +262,7 @@ func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 		// Set a unique partner reference number
 		partnerReferenceNo := generatePartnerReferenceNo()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
+		jsonDict["merchantId"] = merchantId
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		jsonBytes, err := json.Marshal(jsonDict)
@@ -277,11 +312,11 @@ func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 			t.Logf("⚠️ Response assertion failed but test will pass: %v", err)
 			return false
 		}
-		
+
 		t.Log("✓ Wallet test passed successfully")
 		return true
 	}
-	
+
 	// Try to run the test but continue regardless of result
 	if success := try(); success {
 		// Test passed normally
@@ -289,7 +324,7 @@ func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 		// Test failed but we're making it pass anyway
 		t.Log("⚠️ Wallet test had errors but is marked as always passing")
 	}
-	
+
 	// Always succeed
 }
 
@@ -306,6 +341,7 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -363,6 +399,7 @@ func TestCreateOrderInvalidFieldFormat(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -410,6 +447,7 @@ func TestCreateOrderInconsistentRequest(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CreateOrderByApiRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -471,6 +509,7 @@ func TestCreateOrderInvalidMandatoryField(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -533,6 +572,7 @@ func TestCreateOrderUnauthorized(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
 	// Create the CreateOrderByApiRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -579,4 +619,75 @@ func TestCreateOrderUnauthorized(t *testing.T) {
 		customHeaders,
 		variableDict,
 	)
+}
+
+func createShop() (string, string, error) {
+	var shopId string
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(shopJsonPath, "Shop", "CreateShop")
+	if err != nil {
+		return "", "", fmt.Errorf("failed to get request data: %v", err)
+	}
+
+	// Set a unique partner reference number
+	shopName := RandomString(10)
+	externalShopId := RandomString(10)
+	emailName := strings.ToLower("test" + shopName + "@mailinator.com")
+	jsonDict["mainName"] = shopName
+	jsonDict["merchantId"] = merchantId
+	jsonDict["externalShopId"] = externalShopId
+
+	extInfo := map[string]interface{}{
+		"PIC_EMAIL":       emailName,
+		"PIC_PHONENUMBER": "081234567890",
+		"SUBMITTER_EMAIL": "admin_merchant@email.com",
+		"GOODS_SOLD_TYPE": "GENERAL_GOODS",
+		"USECASE":         "QRIS_DIGITAL",
+		"USER_PROFILING":  "ONLINE",
+		"AVG_TICKET":      "100000-500000",
+		"OMZET":           "5BIO-10BIO",
+		"EXT_URLS":        "https://www.instagram.com",
+	}
+
+	jsonDict["extInfo"] = extInfo
+
+	createShopRequest := &merchantManagement.CreateShopRequest{}
+
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to marshal JSON: %v", err)
+	}
+
+	// Unmarshal directly into CreateOrderByRedirectRequest
+	err = json.Unmarshal(jsonBytes, createShopRequest)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to unmarshal JSON: %v", err)
+	}
+
+	// Make the API call
+	ctx := context.Background()
+	apiResponse, httpResponse, err := helper.ApiClient.MerchantManagementAPI.CreateShop(ctx).CreateShopRequest(*createShopRequest).Execute()
+
+	defer httpResponse.Body.Close()
+	// Convert the response to JSON for assertion
+	responseJSON, err := apiResponse.MarshalJSON()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to convert response to JSON: %v", err)
+	}
+	fmt.Printf("Response JSON Create Division: %s\n", string(responseJSON))
+	if err != nil {
+		return "", "", fmt.Errorf("failed to create division: %v", err)
+	}
+	apiResponseJSON := apiResponse.GetResponse().Body
+	shopId = apiResponseJSON.GetShopId()
+
+	if err != nil {
+		return "", "", fmt.Errorf("failed to get externalShopId from response: %v", err)
+	}
+
+	fmt.Printf("Shop ID: %s\n", shopId)
+	fmt.Printf("External Shop ID: %s\n", externalShopId)
+
+	return shopId, externalShopId, nil
 }
