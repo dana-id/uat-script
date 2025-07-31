@@ -303,7 +303,7 @@ func TestRefundOrderInvalidMandatoryField(t *testing.T) {
 
 	// Set custom headers with missing timestamp to trigger mandatory field error
 	customHeaders := map[string]string{
-		"X-TIMESTAMP": "", // Empty timestamp
+		"X-SIGNATURE": "", // Empty timestamp
 	}
 
 	// Create a variable dictionary to substitute in the response

@@ -568,7 +568,6 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundOrderInvalidMandatoryParameter(): void
     {
-        $this->markTestSkipped('Skipping refund order invalid mandatory parameter test temporarily.');
         try {
             Util::withDelay(function () {
                 $caseName = 'RefundOrderInvalidMandatoryParameter';
@@ -581,20 +580,19 @@ class RefundOrderTest extends TestCase
                 // Compose headers with missing X-TIMESTAMP (simulate invalid mandatory parameter)
                 $headers = Util::getHeadersWithSignature(
                     'POST',
-                    '/payment-gateway/v1.0/refund/order.htm',
+                    '/payment-gateway/v1.0/debit/refund.htm',
                     $requestData,
-                    false,   // $withTimestamp = false (missing X-TIMESTAMP)
-                    false,   // $invalidTimestamp = false
-                    false    // $invalidSignature = false
+                    true,
+                    false,
+                    false
                 );
-                
-                // Log the headers to verify X-TIMESTAMP is missing
-                error_log("RefundOrder headers being sent: " . json_encode($headers, JSON_PRETTY_PRINT));
+
+                $headers['X-SIGNATURE'] = '';
                 
                 try {
                     Util::executeApiRequest(
                         'POST',
-                        'https://api.sandbox.dana.id/payment-gateway/v1.0/refund/order.htm',
+                        'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/refund.htm',
                         $headers,
                         $requestData
                     );
@@ -733,7 +731,6 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundOrderUnauthorized(): void
     {
-        $this->markTestSkipped('Skipping refund order unauthorized test temporarily.');
         try {
             Util::withDelay(function () {
                 $caseName = 'RefundOrderUnauthorized';
@@ -752,16 +749,16 @@ class RefundOrderTest extends TestCase
                 // Create headers with invalid signature
                 $headers = Util::getHeadersWithSignature(
                     'POST',
-                    '/payment-gateway/v1.0/refund/order.htm',
+                    '/payment-gateway/v1.0/debit/refund.htm',
                     $requestData,
-                    true,  // with_timestamp
-                    true,  // with_signature
-                    true   // invalid_signature
+                    true,
+                    false,
+                    true
                 );
                 try {
                     Util::executeApiRequest(
                         'POST',
-                        'https://api.sandbox.dana.id/payment-gateway/v1.0/refund/order.htm',
+                        'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/refund.htm',
                         $headers,
                         $requestData
                     );
