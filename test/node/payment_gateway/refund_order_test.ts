@@ -452,19 +452,20 @@ describe('Payment Gateway - Refund Order Tests', () => {
     });
 
     /**
-     * Test: Missing mandatory header (X-TIMESTAMP)
+     * Test: Missing mandatory header (X-SIGNATURE)
      * Expected: HTTP 400, bad request error for missing mandatory parameter
      */
-    test('RefundOrderInvalidMandatoryParameter - should fail when X-TIMESTAMP header is missing', async () => {
+    test('RefundOrderInvalidMandatoryParameter - should fail when X-SIGNATURE header is missing', async () => {
         const refundOrderCaseName = "RefundOrderInvalidMandatoryParameter";
         const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
 
         try {
             const baseUrl: string = 'https://api.sandbox.dana.id';
-            const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
+            const apiPath: string = '/payment-gateway/v1.0/debit/refund.htm';
 
+            // Custom headers with malformed timestamp format
             const customHeaders: Record<string, string> = {
-                'X-TIMESTAMP': ''
+                'X-SIGNATURE': ''
             };
 
             await executeManualApiRequest(
@@ -546,7 +547,7 @@ describe('Payment Gateway - Refund Order Tests', () => {
 
         try {
             const baseUrl: string = 'https://api.sandbox.dana.id';
-            const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
+            const apiPath: string = '/payment-gateway/v1.0/debit/refund.htm';
 
             const customHeaders: Record<string, string> = {
                 'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'

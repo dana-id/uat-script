@@ -91,7 +91,11 @@ async function executeManualApiRequest(
   const isoString = now.toISOString();
   const timeStamp = isoString.substring(0, 19).replace('Z', '') + offset;
 
-  headers['X-TIMESTAMP'] = timeStamp;
+  if (customHeaders['X-TIMESTAMP'] === '') {
+    headers['X-TIMESTAMP'] = '';
+  } else {
+    headers['X-TIMESTAMP'] = timeStamp;
+  }
 
   // Generate DANA signature for authentication using the SDK utility
   const requestBody = JSON.stringify(requestObj);
