@@ -13,6 +13,7 @@ import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -309,19 +310,25 @@ class RefundOrderTest {
     }
 
     @Test
-    void testRefundOrderDuplicateRequest() throws IOException {
+    void testRefundOrderDuplicateRequest() throws IOException, InterruptedException {
         partnerReferenceNoPaid = payOrder(userPhone, userPin);
         String caseName = "RefundOrderDuplicateRequest";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
+        String partnerReferenceNo = partnerReferenceNoPaid;
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setPartnerRefundNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
         Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
         RefundOrderResponse response1 = api.refundOrder(requestData);
+        Money money = new Money();
+        money.setCurrency("IDR");
+        money.setValue("10000.00");
+        requestData.setRefundAmount(money);
+        Thread.sleep(5000);
         RefundOrderResponse response2 = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response2, variableDict);
     }
@@ -394,5 +401,16 @@ class RefundOrderTest {
         List<String> dataOrder = createOrder();
         PaymentPGUtil.payOrder(phoneNumber,pin,dataOrder.get(1));
         return dataOrder.get(0);
+    }
+
+    private static String generateRandomString(int length) {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }
