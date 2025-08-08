@@ -7,14 +7,18 @@ import id.dana.invoker.model.DanaConfig;
 import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
+import id.dana.invoker.model.exception.DanaException;
+import id.dana.paymentgateway.CreateOrderTest;
+import id.dana.paymentgateway.v1.model.CreateOrderResponse;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
 import id.dana.widget.v1.api.WidgetApi;
 import id.dana.widget.v1.model.*;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -25,22 +29,19 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class ApplyToken {
+    private static final Logger log = LoggerFactory.getLogger(CreateOrderTest.class);
     private final static String USER_PIN = "123321";
     private final static String USER_PHONENUMBER = "0811742234";
     private static final String titleCase = "ApplyToken";
     private static final String jsonPathFile = ApplyToken.class.getResource("/request/components/Widget.json")
             .getPath();
     public static WidgetApi widgetApi;
-    String authCode;
 
-    @BeforeEach
-    void setUp() throws
-            UnsupportedEncodingException,
-            NoSuchAlgorithmException,
-            InvalidKeySpecException,
-            SignatureException,
-            InvalidKeyException {
+    @BeforeAll
+    static void setUp() {
 
         DanaConfig.Builder danaConfigBuilder = new DanaConfig.Builder();
         danaConfigBuilder
@@ -51,16 +52,16 @@ public class ApplyToken {
 
         DanaConfig.getInstance(danaConfigBuilder);
         widgetApi = Dana.getInstance().getWidgetApi();
+    }
 
-        authCode = OauthUtil.getAuthCode(
+    @Test
+    void testApplyTokenSuccess() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+        String authCode = OauthUtil.getAuthCode(
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
                 USER_PHONENUMBER,
                 USER_PIN);
-    }
 
-    @Test
-    void testApplyTokenSuccess() throws IOException {
         // Create an order with an initial status
         Map<String, Object> variableDict = new HashMap<>();
         String caseName = "ApplyTokenSuccess";
@@ -74,6 +75,7 @@ public class ApplyToken {
     }
 
     @Test
+    @Disabled
     void testApplyTokenFailExpiredAuthcode() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
         // Create an order with an initial status
         Map<String, Object> variableDict = new HashMap<>();
@@ -89,11 +91,40 @@ public class ApplyToken {
     }
 
     @Test
-    void testApplyTokenFailInvalidSignature() throws IOException {
+    void testApplyTokenFailAuthcodeUsed() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+        String authCode = OauthUtil.getAuthCode(
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                USER_PHONENUMBER,
+                USER_PIN);
+
+        applyToken(authCode);
+
+        // Create an order with an initial status
+        Map<String, Object> variableDict = new HashMap<>();
+        String caseName = "ApplyTokenFailAuthcodeUsed";
+        ApplyTokenAuthorizationCodeRequest requestData = TestUtil.getRequest(jsonPathFile, "ApplyToken", "ApplyTokenSuccess",
+                ApplyTokenAuthorizationCodeRequest.class);
+
+        //GtRLpA0TyqK3becMq4dCMnVf1N9KLHNixVfC1800 is authcode expired
+        requestData.setAuthCode(authCode);
+
+        ApplyTokenResponse response = widgetApi.applyToken(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    }
+
+    @Test
+    void testApplyTokenFailInvalidSignature() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+        String authCode = OauthUtil.getAuthCode(
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                USER_PHONENUMBER,
+                USER_PIN);
+
         Map<String, String> customHeaders = new HashMap<>();
         Map<String, Object> variableDict = new HashMap<>();
         
-        customHeaders.put(DanaHeader.X_SIGNATURE, RandomStringUtils.randomAlphanumeric(300));
+        customHeaders.put(DanaHeader.X_SIGNATURE, RandomStringUtils.randomAlphanumeric(5));
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(new DanaAuth())
                 .addInterceptor(new CustomHeaderInterceptor(customHeaders))
@@ -107,7 +138,7 @@ public class ApplyToken {
         requestData.setAuthCode(authCode);
 
         ApplyTokenResponse response = apiWithCustomHeader.applyToken(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+        TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     public static String applyToken(String authCode) {

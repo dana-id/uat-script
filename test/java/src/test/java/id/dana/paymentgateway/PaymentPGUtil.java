@@ -24,10 +24,10 @@ public class PaymentPGUtil {
             String redirectUrlPay) {
 
         String buttonDana = "//*[contains(@class,\"dana\")]/*[contains(@class,\"bank-title\")]";
-        String inputPhoneNumber = "//*[contains(@class,\"desktop-input\")]//input";
-        String buttonSubmitPhoneNumber = "//*[contains(@class,\"agreement__button\")]//button";
-        String inputPin = "//*[contains(@class,\"input-pin\")]//input";
-        String buttonPay = "//*[contains(@class,\"btn-pay\")]";
+        String inputPhoneNumber = ".desktop-input>.txt-input-phone-number-field";
+        String buttonSubmitPhoneNumber = ".agreement__button>.btn-continue";
+        String inputPin = ".txt-input-pin-field";
+        String buttonPay = ".btn.btn-primary";
         String urlSuccessPaid = "**/v1/test";
 
         try (Playwright playwright = Playwright.create()) {

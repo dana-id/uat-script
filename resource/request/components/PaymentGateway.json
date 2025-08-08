@@ -1377,7 +1377,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "435817.00",
+                    "value": "22200.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1473,8 +1473,8 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4045812",
-                "responseMessage": "Invalid Bill/Virtual Account"
+                "responseCode": "4045801",
+                "responseMessage": "Transaction Not Found"
             }
         },
         "RefundOrderInsufficientFunds": {
@@ -1587,7 +1587,7 @@
                 "responseMessage": "Request In Progress"
             }
         },
-        "RefundOrderIndempotent": {
+        "RefundOrderIdempotent": {
             "request": {
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"testing"
 	"time"
 )
 
@@ -144,4 +145,36 @@ func GetValueFromResponseBody(response *http.Response, key string) (string, erro
 	}
 
 	return value.(string), nil
+}
+
+// RetryTest attempts to run a test function multiple times until it succeeds
+func RetryTest(t *testing.T, attempts int, delay time.Duration, testFunc func() error) {
+	t.Helper() // Mark as helper for better error reporting
+
+	if attempts == 0 {
+		attempts = 1 // Default to 1 attempt if not specified
+	}
+
+	if delay == 0 {
+		delay = 1 * time.Second // Default to 1 second if not specified
+	}
+
+	var err error
+	for i := 0; i < attempts; i++ {
+		if i > 0 {
+			t.Logf("Retry attempt %d/%d after %v delay...", i+1, attempts, delay)
+			time.Sleep(delay)
+		}
+
+		err = testFunc()
+		if err == nil {
+			// Test passed
+			return
+		}
+
+		t.Logf("Attempt %d failed: %v", i+1, err)
+	}
+
+	// All attempts failed
+	t.Fatalf("Test failed after %d attempts. Last error: %v", attempts, err)
 }

@@ -24,10 +24,10 @@ async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=No
         - Closes the browser context after completion.
     """
     
-    buttonSubmitPhoneNumber = "//*[contains(@class,'agreement__button')]//button"
-    inputPhone = "//*[contains(@class,'desktop-input')]//input"
-    inputPin = "//*[contains(@class,'input-pin')]//input"
-    buttonPay = "//*[contains(@class,'btn-pay')]"
+    buttonSubmitPhoneNumber = ".agreement__button>.btn-continue"
+    inputPhone = ".desktop-input>.txt-input-phone-number-field"
+    inputPin = ".txt-input-pin-field"
+    buttonPay = "button.btn-pay"
     endpointSuccess = "**/v1/test"
 
     def log(msg):

@@ -23,14 +23,21 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
     context = await browser.newContext();
     page = await context.newPage();
 
+    buttonDana = "//*[contains(@class,\"dana\")]/*[contains(@class,\"bank-title\")]";
+    inputPhoneNumber = ".desktop-input>.txt-input-phone-number-field";
+    buttonSubmitPhoneNumber = ".agreement__button>.btn-continue";
+    inputPin = ".txt-input-pin-field";
+    buttonPay = ".btn.btn-primary";
+    urlSuccessPaid = "**/v1/test";
+
     try {
         console.log(`Navigating to: ${redirectUrl}`);
         await page.goto(redirectUrl);
 
-        const isDanaPaymentPage = await page.isVisible('.bank-item.sdetfe-lbl-dana-pay-option', { timeout: 20000 }).catch(() => false);
+        const isDanaPaymentPage = await page.isVisible(buttonDana, { timeout: 20000 }).catch(() => false);
 
         if (isDanaPaymentPage) {
-            await page.click('.bank-item.sdetfe-lbl-dana-pay-option');
+            await page.click(buttonDana);
         }
 
         // Input phone number
@@ -41,7 +48,7 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
 
         while (!inputFound && retryCount < maxInputRetries) {
             try {
-                await page.waitForSelector('//*[contains(@class,"desktop-input")]//input', { timeout: 1000 });
+                await page.waitForSelector(inputPhoneNumber, { timeout: 1000 });
                 inputFound = true;
             } catch (error) {
                 retryCount++;
@@ -49,9 +56,9 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
 
                 if (retryCount < maxInputRetries) {
                     // Click DANA payment option again
-                    const danaOption = await page.isVisible('.bank-item.sdetfe-lbl-dana-pay-option');
+                    const danaOption = await page.isVisible(buttonDana);
                     if (danaOption) {
-                        await page.click('.bank-item.sdetfe-lbl-dana-pay-option');
+                        await page.click(buttonDana);
                         await page.waitForTimeout(2000); // Wait a bit before retrying
                     }
                 } else {
@@ -59,14 +66,14 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
                 }
             }
         }
-        await page.fill('//*[contains(@class,"desktop-input")]//input', phoneNumber.substring(1));
-        await page.click('//*[contains(@class,"agreement__button")]//button');
+        await page.fill(inputPhoneNumber, phoneNumber.substring(1));
+        await page.click(buttonSubmitPhoneNumber);
 
         // Input pin user
-        await page.fill('//*[contains(@class,"input-pin")]//input', pin);
+        await page.fill(inputPin, pin);
 
         // Click button pay
-        await page.click('//*[contains(@class,"btn-pay")]');
+        await page.click(buttonPay);
 
         // Wait for either success redirect or failure message
         await Promise.race([
@@ -80,7 +87,7 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
 
         // Check current URL for success
         const currentUrl = page.url();
-        if (currentUrl.includes('https://tinknet.my.id/v1/test')) {
+        if (currentUrl.includes(urlSuccessPaid)) {
             console.log('Payment successful - redirected to success URL');
             return { success: true, authCode: null, error: null };
         }
@@ -97,7 +104,7 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
         // Wait a bit more and check again
         await page.waitForTimeout(5000);
         const finalUrl = page.url();
-        if (finalUrl.includes('https://tinknet.my.id/v1/test')) {
+        if (finalUrl.includes(urlSuccessPaid)) {
             console.log('Payment successful - redirected to success URL (delayed)');
             return { success: true, authCode: null, error: null };
         }

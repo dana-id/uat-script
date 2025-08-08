@@ -56,8 +56,7 @@ class QueryPaymentTest extends TestCase
         self::$orderPaidReferenceNumber = self::createTestOrderPaid();
 
         // Order in canceled status (CANCELLED)
-        self::$orderCanceledReferenceNumber = Util::generatePartnerReferenceNo();
-        self::createTestOrderCanceled();
+        self::$orderCanceledReferenceNumber = self::createTestOrderCanceled();
     }
 
     /**
@@ -252,7 +251,6 @@ class QueryPaymentTest extends TestCase
      */
     public function testQueryPaymentCanceledOrder(): void
     {
-        $this->markTestSkipped('Skipping this test temporarily.');
         Util::withDelay(function() {
             $caseName = 'QueryPaymentCanceledOrder';
             $partnerReferenceNo = self::$orderCanceledReferenceNumber;

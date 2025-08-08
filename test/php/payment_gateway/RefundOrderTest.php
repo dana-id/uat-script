@@ -21,6 +21,8 @@ class RefundOrderTest extends TestCase
     private static $apiInstance;
     private static $paidOrderReferenceNumber;
     private static $regularOrderReferenceNumber;
+    private static $duplicateOrderReferenceNumber;
+    private static $idempotentOrderReferenceNumber;
 
     /**
      * Generate a unique partner reference number using UUID v4
@@ -64,6 +66,12 @@ class RefundOrderTest extends TestCase
 
         self::$regularOrderReferenceNumber = self::generatePartnerReferenceNo();
         self::createTestOrder(self::$regularOrderReferenceNumber);
+
+        self::$duplicateOrderReferenceNumber = self::generatePartnerReferenceNo();
+        self::createTestPaidOrder(self::$duplicateOrderReferenceNumber);
+
+        self::$idempotentOrderReferenceNumber = self::generatePartnerReferenceNo();
+        self::createTestPaidOrder(self::$idempotentOrderReferenceNumber);
     }
 
     /**
@@ -124,7 +132,7 @@ class RefundOrderTest extends TestCase
         Util::withDelay(function () {
             $caseName = 'RefundOrderValidScenario';
             $partnerReferenceNo = self::$paidOrderReferenceNumber;
-            $partnerRefundNo = self::generatePartnerReferenceNo();
+            $partnerRefundNo = self::$paidOrderReferenceNumber;
 
             error_log("Testing RefundOrder with originalPartnerReferenceNo: " . $partnerReferenceNo);
 
@@ -397,11 +405,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundOrderDuplicateRequest(): void
     {
-        $this->markTestSkipped('Skipping refund order duplicate request test temporarily.');
+        $this->markTestSkipped('Skipping refund order exceeds transaction amount limit test temporarily.');   
         Util::withDelay(function () {
             $caseName = 'RefundOrderDuplicateRequest';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
-            $partnerRefundNo = self::generatePartnerReferenceNo();
+            $partnerReferenceNo = self::$duplicateOrderReferenceNumber;
+            $partnerRefundNo = self::$duplicateOrderReferenceNumber;
 
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
@@ -422,11 +430,20 @@ class RefundOrderTest extends TestCase
             );
 
             try {
-                // Make the API call first time
+                // Make the API call first timee)
                 $apiResponse = self::$apiInstance->refundOrder($refundOrderRequestObj);
 
-                // Make the API call second time with same data (duplicate)
-                $apiResponse = self::$apiInstance->refundOrder($refundOrderRequestObj);
+                $jsonDict['refundAmount'] = [
+                    'currency' => 'IDR',
+                    'value' => '10000.00'  // Amount in Indonesian Rupiah
+                ];
+
+                $refundOrderRequestObjNew = ObjectSerializer::deserialize(
+                    $jsonDict,
+                    'Dana\PaymentGateway\v1\Model\RefundOrderRequest',
+                );
+
+                $apiResponse = self::$apiInstance->refundOrder($refundOrderRequestObjNew);
 
                 // Assert the API response - should fail with duplicate request
                 Assertion::assertFailResponse(
@@ -620,10 +637,11 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundOrderInvalidBill(): void
     {
-        $this->markTestSkipped('Skipping refund order invalid bill test temporarily.');
         Util::withDelay(function () {
             $caseName = 'RefundOrderInvalidBill';
-            $partnerRefundNo = self::generatePartnerReferenceNo();
+            $tempPartnerReferenceNo = self::generatePartnerReferenceNo();
+            $partnerReferenceNo = $tempPartnerReferenceNo;
+            $partnerRefundNo = $tempPartnerReferenceNo;
 
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
@@ -967,11 +985,10 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundOrderIdempotent(): void
     {
-        $this->markTestSkipped('Skipping refund order idempotent test temporarily.');
         Util::withDelay(function () {
             $caseName = 'RefundOrderIdempotent';
-            $partnerReferenceNo = '123123123123124'; // Use specific value from JSON
-            $partnerRefundNo = '123123123123124'; // Use specific value from JSON
+            $partnerReferenceNo = self::$idempotentOrderReferenceNumber;
+            $partnerRefundNo = self::$idempotentOrderReferenceNumber;
 
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
@@ -992,7 +1009,9 @@ class RefundOrderTest extends TestCase
             );
 
             try {
-                // Make the API call
+                // Make the first API call
+                self::$apiInstance->refundOrder($refundOrderRequestObj);
+                // Make the second API call (idempotent)
                 $apiResponse = self::$apiInstance->refundOrder($refundOrderRequestObj);
 
                 // Assert the API response - should succeed with idempotent response

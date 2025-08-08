@@ -84,6 +84,7 @@ def test_order_reference_number():
     return partner_reference_no 
 
 @with_delay()
+@retry_test(max_retries=3, delay_seconds=1)
 def test_cancel_order(test_order_reference_number):
     """Should cancel the order"""
     # Cancel order

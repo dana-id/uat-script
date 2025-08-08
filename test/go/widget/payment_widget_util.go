@@ -1,4 +1,4 @@
-package payment_gateway
+package widget
 
 import (
 	"fmt"
@@ -86,12 +86,11 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 			return fmt.Errorf("DANA payment option not found")
 		}
 	}
-	// Fill in the phone number and pin
+
 	page.Locator(inputPhoneNumber).Fill(phoneNumber)
 	page.Locator(buttonSubmitPhoneNumber).Click()
 	page.Locator(inputPin).Fill(pin)
 
-	// Wait for the pay button to be visible
 	page.Locator(buttonPay).WaitFor()
 	countButtonPay, err := page.Locator(buttonPay).Count()
 	if err != nil || countButtonPay == 0 {
@@ -103,5 +102,6 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 		return fmt.Errorf("payment failed: %w", err)
 	}
 	fmt.Println("Payment successful!")
+
 	return nil
 }

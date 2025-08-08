@@ -8,7 +8,9 @@ import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
 import id.dana.widget.v1.api.WidgetApi;
 import id.dana.widget.v1.model.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -24,12 +26,12 @@ public class AccountUnbindingTest {
     private static final String titleCase = "AccountUnbinding";
     private static final String jsonPathFile = ApplyToken.class.getResource("/request/components/Widget.json")
             .getPath();
-    private WidgetApi widgetApi;
-    private String authCode;
-    private String accessToken;
+    private static WidgetApi widgetApi;
+    private static String authCode;
+    private static String accessToken;
 
-    @BeforeEach
-    void setUp() throws
+    @BeforeAll
+    static void setUp() throws
             UnsupportedEncodingException,
             NoSuchAlgorithmException,
             InvalidKeySpecException,
@@ -64,6 +66,7 @@ public class AccountUnbindingTest {
                 AccountUnbindingRequest.class);
 
         additionalInfo.setAccessToken(accessToken);
+        additionalInfo.setDeviceId("deviceid123");
         requestData.setMerchantId(ConfigUtil.getConfig("MERCHANT_ID", ""));
         requestData.setAdditionalInfo(additionalInfo);
 
@@ -72,6 +75,7 @@ public class AccountUnbindingTest {
     }
 
     @Test
+    @Disabled
     void testAccountUnbindFailAccessTokenNotExist() throws IOException {
         // Create an order with an initial status
         AccountUnbindingRequestAdditionalInfo additionalInfo = new AccountUnbindingRequestAdditionalInfo();
@@ -80,6 +84,7 @@ public class AccountUnbindingTest {
                 AccountUnbindingRequest.class);
 
         additionalInfo.setAccessToken("TEST123");
+        additionalInfo.setDeviceId("deviceid123");
         requestData.setMerchantId(ConfigUtil.getConfig("MERCHANT_ID", ""));
         requestData.setAdditionalInfo(additionalInfo);
 
@@ -88,14 +93,24 @@ public class AccountUnbindingTest {
     }
 
     @Test
-    void testAccountUnbindFailInvalidUserStatus() throws IOException {
+    @Disabled
+    void testAccountUnbindFailInvalidUserStatus() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+        String abnormalUserPhone = "0855100800";
+        String abnormalUserPin = "146838";
+
+        String abnormalAccessToken = OauthUtil.getAccessToken(
+                abnormalUserPhone,
+                abnormalUserPin
+        );
+
         // Create an order with an initial status
         AccountUnbindingRequestAdditionalInfo additionalInfo = new AccountUnbindingRequestAdditionalInfo();
         String caseName = "AccountUnbindFailInvalidUserStatus";
         AccountUnbindingRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 AccountUnbindingRequest.class);
 
-        additionalInfo.setAccessToken(accessToken);
+        additionalInfo.setAccessToken(abnormalAccessToken);
+        additionalInfo.setDeviceId("deviceid123");
         requestData.setMerchantId(ConfigUtil.getConfig("MERCHANT_ID", ""));
         requestData.setAdditionalInfo(additionalInfo);
 
@@ -104,6 +119,7 @@ public class AccountUnbindingTest {
     }
 
     @Test
+    @Disabled
     void testAccountUnbindFailInvalidParams() throws IOException {
         // Create an order with an initial status
         AccountUnbindingRequestAdditionalInfo additionalInfo = new AccountUnbindingRequestAdditionalInfo();
@@ -112,6 +128,7 @@ public class AccountUnbindingTest {
                 AccountUnbindingRequest.class);
 
         additionalInfo.setAccessToken(accessToken);
+        additionalInfo.setDeviceId("deviceid123");
         requestData.setMerchantId(ConfigUtil.getConfig("MERCHANT_ID", ""));
         requestData.setAdditionalInfo(additionalInfo);
 

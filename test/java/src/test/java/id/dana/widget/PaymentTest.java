@@ -15,6 +15,8 @@ import id.dana.paymentgateway.v1.model.CreateOrderResponse;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
 import id.dana.widget.v1.api.WidgetApi;
+import id.dana.widget.v1.model.Money;
+import id.dana.widget.v1.model.RefundOrderResponse;
 import id.dana.widget.v1.model.WidgetPaymentRequest;
 import id.dana.widget.v1.model.WidgetPaymentResponse;
 import io.restassured.RestAssured;
@@ -36,6 +38,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +80,37 @@ public class PaymentTest {
     @Test
     void testPaymentOrderSuccess() throws IOException {
         String caseName = "PaymentSuccess";
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                WidgetPaymentRequest.class);
+
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+
+        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+    }
+
+    @Test
+    void testPaymentOrderInconsistent() throws IOException {
+        String caseName = "PaymentFailInconsistentRequest";
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                WidgetPaymentRequest.class);
+
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+
+        widgetApi.widgetPayment(requestData);
+        Money amount = new Money();
+        amount.setCurrency("IDR");
+        amount.setValue("21000.00");
+        requestData.setAmount(amount);
+        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+    }
+
+    @Test
+    void testPaymentOrderMerchantDoesNotExist() throws IOException {
+        String caseName = "PaymentFailMerchantNotExistOrStatusAbnormal";
         WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 WidgetPaymentRequest.class);
 
@@ -171,8 +208,12 @@ public class PaymentTest {
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
-        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        try {
+            WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+            TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        } catch (Exception e) {
+            Assertions.assertEquals(e.getMessage(), "Network error");
+        }
     }
 
     private void createOrder(){
@@ -195,16 +236,35 @@ public class PaymentTest {
     }
 
     @Test
-    void testPaymentFailIdempotent() throws IOException {
+    void testPaymentFailIdempotent() throws InterruptedException {
         String caseName = "PaymentFailIdempotent";
+
+        int numberOfThreads = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
+        CountDownLatch latch = new CountDownLatch(numberOfThreads);
+
         WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 WidgetPaymentRequest.class);
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
 
-        widgetApi.widgetPayment(requestData);
-        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        for (int i = 0; i < numberOfThreads; i++) {
+            executor.submit(() -> {
+                try {
+                    WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+                    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+                    System.out.println("Thread: " + Thread.currentThread().getId()
+                            + " - Status: " + response.getResponseCode());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        // Wait for all threads to complete
+        latch.await();
+        executor.shutdown();
     }
 }

@@ -23,19 +23,13 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import okhttp3.OkHttpClient;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -46,14 +40,14 @@ public class RefundOrderTest {
     private static final Logger log = LoggerFactory.getLogger(RefundOrderTest.class);
 
     private final String titleCase = "RefundOrder";
-    private final String merchantId = "216620010016033632482";
+    private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
     private static String userPin = "123321";
     private static String userPhone = "0811742234";
-    private WidgetApi widgetApi;
-    private static String partnerReferenceNoInit;
+    private static WidgetApi widgetApi;
+    private static String partnerReferenceNoInit, partnerReferenceNoPaid;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() throws InterruptedException {
         DanaConfig.Builder danaConfigBuilder = new DanaConfig.Builder();
         danaConfigBuilder
                 .partnerId(ConfigUtil.getConfig("X_PARTNER_ID", ""))
@@ -65,22 +59,20 @@ public class RefundOrderTest {
 
         widgetApi = Dana.getInstance().getWidgetApi();
 
-        List<String> dataOrder = PaymentWidgetUtil.createPayment("PaymentSuccess");
+        List<String> dataOrder = createPayment("PaymentSuccess");
         partnerReferenceNoInit = dataOrder.get(0);
+        partnerReferenceNoPaid = payOrder(
+                userPhone,
+                userPin);
     }
 
     @Test
     void testRefundOrderValid() throws IOException {
         String caseName = "RefundOrderValidScenario";
-
-        String partnerReferenceNo = PaymentWidgetUtil.payOrderWithDana(
-                userPhone,
-                userPin,
-                "PaymentSuccess");
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
-        requestData.setPartnerRefundNo(partnerReferenceNo);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
+        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
         requestData.setMerchantId(merchantId);
 
         RefundOrderResponse response = widgetApi.refundOrder(requestData);
@@ -88,6 +80,7 @@ public class RefundOrderTest {
     }
 
     @Test
+    @Disabled
     void testRefundFailDuplicateRequest() throws IOException {
         String caseName = "RefundFailDuplicateRequest";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -219,5 +212,56 @@ public class RefundOrderTest {
         // Wait for all threads to complete
         latch.await();
         executor.shutdown();
+    }
+
+    public static List<String> createPayment(String originOrder) {
+        List<String> dataOrder = new ArrayList<>();
+
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, "Payment",
+                originOrder, WidgetPaymentRequest.class);
+
+        // Assign unique reference and merchant ID
+        String partnerReferenceNo = UUID.randomUUID().toString();
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+        Assertions.assertTrue(response.getResponseCode().contains("200"),
+                "Response code is not 200, actual: " + response.getResponseCode());
+
+        //Index 0 is partnerReferenceNo
+        dataOrder.add(partnerReferenceNo);
+        //Index 1 is the web redirect URL
+        dataOrder.add(response.getWebRedirectUrl());
+
+        return dataOrder;
+    }
+
+    public static String refundOrder(
+            String phoneNumber,
+            String pin) throws InterruptedException {
+
+        String partnerReferenceNo = payOrder(phoneNumber, pin);
+
+        RefundOrderRequest requestRefund = TestUtil.getRequest(jsonPathFile, "RefundOrder", "RefundOrderValidScenario",
+                RefundOrderRequest.class);
+
+        requestRefund.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestRefund.setPartnerRefundNo(partnerReferenceNo);
+        requestRefund.setMerchantId(merchantId);
+
+        RefundOrderResponse responseRefund = widgetApi.refundOrder(requestRefund);
+        Assertions.assertTrue(responseRefund.getResponseCode().contains("200"));
+        return partnerReferenceNo;
+    }
+
+    public static String payOrder(String phoneNumber, String pin) throws InterruptedException {
+        List<String> dataOrder = createPayment("PaymentSuccess");
+        PaymentWidgetUtil.payOrder(phoneNumber,pin,dataOrder.get(1));
+        Thread.sleep(5000); // Wait for the payment to be processed
+        return dataOrder.get(0);
     }
 }

@@ -5,7 +5,7 @@ from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.widget.v1.api import WidgetApi
 from dana.api_client import ApiClient
 from helper.util import with_delay
-from automate_oauth import automate_oauth
+from widget.automate_oauth import automate_oauth
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(

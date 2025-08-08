@@ -22,12 +22,10 @@ public class PaymentWidgetUtil {
             "/request/components/Widget.json").getPath();
     private static WidgetApi widgetApi;
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
-    public static String payOrderWithDana(
+    public static void payOrder(
             String phoneNumber,
             String pin,
-            String paymentOrigin) throws IOException {
-
-        List<String> dataOrder = createPayment(paymentOrigin);
+            String redirectUrlPay) {
 
         String buttonDana = "//*[contains(@class,\"dana\")]/*[contains(@class,\"bank-title\")]";
         String inputPhoneNumber = "//*[contains(@class,\"desktop-input\")]//input";
@@ -40,7 +38,7 @@ public class PaymentWidgetUtil {
             playwright.firefox().launch(new BrowserType.LaunchOptions());
             Page page = browser.newPage();
 //            Redirect to page payment
-            page.navigate(dataOrder.get(1));
+            page.navigate(redirectUrlPay);
 
 //            Set timeout wait
             Locator.WaitForOptions waitForOptions = new Locator.WaitForOptions();
@@ -69,7 +67,54 @@ public class PaymentWidgetUtil {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-        return dataOrder.get(0);
+    }
+
+    public static String payOrderWithDana(
+            String phoneNumber,
+            String pin,
+            String redirectUrlPay) {
+
+        String buttonDana = "//*[contains(@class,\"dana\")]/*[contains(@class,\"bank-title\")]";
+        String inputPhoneNumber = "//*[contains(@class,\"desktop-input\")]//input";
+        String buttonSubmitPhoneNumber = "//*[contains(@class,\"agreement__button\")]//button";
+        String inputPin = "//*[contains(@class,\"input-pin\")]//input";
+        String buttonPay = "//*[contains(@class,\"btn-pay\")]";
+
+        try (Playwright playwright = Playwright.create()) {
+            Browser browser = playwright.webkit().launch();
+            playwright.firefox().launch(new BrowserType.LaunchOptions());
+            Page page = browser.newPage();
+//            Redirect to page payment
+            page.navigate(redirectUrlPay);
+
+//            Set timeout wait
+            Locator.WaitForOptions waitForOptions = new Locator.WaitForOptions();
+            waitForOptions.setTimeout(5000);
+
+//            Payment with Dana
+            if (page.locator(buttonDana).isVisible()) {
+                page.locator(buttonDana).waitFor(waitForOptions);
+                page.locator(buttonDana).click();
+            }
+
+//            Input phone number and pin
+            page.locator(inputPhoneNumber).waitFor(waitForOptions);
+            if (page.locator(inputPhoneNumber).isVisible()){
+//                Do action input phone number
+                page.locator(inputPhoneNumber).fill(phoneNumber.replaceFirst("0", ""));
+                page.locator(buttonSubmitPhoneNumber).click();
+//                Input pin
+                page.locator(inputPin).fill(pin);
+            }
+//            Click button pay
+            page.locator(buttonPay).click();
+
+//            Wait transaction success
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        return redirectUrlPay;
     }
 
     public static List<String> createPayment(String paymentOrigin) {

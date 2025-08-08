@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="id.dana.paymentgateway.CancelOrderTest" time="122.874" tests="13" errors="1" skipped="0" failures="0">
+  <properties>
+    <property name="gopherProxySet" value="false"/>
+    <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="sun.cpu.isalist" value=""/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/test-classes:/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/classes:/Users/daniswaraab/.m2/repository/id/dana/dana-java/0.1.9-SNAPSHOT/dana-java-0.1.9-SNAPSHOT.jar:/Users/daniswaraab/.m2/repository/io/swagger/swagger-annotations/1.6.3/swagger-annotations-1.6.3.jar:/Users/daniswaraab/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/retrofit/2.11.0/retrofit-2.11.0.jar:/Users/daniswaraab/.m2/repository/com/squareup/okhttp3/okhttp/3.14.9/okhttp-3.14.9.jar:/Users/daniswaraab/.m2/repository/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/converter-scalars/2.11.0/converter-scalars-2.11.0.jar:/Users/daniswaraab/.m2/repository/org/apache/oltu/oauth2/org.apache.oltu.oauth2.client/1.0.1/org.apache.oltu.oauth2.client-1.0.1.jar:/Users/daniswaraab/.m2/repository/org/apache/oltu/oauth2/org.apache.oltu.oauth2.common/1.0.1/org.apache.oltu.oauth2.common-1.0.1.jar:/Users/daniswaraab/.m2/repository/org/json/json/20140107/json-20140107.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/converter-jackson/2.11.0/converter-jackson-2.11.0.jar:/Users/daniswaraab/.m2/repository/org/openapitools/jackson-databind-nullable/0.2.6/jackson-databind-nullable-0.2.6.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.1/jackson-datatype-jsr310-2.17.1.jar:/Users/daniswaraab/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar:/Users/daniswaraab/.m2/repository/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.1/jackson-core-2.17.1.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.1/jackson-annotations-2.17.1.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.1/jackson-databind-2.17.1.jar:/Users/daniswaraab/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.13.1/junit-jupiter-api-5.13.1.jar:/Users/daniswaraab/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/daniswaraab/.m2/repository/org/junit/platform/junit-platform-commons/1.13.1/junit-platform-commons-1.13.1.jar:/Users/daniswaraab/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/daniswaraab/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.13.1/junit-jupiter-engine-5.13.1.jar:/Users/daniswaraab/.m2/repository/org/junit/platform/junit-platform-engine/1.13.1/junit-platform-engine-1.13.1.jar:/Users/daniswaraab/.m2/repository/org/apache/commons/commons-collections4/4.5.0/commons-collections4-4.5.0.jar:/Users/daniswaraab/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/daniswaraab/.m2/repository/io/github/cdimascio/dotenv-java/2.3.2/dotenv-java-2.3.2.jar:/Users/daniswaraab/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/Users/daniswaraab/.m2/repository/ch/qos/logback/logback-classic/1.3.15/logback-classic-1.3.15.jar:/Users/daniswaraab/.m2/repository/ch/qos/logback/logback-core/1.3.15/logback-core-1.3.15.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/rest-assured/4.2.0/rest-assured-4.2.0.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy/2.5.8/groovy-2.5.8.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy-xml/2.5.8/groovy-xml-2.5.8.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpcore/4.4.6/httpcore-4.4.6.jar:/Users/daniswaraab/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpmime/4.5.3/httpmime-4.5.3.jar:/Users/daniswaraab/.m2/repository/org/hamcrest/hamcrest/2.1/hamcrest-2.1.jar:/Users/daniswaraab/.m2/repository/org/ccil/cowan/tagsoup/tagsoup/1.2.1/tagsoup-1.2.1.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/json-path/4.2.0/json-path-4.2.0.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy-json/2.5.8/groovy-json-2.5.8.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/rest-assured-common/4.2.0/rest-assured-common-4.2.0.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/xml-path/4.2.0/xml-path-4.2.0.jar:/Users/daniswaraab/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar:/Users/daniswaraab/.m2/repository/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar:/Users/daniswaraab/.m2/repository/com/sun/xml/bind/jaxb-osgi/2.3.0.1/jaxb-osgi-2.3.0.1.jar:/Users/daniswaraab/.m2/repository/org/apache/sling/org.apache.sling.javax.activation/0.1.0/org.apache.sling.javax.activation-0.1.0.jar:/Users/daniswaraab/.m2/repository/javax/activation/activation/1.1.1/activation-1.1.1.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/json-schema-validator/4.2.0/json-schema-validator-4.2.0.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/json-schema-validator/2.2.10/json-schema-validator-2.2.10.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/json-schema-core/1.2.10/json-schema-core-1.2.10.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/jackson-coreutils/1.9/jackson-coreutils-1.9.jar:/Users/daniswaraab/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/Users/daniswaraab/.m2/repository/com/github/fge/msg-simple/1.1/msg-simple-1.1.jar:/Users/daniswaraab/.m2/repository/com/github/fge/btf/1.2/btf-1.2.jar:/Users/daniswaraab/.m2/repository/com/github/fge/uri-template/0.9/uri-template-0.9.jar:/Users/daniswaraab/.m2/repository/org/mozilla/rhino/1.7.7.1/rhino-1.7.7.1.jar:/Users/daniswaraab/.m2/repository/javax/mail/mailapi/1.4.3/mailapi-1.4.3.jar:/Users/daniswaraab/.m2/repository/joda-time/joda-time/2.9.7/joda-time-2.9.7.jar:/Users/daniswaraab/.m2/repository/com/googlecode/libphonenumber/libphonenumber/8.0.0/libphonenumber-8.0.0.jar:/Users/daniswaraab/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.3/jopt-simple-5.0.3.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/playwright/1.52.0/playwright-1.52.0.jar:/Users/daniswaraab/.m2/repository/com/google/code/gson/gson/2.12.1/gson-2.12.1.jar:/Users/daniswaraab/.m2/repository/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/driver/1.52.0/driver-1.52.0.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/driver-bundle/1.52.0/driver-bundle-1.52.0.jar:"/>
+    <property name="java.vm.vendor" value="Amazon.com Inc."/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://aws.amazon.com/corretto/"/>
+    <property name="user.timezone" value="Asia/Jakarta"/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="user.country" value="ID"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib"/>
+    <property name="sun.java.command" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/surefire/surefirebooter-20250805140037163_3.jar /Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/surefire 2025-08-05T14-00-36_766-jvmRun1 surefire-20250805140037163_1tmp surefire_0-20250805140037163_2tmp"/>
+    <property name="surefire.test.class.path" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/test-classes:/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/classes:/Users/daniswaraab/.m2/repository/id/dana/dana-java/0.1.9-SNAPSHOT/dana-java-0.1.9-SNAPSHOT.jar:/Users/daniswaraab/.m2/repository/io/swagger/swagger-annotations/1.6.3/swagger-annotations-1.6.3.jar:/Users/daniswaraab/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/retrofit/2.11.0/retrofit-2.11.0.jar:/Users/daniswaraab/.m2/repository/com/squareup/okhttp3/okhttp/3.14.9/okhttp-3.14.9.jar:/Users/daniswaraab/.m2/repository/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/converter-scalars/2.11.0/converter-scalars-2.11.0.jar:/Users/daniswaraab/.m2/repository/org/apache/oltu/oauth2/org.apache.oltu.oauth2.client/1.0.1/org.apache.oltu.oauth2.client-1.0.1.jar:/Users/daniswaraab/.m2/repository/org/apache/oltu/oauth2/org.apache.oltu.oauth2.common/1.0.1/org.apache.oltu.oauth2.common-1.0.1.jar:/Users/daniswaraab/.m2/repository/org/json/json/20140107/json-20140107.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/converter-jackson/2.11.0/converter-jackson-2.11.0.jar:/Users/daniswaraab/.m2/repository/org/openapitools/jackson-databind-nullable/0.2.6/jackson-databind-nullable-0.2.6.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.1/jackson-datatype-jsr310-2.17.1.jar:/Users/daniswaraab/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar:/Users/daniswaraab/.m2/repository/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.1/jackson-core-2.17.1.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.1/jackson-annotations-2.17.1.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.1/jackson-databind-2.17.1.jar:/Users/daniswaraab/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.13.1/junit-jupiter-api-5.13.1.jar:/Users/daniswaraab/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/daniswaraab/.m2/repository/org/junit/platform/junit-platform-commons/1.13.1/junit-platform-commons-1.13.1.jar:/Users/daniswaraab/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/daniswaraab/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.13.1/junit-jupiter-engine-5.13.1.jar:/Users/daniswaraab/.m2/repository/org/junit/platform/junit-platform-engine/1.13.1/junit-platform-engine-1.13.1.jar:/Users/daniswaraab/.m2/repository/org/apache/commons/commons-collections4/4.5.0/commons-collections4-4.5.0.jar:/Users/daniswaraab/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/daniswaraab/.m2/repository/io/github/cdimascio/dotenv-java/2.3.2/dotenv-java-2.3.2.jar:/Users/daniswaraab/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/Users/daniswaraab/.m2/repository/ch/qos/logback/logback-classic/1.3.15/logback-classic-1.3.15.jar:/Users/daniswaraab/.m2/repository/ch/qos/logback/logback-core/1.3.15/logback-core-1.3.15.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/rest-assured/4.2.0/rest-assured-4.2.0.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy/2.5.8/groovy-2.5.8.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy-xml/2.5.8/groovy-xml-2.5.8.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpcore/4.4.6/httpcore-4.4.6.jar:/Users/daniswaraab/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpmime/4.5.3/httpmime-4.5.3.jar:/Users/daniswaraab/.m2/repository/org/hamcrest/hamcrest/2.1/hamcrest-2.1.jar:/Users/daniswaraab/.m2/repository/org/ccil/cowan/tagsoup/tagsoup/1.2.1/tagsoup-1.2.1.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/json-path/4.2.0/json-path-4.2.0.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy-json/2.5.8/groovy-json-2.5.8.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/rest-assured-common/4.2.0/rest-assured-common-4.2.0.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/xml-path/4.2.0/xml-path-4.2.0.jar:/Users/daniswaraab/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar:/Users/daniswaraab/.m2/repository/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar:/Users/daniswaraab/.m2/repository/com/sun/xml/bind/jaxb-osgi/2.3.0.1/jaxb-osgi-2.3.0.1.jar:/Users/daniswaraab/.m2/repository/org/apache/sling/org.apache.sling.javax.activation/0.1.0/org.apache.sling.javax.activation-0.1.0.jar:/Users/daniswaraab/.m2/repository/javax/activation/activation/1.1.1/activation-1.1.1.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/json-schema-validator/4.2.0/json-schema-validator-4.2.0.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/json-schema-validator/2.2.10/json-schema-validator-2.2.10.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/json-schema-core/1.2.10/json-schema-core-1.2.10.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/jackson-coreutils/1.9/jackson-coreutils-1.9.jar:/Users/daniswaraab/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/Users/daniswaraab/.m2/repository/com/github/fge/msg-simple/1.1/msg-simple-1.1.jar:/Users/daniswaraab/.m2/repository/com/github/fge/btf/1.2/btf-1.2.jar:/Users/daniswaraab/.m2/repository/com/github/fge/uri-template/0.9/uri-template-0.9.jar:/Users/daniswaraab/.m2/repository/org/mozilla/rhino/1.7.7.1/rhino-1.7.7.1.jar:/Users/daniswaraab/.m2/repository/javax/mail/mailapi/1.4.3/mailapi-1.4.3.jar:/Users/daniswaraab/.m2/repository/joda-time/joda-time/2.9.7/joda-time-2.9.7.jar:/Users/daniswaraab/.m2/repository/com/googlecode/libphonenumber/libphonenumber/8.0.0/libphonenumber-8.0.0.jar:/Users/daniswaraab/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.3/jopt-simple-5.0.3.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/playwright/1.52.0/playwright-1.52.0.jar:/Users/daniswaraab/.m2/repository/com/google/code/gson/gson/2.12.1/gson-2.12.1.jar:/Users/daniswaraab/.m2/repository/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/driver/1.52.0/driver-1.52.0.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/driver-bundle/1.52.0/driver-bundle-1.52.0.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/daniswaraab"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.home" value="/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre"/>
+    <property name="basedir" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java"/>
+    <property name="file.separator" value="/"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.CGraphicsEnvironment"/>
+    <property name="surefire.real.class.path" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/surefire/surefirebooter-20250805140037163_3.jar"/>
+    <property name="sun.boot.class.path" value="/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/resources.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/rt.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/sunrsasign.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/jsse.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/jce.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/charsets.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/jfr.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/classes"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="1.8.0_422-b05"/>
+    <property name="user.name" value="daniswaraab"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="15.5"/>
+    <property name="java.endorsed.dirs" value="/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/endorsed"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/Users/daniswaraab/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/corretto/corretto-8/issues/"/>
+    <property name="java.io.tmpdir" value="/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/"/>
+    <property name="idea.version" value="2023.3.5"/>
+    <property name="java.version" value="1.8.0_422"/>
+    <property name="user.dir" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java"/>
+    <property name="os.arch" value="x86_64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.library.path" value="/Users/daniswaraab/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.vendor" value="Amazon.com Inc."/>
+    <property name="java.vm.version" value="25.422-b05"/>
+    <property name="java.specification.maintenance.version" value="5"/>
+    <property name="java.ext.dirs" value="/Users/daniswaraab/Library/Java/Extensions:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="java.class.version" value="52.0"/>
+  </properties>
+  <testcase name="testCancelOrderTimeout" classname="id.dana.paymentgateway.CancelOrderTest" time="0.051">
+    <system-out><![CDATA[14:09:11.102 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"5005701","responseMessage":"Internal Server Error"}
+14:09:11.103 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"5005701","responseMessage":"Internal Server Error"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderWithInsufficientFunds" classname="id.dana.paymentgateway.CancelOrderTest" time="0.039">
+    <system-out><![CDATA[14:09:11.142 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4035714","responseMessage":"Insufficient Funds"}
+14:09:11.143 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4035714","responseMessage":"Insufficient Funds"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderUnauthorized" classname="id.dana.paymentgateway.CancelOrderTest" time="0.13">
+    <system-out><![CDATA[14:09:11.274 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4015700","responseMessage":"Unauthorized. Invalid Signature"}
+14:09:11.274 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4015700","responseMessage":"Unauthorized. Invalid Signature"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderTransactionNotFound" classname="id.dana.paymentgateway.CancelOrderTest" time="0.051">
+    <system-out><![CDATA[14:09:11.323 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4045701","responseMessage":"Transaction Not Found"}
+14:09:11.324 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4045701","responseMessage":"Transaction Not Found"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderWithMerchantStatusAbnormal" classname="id.dana.paymentgateway.CancelOrderTest" time="0.036">
+    <system-out><![CDATA[14:09:11.362 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4045708","responseMessage":"Invalid Merchant"}
+14:09:11.362 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4045708","responseMessage":"Invalid Merchant"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderInvalidMandatoryField" classname="id.dana.paymentgateway.CancelOrderTest" time="0.134">
+    <system-out><![CDATA[14:09:11.497 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4005702","responseMessage":"Invalid Mandatory Field X-TIMESTAMP"}
+14:09:11.497 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4005702","responseMessage":"Invalid Mandatory Field X-TIMESTAMP"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderValid" classname="id.dana.paymentgateway.CancelOrderTest" time="0.177">
+    <system-out><![CDATA[14:09:11.675 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"2005700","responseMessage":"Success"}
+14:09:11.675 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"2005700","responseMessage":"Success"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderInProgress" classname="id.dana.paymentgateway.CancelOrderTest" time="0.035">
+    <system-out><![CDATA[14:09:11.712 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"2025700","responseMessage":"Request In Progress"}
+14:09:11.712 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"2025700","responseMessage":"Request In Progress"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderWithUserStatusAbnormal" classname="id.dana.paymentgateway.CancelOrderTest" time="0.039">
+    <system-out><![CDATA[14:09:11.752 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4035705","responseMessage":"Do Not Honor"}
+14:09:11.752 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4035705","responseMessage":"Do Not Honor"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderInvalidTransactionStatus" classname="id.dana.paymentgateway.CancelOrderTest" time="121.769">
+    <error message="Error {&#10;  message=&apos;Timeout 30000ms exceeded.&#10;  name=&apos;TimeoutError&#10;  stack=&apos;TimeoutError: Timeout 30000ms exceeded.&#10;    at ProgressController.run (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/progress.js:76:26)&#10;    at Frame.click (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/frames.js:991:23)&#10;    at FrameDispatcher.click (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/frameDispatcher.js:117:30)&#10;    at FrameDispatcher._handleCommand (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/dispatcher.js:94:40)&#10;    at DispatcherConnection.dispatch (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/dispatcher.js:307:39)&#10;}&#10;Call log:&#10;-   - waiting for locator(&quot;//*[contains(@class,\&quot;btn-pay\&quot;)]&quot;)&#10;" type="com.microsoft.playwright.TimeoutError"><![CDATA[com.microsoft.playwright.TimeoutError: 
+Error {
+  message='Timeout 30000ms exceeded.
+  name='TimeoutError
+  stack='TimeoutError: Timeout 30000ms exceeded.
+    at ProgressController.run (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/progress.js:76:26)
+    at Frame.click (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/frames.js:991:23)
+    at FrameDispatcher.click (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/frameDispatcher.js:117:30)
+    at FrameDispatcher._handleCommand (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/dispatcher.js:94:40)
+    at DispatcherConnection.dispatch (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/dispatcher.js:307:39)
+}
+Call log:
+-   - waiting for locator("//*[contains(@class,\"btn-pay\")]")
+
+	at com.microsoft.playwright.impl.WaitableResult.get(WaitableResult.java:52)
+	at com.microsoft.playwright.impl.ChannelOwner.runUntil(ChannelOwner.java:132)
+	at com.microsoft.playwright.impl.Connection.sendMessage(Connection.java:130)
+	at com.microsoft.playwright.impl.ChannelOwner.sendMessage(ChannelOwner.java:118)
+	at com.microsoft.playwright.impl.FrameImpl.clickImpl(FrameImpl.java:252)
+	at com.microsoft.playwright.impl.FrameImpl.lambda$click$8(FrameImpl.java:243)
+	at com.microsoft.playwright.impl.LoggingSupport.lambda$withLogging$0(LoggingSupport.java:36)
+	at com.microsoft.playwright.impl.LoggingSupport.withLogging(LoggingSupport.java:47)
+	at com.microsoft.playwright.impl.ChannelOwner.withLogging(ChannelOwner.java:97)
+	at com.microsoft.playwright.impl.LoggingSupport.withLogging(LoggingSupport.java:35)
+	at com.microsoft.playwright.impl.FrameImpl.click(FrameImpl.java:243)
+	at com.microsoft.playwright.impl.LocatorImpl.click(LocatorImpl.java:174)
+	at com.microsoft.playwright.Locator.click(Locator.java:2513)
+	at id.dana.paymentgateway.PaymentPGUtil.payOrder(PaymentPGUtil.java:58)
+	at id.dana.paymentgateway.CancelOrderTest.payOrder(CancelOrderTest.java:299)
+	at id.dana.paymentgateway.CancelOrderTest.refundOrder(CancelOrderTest.java:281)
+	at id.dana.paymentgateway.CancelOrderTest.testCancelOrderInvalidTransactionStatus(CancelOrderTest.java:230)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at java.util.ArrayList.forEach(ArrayList.java:1259)
+	at java.util.ArrayList.forEach(ArrayList.java:1259)
+Caused by: com.microsoft.playwright.TimeoutError: Error {
+  message='Timeout 30000ms exceeded.
+  name='TimeoutError
+  stack='TimeoutError: Timeout 30000ms exceeded.
+    at ProgressController.run (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/progress.js:76:26)
+    at Frame.click (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/frames.js:991:23)
+    at FrameDispatcher.click (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/frameDispatcher.js:117:30)
+    at FrameDispatcher._handleCommand (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/dispatcher.js:94:40)
+    at DispatcherConnection.dispatch (/private/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/playwright-java-4383588387874026000/package/lib/server/dispatchers/dispatcher.js:307:39)
+}
+Call log:
+-   - waiting for locator("//*[contains(@class,\"btn-pay\")]")
+
+	at com.microsoft.playwright.impl.Connection.dispatch(Connection.java:254)
+	at com.microsoft.playwright.impl.Connection.processOneMessage(Connection.java:211)
+	at com.microsoft.playwright.impl.ChannelOwner.runUntil(ChannelOwner.java:130)
+	... 18 more
+]]></error>
+    <system-out><![CDATA[14:09:17.040 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Redirect to page payment: https://m.sandbox.dana.id/n/cashier/new/checkout?bizNo=20250805111212800110166722302205418&timestamp=1754377752241&originSourcePlatform=IPG&mid=216620010016033632482&sign=dHjGb%2FBBGBpREPgAnmZqWJjil%2Fp0Z2BZxy8z9ed%2BAZAC2Q6dVSMrpxbctKdH%2Bfv5pFEDHVZ9CRQ4XP8FvXwx4g7YZcO7o80sXjePqIvCsacr9LgtKusteM7%2FVcnRE4Dqc%2B0TmN7dCWzXG6fVAiskCvtXjrxFTYkDN7yIqnYBiWOqSe20h00PwZNpz9HHc67kNvEIP4bpHkUfiIUjWXtG6lyzbiiu%2FFMKRyPDZI61kzl5k52PqOgXgidshDKsEjb4KBI1GoP3ezpMCPwwffcUTIz1W82xfkqJz8iL%2BibkZB407TxOLgbVh%2FetMZ8WE%2BggZI006Wuq3jckv0B8dxogRA%3D%3D&forceToH5=false&newRegistrationPage=true
+14:09:18.096 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Input phone number: 0811742234 and pin: 123321
+14:09:21.750 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Click button pay
+14:09:52.273 [main] WARN id.dana.util.RetryTestUtil -- Test 'testCancelOrderInvalidTransactionStatus' failed (attempt 1/3). Retrying in 1000 ms...
+14:09:57.198 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Redirect to page payment: https://m.sandbox.dana.id/n/cashier/new/checkout?bizNo=20250805111212800110166442802235083&timestamp=1754377793726&originSourcePlatform=IPG&mid=216620010016033632482&sign=J5RwxQUzVXEo21ewlC%2BZdSDTfStTya9f4S8vzDci14aIi453v4KQGQKaauQi8BidkxiykWh2XaHPD4dIeu19OGoKPXYL0%2BPO%2B0rnfn9MKzgLyxFix6%2B47YoJH44Y3q%2Fy0LmbGQ6voE%2FahGCOGxgNFu51h%2FdiGTVAJBeYNpBgwlx8rdGJiUP28hAfANXbzRrIRjvASYg0abl6cERy5R%2Be4lXtpR8THswJbE1NA7iRK4qtm8fJmWia0Nybp6ciEukPSDZ4dfjIEUElwIKUStP1yMCmD1ynrp9nEHX3J4qxwIy4BX9IBmnwELk2AWowxdVI7uDPGvjfM0xMW0hLjPQgGA%3D%3D&forceToH5=false&newRegistrationPage=true
+14:09:59.713 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Input phone number: 0811742234 and pin: 123321
+14:10:02.028 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Click button pay
+14:10:32.468 [main] WARN id.dana.util.RetryTestUtil -- Test 'testCancelOrderInvalidTransactionStatus' failed (attempt 2/3). Retrying in 1000 ms...
+14:10:37.684 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Redirect to page payment: https://m.sandbox.dana.id/n/cashier/new/checkout?bizNo=20250805111212800110166306702213391&timestamp=1754377833910&originSourcePlatform=IPG&mid=216620010016033632482&sign=cUBd2stsM9jNyyEimFFS6FzOyUl%2B2UBz8jasbWqqet1F%2FuhSAdmB78dKmaELnGV%2F23MX%2B4Aj%2B%2FcsZss%2F8QuJv9EDtFPwkRI2RZrZhIIrE3Q5QJM18p3Qq%2FSkayih7X%2FHbp9Q7OAwsfYLe%2F23lNShV1PFal1DwVq8Y7qQpppjFB7ewBeWGstR3MP%2FYqJMJTvCTy4phhMpKdmIpKDSu525EZMZwlkSqiXQUUgPbHiiaff9hXb0cCv4TvLMhQx4tPYOWFhGo%2F08BKBc3nQwWTdtxH7RIbDF3Lw94sIcsxbauZXMRH4h0QVWAYetzS3WHt5byUnQ1O2dBJvkJONog6W7Cw%3D%3D&forceToH5=false&newRegistrationPage=true
+14:10:40.184 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Input phone number: 0811742234 and pin: 123321
+14:10:43.070 [main] INFO id.dana.paymentgateway.CreateOrderTest -- Click button pay
+14:11:13.516 [main] ERROR id.dana.util.RetryTestUtil -- Test 'testCancelOrderInvalidTransactionStatus' failed after 3 attempts
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderWithExpiredTransaction" classname="id.dana.paymentgateway.CancelOrderTest" time="0.038">
+    <system-out><![CDATA[14:11:13.560 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4035700","responseMessage":"Transaction Expired"}
+14:11:13.560 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4035700","responseMessage":"Transaction Expired"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderWithAccountStatusAbnormal" classname="id.dana.paymentgateway.CancelOrderTest" time="0.038">
+    <system-out><![CDATA[14:11:13.599 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4035705","responseMessage":"Do Not Honor"}
+14:11:13.599 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4035705","responseMessage":"Do Not Honor"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCancelOrderWithAgreementNotAllowed" classname="id.dana.paymentgateway.CancelOrderTest" time="0.034">
+    <system-out><![CDATA[14:11:13.634 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"4035715","responseMessage":"Transaction Not Permitted"}
+14:11:13.634 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"4035715","responseMessage":"Transaction Not Permitted"}
+]]></system-out>
+  </testcase>
+</testsuite>
