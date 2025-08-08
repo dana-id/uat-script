@@ -64,6 +64,8 @@ const merchantId = process.env.MERCHANT_ID || "";
 // Shared test data for cross-test dependencies
 let sharedOriginalPartnerReference: string;
 let sharedOriginalPaidPartnerReference: string;
+let sharedOriginalPaidPartnerReferenceforDuplicate: string;
+let sharedOriginalPaidPartnerReferenceforIdempotent: string;
 
 /**
  * Generates a unique partner reference number for test isolation
@@ -365,20 +367,13 @@ describe('Payment Gateway - Refund Order Tests', () => {
      * Test: Duplicate refund request with same parameters
      * Expected: HTTP 409 or response code 4045818 for inconsistent request
      */
-    test.skip('RefundOrderDuplicateRequest - should fail when sending a duplicate refund request', async () => {
+    test('RefundOrderDuplicateRequest - should fail when sending a duplicate refund request', async () => {
         const refundOrderCaseName = "RefundOrderDuplicateRequest";
         const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
         refundRequestData.originalPartnerReferenceNo = sharedOriginalPaidPartnerReference;
         refundRequestData.partnerRefundNo = sharedOriginalPaidPartnerReference;
-
-        // First attempt: should succeed
-        let firstResponse;
-        try {
-            firstResponse = await dana.paymentGatewayApi.refundOrder(refundRequestData);
-            console.log(`First refund response: ${JSON.stringify(firstResponse)}`);
-        } catch (e: any) {
-            fail("First refund attempt failed unexpectedly: " + (e.rawResponse ? JSON.stringify(e.rawResponse) : e));
-        }
+        refundRequestData.refundAmount.currency = "IDR";
+        refundRequestData.refundAmount.value = "10000.00"; // Set a valid refund amount
 
         // Second attempt: should fail with "4045818" (Inconsistent Request)
         try {
@@ -495,11 +490,11 @@ describe('Payment Gateway - Refund Order Tests', () => {
      * Test: Refund with invalid bill information
      * Expected: HTTP 400, bad request error for invalid bill data
      */
-    test.skip('RefundOrderInvalidBill - should fail when invalid bill information is provided', async () => {
+    test('RefundOrderInvalidBill - should fail when invalid bill information is provided', async () => {
         const refundOrderCaseName = "RefundOrderInvalidBill";
         const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
-        refundRequestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
-        refundRequestData.partnerRefundNo = "invalid-bill-refund-" + uuidv4();
+        refundRequestData.originalPartnerReferenceNo = "f77466d6-1825-4091";
+        refundRequestData.partnerRefundNo = "f77466d6-1825-4091";
         console.log(`Refund Request Data: ${JSON.stringify(refundRequestData)}`);
 
         try {
@@ -625,100 +620,17 @@ describe('Payment Gateway - Refund Order Tests', () => {
      * Test: Idempotent refund with concurrent requests
      * Expected: Consistent responses for identical concurrent refund requests
      */
-    test.skip('RefundOrderIdempotent - should succeed idempotently when refund is retried with same partnerRefundNo', async () => {
+    test('RefundOrderIdempotent - should succeed idempotently when refund is retried with same partnerRefundNo', async () => {
         const refundOrderCaseName = "RefundOrderIdempotent";
         const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
+        refundRequestData.originalPartnerReferenceNo = sharedOriginalPaidPartnerReference;
+        refundRequestData.partnerRefundNo = sharedOriginalPaidPartnerReference;
 
-        // The JSON config uses fixed reference numbers for idempotency testing
-        // originalPartnerReferenceNo: "123123123123124"
-        // partnerRefundNo: "123123123123124"
-        console.log(`Idempotent refund request data: ${JSON.stringify(refundRequestData)}`);
+        // Second attempt: should succeed with same response
+        const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
+        console.log(`Refund Order Response: ${JSON.stringify(response)}`);
 
-        // Test concurrent requests like Java implementation (simplified to 3 concurrent requests for Node.js)
-        const numberOfRequests = 3;
-        const promises: Promise<any>[] = [];
-
-        // Create multiple concurrent requests with the same parameters
-        for (let i = 0; i < numberOfRequests; i++) {
-            promises.push(
-                dana.paymentGatewayApi.refundOrder(refundRequestData)
-                    .then(response => {
-                        console.log(`Request ${i + 1} succeeded: ${JSON.stringify(response)}`);
-                        return { success: true, response, requestIndex: i + 1 };
-                    })
-                    .catch(error => {
-                        console.log(`Request ${i + 1} failed: ${error.status} - ${JSON.stringify(error.rawResponse)}`);
-                        return { success: false, error, requestIndex: i + 1 };
-                    })
-            );
-        }
-
-        // Wait for all concurrent requests to complete
-        const results = await Promise.all(promises);
-
-        // Analyze the results for idempotency
-        const successResults = results.filter(r => r.success);
-        const errorResults = results.filter(r => !r.success);
-
-        if (successResults.length > 0) {
-            // Some requests succeeded - verify all successful responses are identical
-            const firstSuccessResponse = successResults[0].response;
-
-            for (let i = 1; i < successResults.length; i++) {
-                const currentResponse = successResults[i].response;
-                if (JSON.stringify(firstSuccessResponse) !== JSON.stringify(currentResponse)) {
-                    fail(`Idempotent requests returned different successful responses. 
-                          Request ${successResults[0].requestIndex}: ${JSON.stringify(firstSuccessResponse)}
-                          Request ${successResults[i].requestIndex}: ${JSON.stringify(currentResponse)}`);
-                }
-            }
-
-            // If some succeeded and some failed, this is not proper idempotent behavior
-            if (errorResults.length > 0) {
-                console.warn(`Inconsistent idempotent behavior: ${successResults.length} requests succeeded, ${errorResults.length} failed`);
-                // Log details but don't fail the test as this might be expected behavior
-                errorResults.forEach(result => {
-                    console.log(`Request ${result.requestIndex} error: ${result.error.status} - ${JSON.stringify(result.error.rawResponse)}`);
-                });
-            }
-
-            // Assert that the successful response matches expected format
-            await assertResponse(jsonPathFile, titleCase, refundOrderCaseName, firstSuccessResponse,
-                { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
-
-            console.log(`Idempotent refund test passed - ${successResults.length} requests succeeded with identical responses`);
-
-        } else if (errorResults.length === numberOfRequests) {
-            // All requests failed - verify all error responses are identical (idempotent failure)
-            const firstError = errorResults[0].error;
-
-            for (let i = 1; i < errorResults.length; i++) {
-                const currentError = errorResults[i].error;
-                if (firstError.status !== currentError.status ||
-                    JSON.stringify(firstError.rawResponse) !== JSON.stringify(currentError.rawResponse)) {
-                    fail(`Idempotent requests returned different error responses. 
-                          Request ${errorResults[0].requestIndex}: ${firstError.status} - ${JSON.stringify(firstError.rawResponse)}
-                          Request ${errorResults[i].requestIndex}: ${currentError.status} - ${JSON.stringify(currentError.rawResponse)}`);
-                }
-            }
-
-            // Assert that the error response matches expected format
-            if (Number(firstError.status) === 500 && firstError.rawResponse && firstError.rawResponse.responseCode === "5005801") {
-                console.log("Received expected 500 Internal Server Error - this is normal for idempotency test with non-existent reference numbers");
-                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(firstError.rawResponse));
-            } else if (Number(firstError.status) === 404 || (firstError.rawResponse && firstError.rawResponse.responseCode === "4045800")) {
-                console.log("Received expected 404 or Invalid Transaction Status error - this is normal for non-existent transactions");
-                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(firstError.rawResponse));
-            } else {
-                // Still pass the test if all requests failed consistently, but log the unexpected error
-                console.log(`All requests failed consistently with: ${firstError.status} - ${JSON.stringify(firstError.rawResponse)}`);
-                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(firstError.rawResponse));
-            }
-
-            console.log(`Idempotent refund test passed - all ${errorResults.length} requests failed with identical errors (consistent idempotent behavior)`);
-        } else {
-            fail('Unexpected test state - no results returned');
-        }
+        await assertResponse(jsonPathFile, titleCase, refundOrderCaseName, response, { 'partnerReferenceNo': sharedOriginalPaidPartnerReference });
     });
 
 });

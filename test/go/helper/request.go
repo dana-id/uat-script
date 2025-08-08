@@ -49,7 +49,6 @@ func ExecuteAPIRequestWithCustomHeaders(
 		"X-PARTNER-ID":  os.Getenv("X_PARTNER_ID"),
 		"CHANNEL-ID":    os.Getenv("CHANNEL_ID"),
 		"Content-Type":  "application/json",
-		"X-SIGNATURE":   headerParams["X-SIGNATURE"],
 		"ORIGIN":        os.Getenv("ORIGIN"),
 		"X-EXTERNAL-ID": uuid.New().String(),
 	}
@@ -57,6 +56,10 @@ func ExecuteAPIRequestWithCustomHeaders(
 	// Add timestamp if not explicitly provided in custom headers
 	if _, found := customHeaders["X-TIMESTAMP"]; !found {
 		headers["X-TIMESTAMP"] = time.Now().Format("2006-01-02T15:04:05-07:00")
+	}
+
+	if _, found := customHeaders["X-SIGNATURE"]; !found {
+		headers["X-SIGNATURE"] = headerParams["X-SIGNATURE"]
 	}
 
 	// Apply any custom headers (these will override defaults)

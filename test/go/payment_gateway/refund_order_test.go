@@ -3,9 +3,7 @@ package payment_gateway_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
-	"sync"
 	"testing"
 	"time"
 
@@ -798,90 +796,62 @@ func TestRefundOrderTimeout(t *testing.T) {
 }
 
 func TestRefundOrderIdempotent(t *testing.T) {
-	t.Skip("Skip: Need implementation for idempotent refund order test")
-	// Create a paid order
+	// Create a paid order to get the original partner reference number
 	partnerReferenceNo, err := createPaidOrder(phoneNumber, pin)
 	if err != nil {
 		t.Fatalf("Failed to create paid order: %v", err)
 	}
 
-	// Number of concurrent refund attempts
-	const numRefunds = 3
+	// Use a specific case for in-progress order refund
+	caseName := "RefundOrderIdempotent"
 
-	// Use channels to collect results
-	results := make(chan string, numRefunds)
-	errors := make(chan error, numRefunds)
-
-	// Use WaitGroup to wait for all goroutines
-	var wg sync.WaitGroup
-	wg.Add(numRefunds)
-
-	// Launch concurrent refunds
-	for i := 0; i < numRefunds; i++ {
-		go func(index int) {
-			defer wg.Done()
-
-			// Generate unique refund reference for each attempt
-			refundNo := fmt.Sprintf("%s-refund-%d", partnerReferenceNo, index)
-
-			// Get request data
-			jsonDict, err := helper.GetRequest(refundOrderJsonPath, refundOrderTitleCase, "RefundOrderValidScenario")
-			if err != nil {
-				errors <- fmt.Errorf("failed to get request data: %v", err)
-				results <- ""
-				return
-			}
-
-			jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-			jsonDict["partnerRefundNo"] = refundNo
-			jsonDict["merchantId"] = merchantId
-
-			// Create refund request
-			refundOrderRequest := &pg.RefundOrderRequest{}
-			jsonBytes, _ := json.Marshal(jsonDict)
-			json.Unmarshal(jsonBytes, refundOrderRequest)
-
-			// Make the API call
-			ctx := context.Background()
-			apiResponse, _, err := helper.ApiClient.PaymentGatewayAPI.RefundOrder(ctx).
-				RefundOrderRequest(*refundOrderRequest).Execute()
-
-			if err != nil {
-				errors <- err
-				results <- ""
-				return
-			}
-
-			// Get refund ID from response
-			refundId := apiResponse.PartnerRefundNo
-			results <- refundId
-			errors <- nil
-
-		}(i)
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(refundOrderJsonPath, refundOrderTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
 	}
 
-	// Wait for all goroutines to complete
-	wg.Wait()
-	close(results)
-	close(errors)
+	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+	jsonDict["partnerRefundNo"] = partnerReferenceNo
+	jsonDict["merchantId"] = merchantId
 
-	// Check results
-	successCount := 0
-	failCount := 0
-
-	for err := range errors {
-		if err != nil {
-			failCount++
-			t.Logf("Refund error: %v", err)
-		} else {
-			successCount++
-		}
+	// Create the RefundOrderRequest object and populate it with JSON data
+	refundOrderRequest := &pg.RefundOrderRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
 
-	t.Logf("Concurrent refunds: %d succeeded, %d failed", successCount, failCount)
+	err = json.Unmarshal(jsonBytes, refundOrderRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
 
-	// At least one refund should succeed
-	if successCount == 0 {
-		t.Errorf("All concurrent refunds failed")
+	// Make the API call
+	ctx := context.Background()
+	// First call to refund the order
+	helper.ApiClient.PaymentGatewayAPI.RefundOrder(ctx).RefundOrderRequest(*refundOrderRequest).Execute()
+	// Second call to refund the order (idempotent)
+	apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.RefundOrder(ctx).RefundOrderRequest(*refundOrderRequest).Execute()
+	if err != nil {
+		t.Fatalf("API call failed: %v", err)
+	}
+	defer httpResponse.Body.Close()
+
+	// Convert the response to JSON for assertion
+	responseJSON, err := apiResponse.MarshalJSON()
+	if err != nil {
+		t.Fatalf("Failed to convert response to JSON: %v", err)
+	}
+
+	// Create variable dictionary for dynamic values
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
+	}
+
+	// Assert the API response with variable substitution
+	err = helper.AssertResponse(refundOrderJsonPath, refundOrderTitleCase, caseName, string(responseJSON), variableDict)
+	if err != nil {
+		t.Fatal(err)
 	}
 }

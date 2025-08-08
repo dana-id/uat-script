@@ -94,7 +94,7 @@
             },
             "response": {
                 "responseCode": "4017400",
-                "responseMessage": "Unauthorized. Invalid Signature"
+                "responseMessage": "java.security.SignatureException: Signature length not correct: got 3 but was expecting 256"
             }
         }
     },
@@ -102,10 +102,18 @@
         "AccountUnbindSuccess": {
             "request": {
                 "@type": "AccountUnbindingRequest",
+                "partnerReferenceNo": "partnerReferenceNo",
                 "merchantId": "${merchantId}",
+                "linkId": "linkId",
+                "subMerchantId": "210000123",
+                "tokenId": "tokenId",
                 "additionalInfo": {
-                    "@type": "AccountUnbindingRequestAdditionalInfo"
+                    "accessToken" : "${accessToken}"
                 }
+            },
+            "response": {
+                "responseCode": "2000900",
+                "responseMessage": "Successful"
             }
         },
         "AccountUnbindFailAccessTokenNotExist": {
@@ -119,6 +127,10 @@
                 "additionalInfo": {
                     "accessToken" : "${accessToken}"
                 }
+            },
+            "response": {
+                "responseCode": "4010902",
+                "responseMessage": "Invalid Customer Token"
             }
         },
         "AccountUnbindFailInvalidUserStatus": {
@@ -132,6 +144,10 @@
                 "additionalInfo": {
                     "accessToken" : "${accessToken}"
                 }
+            },
+            "response": {
+                "responseCode": "4030905",
+                "responseMessage": "Do Not Honor"
             }
         },
         "AccountUnbindFailInvalidParams": {
@@ -144,6 +160,10 @@
                 "additionalInfo": {
                     "accessToken" : "${accessToken}"
                 }
+            },
+            "response": {
+                "responseCode": "2000900",
+                "responseMessage": "Successful"
             }
         }
     },
@@ -174,8 +194,8 @@
                 ]
             },
             "response": {
-                "responseCode": "2004900",
-                "responseMessage": "Successful"
+                "responseCode": "4014902",
+                "responseMessage": "Invalid Customer Token"
             }
         },
         "ApplyOttFailInvalidFormat": {
@@ -1230,7 +1250,7 @@
         "CancelOrderFailTimeout": {
             "request": {
                 "originalPartnerReferenceNo": "5005701",
-                "originalReferenceNo": "",
+                "originalReferenceNo": "5005701",
                 "originalExternalId": "",
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",

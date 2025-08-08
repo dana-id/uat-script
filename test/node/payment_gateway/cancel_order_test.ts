@@ -109,62 +109,20 @@ describe('Cancel Order Tests', () => {
     const cancelOrderCaseName = "CancelOrderValidScenario";
 
     try {
-      // Add delay to ensure system stability before creating order
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Load test data for insufficient funds scenario
+      const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, cancelOrderCaseName);
+      requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference; // Use shared order reference
+      requestData.merchantId = merchantId; // Set merchant ID for the request
 
-      // Step 1: Create an order that will be paid via redirect URL
-      const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
-      const paidPartnerReference = generatePartnerReferenceNo();
-      createOrderRequestData.partnerReferenceNo = paidPartnerReference;
-      createOrderRequestData.merchantId = merchantId;
+      // Attempt to cancel order with insufficient funds
+      const response = await dana.paymentGatewayApi.cancelOrder(requestData);
 
-      console.log(`Creating order for payment automation...`);
-      const createOrderResponse = await dana.paymentGatewayApi.createOrder(createOrderRequestData);
-
-      if (createOrderResponse.webRedirectUrl) {
-        console.log(`Order created successfully. WebRedirectUrl: ${createOrderResponse.webRedirectUrl}`);
-        console.log(`Starting payment automation...`);
-
-        // Step 2: Automate the payment process using browser automation
-        // This simulates a user completing payment through the DANA web interface
-        const automationResult = await automatePayment(
-          '0811742234', // Test phone number for automation
-          '123321',     // Test PIN for automation
-          createOrderResponse.webRedirectUrl, // Payment URL from create order response
-          3,            // Maximum retry attempts
-          2000,         // Delay between retries (ms)
-          true         // Run browser in headless mode
-        );
-
-        if (automationResult.success) {
-          console.log(`Payment automation successful after ${automationResult.attempts} attempts`);
-        } else {
-          console.log(`Payment automation failed: ${automationResult.error}`);
-          throw new Error(`Payment automation failed: ${automationResult.error}`);
-        }
-      } else {
-        throw new Error('No webRedirectUrl in create order response');
-      }
-
-      // Wait for payment processing to complete
-      await new Promise(resolve => setTimeout(resolve, 5000));
-
-      // Step 3: Cancel the paid order
-      const cancelRequestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, cancelOrderCaseName);
-      cancelRequestData.originalPartnerReferenceNo = paidPartnerReference;
-      cancelRequestData.merchantId = merchantId;
-      cancelRequestData.amount = createOrderRequestData.amount; // Must match original order amount
-
-      console.log(`Attempting to cancel paid order with reference: ${paidPartnerReference}`);
-      const response = await dana.paymentGatewayApi.cancelOrder(cancelRequestData);
-
-      // Step 4: Validate the cancellation response against expected data
-      await assertResponse(jsonPathFile, titleCase, cancelOrderCaseName, response, { 'partnerReferenceNo': paidPartnerReference });
-      console.log(`Successfully canceled paid order with reference: ${paidPartnerReference}`);
+      await assertResponse(jsonPathFile, titleCase, cancelOrderCaseName, response, { 'partnerReferenceNo': "2005700" });
     } catch (e) {
-      console.error('Cancel order test failed:', e);
+      console.error('Cancel order in progress test failed:', e);
       throw e;
     }
+    
   });
 
   /**

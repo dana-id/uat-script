@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="id.dana.paymentgateway.CreateOrderTest" time="3.034" tests="9" errors="0" skipped="1" failures="0">
+  <properties>
+    <property name="gopherProxySet" value="false"/>
+    <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="sun.cpu.isalist" value=""/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/test-classes:/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/classes:/Users/daniswaraab/.m2/repository/id/dana/dana-java/0.1.9-SNAPSHOT/dana-java-0.1.9-SNAPSHOT.jar:/Users/daniswaraab/.m2/repository/io/swagger/swagger-annotations/1.6.3/swagger-annotations-1.6.3.jar:/Users/daniswaraab/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/retrofit/2.11.0/retrofit-2.11.0.jar:/Users/daniswaraab/.m2/repository/com/squareup/okhttp3/okhttp/3.14.9/okhttp-3.14.9.jar:/Users/daniswaraab/.m2/repository/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/converter-scalars/2.11.0/converter-scalars-2.11.0.jar:/Users/daniswaraab/.m2/repository/org/apache/oltu/oauth2/org.apache.oltu.oauth2.client/1.0.1/org.apache.oltu.oauth2.client-1.0.1.jar:/Users/daniswaraab/.m2/repository/org/apache/oltu/oauth2/org.apache.oltu.oauth2.common/1.0.1/org.apache.oltu.oauth2.common-1.0.1.jar:/Users/daniswaraab/.m2/repository/org/json/json/20140107/json-20140107.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/converter-jackson/2.11.0/converter-jackson-2.11.0.jar:/Users/daniswaraab/.m2/repository/org/openapitools/jackson-databind-nullable/0.2.6/jackson-databind-nullable-0.2.6.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.1/jackson-datatype-jsr310-2.17.1.jar:/Users/daniswaraab/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar:/Users/daniswaraab/.m2/repository/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.1/jackson-core-2.17.1.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.1/jackson-annotations-2.17.1.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.1/jackson-databind-2.17.1.jar:/Users/daniswaraab/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.13.1/junit-jupiter-api-5.13.1.jar:/Users/daniswaraab/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/daniswaraab/.m2/repository/org/junit/platform/junit-platform-commons/1.13.1/junit-platform-commons-1.13.1.jar:/Users/daniswaraab/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/daniswaraab/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.13.1/junit-jupiter-engine-5.13.1.jar:/Users/daniswaraab/.m2/repository/org/junit/platform/junit-platform-engine/1.13.1/junit-platform-engine-1.13.1.jar:/Users/daniswaraab/.m2/repository/org/apache/commons/commons-collections4/4.5.0/commons-collections4-4.5.0.jar:/Users/daniswaraab/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/daniswaraab/.m2/repository/io/github/cdimascio/dotenv-java/2.3.2/dotenv-java-2.3.2.jar:/Users/daniswaraab/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/Users/daniswaraab/.m2/repository/ch/qos/logback/logback-classic/1.3.15/logback-classic-1.3.15.jar:/Users/daniswaraab/.m2/repository/ch/qos/logback/logback-core/1.3.15/logback-core-1.3.15.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/rest-assured/4.2.0/rest-assured-4.2.0.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy/2.5.8/groovy-2.5.8.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy-xml/2.5.8/groovy-xml-2.5.8.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpcore/4.4.6/httpcore-4.4.6.jar:/Users/daniswaraab/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpmime/4.5.3/httpmime-4.5.3.jar:/Users/daniswaraab/.m2/repository/org/hamcrest/hamcrest/2.1/hamcrest-2.1.jar:/Users/daniswaraab/.m2/repository/org/ccil/cowan/tagsoup/tagsoup/1.2.1/tagsoup-1.2.1.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/json-path/4.2.0/json-path-4.2.0.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy-json/2.5.8/groovy-json-2.5.8.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/rest-assured-common/4.2.0/rest-assured-common-4.2.0.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/xml-path/4.2.0/xml-path-4.2.0.jar:/Users/daniswaraab/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar:/Users/daniswaraab/.m2/repository/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar:/Users/daniswaraab/.m2/repository/com/sun/xml/bind/jaxb-osgi/2.3.0.1/jaxb-osgi-2.3.0.1.jar:/Users/daniswaraab/.m2/repository/org/apache/sling/org.apache.sling.javax.activation/0.1.0/org.apache.sling.javax.activation-0.1.0.jar:/Users/daniswaraab/.m2/repository/javax/activation/activation/1.1.1/activation-1.1.1.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/json-schema-validator/4.2.0/json-schema-validator-4.2.0.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/json-schema-validator/2.2.10/json-schema-validator-2.2.10.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/json-schema-core/1.2.10/json-schema-core-1.2.10.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/jackson-coreutils/1.9/jackson-coreutils-1.9.jar:/Users/daniswaraab/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/Users/daniswaraab/.m2/repository/com/github/fge/msg-simple/1.1/msg-simple-1.1.jar:/Users/daniswaraab/.m2/repository/com/github/fge/btf/1.2/btf-1.2.jar:/Users/daniswaraab/.m2/repository/com/github/fge/uri-template/0.9/uri-template-0.9.jar:/Users/daniswaraab/.m2/repository/org/mozilla/rhino/1.7.7.1/rhino-1.7.7.1.jar:/Users/daniswaraab/.m2/repository/javax/mail/mailapi/1.4.3/mailapi-1.4.3.jar:/Users/daniswaraab/.m2/repository/joda-time/joda-time/2.9.7/joda-time-2.9.7.jar:/Users/daniswaraab/.m2/repository/com/googlecode/libphonenumber/libphonenumber/8.0.0/libphonenumber-8.0.0.jar:/Users/daniswaraab/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.3/jopt-simple-5.0.3.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/playwright/1.52.0/playwright-1.52.0.jar:/Users/daniswaraab/.m2/repository/com/google/code/gson/gson/2.12.1/gson-2.12.1.jar:/Users/daniswaraab/.m2/repository/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/driver/1.52.0/driver-1.52.0.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/driver-bundle/1.52.0/driver-bundle-1.52.0.jar:"/>
+    <property name="java.vm.vendor" value="Amazon.com Inc."/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://aws.amazon.com/corretto/"/>
+    <property name="user.timezone" value="Asia/Jakarta"/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="user.country" value="ID"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib"/>
+    <property name="sun.java.command" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/surefire/surefirebooter-20250805140037163_3.jar /Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/surefire 2025-08-05T14-00-36_766-jvmRun1 surefire-20250805140037163_1tmp surefire_0-20250805140037163_2tmp"/>
+    <property name="surefire.test.class.path" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/test-classes:/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/classes:/Users/daniswaraab/.m2/repository/id/dana/dana-java/0.1.9-SNAPSHOT/dana-java-0.1.9-SNAPSHOT.jar:/Users/daniswaraab/.m2/repository/io/swagger/swagger-annotations/1.6.3/swagger-annotations-1.6.3.jar:/Users/daniswaraab/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/retrofit/2.11.0/retrofit-2.11.0.jar:/Users/daniswaraab/.m2/repository/com/squareup/okhttp3/okhttp/3.14.9/okhttp-3.14.9.jar:/Users/daniswaraab/.m2/repository/com/squareup/okio/okio/1.17.2/okio-1.17.2.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/converter-scalars/2.11.0/converter-scalars-2.11.0.jar:/Users/daniswaraab/.m2/repository/org/apache/oltu/oauth2/org.apache.oltu.oauth2.client/1.0.1/org.apache.oltu.oauth2.client-1.0.1.jar:/Users/daniswaraab/.m2/repository/org/apache/oltu/oauth2/org.apache.oltu.oauth2.common/1.0.1/org.apache.oltu.oauth2.common-1.0.1.jar:/Users/daniswaraab/.m2/repository/org/json/json/20140107/json-20140107.jar:/Users/daniswaraab/.m2/repository/com/squareup/retrofit2/converter-jackson/2.11.0/converter-jackson-2.11.0.jar:/Users/daniswaraab/.m2/repository/org/openapitools/jackson-databind-nullable/0.2.6/jackson-databind-nullable-0.2.6.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.17.1/jackson-datatype-jsr310-2.17.1.jar:/Users/daniswaraab/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.1.1/javax.ws.rs-api-2.1.1.jar:/Users/daniswaraab/.m2/repository/commons-codec/commons-codec/1.16.0/commons-codec-1.16.0.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.17.1/jackson-core-2.17.1.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.17.1/jackson-annotations-2.17.1.jar:/Users/daniswaraab/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.17.1/jackson-databind-2.17.1.jar:/Users/daniswaraab/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.13.1/junit-jupiter-api-5.13.1.jar:/Users/daniswaraab/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/daniswaraab/.m2/repository/org/junit/platform/junit-platform-commons/1.13.1/junit-platform-commons-1.13.1.jar:/Users/daniswaraab/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/daniswaraab/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.13.1/junit-jupiter-engine-5.13.1.jar:/Users/daniswaraab/.m2/repository/org/junit/platform/junit-platform-engine/1.13.1/junit-platform-engine-1.13.1.jar:/Users/daniswaraab/.m2/repository/org/apache/commons/commons-collections4/4.5.0/commons-collections4-4.5.0.jar:/Users/daniswaraab/.m2/repository/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.jar:/Users/daniswaraab/.m2/repository/io/github/cdimascio/dotenv-java/2.3.2/dotenv-java-2.3.2.jar:/Users/daniswaraab/.m2/repository/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar:/Users/daniswaraab/.m2/repository/ch/qos/logback/logback-classic/1.3.15/logback-classic-1.3.15.jar:/Users/daniswaraab/.m2/repository/ch/qos/logback/logback-core/1.3.15/logback-core-1.3.15.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/rest-assured/4.2.0/rest-assured-4.2.0.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy/2.5.8/groovy-2.5.8.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy-xml/2.5.8/groovy-xml-2.5.8.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpclient/4.5.3/httpclient-4.5.3.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpcore/4.4.6/httpcore-4.4.6.jar:/Users/daniswaraab/.m2/repository/commons-logging/commons-logging/1.2/commons-logging-1.2.jar:/Users/daniswaraab/.m2/repository/org/apache/httpcomponents/httpmime/4.5.3/httpmime-4.5.3.jar:/Users/daniswaraab/.m2/repository/org/hamcrest/hamcrest/2.1/hamcrest-2.1.jar:/Users/daniswaraab/.m2/repository/org/ccil/cowan/tagsoup/tagsoup/1.2.1/tagsoup-1.2.1.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/json-path/4.2.0/json-path-4.2.0.jar:/Users/daniswaraab/.m2/repository/org/codehaus/groovy/groovy-json/2.5.8/groovy-json-2.5.8.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/rest-assured-common/4.2.0/rest-assured-common-4.2.0.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/xml-path/4.2.0/xml-path-4.2.0.jar:/Users/daniswaraab/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar:/Users/daniswaraab/.m2/repository/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar:/Users/daniswaraab/.m2/repository/com/sun/xml/bind/jaxb-osgi/2.3.0.1/jaxb-osgi-2.3.0.1.jar:/Users/daniswaraab/.m2/repository/org/apache/sling/org.apache.sling.javax.activation/0.1.0/org.apache.sling.javax.activation-0.1.0.jar:/Users/daniswaraab/.m2/repository/javax/activation/activation/1.1.1/activation-1.1.1.jar:/Users/daniswaraab/.m2/repository/io/rest-assured/json-schema-validator/4.2.0/json-schema-validator-4.2.0.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/json-schema-validator/2.2.10/json-schema-validator-2.2.10.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/json-schema-core/1.2.10/json-schema-core-1.2.10.jar:/Users/daniswaraab/.m2/repository/com/github/java-json-tools/jackson-coreutils/1.9/jackson-coreutils-1.9.jar:/Users/daniswaraab/.m2/repository/com/google/guava/guava/16.0.1/guava-16.0.1.jar:/Users/daniswaraab/.m2/repository/com/github/fge/msg-simple/1.1/msg-simple-1.1.jar:/Users/daniswaraab/.m2/repository/com/github/fge/btf/1.2/btf-1.2.jar:/Users/daniswaraab/.m2/repository/com/github/fge/uri-template/0.9/uri-template-0.9.jar:/Users/daniswaraab/.m2/repository/org/mozilla/rhino/1.7.7.1/rhino-1.7.7.1.jar:/Users/daniswaraab/.m2/repository/javax/mail/mailapi/1.4.3/mailapi-1.4.3.jar:/Users/daniswaraab/.m2/repository/joda-time/joda-time/2.9.7/joda-time-2.9.7.jar:/Users/daniswaraab/.m2/repository/com/googlecode/libphonenumber/libphonenumber/8.0.0/libphonenumber-8.0.0.jar:/Users/daniswaraab/.m2/repository/net/sf/jopt-simple/jopt-simple/5.0.3/jopt-simple-5.0.3.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/playwright/1.52.0/playwright-1.52.0.jar:/Users/daniswaraab/.m2/repository/com/google/code/gson/gson/2.12.1/gson-2.12.1.jar:/Users/daniswaraab/.m2/repository/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/driver/1.52.0/driver-1.52.0.jar:/Users/daniswaraab/.m2/repository/com/microsoft/playwright/driver-bundle/1.52.0/driver-bundle-1.52.0.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/daniswaraab"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.home" value="/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre"/>
+    <property name="basedir" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java"/>
+    <property name="file.separator" value="/"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.CGraphicsEnvironment"/>
+    <property name="surefire.real.class.path" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java/target/surefire/surefirebooter-20250805140037163_3.jar"/>
+    <property name="sun.boot.class.path" value="/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/resources.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/rt.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/sunrsasign.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/jsse.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/jce.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/charsets.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/jfr.jar:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/classes"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="1.8.0_422-b05"/>
+    <property name="user.name" value="daniswaraab"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="15.5"/>
+    <property name="java.endorsed.dirs" value="/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/endorsed"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/Users/daniswaraab/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/corretto/corretto-8/issues/"/>
+    <property name="java.io.tmpdir" value="/var/folders/wd/sp4_8lk50lq_9cbtc4l8jtrjjq6rj9/T/"/>
+    <property name="idea.version" value="2023.3.5"/>
+    <property name="java.version" value="1.8.0_422"/>
+    <property name="user.dir" value="/Users/daniswaraab/Documents/dana-self-integration-test/test/java"/>
+    <property name="os.arch" value="x86_64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.library.path" value="/Users/daniswaraab/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.vendor" value="Amazon.com Inc."/>
+    <property name="java.vm.version" value="25.422-b05"/>
+    <property name="java.specification.maintenance.version" value="5"/>
+    <property name="java.ext.dirs" value="/Users/daniswaraab/Library/Java/Extensions:/Users/daniswaraab/Library/Java/JavaVirtualMachines/corretto-1.8.0_422/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="java.class.version" value="52.0"/>
+  </properties>
+  <testcase name="testCreateOrderNetworkPayPgQris" classname="id.dana.paymentgateway.CreateOrderTest" time="0.0">
+    <skipped message="void id.dana.paymentgateway.CreateOrderTest.testCreateOrderNetworkPayPgQris() is @Disabled"/>
+  </testcase>
+  <testcase name="testCreateOrderUnauthorized" classname="id.dana.paymentgateway.CreateOrderTest" time="0.248">
+    <system-out><![CDATA[14:11:13.901 [main] INFO id.dana.util.TestUtil -- Processing error response 
+expected data: 
+{"responseMessage":"Unauthorized. Invalid Signature","responseCode":"4015400"}
+14:11:13.902 [main] INFO id.dana.util.TestUtil -- Assertion passed: API error response matches the expected data {"responseMessage":"Unauthorized. Invalid Signature","responseCode":"4015400"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCreateOrderInvalidFieldFormat" classname="id.dana.paymentgateway.CreateOrderTest" time="0.045">
+    <system-out><![CDATA[14:11:13.946 [main] INFO id.dana.util.TestUtil -- Processing error response 
+expected data: 
+{"partnerReferenceNo":"d31812d5-fb0c-4bcc-918d-100f12ee924e","responseCode":"4005401","responseMessage":"Invalid Field Format amount"}
+14:11:13.947 [main] INFO id.dana.util.TestUtil -- Assertion passed: API error response matches the expected data {"partnerReferenceNo":"d31812d5-fb0c-4bcc-918d-100f12ee924e","responseCode":"4005401","responseMessage":"Invalid Field Format amount"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCreateOrderApi" classname="id.dana.paymentgateway.CreateOrderTest" time="0.278">
+    <system-out><![CDATA[14:11:14.225 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"2005400","responseMessage":"Successful"}
+14:11:14.226 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"2005400","responseMessage":"Successful"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCreateOrderRedirect" classname="id.dana.paymentgateway.CreateOrderTest" time="0.127">
+    <system-out><![CDATA[14:11:14.356 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"2005400","responseMessage":"Successful"}
+14:11:14.356 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"2005400","responseMessage":"Successful"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCreateOrderNetworkPayPgOtherVaBank" classname="id.dana.paymentgateway.CreateOrderTest" time="0.978">
+    <system-out><![CDATA[14:11:15.334 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"2005400","responseMessage":"Successful","referenceNo":"${valueFromServer}","partnerReferenceNo":"3c5bf3f3-2f2d-4a08-9e07-b9756709b09a","additionalInfo":{"paymentCode":"${valueFromServer}"}}
+14:11:15.335 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"2005400","responseMessage":"Successful","referenceNo":"${valueFromServer}","partnerReferenceNo":"3c5bf3f3-2f2d-4a08-9e07-b9756709b09a","additionalInfo":{"paymentCode":"${valueFromServer}"}}
+]]></system-out>
+  </testcase>
+  <testcase name="testCreateOrderNetworkPayPgOtherWallet" classname="id.dana.paymentgateway.CreateOrderTest" time="0.245">
+    <system-out><![CDATA[14:11:15.580 [main] INFO id.dana.util.TestUtil -- Processing response 
+expected data: 
+{"responseCode":"2005400","responseMessage":"Successful"}
+14:11:15.581 [main] INFO id.dana.util.TestUtil -- Assertion passed: API response matches the expected data {"responseCode":"2005400","responseMessage":"Successful"}
+14:11:15.581 [main] INFO id.dana.paymentgateway.CreateOrderTest -- ✓ Wallet test passed successfully
+]]></system-out>
+  </testcase>
+  <testcase name="testCreateOrderInvalidMandatoryField" classname="id.dana.paymentgateway.CreateOrderTest" time="0.125">
+    <system-out><![CDATA[14:11:15.706 [main] INFO id.dana.util.TestUtil -- Processing error response 
+expected data: 
+{"responseCode":"4005402","responseMessage":"Invalid Mandatory Field X-TIMESTAMP"}
+14:11:15.707 [main] INFO id.dana.util.TestUtil -- Assertion passed: API error response matches the expected data {"responseCode":"4005402","responseMessage":"Invalid Mandatory Field X-TIMESTAMP"}
+]]></system-out>
+  </testcase>
+  <testcase name="testCreateOrderInconsistentRequest" classname="id.dana.paymentgateway.CreateOrderTest" time="0.966">
+    <system-out><![CDATA[14:11:16.673 [main] INFO id.dana.util.TestUtil -- Processing error response 
+expected data: 
+{"partnerReferenceNo":"2ed4e0f1-79df-4a34-a93e-fcb548e5e37c","responseMessage":"Inconsistent Request","responseCode":"4045418"}
+14:11:16.674 [main] INFO id.dana.util.TestUtil -- Assertion passed: API error response matches the expected data {"partnerReferenceNo":"2ed4e0f1-79df-4a34-a93e-fcb548e5e37c","responseMessage":"Inconsistent Request","responseCode":"4045418"}
+]]></system-out>
+  </testcase>
+</testsuite>

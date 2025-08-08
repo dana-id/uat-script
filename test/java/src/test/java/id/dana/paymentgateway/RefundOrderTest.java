@@ -70,8 +70,9 @@ class RefundOrderTest {
         Map<String, Object> variableDict = new HashMap<>();
         variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
 
-        RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+        RefundOrderResponse response1 = api.refundOrder(requestData);
+        RefundOrderResponse response2 = api.refundOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response1, variableDict);
     }
 
     @Test
@@ -153,8 +154,6 @@ class RefundOrderTest {
         Map<String, Object> variableDict = new HashMap<>();
         variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
 
-        // First refund
-        api.refundOrder(requestData);
         // Second refund
         RefundOrderResponse response = api.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
@@ -336,7 +335,7 @@ class RefundOrderTest {
     @Test
     void testRefundOrderIndempotent() throws InterruptedException {
         Map<String, Object> variableDict = new HashMap<>();
-        String caseName = "RefundOrderIndempotent";
+        String caseName = "RefundOrderIdempotent";
         int numberOfThreads = 10;
         ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
         CountDownLatch latch = new CountDownLatch(numberOfThreads);

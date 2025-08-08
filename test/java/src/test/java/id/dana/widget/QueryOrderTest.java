@@ -8,6 +8,7 @@ import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.CreateOrderTest;
+import id.dana.paymentgateway.PaymentPGUtil;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
 import id.dana.paymentgateway.v1.model.CreateOrderByRedirectRequest;
 import id.dana.paymentgateway.v1.model.CreateOrderResponse;
@@ -25,15 +26,14 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,15 +42,18 @@ public class QueryOrderTest {
     private static final String titleCase = "QueryOrder";
     private static final String jsonPathFile = QueryOrderTest.class.getResource("/request/components/Widget.json")
             .getPath();
-    private final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
+    private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
     private static String userPin = "123321";
     private static String userPhone = "0811742234";
-    private WidgetApi widgetApi;
-    private PaymentGatewayApi paymentGatewayApi;
-    private static String partnerReferenceNoPaid,partnerReferenceNoCancel,partnerReferenceNoInit;
+    private static WidgetApi widgetApi;
+    private static String
+            partnerReferenceNoPaid,
+            partnerReferenceNoCancel,
+            partnerReferenceNoInit,
+            partnerReferenceNoPaying;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    static void setUp() throws InterruptedException {
         DanaConfig.Builder danaConfigBuilder = new DanaConfig.Builder();
         danaConfigBuilder
                 .partnerId(ConfigUtil.getConfig("X_PARTNER_ID", ""))
@@ -61,14 +64,16 @@ public class QueryOrderTest {
         DanaConfig.getInstance(danaConfigBuilder);
 
         widgetApi = Dana.getInstance().getWidgetApi();
-        paymentGatewayApi = Dana.getInstance().getPaymentGatewayApi();
+
+        List<String> dataOrderInit = createPayment("PaymentSuccess");
+        List<String> dataOrderPaying = createPayment("PaymentPaying");
+        partnerReferenceNoInit = dataOrderInit.get(0);
+        partnerReferenceNoPaying = dataOrderPaying.get(0);
+        partnerReferenceNoCancel = cancelOrder();
     }
 
     @Test
     void testQueryOrderSuccessInitiated() throws IOException {
-        // Create an order with an initial status
-        List<String> dataOrder= PaymentWidgetUtil.createPayment("PaymentSuccess");
-
         // Create an order with an initial status
         Map<String, Object> variableDict = new HashMap<>();
         String caseName = "QueryOrderSuccessInitiated";
@@ -76,10 +81,10 @@ public class QueryOrderTest {
                 QueryPaymentRequest.class);
 
         // Assign unique reference and merchant ID
-        requestData.setOriginalPartnerReferenceNo(dataOrder.get(0));
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", dataOrder.get(0));
+        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
@@ -87,23 +92,22 @@ public class QueryOrderTest {
     }
 
     @Test
-    void testQueryOrderSuccessPaid() throws IOException {
-        // Create an order with an initial status
-        String partnerReferenceNo= PaymentWidgetUtil.payOrderWithDana(
-                userPhone,
-                userPin,
-                "PaymentSuccess");
-
+    void testQueryOrderSuccessPaid() throws IOException, InterruptedException {
         Map<String, Object> variableDict = new HashMap<>();
         String caseName = "QueryOrderSuccessPaid";
+
+        partnerReferenceNoPaid = payOrder(
+                userPhone,
+                userPin);
+
         QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 QueryPaymentRequest.class);
 
         // Assign unique reference and merchant ID
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+        variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
@@ -112,19 +116,16 @@ public class QueryOrderTest {
 
     @Test
     void testQueryOrderSuccessPaying() throws IOException {
-        // Create an order with a paying status
-        List<String> orderData = PaymentWidgetUtil.createPayment("PaymentPaying");
-
         Map<String, Object> variableDict = new HashMap<>();
         String caseName = "QueryOrderSuccessPaying";
         QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 QueryPaymentRequest.class);
 
         // Assign unique reference and merchant ID
-        requestData.setOriginalPartnerReferenceNo(orderData.get(0));
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaying);
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", orderData.get(0));
+        variableDict.put("partnerReferenceNo", partnerReferenceNoPaying);
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
@@ -133,9 +134,6 @@ public class QueryOrderTest {
 
     @Test
     void testQueryOrderSuccessCancelled() throws IOException {
-        // Create an order with a cancelled status
-        String partnerReferenceNo = PaymentWidgetUtil.cancelOrder("PaymentSuccess");
-
         Map<String, Object> variableDict = new HashMap<>();
         // Create an order with a cancelled status
         String caseName = "QueryOrderSuccessCancelled";
@@ -143,10 +141,10 @@ public class QueryOrderTest {
                 QueryPaymentRequest.class);
 
         // Use the reference number for a canceled order
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNo);
+        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoCancel);
         requestData.setMerchantId(merchantId);
 
-        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+        variableDict.put("partnerReferenceNo", partnerReferenceNoCancel);
         variableDict.put("merchantId", merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
@@ -269,5 +267,54 @@ public class QueryOrderTest {
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+    }
+
+    public static List<String> createPayment(String originOrder) {
+        List<String> dataOrder = new ArrayList<>();
+
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, "Payment",
+                originOrder, WidgetPaymentRequest.class);
+
+        // Assign unique reference and merchant ID
+        String partnerReferenceNo = UUID.randomUUID().toString();
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+        Assertions.assertTrue(response.getResponseCode().contains("200"),
+                "Response code is not 200, actual: " + response.getResponseCode());
+
+        //Index 0 is partnerReferenceNo
+        dataOrder.add(partnerReferenceNo);
+        //Index 1 is the web redirect URL
+        dataOrder.add(response.getWebRedirectUrl());
+
+        return dataOrder;
+    }
+
+    public static String cancelOrder() {
+        List<String> dataOrder = createPayment("PaymentSuccess");
+        CancelOrderRequest requestDataCancel = TestUtil.getRequest(
+                jsonPathFile,
+                "CancelOrder",
+                "CancelOrderValidScenario",
+                CancelOrderRequest.class);
+
+        requestDataCancel.setOriginalPartnerReferenceNo(dataOrder.get(0));
+        requestDataCancel.setMerchantId(merchantId);
+
+        CancelOrderResponse responseCancel = widgetApi.cancelOrder(requestDataCancel);
+        Assertions.assertTrue(responseCancel.getResponseCode().contains("200"));
+        return dataOrder.get(0);
+    }
+
+    public static String payOrder(String phoneNumber, String pin) throws InterruptedException {
+        List<String> dataOrder = createPayment("PaymentSuccess");
+        PaymentWidgetUtil.payOrder(phoneNumber,pin,dataOrder.get(1));
+        Thread.sleep(5000); // Wait for the payment to be processed
+        return dataOrder.get(0);
     }
 }

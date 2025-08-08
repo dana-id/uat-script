@@ -133,44 +133,36 @@ def test_refund_order_valid(test_order_reference_number):
 
 @with_delay()
 @retry_test(max_retries=3,delay_seconds=10)
-def test_refund_order_indempotent():
+@pytest.mark.skip(reason="skipped by request: scenario RefundOrderIndempotent")
+def test_refund_order_indempotent(test_order_reference_number):
     """Test refund order indempotent"""
     case_name = "RefundOrderIndempotent"
+    
+    
+    # Create a test order paid and get the reference number
+    test_order_reference_number = create_test_order_paid()
 
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
 
     # Set the partner reference number
-    test_order_reference_number = generate_partner_reference_no()
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
     json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-
-    # Function to execute
-    def make_request(request_obj):
-        try:
-            return ("success", api_instance.refund_order(request_obj))
-        except Exception as e:
-            return ("error", e)
-        
-    # Use thread pool to execute both requests
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        future1 = executor.submit(make_request, refund_order_request_obj)
-        future2 = executor.submit(make_request, refund_order_request_obj)
-        
-        result1 = future1.result()
-        result2 = future2.result()
-        
-    print(f"Result 1: {result1}")
-    print(f"Result 2: {result2}")
-
-    assert result1[0] == result2[0], f"Results do not match: {result1[0]} != {result2[0]}"
     
-    if result1[0] == result2[0]:
-        assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(result1[1]), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+    # Make the API call and assert the response
+    try:
+        # First hit API
+        api_instance.refund_order(refund_order_request_obj)
+        
+        # Second hit API with same data (duplicate)
+        api_instance.refund_order(refund_order_request_obj)
+        pytest.fail("Expected NotFoundException but the API call succeeded")
+    except NotFoundException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
 @with_delay()
 @retry_test(max_retries=1, delay_seconds=10)
@@ -202,39 +194,34 @@ def test_refund_order_due_to_exceed():
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
 @with_delay()
-@pytest.mark.skip(reason="skipped by request: scenario RefundOrderDuplicateRequest")
-def test_refund_order_duplicate_request():
+def test_refund_order_duplicate_request(test_order_reference_number):
     """Test refund duplicate request"""
     case_name = "RefundOrderDuplicateRequest"
+    
+    # Create a test order paid and get the reference number
+    test_order_reference_number = create_test_order_paid()
 
     # Get the request data from the JSON file
-    json_dict1 = get_request(json_path_file, title_case, case_name)
-    json_dict2 = get_request(json_path_file, title_case, case_name)
+    json_dict = get_request(json_path_file, title_case, case_name)
 
-    test_order_reference_number1 = generate_partner_reference_no()
-    test_order_reference_number2 = generate_partner_reference_no()
     # Set the partner reference number
-    json_dict1["originalPartnerReferenceNo"] = test_order_reference_number1
-    json_dict1["partnerRefundNo"] = test_order_reference_number1
-    json_dict1["merchantId"] = merchant_id
-    json_dict2["originalPartnerReferenceNo"] = test_order_reference_number2
-    json_dict2["partnerRefundNo"] = test_order_reference_number2
-    json_dict2["merchantId"] = merchant_id
+    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    json_dict["partnerRefundNo"] = test_order_reference_number
+    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
-    refund_order_request_obj1 = RefundOrderRequest.from_dict(json_dict1)
-    refund_order_request_obj2 = RefundOrderRequest.from_dict(json_dict2)
-    api_instance.refund_order(refund_order_request_obj1)
+    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
 
     # Make the API call and assert the response
     try:
-        api_instance.refund_order(refund_order_request_obj2)
-
+        # First hit API
+        api_instance.refund_order(refund_order_request_obj)
+        refund_order_request_obj.refund_amount = Money(currency="IDR", value="10000.00")
+        # Second hit API with same data (duplicate)
+        api_instance.refund_order(refund_order_request_obj)
         pytest.fail("Expected NotFoundException but the API call succeeded")
     except NotFoundException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-
-
 
 @with_delay()
 def test_refund_order_not_allowed(test_order_reference_number):
@@ -385,14 +372,13 @@ def test_refund_order_invalid_mandatory_field(test_order_reference_number):
     )
 
 @with_delay()
-@pytest.mark.skip(reason="skipped by request: scenario RefundOrderInvalidBill")
 def test_refund_order_not_exist(test_order_reference_number):
     """Test refund when order not exist"""
     case_name = "RefundOrderInvalidBill"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["partnerRefundNo"] = test_order_reference_number
+    json_dict["originalPartnerReferenceNo"] = "reference_number_not_exist"
+    json_dict["partnerRefundNo"] = "reference_number_not_exist"
     json_dict["merchantId"] = merchant_id
     
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)

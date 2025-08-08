@@ -3,28 +3,228 @@
 package widget_test
 
 import (
+	"os"
+	"context"
+	"encoding/json"
+	"fmt"
 	"testing"
+
+	"uat-script/helper"
+	widget_helper "uat-script/widget"
+
+	widget "github.com/dana-id/dana-go/widget/v1"
 )
 
-// ApplyToken
+const (
+	widgetApplyTokenCase  = "ApplyToken"
+	widgetJsonPath      = "../../../resource/request/components/Widget.json"
+)
+
+var (
+	merchantID   = os.Getenv("MERCHANT_ID")
+	phoneNumber  = "0811742234"
+	pin          = "123321"
+	
+)
+
 func TestApplyTokenSuccess(t *testing.T) {
-	t.Skip("Skip: Skeleton test not implemented")
-}
-func TestApplyTokenFailExpiredAuthcode(t *testing.T) {
-	t.Skip("Skip: Skeleton test not implemented")
-}
-func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
-	t.Skip("Skip: Skeleton test not implemented")
-}
-func TestApplyTokenFailAuthcodeInvalid(t *testing.T) {
-	t.Skip("Skip: Skeleton test not implemented")
-}
-func TestApplyTokenFailInvalidParams(t *testing.T) {
-	t.Skip("Skip: Skeleton test not implemented")
-}
-func TestApplyTokenFailInvalidMandatoryFields(t *testing.T) {
-	t.Skip("Skip: Skeleton test not implemented")
+	helper.RetryTest(t, 3, 1, func() error {
+	caseName := "ApplyTokenSuccess"
+
+	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
+		phoneNumber,
+		pin,
+	)
+	authCode, _ := widget_helper.GetAuthCode(
+		phoneNumber,
+		pin,
+		redirectUrlAuthCode)
+
+	// Get the request data from JSON
+	jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyTokenCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+	jsonDict["authCode"] = authCode
+
+	// Marshal to JSON and unmarshal to widget SDK struct for type safety
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	applyTokenAuthorizationCodeRequest := &widget.ApplyTokenAuthorizationCodeRequest{}
+	err = json.Unmarshal(jsonBytes, applyTokenAuthorizationCodeRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Create Apply Token request with Authorization Code
+	authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
+	applyTokenRequestValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReq)
+	applyTokenRequest := &applyTokenRequestValue
+
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Execute the SDK API call with success expectation
+	ctx := context.Background()
+
+	// Make the API call using the Widget SDK
+	apiResponse, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(*applyTokenRequest).Execute()
+	if err != nil {
+		t.Fatalf("API request failed: %v", err)
+	}
+	defer httpResponse.Body.Close()
+
+	// Convert the response to JSON for assertion
+	responseJSON, err := apiResponse.MarshalJSON()
+	if err != nil {
+		t.Fatalf("Failed to convert response to JSON: %v", err)
+	}
+
+	err = helper.AssertResponse(
+		widgetJsonPath,
+		widgetApplyTokenCase,
+		caseName,
+		string(responseJSON),
+		nil,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return nil
+})
 }
 func TestApplyTokenFailInvalidSignature(t *testing.T) {
-	t.Skip("Skip: Skeleton test not implemented")
+	caseName := "ApplyTokenFailInvalidSignature"
+
+	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
+		phoneNumber, 
+		pin,
+	)
+	authCode, _ := widget_helper.GetAuthCode(
+		phoneNumber, 
+		pin,
+		redirectUrlAuthCode,
+	)
+	
+	// Get the request data from JSON
+	jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyTokenCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+	jsonDict["authCode"] = authCode
+
+	// Marshal to JSON and unmarshal to widget SDK struct for type safety
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	applyTokenAuthorizationCodeRequest := &widget.ApplyTokenAuthorizationCodeRequest{}
+	err = json.Unmarshal(jsonBytes, applyTokenAuthorizationCodeRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Create Apply Token request with Authorization Code
+	authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
+	applyTokenRequestValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReq)
+	applyTokenRequest := &applyTokenRequestValue
+
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Set up the context and endpoint details
+	ctx := context.Background()
+	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/access-token/b2b2c.htm"
+	resourcePath := "/payment-gateway/v1.0/access-token/b2b2c.htm"
+
+	// Set custom headers with invalid signature to trigger authorization error
+	customHeaders := map[string]string{
+		"X-SIGNATURE": "xyzu", // Invalid signature
+	}
+
+	_ = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		applyTokenRequest,
+		"POST",
+		endpoint,
+		resourcePath,
+		widgetJsonPath,
+		widgetApplyTokenCase,
+		caseName,
+		customHeaders,
+		nil,
+	)
+}
+
+func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
+	helper.RetryTest(t, 3, 1, func() error {
+		caseName := "ApplyTokenFailAuthcodeUsed"
+
+		redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
+			phoneNumber, 
+			pin,
+		)
+		authCode, _ := widget_helper.GetAuthCode(
+			phoneNumber, 
+			pin,
+			redirectUrlAuthCode,
+		)
+		widget_helper.GetAccessToken(authCode)
+
+		// Get the request data from JSON
+		jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyTokenCase, caseName)
+		if err != nil {
+			t.Fatalf("Failed to get request data: %v", err)
+		}
+		jsonDict["authCode"] = authCode
+
+		// Marshal to JSON and unmarshal to widget SDK struct for type safety
+		jsonBytes, err := json.Marshal(jsonDict)
+		if err != nil {
+			t.Fatalf("Failed to marshal JSON: %v", err)
+		}
+
+		applyTokenAuthorizationCodeRequest := &widget.ApplyTokenAuthorizationCodeRequest{}
+		err = json.Unmarshal(jsonBytes, applyTokenAuthorizationCodeRequest)
+		if err != nil {
+			t.Fatalf("Failed to unmarshal JSON: %v", err)
+		}
+
+		// Create Apply Token request with Authorization Code
+		authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
+		applyTokenRequestValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReq)
+		applyTokenRequest := &applyTokenRequestValue
+
+		fmt.Printf("ApplyTokenRequest: %+v\n", applyTokenRequest)
+
+		if err != nil {
+			t.Fatalf("Failed to unmarshal JSON: %v", err)
+		}
+
+		// Execute the SDK API call with success expectation
+		ctx := context.Background()
+
+		// Make the API call using the Widget SDK
+		_, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(*applyTokenRequest).Execute()
+		if err != nil {
+			// Assert the API error response
+			err = helper.AssertFailResponse(widgetJsonPath, widgetApplyTokenCase, caseName, httpResponse, map[string]interface{}{
+				"partnerReferenceNo": "4035703",
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+		} else {
+			httpResponse.Body.Close()
+			t.Fatal("Expected error but got successful response")
+		}
+		return nil
+	})
 }

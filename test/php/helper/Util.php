@@ -232,7 +232,7 @@ class Util
             if ($withTimestamp) {
                 $headers['X-TIMESTAMP'] = $generatedTimestamp[0];
             } else {
-                $headers['X-TIMESTAMP'] = '';
+                $headers['X-TIMESTAMP'] = "";
             }
         } else {
             if ($method === null || $resourcePath === null || $requestObj === null) {

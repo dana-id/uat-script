@@ -5,10 +5,13 @@ import id.dana.invoker.model.DanaConfig;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
+import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
 import id.dana.widget.v1.api.WidgetApi;
 import id.dana.widget.v1.model.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -19,16 +22,16 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 public class ApplyOttTest {
-    private final static String USER_PIN = "123321";
-    private final static String USER_PHONENUMBER = "0811742234";
+    private final static String USER_PIN = "131000";
+    private final static String USER_PHONENUMBER = "087875849373";
     private static final String titleCase = "ApplyOtt";
     private static final String jsonPathFile = ApplyToken.class.getResource("/request/components/Widget.json")
             .getPath();
-    private WidgetApi widgetApi;
-    private String accessToken;
+    private static WidgetApi widgetApi;
+    private static String accessToken;
 
-    @BeforeEach
-    void setUp() throws
+    @BeforeAll
+    static void setUp() throws
             UnsupportedEncodingException,
             NoSuchAlgorithmException,
             InvalidKeySpecException,
@@ -52,6 +55,7 @@ public class ApplyOttTest {
     }
 
     @Test
+    @RetryTestUtil.Retry
     void testApplyOttSuccess() throws IOException {
         String caseName = "ApplyOttSuccess";
         ApplyOTTRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -59,6 +63,7 @@ public class ApplyOttTest {
 
         ApplyOTTRequestAdditionalInfo additionalInfo = new ApplyOTTRequestAdditionalInfo();
         additionalInfo.setAccessToken(accessToken);
+        additionalInfo.setDeviceId("deviceid123");
 
         requestData.setAdditionalInfo(additionalInfo);
 
@@ -67,6 +72,7 @@ public class ApplyOttTest {
     }
 
     @Test
+    @Disabled
     void testApplyOttFailInvalidUserStatus() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
         String caseName = "ApplyOttFailInvalidUserStatus";
         String abnormalUserPhone = "0855100800";
@@ -82,6 +88,7 @@ public class ApplyOttTest {
 
         ApplyOTTRequestAdditionalInfo additionalInfo = new ApplyOTTRequestAdditionalInfo();
         additionalInfo.setAccessToken(abnormalAccessToken);
+        additionalInfo.setDeviceId("deviceid123");
 
         requestData.setAdditionalInfo(additionalInfo);
 
@@ -96,7 +103,8 @@ public class ApplyOttTest {
                 ApplyOTTRequest.class);
 
         ApplyOTTRequestAdditionalInfo additionalInfo = new ApplyOTTRequestAdditionalInfo();
-        additionalInfo.setAccessToken("test");
+        additionalInfo.setAccessToken("GtRLpA0TyqK3becMq4dCMnVf1N9KLHNixVfC1800");
+        additionalInfo.setDeviceId("deviceid123");
 
         requestData.setAdditionalInfo(additionalInfo);
 

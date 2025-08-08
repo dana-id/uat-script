@@ -1575,7 +1575,7 @@
                 "responseMessage": "Request In Progress"
             }
         },
-        "RefundOrderIndempotent": {
+        "RefundOrderIdempotent": {
             "request": {
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",

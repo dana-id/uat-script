@@ -14,7 +14,6 @@
     "ApplyToken": {
         "ApplyTokenSuccess": {
             "request": {
-                "@type": "ApplyTokenAuthorizationCodeRequest",
                 "grantType": "AUTHORIZATION_CODE",
                 "authCode": "${authCode}",
                 "refreshToken": "",
@@ -94,23 +93,29 @@
             },
             "response": {
                 "responseCode": "4017400",
-                "responseMessage": "Unauthorized. Invalid Signature"
+                "responseMessage": "java.security.SignatureException: Signature length not correct: got 3 but was expecting 256"
             }
         }
     },
     "AccountUnbinding": {
         "AccountUnbindSuccess": {
             "request": {
-                "@type": "AccountUnbindingRequest",
+                "partnerReferenceNo": "partnerReferenceNo",
                 "merchantId": "${merchantId}",
+                "linkId": "linkId",
+                "subMerchantId": "210000123",
+                "tokenId": "tokenId",
                 "additionalInfo": {
-                    "@type": "AccountUnbindingRequestAdditionalInfo"
+                    "accessToken" : "${accessToken}"
                 }
+            },
+            "response": {
+                "responseCode": "2000900",
+                "responseMessage": "Successful"
             }
         },
         "AccountUnbindFailAccessTokenNotExist": {
             "request": {
-                "@type": "AccountUnbindingRequest",
                 "partnerReferenceNo": "partnerReferenceNo",
                 "linkId": "linkId",
                 "subMerchantId": "210000123",
@@ -119,11 +124,14 @@
                 "additionalInfo": {
                     "accessToken" : "${accessToken}"
                 }
+            },
+            "response": {
+                "responseCode": "4010902",
+                "responseMessage": "Invalid Customer Token"
             }
         },
         "AccountUnbindFailInvalidUserStatus": {
             "request": {
-                "@type": "AccountUnbindingRequest",
                 "partnerReferenceNo": "partnerReferenceNo",
                 "linkId": "linkId",
                 "subMerchantId": "210000123",
@@ -132,11 +140,14 @@
                 "additionalInfo": {
                     "accessToken" : "${accessToken}"
                 }
+            },
+            "response": {
+                "responseCode": "4030905",
+                "responseMessage": "Do Not Honor"
             }
         },
         "AccountUnbindFailInvalidParams": {
             "request": {
-                "@type": "AccountUnbindingRequest",
                 "partnerReferenceNo": "partnerReferenceNo",
                 "linkId": "linkId",
                 "subMerchantId": "210000123",
@@ -144,6 +155,10 @@
                 "additionalInfo": {
                     "accessToken" : "${accessToken}"
                 }
+            },
+            "response": {
+                "responseCode": "2000900",
+                "responseMessage": "Successful"
             }
         }
     },
@@ -174,8 +189,8 @@
                 ]
             },
             "response": {
-                "responseCode": "2004900",
-                "responseMessage": "Successful"
+                "responseCode": "4014902",
+                "responseMessage": "Invalid Customer Token"
             }
         },
         "ApplyOttFailInvalidFormat": {

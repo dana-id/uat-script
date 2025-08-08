@@ -25,8 +25,8 @@ var merchantId = os.Getenv("MERCHANT_ID")
 var phoneNumber = "0811742234"
 var pin = "123321"
 
-// createTestOrder creates a test order for querying with INIT status
-func createTestOrder() (string, string, error) {
+// createOrder creates a test order for querying with INIT status
+func createOrder() (string, string, error) {
 	var partnerReferenceNo string
 	var webRedirectUrl string
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
@@ -78,11 +78,11 @@ func createTestOrder() (string, string, error) {
 	return result.(string), webRedirectUrl, nil
 }
 
-// createTestOrderCanceled creates a test order and then cancels it to achieve canceled status
-func createTestOrderCanceled() (string, error) {
+// createOrderCancelQuery creates a test order and then cancels it to achieve canceled status
+func createOrderCancelQuery() (string, error) {
 	var partnerReferenceNo string
 	// Create the order first
-	partnerReferenceNo, _, err := createTestOrder()
+	partnerReferenceNo, _, err := createOrder()
 
 	// Now cancel the order
 	caseName := "CancelOrderValidScenario"
@@ -117,8 +117,8 @@ func createTestOrderCanceled() (string, error) {
 	return partnerReferenceNo, nil
 }
 
-func createTestPaidOrder(phoneNumber, pin string) (string, error) {
-	partnerReferenceNo, webRedirectUrl, err := createTestOrder()
+func createOrderPaidQuery(phoneNumber, pin string) (string, error) {
+	partnerReferenceNo, webRedirectUrl, err := createOrder()
 	payment.PayOrder(phoneNumber, pin, webRedirectUrl)
 	return partnerReferenceNo, err
 }
@@ -126,7 +126,7 @@ func createTestPaidOrder(phoneNumber, pin string) (string, error) {
 // TestQueryPaymentCreatedOrder tests query the payment with status created but not paid (INIT)
 func TestQueryPaymentCreatedOrder(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, _, err := createTestOrder()
+	partnerReferenceNo, _, err := createOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -187,7 +187,7 @@ func TestQueryPaymentCreatedOrder(t *testing.T) {
 
 func TestQueryPaymentPaidOrder(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, err := createTestPaidOrder(phoneNumber, pin)
+	partnerReferenceNo, err := createOrderPaidQuery(phoneNumber, pin)
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -246,7 +246,7 @@ func TestQueryPaymentPaidOrder(t *testing.T) {
 // TestQueryPaymentCanceledOrder tests query the payment with status canceled (CANCELLED)
 func TestQueryPaymentCanceledOrder(t *testing.T) {
 	// Create an order first with short expiry time
-	partnerReferenceNo, err := createTestOrderCanceled()
+	partnerReferenceNo, err := createOrderCancelQuery()
 	if err != nil {
 		t.Fatalf("Failed to create test order with canceled status: %v", err)
 	}
@@ -308,7 +308,7 @@ func TestQueryPaymentCanceledOrder(t *testing.T) {
 // TestQueryPaymentInvalidFormat tests if the query fails when using invalid format (ex: X-TIMESTAMP header format not correct)
 func TestQueryPaymentInvalidFormat(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, _, err := createTestOrder()
+	partnerReferenceNo, _, err := createOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -364,7 +364,7 @@ func TestQueryPaymentInvalidFormat(t *testing.T) {
 // TestQueryPaymentInvalidMandatoryField tests if the query fails when missing mandatory field (ex: request without X-TIMESTAMP header)
 func TestQueryPaymentInvalidMandatoryField(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, _, err := createTestOrder()
+	partnerReferenceNo, _, err := createOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -420,7 +420,7 @@ func TestQueryPaymentInvalidMandatoryField(t *testing.T) {
 // TestQueryPaymentUnauthorized tests if the query fails when unauthorized due to invalid signature
 func TestQueryPaymentUnauthorized(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, _, err := createTestOrder()
+	partnerReferenceNo, _, err := createOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -486,7 +486,7 @@ func TestQueryPaymentUnauthorized(t *testing.T) {
 // TestQueryPaymentTransactionNotFound tests if the query fails when transaction is not found
 func TestQueryPaymentTransactionNotFound(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, _, err := createTestOrder()
+	partnerReferenceNo, _, err := createOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
@@ -537,7 +537,7 @@ func TestQueryPaymentTransactionNotFound(t *testing.T) {
 // TestQueryPaymentGeneralError tests the query payment API with general error
 func TestQueryPaymentGeneralError(t *testing.T) {
 	// Create an order first
-	partnerReferenceNo, _, err := createTestOrder()
+	partnerReferenceNo, _, err := createOrder()
 	if err != nil {
 		t.Fatalf("Failed to create test order: %v", err)
 	}
