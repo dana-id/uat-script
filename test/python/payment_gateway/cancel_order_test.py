@@ -28,8 +28,6 @@ configuration = SnapConfiguration(
     )
 )
 
-
-
 with ApiClient(configuration) as api_client:
     api_instance = PaymentGatewayApi(api_client)
 

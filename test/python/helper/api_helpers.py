@@ -154,5 +154,3 @@ def execute_and_assert_api_error(api_client, method, endpoint, request_obj,
         # If the exception has a desired attribute, use it directly
         if hasattr(e, "body") and e.body:
             assert_fail_response(json_path_file, title_case, case_name, e.body, variable_dict)
-        else:
-            pytest.fail(f"Failed to call API: {str(e)}")

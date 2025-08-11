@@ -45,7 +45,7 @@ func TestAccountUnbindSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
-	jsonDict["merchantId"] = merchantID
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 	jsonDict["additionalInfo"] = map[string]interface{}{
         "accessToken": accessToken,
 		"deviceId":    "1234567890",

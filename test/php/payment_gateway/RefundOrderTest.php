@@ -19,10 +19,6 @@ class RefundOrderTest extends TestCase
     private static $createOrderTitleCase = 'CreateOrder';
     private static $jsonPathFile = 'resource/request/components/PaymentGateway.json';
     private static $apiInstance;
-    private static $paidOrderReferenceNumber;
-    private static $regularOrderReferenceNumber;
-    private static $duplicateOrderReferenceNumber;
-    private static $idempotentOrderReferenceNumber;
 
     /**
      * Generate a unique partner reference number using UUID v4
@@ -59,19 +55,6 @@ class RefundOrderTest extends TestCase
 
         // Create PaymentGatewayApi instance directly with configuration
         self::$apiInstance = new PaymentGatewayApi(null, $configuration);
-
-        // Create test orders for refund scenarios
-        self::$paidOrderReferenceNumber = self::generatePartnerReferenceNo();
-        self::createTestPaidOrder(self::$paidOrderReferenceNumber);
-
-        self::$regularOrderReferenceNumber = self::generatePartnerReferenceNo();
-        self::createTestOrder(self::$regularOrderReferenceNumber);
-
-        self::$duplicateOrderReferenceNumber = self::generatePartnerReferenceNo();
-        self::createTestPaidOrder(self::$duplicateOrderReferenceNumber);
-
-        self::$idempotentOrderReferenceNumber = self::generatePartnerReferenceNo();
-        self::createTestPaidOrder(self::$idempotentOrderReferenceNumber);
     }
 
     /**
@@ -131,10 +114,12 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderValidScenario';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
-            $partnerRefundNo = self::$paidOrderReferenceNumber;
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
 
-            error_log("Testing RefundOrder with originalPartnerReferenceNo: " . $partnerReferenceNo);
+            $partnerReferenceNo = $paidOrderReferenceNumber;
+            $partnerRefundNo = $paidOrderReferenceNumber;
 
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
@@ -183,7 +168,11 @@ class RefundOrderTest extends TestCase
         $this->markTestSkipped('Skipping refund order exceeds transaction amount limit test temporarily.');
         Util::withDelay(function () {
             $caseName = 'RefundOrderExceedsTransactionAmountLimit';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -239,7 +228,12 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderNotAllowed';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+            
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -295,7 +289,12 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderDueToExceedRefundWindowTime';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -351,7 +350,11 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderMultipleRefund';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -401,82 +404,17 @@ class RefundOrderTest extends TestCase
     }
 
     /**
-     * Test refund order duplicate request
-     */
-    public function testRefundOrderDuplicateRequest(): void
-    {
-        $this->markTestSkipped('Skipping refund order exceeds transaction amount limit test temporarily.');   
-        Util::withDelay(function () {
-            $caseName = 'RefundOrderDuplicateRequest';
-            $partnerReferenceNo = self::$duplicateOrderReferenceNumber;
-            $partnerRefundNo = self::$duplicateOrderReferenceNumber;
-
-            // Get the request data from the JSON file
-            $jsonDict = Util::getRequest(
-                self::$jsonPathFile,
-                self::$titleCase,
-                $caseName
-            );
-
-            // Set the correct partner reference numbers
-            $jsonDict['originalPartnerReferenceNo'] = $partnerReferenceNo;
-            $jsonDict['partnerRefundNo'] = $partnerRefundNo;
-            $jsonDict['merchantId'] = getenv('MERCHANT_ID');
-
-            // Create a RefundOrderRequest object from the JSON request data
-            $refundOrderRequestObj = ObjectSerializer::deserialize(
-                $jsonDict,
-                'Dana\PaymentGateway\v1\Model\RefundOrderRequest',
-            );
-
-            try {
-                // Make the API call first timee)
-                $apiResponse = self::$apiInstance->refundOrder($refundOrderRequestObj);
-
-                $jsonDict['refundAmount'] = [
-                    'currency' => 'IDR',
-                    'value' => '10000.00'  // Amount in Indonesian Rupiah
-                ];
-
-                $refundOrderRequestObjNew = ObjectSerializer::deserialize(
-                    $jsonDict,
-                    'Dana\PaymentGateway\v1\Model\RefundOrderRequest',
-                );
-
-                $apiResponse = self::$apiInstance->refundOrder($refundOrderRequestObjNew);
-
-                // Assert the API response - should fail with duplicate request
-                Assertion::assertFailResponse(
-                    self::$jsonPathFile,
-                    self::$titleCase,
-                    $caseName,
-                    $apiResponse->__toString()
-                );
-
-                $this->assertTrue(true);
-            } catch (ApiException $e) {
-                // Expected to fail, check if error matches expected response
-                Assertion::assertFailResponse(
-                    self::$jsonPathFile,
-                    self::$titleCase,
-                    $caseName,
-                    $e->getResponseBody()
-                );
-                $this->assertTrue(true);
-            } catch (\Exception $e) {
-                $this->fail('Failed to call refund order API: ' . $e->getMessage());
-            }
-        });
-    }
-
-    /**
      * Test refund order not paid
      */
     public function testRefundOrderNotPaid(): void
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderNotPaid';
-            $partnerReferenceNo = self::$regularOrderReferenceNumber;
+
+            $regularOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestOrder($regularOrderReferenceNumber);
+
+            $partnerReferenceNo = $regularOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -532,7 +470,11 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderIllegalParameter';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -639,9 +581,8 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderInvalidBill';
-            $tempPartnerReferenceNo = self::generatePartnerReferenceNo();
-            $partnerReferenceNo = $tempPartnerReferenceNo;
-            $partnerRefundNo = $tempPartnerReferenceNo;
+            $partnerReferenceNo = self::generatePartnerReferenceNo();
+            $partnerRefundNo = $partnerReferenceNo;
 
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
@@ -695,7 +636,11 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderInsufficientFunds';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -752,7 +697,11 @@ class RefundOrderTest extends TestCase
         try {
             Util::withDelay(function () {
                 $caseName = 'RefundOrderUnauthorized';
-                $partnerReferenceNo = self::$paidOrderReferenceNumber;
+                // Create test orders for refund scenarios
+                $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+                self::createTestPaidOrder($paidOrderReferenceNumber);
+
+                $partnerReferenceNo = $paidOrderReferenceNumber;
                 $partnerRefundNo = self::generatePartnerReferenceNo();
                 // Get the request data from the JSON file
                 $requestData = Util::getRequest(
@@ -807,7 +756,11 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderTimeout';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -863,7 +816,11 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderMerchantStatusAbnormal';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -919,7 +876,11 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderInProgress';
-            $partnerReferenceNo = self::$paidOrderReferenceNumber;
+            // Create test orders for refund scenarios
+            $paidOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($paidOrderReferenceNumber);
+
+            $partnerReferenceNo = $paidOrderReferenceNumber;
             $partnerRefundNo = self::generatePartnerReferenceNo();
 
             // Get the request data from the JSON file
@@ -987,8 +948,12 @@ class RefundOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'RefundOrderIdempotent';
-            $partnerReferenceNo = self::$idempotentOrderReferenceNumber;
-            $partnerRefundNo = self::$idempotentOrderReferenceNumber;
+
+            $idempotentOrderReferenceNumber = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($idempotentOrderReferenceNumber);
+            
+            $partnerReferenceNo = $idempotentOrderReferenceNumber;
+            $partnerRefundNo = $idempotentOrderReferenceNumber;
 
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
@@ -1030,4 +995,63 @@ class RefundOrderTest extends TestCase
             }
         });
     }
+    /**
+     * Test refund order duplicate request
+     */
+    public function testRefundOrderDuplicateRequest(): void
+    {
+        $this->markTestSkipped('Skipping refund order duplicate request test temporarily.');
+        Util::withDelay(function () {
+            $caseName = 'RefundOrderValidScenario';
+            // Create test orders for refund scenarios
+            $partnerReferenceNo = self::generatePartnerReferenceNo();
+            self::createTestPaidOrder($partnerReferenceNo);
+
+            $partnerRefundNo = $partnerReferenceNo;
+
+            // Get the request data from the JSON file
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName
+            );
+
+            // Set the correct partner reference numbers
+            $jsonDict['originalPartnerReferenceNo'] = $partnerReferenceNo;
+            $jsonDict['partnerRefundNo'] = $partnerRefundNo;
+            $jsonDict['merchantId'] = getenv('MERCHANT_ID');
+
+            // Create a RefundOrderRequest object from the JSON request data
+            $refundOrderRequestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\PaymentGateway\v1\Model\RefundOrderRequest',
+            );
+
+            try {
+                self::$apiInstance->refundOrder($refundOrderRequestObj);
+
+                $refundAmount = new \Dana\PaymentGateway\v1\Model\Money();
+                $refundAmount->setCurrency('IDR');
+                $refundAmount->setValue('10000.00');
+                $refundOrderRequestObj->setRefundAmount($refundAmount);
+                // Make the API call
+                $apiResponse = self::$apiInstance->refundOrder($refundOrderRequestObj);
+
+                // Assert the API response
+                Assertion::assertResponse(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
+                    $apiResponse->__toString()
+                );
+
+                $this->assertTrue(true);
+            } catch (ApiException $e) {
+                $this->fail('Failed to call refund order API: ' . $e->getResponseBody());
+            } catch (\Exception $e) {
+                $this->fail('Failed to call refund order API: ' . $e->getMessage());
+            }
+        });
+    }
 }
+

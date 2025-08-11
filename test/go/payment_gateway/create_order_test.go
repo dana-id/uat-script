@@ -24,8 +24,6 @@ const (
 	shopJsonPath         = "../../../resource/request/components/MerchantManagement.json"
 )
 
-var merchantId = os.Getenv("MERCHANT_ID")
-
 // generatePartnerReferenceNo generates a unique partner reference number
 func generatePartnerReferenceNo() string {
 	return uuid.New().String()
@@ -54,7 +52,7 @@ func TestCreateOrderRedirectScenario(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -112,7 +110,7 @@ func TestCreateOrderApiScenario(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -177,7 +175,7 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -262,7 +260,7 @@ func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 		// Set a unique partner reference number
 		partnerReferenceNo := generatePartnerReferenceNo()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = merchantId
+		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		jsonBytes, err := json.Marshal(jsonDict)
@@ -341,7 +339,7 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -399,7 +397,7 @@ func TestCreateOrderInvalidFieldFormat(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -447,7 +445,7 @@ func TestCreateOrderInconsistentRequest(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CreateOrderByApiRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -509,7 +507,7 @@ func TestCreateOrderInvalidMandatoryField(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -572,7 +570,7 @@ func TestCreateOrderUnauthorized(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CreateOrderByApiRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -635,7 +633,7 @@ func createShop() (string, string, error) {
 	externalShopId := RandomString(10)
 	emailName := strings.ToLower("test" + shopName + "@mailinator.com")
 	jsonDict["mainName"] = shopName
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 	jsonDict["externalShopId"] = externalShopId
 
 	extInfo := map[string]interface{}{
