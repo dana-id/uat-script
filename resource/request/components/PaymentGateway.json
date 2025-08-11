@@ -171,7 +171,6 @@
     "CreateOrder": {
         "CreateOrderRedirect": {
             "request": {
-                "@type": "CreateOrderByRedirectRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",
@@ -1459,11 +1458,11 @@
             "request": {
                 "merchantId": "${merchantId}",
                 "subMerchantId": "",
-                "originalPartnerReferenceNo": "12312312",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "originalCaptureNo": "",
-                "partnerRefundNo": "1231",
+                "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
                     "value": "22200.00",
                     "currency": "IDR"

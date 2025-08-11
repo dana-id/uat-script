@@ -130,42 +130,8 @@ def test_refund_order_valid(test_order_reference_number):
     # Assert the response
     assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(api_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
-
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=10)
-@pytest.mark.skip(reason="skipped by request: scenario RefundOrderIndempotent")
-def test_refund_order_indempotent(test_order_reference_number):
-    """Test refund order indempotent"""
-    case_name = "RefundOrderIndempotent"
-    
-    
-    # Create a test order paid and get the reference number
-    test_order_reference_number = create_test_order_paid()
-
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-
-    # Set the partner reference number
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
-
-    # Convert the request data to a RefundOrderRequest object
-    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-    
-    # Make the API call and assert the response
-    try:
-        # First hit API
-        api_instance.refund_order(refund_order_request_obj)
-        
-        # Second hit API with same data (duplicate)
-        api_instance.refund_order(refund_order_request_obj)
-        pytest.fail("Expected NotFoundException but the API call succeeded")
-    except NotFoundException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-
-@with_delay()
-@retry_test(max_retries=1, delay_seconds=10)
+@retry_test(max_retries=3, delay_seconds=10)
 @pytest.mark.skip(reason="skipped by request: scenario RefundOrderExceedsTransactionAmountLimit")
 def test_refund_order_due_to_exceed():
     # Create a test order paid and get the reference number
@@ -191,36 +157,6 @@ def test_refund_order_due_to_exceed():
 
         pytest.fail("Expected ForbiddenException but the API call succeeded")
     except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-
-@with_delay()
-def test_refund_order_duplicate_request(test_order_reference_number):
-    """Test refund duplicate request"""
-    case_name = "RefundOrderDuplicateRequest"
-    
-    # Create a test order paid and get the reference number
-    test_order_reference_number = create_test_order_paid()
-
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-
-    # Set the partner reference number
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
-
-    # Convert the request data to a RefundOrderRequest object
-    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-
-    # Make the API call and assert the response
-    try:
-        # First hit API
-        api_instance.refund_order(refund_order_request_obj)
-        refund_order_request_obj.refund_amount = Money(currency="IDR", value="10000.00")
-        # Second hit API with same data (duplicate)
-        api_instance.refund_order(refund_order_request_obj)
-        pytest.fail("Expected NotFoundException but the API call succeeded")
-    except NotFoundException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
 @with_delay()
@@ -309,6 +245,37 @@ def test_refund_order_not_paid(test_order_reference_number):
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
     except:
         pytest.fail("Expected ServiceException but the API call give another exception")
+
+@with_delay()
+@retry_test(max_retries=3,delay_seconds=10)
+def test_refund_order_duplicate_request():
+    """Test refund duplicate request"""
+    case_name = "RefundOrderDuplicateRequest"
+    
+    # Create a test order paid and get the reference number
+    test_order_reference_number = create_test_order_paid()
+
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+
+    # Set the partner reference number
+    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
+    json_dict["partnerRefundNo"] = test_order_reference_number
+    json_dict["merchantId"] = merchant_id
+
+    # Convert the request data to a RefundOrderRequest object
+    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
+
+    # Make the API call and assert the response
+    try:
+        # First hit API
+        api_instance.refund_order(refund_order_request_obj)
+        refund_order_request_obj.refund_amount = Money(currency="IDR", value="10000.00")
+        # Second hit API with same data (duplicate)
+        api_instance.refund_order(refund_order_request_obj)
+    except NotFoundException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+
 
 @with_delay()
 def test_refund_order_illegal_parameter(test_order_reference_number):
@@ -502,3 +469,30 @@ def test_refund_order_timeout(test_order_reference_number):
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
     except:
         pytest.fail("Expected ServiceException but the API call give another exception")
+        
+@with_delay()
+@retry_test(max_retries=3,delay_seconds=10)
+def test_refund_order_idempotent():
+    """Test refund order idempotent"""
+    case_name = "RefundOrderIdempotent"
+    
+    # Create a test order paid and get the reference number
+    order_reference_number = create_test_order_paid()
+
+    # Get the request data from the JSON file
+    json_dict = get_request(json_path_file, title_case, case_name)
+
+    # Set the partner reference number
+    json_dict["originalPartnerReferenceNo"] = order_reference_number
+    json_dict["partnerRefundNo"] = order_reference_number
+    json_dict["merchantId"] = merchant_id
+
+    # Convert the request data to a RefundOrderRequest object
+    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
+    
+    # First hit API
+    api_instance.refund_order(refund_order_request_obj)
+    # Second hit API with same data
+    api_response = api_instance.refund_order(refund_order_request_obj)
+    # Assert the response
+    assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(api_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})

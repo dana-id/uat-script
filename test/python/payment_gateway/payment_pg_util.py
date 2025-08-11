@@ -37,15 +37,6 @@ async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=No
     # Use provided phone_number or extract from URL or fallback
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True, slow_mo=100, args=[
-        '--disable-web-security',
-        '--no-sandbox',
-        '--disable-features=IsolateOrigins',
-        '--disable-site-isolation-trials',
-        '--disable-blink-features=AutomationControlled',
-        '--disable-features=BlockInsecurePrivateNetworkRequests',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-component-extensions-with-background-pages',
         # Disable telemetry
         '--disable-default-apps',
         '--disable-extensions',

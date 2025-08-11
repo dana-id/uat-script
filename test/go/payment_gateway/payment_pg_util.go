@@ -47,10 +47,10 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 	}
 
 	// Elements for DANA payment
-	inputPhoneNumber := "//*[contains(@class,\"desktop-input\")]//input"
-	buttonSubmitPhoneNumber := "//*[contains(@class,\"agreement__button\")]//button"
-	inputPin := "//*[contains(@class,\"input-pin\")]//input"
-	buttonPay := "//*[contains(@class,\"btn-pay\")]"
+	inputPhoneNumber := ".desktop-input>.txt-input-phone-number-field"
+	buttonSubmitPhoneNumber := ".agreement__button>.btn-continue"
+	inputPin := ".txt-input-pin-field"
+	buttonPay := ".btn.btn-primary"
 	urlSuccessPaid := "**/v1/test"
 
 	// Wait for the phone number input to be visible

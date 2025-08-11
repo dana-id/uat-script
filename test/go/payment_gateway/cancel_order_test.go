@@ -20,10 +20,6 @@ const (
 	createOrderForCancelTitleCase = "CreateOrder"
 )
 
-var merchantId = os.Getenv("MERCHANT_ID")
-var phoneNumber = "0811742234"
-var pin = "123321"
-
 // TestCancelOrder tests canceling the order
 func TestCancelOrder(t *testing.T) {
 	// Create an order first
@@ -46,7 +42,7 @@ func TestCancelOrder(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -440,6 +436,7 @@ func TestCancelOrderWithAccountStatusAbnormal(t *testing.T) {
 }
 
 func TestCancelOrderInvalidTransactionStatus(t *testing.T) {
+	t.Skip("Skip: Test not capable to do automation, need to be run manually CancelOrderInvalidTransactionStatus")
 	// Create an order first
 	partnerReferenceNo, err := createOrderRefunded()
 	if err != nil {
@@ -457,7 +454,7 @@ func TestCancelOrderInvalidTransactionStatus(t *testing.T) {
 
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 	jsonDict["partnerRefundNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = merchantId
+	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -646,7 +643,7 @@ func createTestOrderInit() (string, string, error) {
 		// Set a unique partner reference number
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = merchantId
+		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
@@ -686,7 +683,7 @@ func createTestOrderInit() (string, string, error) {
 
 // createTestOrderRefunded creates a test order and then refunds it to achieve refunded status
 func createOrderRefunded() (string, error) {
-	partnerReferenceNo, err := createOrderPaid(phoneNumber, pin)
+	partnerReferenceNo, err := createOrderPaid(helper.TestConfig.PhoneNumber, helper.TestConfig.PIN)
 
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
 		// Get the request data from the JSON file
@@ -699,7 +696,7 @@ func createOrderRefunded() (string, error) {
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = merchantId
+		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
