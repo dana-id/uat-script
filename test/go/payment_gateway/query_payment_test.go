@@ -529,7 +529,7 @@ func TestQueryPaymentTransactionNotFound(t *testing.T) {
 		}
 	} else {
 		httpResponse.Body.Close()
-		t.Fatal("Expected error but got successful response")
+		t.Fatal("Expected error but got successful response ")
 	}
 }
 
