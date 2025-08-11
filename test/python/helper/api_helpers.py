@@ -154,3 +154,31 @@ def execute_and_assert_api_error(api_client, method, endpoint, request_obj,
         # If the exception has a desired attribute, use it directly
         if hasattr(e, "body") and e.body:
             assert_fail_response(json_path_file, title_case, case_name, e.body, variable_dict)
+        else:
+            pytest.fail(f"Failed to call API: {str(e)}")
+
+def execute_with_custom_headers(api_client, method, endpoint, request_obj, headers):
+    """
+    Executes an API request and asserts the error response matches expectations.
+    This maintains the exact same implementation that was originally in the test files.
+    
+    :param api_client: The API client instance
+    :param method: HTTP method (POST, GET, etc)
+    :param endpoint: API endpoint URL
+    :param request_obj: Request object or dictionary 
+    :param headers: Complete headers dictionary to use
+    """
+    try:
+        # Make the API call with the exact provided headers
+        response = execute_api_request_directly(
+            api_client, 
+            method, 
+            endpoint, 
+            request_obj, 
+            headers
+        )
+        return response.read().decode('utf-8')
+
+    except Exception as e:
+        # If the exception has a desired attribute, use it directly
+        return e.body if hasattr(e, "body") and e.body else str(e)

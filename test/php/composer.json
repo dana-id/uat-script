@@ -4,7 +4,7 @@
     "type": "project",
     "require": {
         "php": "^7.4 || ^8.0",
-        "danaid/dana-php": "^0.1",
+        "danaid/dana-php": "^1.0",
         "phpunit/phpunit": "^9.0",
         "php-webdriver/webdriver": "^1.0"
     },
