@@ -333,21 +333,48 @@ class Util
             mt_rand(0, 0xffff)
         );
     }
-
-    public static function payOrderPG(
-        string $phoneNumberUser,
-        string $pinUser,
-        string $redirectUrlWeb,
-    ): void {
-        $params = json_encode([
-            'phoneNumber' => $phoneNumberUser,
-            'pin' => $pinUser,
-            'redirectUrl' => $redirectUrlWeb
-        ]);
-
-        self::execFileAutomate(
-            "/automate-payment.js",
-            $params
-        );
+    public static function runWithRetry(
+        callable $testCallback, 
+        int $maxRetries = 3, 
+        int $delay = 1000, 
+        array $retryableExceptions = [\Exception::class]
+    ) {
+        $lastException = null;
+        $attempt = 0;
+        
+        while ($attempt <= $maxRetries) {
+            try {
+                if ($attempt > 0) {
+                    echo "\nRetry attempt {$attempt}/{$maxRetries}...\n";
+                }
+                
+                return $testCallback();
+            } catch (\Exception $e) {
+                $lastException = $e;
+                $shouldRetry = false;
+                
+                // Check if this exception type should trigger a retry
+                foreach ($retryableExceptions as $retryableException) {
+                    if ($e instanceof $retryableException) {
+                        $shouldRetry = true;
+                        break;
+                    }
+                }
+                
+                if (!$shouldRetry || $attempt >= $maxRetries) {
+                    throw $e;
+                }
+                
+                echo "\nAttempt " . ($attempt + 1) . " failed: " . $e->getMessage() . "\n";
+                echo "Waiting " . ($delay / 1000) . " seconds before next retry...\n";
+                
+                usleep($delay * 1000);
+                // Increase delay with exponential backoff
+                $delay = (int)($delay * 1.5);
+                $attempt++;
+            }
+        }
+        
+        throw $lastException;
     }
 }

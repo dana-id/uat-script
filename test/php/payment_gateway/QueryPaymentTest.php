@@ -26,12 +26,6 @@ class QueryPaymentTest extends TestCase
     private static $userPin = "123321";
     private static $userPhoneNumber = "0811742234";
 
-    /**
-     * Generate a unique partner reference number using UUID v4
-     * 
-     * @return string
-     */
-
     public static function setUpBeforeClass(): void
     {
         // Set up configuration with authentication settings
