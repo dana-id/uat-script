@@ -325,6 +325,7 @@
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
+                "subMerchantId": "${subMerchantId}",
                 "amount": {
                     "value": "22200.00",
                     "currency": "IDR"

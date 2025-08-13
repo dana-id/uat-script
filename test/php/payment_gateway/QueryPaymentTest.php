@@ -46,47 +46,8 @@ class QueryPaymentTest extends TestCase
         $dataOrder = self::createOrder();
         self::$orderReferenceNumber = $dataOrder['partnerReferenceNo'];
 
-        // Order in paid status (PAID) - using OtherWallet payment method with specific amount
-        self::$orderPaidReferenceNumber = self::createTestOrderPaid();
-
         // Order in canceled status (CANCELLED)
         self::$orderCanceledReferenceNumber = self::createTestOrderCanceled();
-    }
-
-    /**
-     * Create a test order for query payment tests
-     */
-    private static function createTestOrder($partnerReferenceNo)
-    {
-        $caseName = 'CreateOrderRedirect';
-        
-        // Get the request data from the JSON file
-        $jsonDict = Util::getRequest(
-            self::$jsonPathFile,
-            self::$titleCase,
-            $caseName
-        );
-        
-        // Set the partner reference number
-        $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
-        $jsonDict['merchantId'] = getenv('MERCHANT_ID');
-        
-        // Create a CreateOrderByApiRequest object from the JSON request data
-        $createOrderRequestObj = ObjectSerializer::deserialize(
-            $jsonDict,
-            'Dana\PaymentGateway\v1\Model\CreateOrderByRedirectRequest',
-        );
-
-        $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
-        
-        try {
-            // Make the API call
-            $response = self::$apiInstance->createOrder($createOrderRequestObj);
-            // Print the response
-            error_log("CreateOrder API response: " . $response->__toString());
-        } catch (Exception $e) {
-            throw new Exception("Failed to create test order: " . $e->getMessage());
-        }
     }
 
     /**
@@ -101,7 +62,7 @@ class QueryPaymentTest extends TestCase
             self::$apiInstance,
             self::$jsonPathFile,
             self::$createOrderTitleCase,
-            'query_test',
+            $partnerReferenceNo,
             $partnerReferenceNo
         );
     }
@@ -194,10 +155,14 @@ class QueryPaymentTest extends TestCase
     //  */
     public function testQueryPaymentPaidOrder(): void
     {
-        Util::withDelay(function() {
+        Util::runWithRetry(function () {
+
             $caseName = 'QueryPaymentPaidOrder';
-            $partnerReferenceNo = self::$orderPaidReferenceNumber;
-            
+
+            // Order in paid status (PAID) - using OtherWallet payment method with specific amount
+            $orderPaidReferenceNumber = self::createTestOrderPaid();
+            $partnerReferenceNo = $orderPaidReferenceNumber;
+
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
@@ -237,7 +202,10 @@ class QueryPaymentTest extends TestCase
             } catch (Exception $e) {
                 $this->fail('Unknown error occurred: ' . $e->getMessage());
             }
-        });
+        },
+        3,  // 3 retries
+        2000,  // 2 second initial delay
+        [ApiException::class, Exception::class]);
     }
 
     /**

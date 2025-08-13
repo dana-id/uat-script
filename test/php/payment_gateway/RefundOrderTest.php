@@ -11,6 +11,7 @@ use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 use DanaUat\PaymentGateway\PaymentUtil;
+use DanaUat\PaymentGateway\Scripts\WebAutomation;
 use Exception;
 
 class RefundOrderTest extends TestCase
@@ -43,9 +44,9 @@ class RefundOrderTest extends TestCase
         // Create PaymentGatewayApi instance directly with configuration
         self::$apiInstance = new PaymentGatewayApi(null, $configuration);
 
-        self::$partnerReferenceNoPaid = self::createPaidOrder();
-
         self::$partnerReferenceNoInit = self::createTestOrder();
+
+        self::$partnerReferenceNoPaid = self::createPaidOrder();
     }
 
     /**
@@ -53,16 +54,12 @@ class RefundOrderTest extends TestCase
      */
     private static function createPaidOrder(): string
     {
-        $partnerReferenceNo = Util::generatePartnerReferenceNo();
-
-        // Use the utility class with a cache key for refund tests
-        PaymentUtil::getOrCreatePaidOrder(
-            self::$apiInstance,
-            self::$jsonPathFile,
-            self::$createOrderTitleCase,
-            'refund_test',
-            $partnerReferenceNo
-        );
+        $partnerReferenceNo = PaymentUtil::getOrCreatePaidOrder(
+                self::$apiInstance,
+                self::$jsonPathFile,
+                "CreateOrder",
+                Util::generatePartnerReferenceNo()
+            );
 
         return $partnerReferenceNo;
     }
@@ -109,10 +106,10 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundOrderValidScenario(): void
     {
-        Util::withDelay(function () {
+        Util::runWithRetry(function () {
             $caseName = 'RefundOrderValidScenario';
             // Create test orders for refund scenarios
-            $partnerReferenceNo = self::$partnerReferenceNoPaid;
+            $partnerReferenceNo = self::createPaidOrder();
 
             $partnerRefundNo = $partnerReferenceNo;
 
@@ -152,7 +149,10 @@ class RefundOrderTest extends TestCase
             } catch (\Exception $e) {
                 $this->fail('Failed to call refund order API: ' . $e->getMessage());
             }
-        });
+        },
+        3,  // 3 retries
+        2000,  // 2 second initial delay
+        [ApiException::class, Exception::class]);
     }
 
     /**
@@ -760,10 +760,9 @@ class RefundOrderTest extends TestCase
         Util::runWithRetry(function () {
             $caseName = 'RefundOrderDuplicateRequest';
             // Create test orders for refund scenarios
-            $partnerReferenceNo = self::$partnerReferenceNoPaid;
+            $partnerReferenceNo = self::createPaidOrder();
 
             $partnerRefundNo = $partnerReferenceNo;
-            printf("Partner Reference No: %s, Partner Refund No: %s\n", $partnerReferenceNo, $partnerRefundNo);
 
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
