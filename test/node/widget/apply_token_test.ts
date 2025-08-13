@@ -30,7 +30,7 @@ describe('ApplyToken Tests', () => {
     test('should successfully apply token', async () => {
         const caseName = 'ApplyTokenSuccess';
         const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-        requestData.authCode = await generateAuthCode();
+        requestData.authCode = await generateAuthCode("087875849373","131000");
         try {
             const response = await dana.widgetApi.applyToken(requestData);
             await assertResponse(jsonPathFile, titleCase, caseName, response);

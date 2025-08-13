@@ -32,6 +32,7 @@ dotenv.config();
 // Test configuration constants
 const titleCase = "CreateOrder"; // Main test category identifier
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/PaymentGateway.json'); // Test data file path
+const jsonMerchantManagementPathFile = path.resolve(__dirname, '../../../resource/request/components/MerchantManagement.json'); // Test data file path
 
 // Initialize DANA SDK client with environment configuration
 const dana = new Dana({
@@ -52,6 +53,47 @@ const merchantId = process.env.MERCHANT_ID || "216620010016033632482";
  */
 function generatePartnerReferenceNo(): string {
   return uuidv4();
+}
+
+/**
+ * Generates a random string of specified length
+ * @param length - Length of the random string
+ * @param charset - Character set to use (optional)
+ * @returns Random string
+ */
+function generateRandomString(length: number = 10, charset: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'): string {
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return result;
+}
+
+async function createShop(): Promise<any> {
+
+  const requestData: any = getRequest(jsonMerchantManagementPathFile, "Shop", "CreateShop");
+  const shopName = `shop${generateRandomString(5)}`; // Generate a random shop name
+
+  requestData.merchantId = merchantId;
+  requestData.mainName = shopName;
+  requestData.externalShopId = shopName;
+  requestData.extInfo = {
+    "PIC_EMAIL": shopName + "@example.com",
+    "PIC_PHONENUMBER": "62-81234567890",
+    "SUBMITTER_EMAIL": "submitter@email.com",
+    "GOODS_SOLD_TYPE": "DIGITAL",
+    "USECASE": "QRIS_DIGITAL",
+    "USER_PROFILING": "B2B",
+    "AVG_TICKET": "100000-500000",
+    "OMZET": "5BIO-10BIO",
+    "EXT_URLS": "https://www.dana.id",
+  };
+
+  // Execute create order API call
+  const response = await dana.merchantManagementApi.createShop(requestData);
+  const shopId = response.response.body.shopId; // Extract shop ID from response
+  console.log(`Created shop with ID: ${shopId}`);
+  return shopId;
 }
 
 /**
@@ -169,11 +211,14 @@ describe('Payment Gateway - Create Order Tests', () => {
   test.skip('CreateOrderNetworkPayPgQris - should successfully create order with API scenario and pay with QRIS payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgQris";
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+    
+    const shopId = await createShop();
 
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
+    requestData.subMerchantId = shopId;
 
     try {
       // Execute create order API call with QRIS payment method
