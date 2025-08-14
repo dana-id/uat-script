@@ -471,7 +471,7 @@ def test_refund_order_timeout(test_order_reference_number):
         pytest.fail("Expected ServiceException but the API call give another exception")
         
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=10)
+@retry_test(max_retries=3,delay_seconds=2)
 def test_refund_order_idempotent():
     """Test refund order idempotent"""
     case_name = "RefundOrderIdempotent"
