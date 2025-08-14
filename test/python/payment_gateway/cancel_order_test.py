@@ -35,7 +35,7 @@ with ApiClient(configuration) as api_client:
 def generate_partner_reference_no():
     return str(uuid4())
 
-@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
+@retry_test(max_retries=3,delay_seconds=2)
 def create_test_order(partner_reference_no):
     """Helper function to create a test order"""
     case_name = "CreateOrderApi"
@@ -53,7 +53,7 @@ def create_test_order(partner_reference_no):
     # Make the API call
     api_instance.create_order(create_order_request_obj)
 
-@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
+@retry_test(max_retries=3,delay_seconds=2)
 def create_test_order_canceled(partner_reference_no):
     """Helper function to create a test order with short expiration date to have canceled status"""
     case_name = "CreateOrderApi"

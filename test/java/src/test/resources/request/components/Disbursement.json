@@ -1,0 +1,406 @@
+{
+  "DanaAccountInquiry": {
+    "DanaAccountInquirySuccessful": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "amount": {
+          "value": "1.00",
+          "currency": "IDR"
+        },
+        "transactionDate": "2030-05-01T00:46:43+07:00",
+        "additionalInfo": {
+          "fundType": "AGENT_TOPUP_FOR_USER_SETTLE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "accessToken": null,
+          "customerId": null
+        }
+      },
+      "response": {
+        "responseCode": "2003700",
+        "responseMessage": "Successful",
+        "referenceNo": null,
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "sessionId": null,
+        "customerNumber": "62811742234",
+        "customerName": "DNID dXX",
+        "customerMonthlyLimit": null,
+        "minAmount": {
+          "value": "0.00",
+          "currency": "IDR"
+        },
+        "maxAmount": "${maxAmount}",
+        "amount": {
+          "value": "1.00",
+          "currency": "IDR"
+        },
+        "feeAmount": {
+          "value": "0.00",
+          "currency": "IDR"
+        },
+        "feeType": "Service fee",
+        "additionalInfo": null
+      }
+    },
+    "DanaAccountInquiryInsufficientFund": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "amount": {
+          "value": "1000000000000.00",
+          "currency": "IDR"
+        },
+        "transactionDate": "2030-05-01T00:46:43+07:00",
+        "additionalInfo": {
+          "fundType": "AGENT_TOPUP_FOR_USER_SETTLE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "accessToken": null,
+          "customerId": null
+        }
+      },
+      "response": {
+        "responseCode": "4033714",
+        "responseMessage": "Insufficient Fund",
+        "referenceNo": null,
+        "partnerReferenceNo": null,
+        "sessionId": null,
+        "customerNumber": "62811742234",
+        "customerName": null,
+        "customerMonthlyLimit": null,
+        "minAmount": null,
+        "maxAmount": null,
+        "amount": {
+          "value": "1000000000000.00",
+          "currency": "IDR"
+        },
+        "feeAmount": null,
+        "feeType": null,
+        "additionalInfo": {
+          "resultMsg": "BALANCE_NOT_ENOUGH"
+        }
+      }
+    }
+  },
+  "TransferToDana": {
+    "TransferToDanaSuccessful": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "amount": {
+          "value": "1.00",
+          "currency": "IDR"
+        },
+        "feeAmount": {
+          "value": "1.00",
+          "currency": "IDR"
+        },
+        "transactionDate": "2030-05-01T00:46:43+07:00",
+        "sessionId": null,
+        "categoryId": null,
+        "notes": null,
+        "additionalInfo": {
+          "extendInfo": null,
+          "accountType": null,
+          "fundType": "AGENT_TOPUP_FOR_USER_SETTLE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "accessToken": null,
+          "customerId": null
+        }
+      },
+      "response": {
+        "responseCode": "2003800",
+        "responseMessage": "Successful",
+        "referenceNo": "${referenceNo}",
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "sessionId": null,
+        "customerNumber": "62811742234",
+        "customerName": null,
+        "amount": {
+          "value": "1.00",
+          "currency": "IDR"
+        },
+        "additionalInfo": {}
+      }
+    },
+    "TransferToDanaInsufficientFund": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "amount": {
+          "value": "1000000000000.00",
+          "currency": "IDR"
+        },
+        "feeAmount": {
+          "value": "1.00",
+          "currency": "IDR"
+        },
+        "transactionDate": "2030-05-01T00:46:43+07:00",
+        "sessionId": null,
+        "categoryId": null,
+        "notes": null,
+        "additionalInfo": {
+          "extendInfo": null,
+          "accountType": null,
+          "fundType": "AGENT_TOPUP_FOR_USER_SETTLE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "accessToken": null,
+          "customerId": null
+        }
+      },
+      "response": {
+        "responseCode": "4033814",
+        "responseMessage": "Insufficient Fund",
+        "referenceNo": null,
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "sessionId": null,
+        "customerNumber": "62811742234",
+        "customerName": "ddd",
+        "amount": {
+          "value": "1000000000000.00",
+          "currency": "IDR"
+        },
+        "additionalInfo": {
+          "resultMsg": "BALANCE_NOT_ENOUGH"
+        }
+      }
+    }
+  },
+  "TransferToDanaInquiryStatus": {
+    "TransferToDanaInquiryStatusSuccessful": {
+      "request": {
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "originalReferenceNo": null,
+        "originalExternalId": null,
+        "serviceCode": "38",
+        "additionalInfo": null
+      },
+      "response": {
+        "responseCode": "2003900",
+        "responseMessage": "Successful",
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "originalReferenceNo": "${originalReferenceNo}",
+        "originalExternalId": null,
+        "serviceCode": "38",
+        "amount": {
+          "value": "1.00",
+          "currency": "IDR"
+        },
+        "latestTransactionStatus": "00",
+        "transactionStatusDesc": "Success",
+        "additionalInfo": {}
+      }
+    },
+    "TransferToDanaInquiryStatusTransactionNotFound": {
+      "request": {
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "originalReferenceNo": null,
+        "originalExternalId": null,
+        "serviceCode": "38",
+        "additionalInfo": null
+      },
+      "response": {
+        "responseCode": "4043901",
+        "responseMessage": "Transaction Not Found",
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "originalReferenceNo": null,
+        "originalExternalId": null,
+        "serviceCode": "38",
+        "amount": null,
+        "latestTransactionStatus": null,
+        "transactionStatusDesc": null,
+        "additionalInfo": {}
+      }
+    }
+  },
+  "BankAccountInquiry": {
+    "BankAccountInquirySuccessful": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "beneficiaryAccountNumber": "2460888509",
+        "amount": {
+          "value": "50000.00",
+          "currency": "IDR"
+        },
+        "additionalInfo": {
+          "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "beneficiaryBankCode": "014",
+          "beneficiaryAccountName": null,
+          "accountType": null,
+          "accessToken": null
+        }
+      },
+      "response": {
+        "responseCode": "2004200",
+        "responseMessage": "Success",
+        "referenceNo": "${referenceNo}",
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "accountType": null,
+        "beneficiaryAccountNumber": "2460888509",
+        "beneficiaryAccountName": "Arkan Snow",
+        "beneficiaryBankCode": "014",
+        "beneficiaryBankShortName": "BCA",
+        "beneficiaryBankName": "BCA",
+        "amount": {
+          "value": "50000.00",
+          "currency": "IDR"
+        },
+        "additionalInfo": {
+          "feeAmount": {
+            "value": "0.00",
+            "currency": "IDR"
+          }
+        }
+      }
+    },
+    "BankAccountInquiryInsufficientFund": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "beneficiaryAccountNumber": "2460888509",
+        "amount": {
+          "value": "1000000000000.00",
+          "currency": "IDR"
+        },
+        "additionalInfo": {
+          "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "beneficiaryBankCode": "014",
+          "beneficiaryAccountName": null,
+          "accountType": null,
+          "accessToken": null
+        }
+      },
+      "response": {
+        "responseCode": "4034214",
+        "responseMessage": "Insufficient Fund",
+        "referenceNo": "${referenceNo}",
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "accountType": null,
+        "beneficiaryAccountNumber": null,
+        "beneficiaryAccountName": null,
+        "beneficiaryBankCode": null,
+        "beneficiaryBankShortName": null,
+        "beneficiaryBankName": null,
+        "amount": null,
+        "additionalInfo": null
+      }
+    }
+  },
+  "TransferToBank": {
+    "TransferToBankSuccessful": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "accountType": null,
+        "beneficiaryAccountNumber": "2460888509",
+        "beneficiaryBankCode": "014",
+        "amount": {
+          "value": "50000.00",
+          "currency": "IDR"
+        },
+        "additionalInfo": {
+          "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "needNotify": null,
+          "beneficiaryAccountName": null,
+          "accessToken": null
+        }
+      },
+      "response": {
+        "responseCode": "${responseCode}",
+        "responseMessage": "${responseMessage}",
+        "referenceNo": "${referenceNo}",
+        "referenceNumber": "${referenceNumber}",
+        "transactionDate": "${transactionDate}",
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "additionalInfo": "${additionalInfo}"
+      }
+    },
+    "TransferToBankInsufficientFund": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "accountType": null,
+        "beneficiaryAccountNumber": "2460888509",
+        "beneficiaryBankCode": "014",
+        "amount": {
+          "value": "1000000000000.00",
+          "currency": "IDR"
+        },
+        "additionalInfo": {
+          "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "needNotify": null,
+          "beneficiaryAccountName": null,
+          "accessToken": null
+        }
+      },
+      "response": {
+        "responseCode": "4034314",
+        "responseMessage": "Insufficient Fund",
+        "referenceNo": null,
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "transactionDate": null,
+        "referenceNumber": null,
+        "additionalInfo": "${additionalInfo}"
+      }
+    }
+  },
+  "TransferToBankInquiryStatus": {
+    "TransferToBankInquiryStatusSuccessful": {
+      "request": {
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "originalReferenceNo": null,
+        "originalExternalId": null,
+        "serviceCode": "00",
+        "additionalInfo": null
+      },
+      "response": {
+        "responseCode": "2000000",
+        "responseMessage": "Successful",
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "originalReferenceNo": "${originalReferenceNo}",
+        "originalExternalId": null,
+        "serviceCode": "00",
+        "amount": {
+          "value": "50000.00",
+          "currency": "IDR"
+        },
+        "latestTransactionStatus": "${latestTransactionStatus}",
+        "transactionStatusDesc": "${transactionStatusDesc}",
+        "additionalInfo": {}
+      }
+    },
+    "TransferToBankInquiryStatusTransactionNotFound": {
+      "request": {
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "originalReferenceNo": null,
+        "originalExternalId": null,
+        "serviceCode": "00",
+        "additionalInfo": null
+      },
+      "response": {
+        "responseCode": "4040001",
+        "responseMessage": "Transaction Not Found",
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "originalReferenceNo": null,
+        "originalExternalId": null,
+        "serviceCode": "00",
+        "amount": null,
+        "latestTransactionStatus": "07",
+        "transactionStatusDesc": "Order Not Found",
+        "additionalInfo": {}
+      }
+    }
+  }
+}
