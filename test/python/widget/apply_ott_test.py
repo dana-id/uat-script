@@ -58,7 +58,7 @@ def test_apply_ott_success(test_apply_ott_access_token):
 def test_apply_ott_fail_invalid_format(test_apply_ott_access_token):
     case_name = "ApplyOttFailInvalidFormat"
     json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request")
+    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request ")
 
 @with_delay()
 def test_apply_ott_fail_missing_or_invalid_mandatory_field(test_apply_ott_access_token):
