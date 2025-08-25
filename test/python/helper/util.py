@@ -7,6 +7,9 @@ import os
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
 
+def generate_partner_reference_no():
+    return str(uuid4())
+
 def with_delay(delay_seconds=random.uniform(0.5, 1.5)):
     """
     Decorator that adds a delay after a function completes.
@@ -21,24 +24,6 @@ def with_delay(delay_seconds=random.uniform(0.5, 1.5)):
             result = func(*args, **kwargs)
             time.sleep(delay_seconds)
             return result
-        return wrapper
-    return decorator
-
-def retry_test(max_retries=3, delay_seconds=2):
-    """Decorator that retries a test function if it fails"""
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            for attempt in range(1, max_retries + 1):  # Start from 1, go up to max_retries
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    if attempt < max_retries:
-                        print(f"Test failed on attempt {attempt}/{max_retries}. Retrying in {delay_seconds} seconds...")
-                        time.sleep(delay_seconds)
-                    else:
-                        print(f"Test failed after {max_retries} attempts.")
-                        raise e
         return wrapper
     return decorator
 

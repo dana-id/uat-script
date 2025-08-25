@@ -137,7 +137,7 @@ def test_query_payment_created_order(test_order_reference_number):
     assert_response(json_path_file, title_case, case_name, QueryPaymentResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
 @with_delay()
-@retry_test(max_retries=3, delay_seconds=5)
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=5)
 def test_query_payment_paid_order():
     # Create a test order paid and get the reference number
     test_order_paid_reference_number = create_test_order_paid()
