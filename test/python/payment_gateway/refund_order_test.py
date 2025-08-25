@@ -105,7 +105,7 @@ def test_refund_order_in_progress(test_order_reference_number):
     assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(api_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=10)
+@retry_on_inconsistent_request(max_retries=3,delay_seconds=10)
 def test_refund_order_valid(test_order_reference_number):
     # Create a test order paid and get the reference number
     test_order_reference_number = create_test_order_paid()
@@ -131,7 +131,7 @@ def test_refund_order_valid(test_order_reference_number):
     assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(api_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
 @with_delay()
-@retry_test(max_retries=3, delay_seconds=10)
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=10)
 @pytest.mark.skip(reason="skipped by request: scenario RefundOrderExceedsTransactionAmountLimit")
 def test_refund_order_due_to_exceed():
     # Create a test order paid and get the reference number
@@ -247,7 +247,7 @@ def test_refund_order_not_paid(test_order_reference_number):
         pytest.fail("Expected ServiceException but the API call give another exception")
 
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=10)
+@retry_on_inconsistent_request(max_retries=3,delay_seconds=10)
 def test_refund_order_duplicate_request():
     """Test refund duplicate request"""
     case_name = "RefundOrderDuplicateRequest"
@@ -471,7 +471,7 @@ def test_refund_order_timeout(test_order_reference_number):
         pytest.fail("Expected ServiceException but the API call give another exception")
         
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=2)
+@retry_on_inconsistent_request(max_retries=3,delay_seconds=2)
 def test_refund_order_idempotent():
     """Test refund order idempotent"""
     case_name = "RefundOrderIdempotent"

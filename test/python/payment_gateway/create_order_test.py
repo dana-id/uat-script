@@ -39,7 +39,7 @@ def generate_partner_reference_no():
     return str(uuid4())
 
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=2)
+@retry_on_inconsistent_request(max_retries=3,delay_seconds=2)
 def test_create_order_redirect_scenario():
     """Should create an order using redirect scenario and pay with DANA"""
     case_name = "CreateOrderRedirect"
@@ -74,7 +74,7 @@ def test_create_order_redirect_scenario():
         pytest.fail(f"Fail to call create order API {e}")
 
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=2)
+@retry_on_inconsistent_request(max_retries=3,delay_seconds=2)
 def test_create_order_api_scenario():
     """Should create an order using API scenario with BALANCE payment method"""
     case_name = "CreateOrderApi"
@@ -122,7 +122,7 @@ def test_create_order_network_pay_pg_qris():
     assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
 
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=2)
+@retry_on_inconsistent_request(max_retries=3,delay_seconds=2)
 def test_create_order_network_pay_pg_other_wallet():
     """Should create an order using API scenario with wallet payment method
     This test is marked as flaky and will always pass regardless of outcome
@@ -158,7 +158,7 @@ def test_create_order_network_pay_pg_other_wallet():
     assert True
 
 @with_delay()
-@retry_test(max_retries=3,delay_seconds=2)
+@retry_on_inconsistent_request(max_retries=3,delay_seconds=2)
 def test_create_order_network_pay_pg_other_va_bank():
     """Should create an order with API scenario using VA bank payment method"""
     case_name = "CreateOrderNetworkPayPgOtherVaBank"
