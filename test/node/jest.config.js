@@ -10,7 +10,9 @@ module.exports = {
     '**/payment_gateway/**/*.ts',
     '**/payment_gateway/**/*.js',
     '**/widget/**/*.ts',
-    '**/widget/**/*.js'
+    '**/widget/**/*.js',
+    '**/disbursement/**/*.ts',
+    '**/disbursement/**/*.js'
   ],
 
   // An array of regexp pattern strings that are matched against all test paths

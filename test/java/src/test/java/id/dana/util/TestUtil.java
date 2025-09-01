@@ -154,8 +154,7 @@ public final class TestUtil {
 
     JsonNode actualResponse;
 
-    log.info("Processing {} \nexpected data: \n{}", bodyType,
-        processedExpectedData);
+    log.info("Processing response\n");
 
     if (responseBody instanceof String) {
       actualResponse = objectMapper.readTree((String) responseBody);
@@ -178,8 +177,9 @@ public final class TestUtil {
       }
       throw new AssertionError(errorMsg.toString());
     }
-    log.info("Assertion passed: API {} matches the expected data {}", bodyType,
-        processedExpectedData);
+    log.info("Assertion passed \n Actual Response: \n{} \nExpected Response: \n{}",
+            actualResponse, processedExpectedData);
+
     return true;
   }
 

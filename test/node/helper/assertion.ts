@@ -50,17 +50,17 @@ function compareJsonObjects(expected: any, actual: any, currentPath = '', diffPa
     return;
   }
 
-  // Validate type compatibility between expected and actual values
-  if (typeof expected !== typeof actual) {
-    diffPaths.push([currentPath, expected, actual]);
+  // Handle null value comparisons
+  if (expected === null || actual === null || actual === undefined) {
+    if (expected !== actual && !(expected === null && actual === undefined)) {
+      diffPaths.push([currentPath, expected, actual]);
+    }
     return;
   }
 
-  // Handle null value comparisons
-  if (expected === null || actual === null) {
-    if (expected !== actual) {
-      diffPaths.push([currentPath, expected, actual]);
-    }
+  // Validate type compatibility between expected and actual values
+  if (typeof expected !== typeof actual) {
+    diffPaths.push([currentPath, expected, actual]);
     return;
   }
 
