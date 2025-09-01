@@ -14,6 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class PaymentPGUtil {
@@ -53,12 +57,17 @@ public class PaymentPGUtil {
 //                Input pin
                 page.locator(inputPin).fill(pin);
             }
-            log.info("Click button pay");
 //            Click button pay
             page.locator(buttonPay).click();
 //            Wait payemnt success
             log.info("Wait for URL success payment: {}", urlSuccessPaid);
             page.waitForURL(urlSuccessPaid);
         }
+    }
+
+    public static String generateDateWithOffset(long offsetInMinutes) {
+        LocalDateTime dateTime = LocalDateTime.now().plusMinutes(offsetInMinutes);
+        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Jakarta"));
+        return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
     }
 }
