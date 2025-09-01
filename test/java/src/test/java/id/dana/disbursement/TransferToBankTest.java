@@ -3,19 +3,32 @@ package id.dana.disbursement;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import id.dana.disbursement.v1.api.DisbursementApi;
+import id.dana.disbursement.v1.model.Money;
 import id.dana.disbursement.v1.model.TransferToBankRequest;
 import id.dana.disbursement.v1.model.TransferToBankResponse;
+import id.dana.disbursement.v1.model.TransferToDanaResponse;
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +61,8 @@ class TransferToBankTest {
   }
 
   @Test
-  void testTransferToBank() {
-    String caseName = "TransferToBankSuccessful";
+  void testDisbursementBankValidAccount() throws IOException {
+    String caseName = "DisbursementBankValidAccount";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
         TransferToBankRequest.class);
 
@@ -60,28 +73,13 @@ class TransferToBankTest {
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    try {
-      TransferToBankResponse response = api.transferToBank(requestData);
-
-      String status = response.getResponseCode().substring(0, 3).trim();
-      boolean isRequestInProgress = StringUtils.equals(status, "202");
-
-      variableDict.put("responseCode", isRequestInProgress ? "2024300" : "2004300");
-      variableDict.put("responseMessage", isRequestInProgress ? "Request In Progress" : "Success");
-      variableDict.put("referenceNo", response.getReferenceNo());
-      variableDict.put("referenceNumber", response.getReferenceNumber());
-      variableDict.put("transactionDate", response.getTransactionDate());
-      variableDict.put("additionalInfo", response.getAdditionalInfo());
-      TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    } catch (Exception e) {
-      log.error("Transfer to bank test failed:", e);
-      fail("Transfer to bank test failed: " + e.getMessage());
-    }
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
   @Test
-  void testTransferToBankInsufficientFund() {
-    String caseName = "TransferToBankInsufficientFund";
+  void testDisbursementBankInsufficientFund() throws IOException {
+    String caseName = "DisbursementBankInsufficientFund";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
         TransferToBankRequest.class);
 
@@ -92,25 +90,177 @@ class TransferToBankTest {
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    try {
-      TransferToBankResponse response = api.transferToBank(requestData);
-
-      String status = response.getResponseCode().substring(0, 3).trim();
-
-      if (TestUtil.isSuccessful(status)) {
-        fail("Expected an error but the API call succeeded");
-      } else {
-        if (StringUtils.equals(status, "403")) {
-          variableDict.put("additionalInfo", response.getAdditionalInfo());
-          TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-        } else {
-          fail("Expected bad request failed but got status code: " + status);
-        }
-      }
-    } catch (Exception e) {
-      log.error("Transfer to bank test failed:", e);
-      fail("Transfer to bank test failed: " + e.getMessage());
-    }
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
+  @Test
+  void testDisbursementBankValidAccountInProgress() throws IOException {
+    String caseName = "DisbursementBankValidAccountInProgress";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testDisbursementBankInactiveAccount() throws IOException {
+    String caseName = "DisbursementBankInactiveAccount";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testDisbursementBankUnauthorizedSignature() throws IOException {
+    Map<String, String> customHeaders = new HashMap<>();
+    String caseName = "DisbursementBankUnauthorizedSignature";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    customHeaders.put(
+            DanaHeader.X_SIGNATURE,
+            "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5");
+    OkHttpClient client = new OkHttpClient.Builder()
+            .addInterceptor(new DanaAuth())
+            .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+            .build();
+
+    DisbursementApi apiCustomHeader = new DisbursementApi(client);
+
+    TransferToBankResponse response = apiCustomHeader.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testDisbursementBankMissingMandatoryField() throws IOException {
+    String caseName = "DisbursementBankMissingMandatoryField";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testDisbursementBankInvalidFieldFormat() throws IOException {
+    String caseName = "DisbursementBankInvalidFieldFormat";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testDisbursementBankInconsistentRequest() throws IOException {
+    String caseName = "DisbursementBankInconsistentRequest";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    api.transferToBank(requestData);
+    Money money = new Money();
+    money.setCurrency("IDR");
+    money.setValue("2000.00");
+    requestData.setAmount(money);
+
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testDisbursementBankSuspectedFraud() throws IOException {
+    String caseName = "DisbursementBankSuspectedFraud";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testDisbursementBankGeneralError() throws IOException {
+    String caseName = "DisbursementBankGeneralError";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testDisbursementBankUnknownError() throws IOException {
+    String caseName = "DisbursementBankUnknownError";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToBankResponse response = api.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
 }

@@ -3,19 +3,31 @@ package id.dana.disbursement;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import id.dana.disbursement.v1.api.DisbursementApi;
+import id.dana.disbursement.v1.model.Money;
 import id.dana.disbursement.v1.model.TransferToDanaRequest;
 import id.dana.disbursement.v1.model.TransferToDanaResponse;
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +60,8 @@ class TransferToDanaTest {
   }
 
   @Test
-  void testTransferToDana() {
-    String caseName = "TransferToDanaSuccessful";
+  void testTopUpCustomerValid() throws IOException {
+    String caseName = "TopUpCustomerValid";
     TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
         TransferToDanaRequest.class);
 
@@ -60,19 +72,14 @@ class TransferToDanaTest {
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    try {
-      TransferToDanaResponse response = api.transferToDana(requestData);
-      variableDict.put("referenceNo", response.getReferenceNo());
-      TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    } catch (Exception e) {
-      log.error("Transfer to DANA test failed:", e);
-      fail("Transfer to DANA test failed: " + e.getMessage());
-    }
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    variableDict.put("referenceNo", response.getReferenceNo());
+    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
   @Test
-  void testTransferToDanaInsufficientFund() {
-    String caseName = "TransferToDanaInsufficientFund";
+  void testTopUpCustomerInsufficientFund() throws IOException {
+    String caseName = "TopUpCustomerInsufficientFund";
     TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
         TransferToDanaRequest.class);
 
@@ -83,24 +90,214 @@ class TransferToDanaTest {
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    try {
-      TransferToDanaResponse response = api.transferToDana(requestData);
-
-      String status = response.getResponseCode().substring(0, 3).trim();
-
-      if (TestUtil.isSuccessful(status)) {
-        fail("Expected an error but the API call succeeded");
-      } else {
-        if (StringUtils.equals(status, "403")) {
-          TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-        } else {
-          fail("Expected bad request failed but got status code: " + status);
-        }
-      }
-    } catch (Exception e) {
-      log.error("Transfer to DANA test failed:", e);
-      fail("Transfer to DANA test failed: " + e.getMessage());
-    }
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
+  @Test
+  void testTopUpCustomerTimeout() throws IOException {
+    String caseName = "TopUpCustomerTimeout";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testTopUpCustomerIdempotent() throws InterruptedException {
+    String caseName = "TopUpCustomerIdempotent";
+
+    int numberOfThreads = 10;
+    ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);
+    CountDownLatch latch = new CountDownLatch(numberOfThreads);
+
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    for (int i = 0; i < numberOfThreads; i++) {
+      executor.submit(() -> {
+        try {
+          TransferToDanaResponse response = api.transferToDana(requestData);
+          TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+          System.out.println("Thread: " + Thread.currentThread().getId()
+                  + " - Status: " + response.getResponseCode());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+          latch.countDown();
+        }
+      });
+    }
+    // Wait for all threads to complete
+    latch.await();
+    executor.shutdown();
+  }
+
+  @Test
+  void testTopUpCustomerFrozenAccount() throws IOException {
+    String caseName = "TopUpCustomerFrozenAccount";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testTopUpCustomerExceedAmountLimit() throws IOException {
+    String caseName = "TopUpCustomerExceedAmountLimit";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testTopUpCustomerMissingMandatoryField() throws IOException {
+    String caseName = "TopUpCustomerMissingMandatoryField";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testTopUpCustomerUnauthorizedSignature() throws IOException {
+    Map<String, String> customHeaders = new HashMap<>();
+    String caseName = "TopUpCustomerUnauthorizedSignature";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    customHeaders.put(
+            DanaHeader.X_SIGNATURE,
+            "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5");
+    OkHttpClient client = new OkHttpClient.Builder()
+            .addInterceptor(new DanaAuth())
+            .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+            .build();
+
+    DisbursementApi apiCustomHeader = new DisbursementApi(client);
+
+    TransferToDanaResponse response = apiCustomHeader.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testTopUpCustomerInvalidFieldFormat() throws IOException {
+    String caseName = "TopUpCustomerInvalidFieldFormat";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testTopUpCustomerInconsistentRequest() throws IOException {
+    String caseName = "TopUpCustomerInconsistentRequest";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    Money money = new Money();
+    api.transferToDana(requestData);
+    money.setCurrency("IDR");
+    money.setValue("2000.00");
+    requestData.setAmount(money);
+
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testTopUpCustomerInternalServerError() throws IOException {
+    String caseName = "TopUpCustomerInternalServerError";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testTopUpCustomerInternalGeneralError() throws IOException {
+    String caseName = "TopUpCustomerInternalGeneralError";
+    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToDanaRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    TransferToDanaResponse response = api.transferToDana(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
 }

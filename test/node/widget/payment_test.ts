@@ -264,16 +264,36 @@ describe('Payment Tests', () => {
         }
     });
 
-    // Test: Payment Fail - Inconsistent Request (Skipped)
-    test.skip('should fail with inconsistent request', async () => {
+    // Test: Payment Fail - Inconsistent Request
+    test('should fail with inconsistent request', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailInconsistentRequest';
-        // Get the request data from the JSON file based on the case name
+
+        // Extract request data from test data file based on case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
+
+        // Configure request with unique reference number and merchant ID
+        requestData.partnerReferenceNo = generateReferenceNo();
+        requestData.merchantId = merchantId;
+
         try {
-            // Placeholder for inconsistent request test
-            fail('Payment test is a placeholder.');
-        } catch (e: any) { }
+            await dana.widgetApi.widgetPayment(requestData);
+            requestData.amount.currency = "IDR"; // Change currency to create inconsistency
+            requestData.amount.value = "12000.00"; // Change value to create inconsistency
+            // Execute widget payment API call
+            const response = await dana.widgetApi.widgetPayment(requestData);
+
+            // Validate response against expected result from test data
+            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
+        } catch (e: any) {
+            // If a ResponseError occurs, assert the failure response
+            if (e instanceof ResponseError) {
+                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
+            } else {
+                // If another error occurs, fail the test with the error message
+                fail('Payment test failed: ' + (e.message || e));
+            }
+        }
     });
 
     // Test: Payment Fail - Internal Server Error
@@ -326,7 +346,7 @@ describe('Payment Tests', () => {
         }
     });
 
-    // Test: Payment Fail - Timeout (Skipped)
+    // Test: Payment Fail - Timeout
     test.skip('should fail with timeout', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailTimeout';
@@ -338,16 +358,17 @@ describe('Payment Tests', () => {
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
-            // Assert the failure response against the expected result
+            console.log('AMSDASDS');
+            // Assert the response against the expected data
             await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
-            // Log the response for debugging
-            console.log(`Response: ${JSON.stringify(response)}`);
+            // If the API call succeeds, fail the test
+            fail('Expected an error but the API call succeeded');
         } catch (e: any) {
-            // If a ResponseError occurs, assert the failure response
             if (e instanceof ResponseError) {
+                // If an error occurs, assert the failure response
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
-                // If another error occurs, fail the test with the error message
+                // If an unexpected error occurs, fail the test with the error message
                 fail('Payment test failed: ' + (e.message || e));
             }
         }

@@ -5,15 +5,22 @@ import static org.junit.jupiter.api.Assertions.fail;
 import id.dana.disbursement.v1.api.DisbursementApi;
 import id.dana.disbursement.v1.model.DanaAccountInquiryRequest;
 import id.dana.disbursement.v1.model.DanaAccountInquiryResponse;
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,8 +55,8 @@ class DanaAccountInquiryTest {
   }
 
   @Test
-  void testDanaAccountInquiry() {
-    String caseName = "DanaAccountInquirySuccessful";
+  void testDanaAccountInquiryCustomerValidData() throws IOException {
+    String caseName = "InquiryCustomerValidData";
     DanaAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
         DanaAccountInquiryRequest.class);
 
@@ -60,19 +67,13 @@ class DanaAccountInquiryTest {
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    try {
-      DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
-      variableDict.put("maxAmount", response.getMaxAmount());
-      TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    } catch (Exception e) {
-      log.error("DANA account inquiry test failed:", e);
-      fail("DANA account inquiry test failed: " + e.getMessage());
-    }
+    DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
+    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
   @Test
-  void testDanaAccountInquiryInsufficientFund() {
-    String caseName = "DanaAccountInquiryInsufficientFund";
+  void testDanaAccountInquiryFrozenAccount() throws IOException {
+    String caseName = "InquiryCustomerFrozenAccount";
     DanaAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
         DanaAccountInquiryRequest.class);
 
@@ -80,24 +81,60 @@ class DanaAccountInquiryTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
-    try {
-      DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
-
-      String status = response.getResponseCode().substring(0, 3).trim();
-
-      if (TestUtil.isSuccessful(status)) {
-        fail("Expected an error but the API call succeeded");
-      } else {
-        if (StringUtils.equals(status, "403")) {
-          TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, null);
-        } else {
-          fail("Expected bad request failed but got status code: " + status);
-        }
-      }
-    } catch (Exception e) {
-      log.error("DANA account inquiry test failed:", e);
-      fail("DANA account inquiry test failed: " + e.getMessage());
-    }
+    DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, null);
   }
 
+  @Test
+  void testDanaAccountInquiryCustomerUnregisteredAccount() throws IOException {
+    String caseName = "InquiryCustomerUnregisteredAccount";
+    DanaAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            DanaAccountInquiryRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, null);
+  }
+
+  @Test
+  void testDanaAccountInquiryCustomerExceededLimit() throws IOException {
+    String caseName = "InquiryCustomerExceededLimit";
+    DanaAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            DanaAccountInquiryRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, null);
+  }
+
+  @Test
+  void testDanaAccountInquiryCustomerUnauthorizedSignature() throws IOException {
+    Map<String, String> customHeaders = new HashMap<>();
+    String caseName = "InquiryCustomerUnauthorizedSignature";
+    DanaAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            DanaAccountInquiryRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    customHeaders.put(
+            DanaHeader.X_SIGNATURE,
+            "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5");
+    OkHttpClient client = new OkHttpClient.Builder()
+            .addInterceptor(new DanaAuth())
+            .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+            .build();
+
+    DisbursementApi apiCustomHeader = new DisbursementApi(client);
+
+    DanaAccountInquiryResponse response = apiCustomHeader.danaAccountInquiry(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, null);
+  }
 }

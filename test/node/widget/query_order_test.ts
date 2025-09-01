@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { fail } from 'assert';
-import { getRequest } from '../helper/util';
+import { automatePayment, getRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
-import { QueryPaymentRequest } from 'dana-node/widget/v1';
+import { CancelOrderRequest, QueryPaymentRequest, WidgetPaymentRequest } from 'dana-node/widget/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 
 dotenv.config();
@@ -14,6 +14,7 @@ const titleCase = 'QueryOrder';
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Widget.json');
 const baseUrl: string = 'https://api.sandbox.dana.id/';
 const apiPath: string = '/v1.0/debit/status.htm';
+const merchantId = process.env.MERCHANT_ID || ''; // Merchant configuration
 
 const dana = new Dana({
     partnerId: process.env.X_PARTNER_ID || '',
@@ -26,65 +27,171 @@ function generateReferenceNo(): string {
     return uuidv4();
 }
 
+// Shared test data for cross-test dependencies
+let sharedOriginalPartnerReference: string;
+let sharedOriginalCanceledPartnerReference: string;
+let sharedOriginalPaidPartnerReference: string;
+let sharedOriginalPayingPartnerReference: string;
+
 describe('QueryOrder Tests', () => {
+    
+      async function createPaymentInit() {
+        const widgetPaymentRequestData: WidgetPaymentRequest = getRequest<WidgetPaymentRequest>(jsonPathFile, "Payment", "PaymentSuccess");
+        sharedOriginalPartnerReference = generateReferenceNo();
+        widgetPaymentRequestData.partnerReferenceNo = sharedOriginalPartnerReference
+        await dana.widgetApi.widgetPayment(widgetPaymentRequestData);
+      }
+
+      async function createPaymentPaying() {
+        const widgetPaymentRequestData: WidgetPaymentRequest = getRequest<WidgetPaymentRequest>(jsonPathFile, "Payment", "PaymentPaying");
+        sharedOriginalPayingPartnerReference = generateReferenceNo();
+        widgetPaymentRequestData.partnerReferenceNo = sharedOriginalPayingPartnerReference
+        await dana.widgetApi.widgetPayment(widgetPaymentRequestData);
+      }
+
+      async function createPaymentCancel() {
+        const widgetPaymentRequestData: WidgetPaymentRequest = getRequest<WidgetPaymentRequest>(jsonPathFile, "Payment", "PaymentSuccess");
+        sharedOriginalCanceledPartnerReference = generateReferenceNo();
+        widgetPaymentRequestData.partnerReferenceNo = sharedOriginalCanceledPartnerReference;
+        await dana.widgetApi.widgetPayment(widgetPaymentRequestData);
+
+        // Cancel payment
+        const cancelOrderRequestData = getRequest<CancelOrderRequest>(jsonPathFile, "CancelOrder", "CancelOrderSuccessInProcess");
+        cancelOrderRequestData.originalPartnerReferenceNo = sharedOriginalCanceledPartnerReference;
+        cancelOrderRequestData.merchantId = process.env.MERCHANT_ID || '';
+        await dana.widgetApi.cancelOrder(cancelOrderRequestData);
+      }
+
+      async function createPaymentPaid() {
+        const widgetPaymentRequestData: WidgetPaymentRequest = getRequest<WidgetPaymentRequest>(jsonPathFile, "Payment", "PaymentSuccess");
+        sharedOriginalPaidPartnerReference = generateReferenceNo();
+        widgetPaymentRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
+
+        try {
+        // Add delay before creating order to ensure system readiness
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        console.log(`Creating order for payment automation...`);
+        const response = await dana.widgetApi.widgetPayment(widgetPaymentRequestData);
+
+      if (response.webRedirectUrl) {
+        console.log(`Order created successfully. WebRedirectUrl: ${response.webRedirectUrl}`);
+        console.log(`Starting payment automation...`);
+
+        // Automate the payment using the webRedirectUrl
+        const automationResult = await automatePayment(
+          '0811742234', // phoneNumber
+          '123321',     // pin
+          response.webRedirectUrl, // redirectUrl from create order response
+          3,            // maxRetries
+          2000,         // retryDelay
+          true         // headless (set to true for CI/CD)
+        );
+
+        if (automationResult.success) {
+          console.log(`Payment automation successful after ${automationResult.attempts} attempts`);
+        } else {
+          console.log(`Payment automation failed: ${automationResult.error}`);
+          throw new Error(`Payment automation failed: ${automationResult.error}`);
+        }
+      } else {
+        throw new Error('No webRedirectUrl in create order response');
+      }
+
+      // Wait for payment to be processed by the payment system
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+    } catch (error) {
+      console.error('Failed to create and pay order:', error);
+      throw error;
+    }
+      }
+
     // Test: Query Order Success (Paid) (Skipped)
-    test.skip('should successfully query order (paid)', async () => {
+    test('should successfully query order (paid)', async () => {
         // Define the case name for the test
         const caseName = 'QueryOrderSuccessPaid';
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
+        requestData.originalPartnerReferenceNo = sharedOriginalPaidPartnerReference;
+        requestData.merchantId = merchantId;
         try {
-            // Placeholder for query order (paid) test
-            fail('QueryOrder test is a placeholder.');
+            const response = await dana.widgetApi.queryPayment(requestData);
+
+            // Assert the response matches the expected data using our helper function
+            await assertResponse(jsonPathFile, titleCase, caseName, response, { 'partnerReferenceNo': sharedOriginalPaidPartnerReference });
         } catch (e: any) { }
     });
 
     // Test: Query Order Success (Initiated) (Skipped)
-    test.skip('should successfully query order (initiated)', async () => {
+    test('should successfully query order (initiated)', async () => {
         // Define the case name for the test
         const caseName = 'QueryOrderSuccessInitiated';
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
+        requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
+        requestData.merchantId = merchantId;
         try {
-            // Placeholder for query order (initiated) test
-            fail('QueryOrder test is a placeholder.');
+            const response = await dana.widgetApi.queryPayment(requestData);
+
+            // Assert the response matches the expected data using our helper function
+            await assertResponse(jsonPathFile, titleCase, caseName, response, { 'partnerReferenceNo': sharedOriginalPayingPartnerReference });
         } catch (e: any) { }
     });
 
     // Test: Query Order Success (Paying) (Skipped)
-    test.skip('should successfully query order (paying)', async () => {
+    test('should successfully query order (paying)', async () => {
         // Define the case name for the test
         const caseName = 'QueryOrderSuccessPaying';
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
+        requestData.originalPartnerReferenceNo = sharedOriginalPayingPartnerReference;
+        requestData.merchantId = merchantId;
         try {
-            // Placeholder for query order (paying) test
-            fail('QueryOrder test is a placeholder.');
+            const response = await dana.widgetApi.queryPayment(requestData);
+
+            // Assert the response matches the expected data using our helper function
+            await assertResponse(jsonPathFile, titleCase, caseName, response, { 'partnerReferenceNo': sharedOriginalPayingPartnerReference });
         } catch (e: any) { }
     });
 
     // Test: Query Order Success (Cancelled) (Skipped)
-    test.skip('should successfully query order (cancelled)', async () => {
+    test('should successfully query order (cancelled)', async () => {
         // Define the case name for the test
         const caseName = 'QueryOrderSuccessCancelled';
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
+        requestData.originalPartnerReferenceNo = sharedOriginalCanceledPartnerReference;
+        requestData.merchantId = merchantId;
         try {
-            // Placeholder for query order (cancelled) test
-            fail('QueryOrder test is a placeholder.');
+            const response = await dana.widgetApi.queryPayment(requestData);
+
+            // Assert the response matches the expected data using our helper function
+            await assertResponse(jsonPathFile, titleCase, caseName, response, { 'partnerReferenceNo': sharedOriginalCanceledPartnerReference });
         } catch (e: any) { }
     });
 
-    // Test: Query Order Not Found (Skipped)
-    test.skip('should fail with not found', async () => {
+    // Test: Query Order Not Found
+    test('should fail with not found', async () => {
         // Define the case name for the test
         const caseName = 'QueryOrderNotFound';
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
+        requestData.originalPartnerReferenceNo = "test123";
+        requestData.merchantId = merchantId;
         try {
-            // Placeholder for query order not found test
-            fail('QueryOrder test is a placeholder.');
-        } catch (e: any) { }
+            const response = await dana.widgetApi.queryPayment(requestData);
+
+            // Assert the response matches the expected data using our helper function
+            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
+        } catch (e: any) {
+            // If a ResponseError occurs, assert the failure response
+            if (e instanceof ResponseError) {
+                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
+            } else {
+                // If another error occurs, fail the test with the error message
+                fail('Payment test failed: ' + (e.message || e));
+            }
+         }
     });
 
     // Test: Query Order Fail - Invalid Field
@@ -218,7 +325,7 @@ describe('QueryOrder Tests', () => {
     });
 
     // Test: Query Order Fail - General Error
-    test.skip('should fail with general error', async () => {
+    test('should fail with general error', async () => {
         // Define the case name for the test
         const caseName = 'QueryOrderFailGeneralError';
         // Get the request data from the JSON file based on the case name

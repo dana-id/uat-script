@@ -858,13 +858,13 @@
           "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
           "externalDivisionId": null,
           "chargeTarget": null,
-          "needNotify": null,
+          "needNotify": true,
           "beneficiaryAccountName": null,
           "accessToken": null
         }
       },
       "response": {
-        "responseCode": "2004300",
+        "responseCode": "2024300",
         "responseMessage": "Success"
       }
     },
@@ -908,7 +908,7 @@
           "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
           "externalDivisionId": null,
           "chargeTarget": null,
-          "needNotify": true,
+          "needNotify": null,
           "beneficiaryAccountName": null,
           "accessToken": null
         }

@@ -166,7 +166,6 @@ def test_payment_fail_inconsistent_request():
     # Set the partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["originalPartnerReferenceNo"] = partner_reference_no
-    json_dict["partnerRefundNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object

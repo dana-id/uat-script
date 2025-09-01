@@ -3,18 +3,23 @@ package id.dana.disbursement;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import id.dana.disbursement.v1.api.DisbursementApi;
-import id.dana.disbursement.v1.model.TransferToDanaInquiryStatusRequest;
-import id.dana.disbursement.v1.model.TransferToDanaInquiryStatusResponse;
-import id.dana.disbursement.v1.model.TransferToDanaRequest;
+import id.dana.disbursement.v1.model.*;
+import id.dana.interceptor.CustomHeaderInterceptor;
 import id.dana.invoker.Dana;
+import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
+import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,11 +36,12 @@ class TransferToDanaInquiryStatusTest {
   private static final Logger log = LoggerFactory.getLogger(
       TransferToDanaInquiryStatusTest.class);
 
-  private static final String transferToDanaTitleCase = "TransferToDana";
   private static final String titleCase = "TransferToDanaInquiryStatus";
   private static final String jsonPathFile = TransferToDanaInquiryStatusTest.class.getResource(
       "/request/components/Disbursement.json").getPath();
   private DisbursementApi api;
+
+  private String partnerReferencePaid, partnerReferenceFailed;
 
   @BeforeEach
   void setUp() {
@@ -51,39 +57,74 @@ class TransferToDanaInquiryStatusTest {
     api = Dana.getInstance().getDisbursementApi();
   }
 
-  @Test
-  void testTransferToDanaInquiryStatus() {
-    String transferToDanaCaseName = "TransferToDanaSuccessful";
-    String caseName = "TransferToDanaInquiryStatusSuccessful";
+  private String prepareTransferSuccessPaid() {
+    TransferToDanaRequest transferToDanaRequest = TestUtil.getRequest(
+            jsonPathFile, "TransferToDana", "TransferToDanaSuccessful", TransferToDanaRequest.class);
 
-    TransferToDanaRequest transferToDanaRequest = TestUtil.getRequest(jsonPathFile,
-        transferToDanaTitleCase, transferToDanaCaseName, TransferToDanaRequest.class);
-
-    TransferToDanaInquiryStatusRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
-        caseName, TransferToDanaInquiryStatusRequest.class);
-
-    // Assign unique reference
     String originalPartnerReferenceNo = UUID.randomUUID().toString();
     transferToDanaRequest.setPartnerReferenceNo(originalPartnerReferenceNo);
-    requestData.setOriginalPartnerReferenceNo(originalPartnerReferenceNo);
+    api.transferToDana(transferToDanaRequest);
+    return originalPartnerReferenceNo;
+  }
 
-    Map<String, Object> variableDict = new HashMap<>();
-    variableDict.put("originalPartnerReferenceNo", originalPartnerReferenceNo);
+  private String prepareTransferSuccessFail() {
+    TransferToDanaRequest transferToDanaRequest = TestUtil.getRequest(
+            jsonPathFile, "TransferToDana", "TransferToDanaSuccessful", TransferToDanaRequest.class);
 
-    try {
-      api.transferToDana(transferToDanaRequest);
-      TransferToDanaInquiryStatusResponse response = api.transferToDanaInquiryStatus(requestData);
-      variableDict.put("originalReferenceNo", response.getOriginalReferenceNo());
-      TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    } catch (Exception e) {
-      log.error("Transfer to DANA inquiry status test failed:", e);
-      fail("Transfer to DANA inquiry status test failed: " + e.getMessage());
-    }
+    String originalPartnerReferenceNo = UUID.randomUUID().toString();
+    transferToDanaRequest.setPartnerReferenceNo(originalPartnerReferenceNo);
+    transferToDanaRequest.setCustomerNumber("6281298055138");
+    Money feeAmount = new Money();
+    feeAmount.setCurrency("IDR");
+    feeAmount.setValue("1.00");
+    transferToDanaRequest.setAmount(feeAmount);
+    transferToDanaRequest.setFeeAmount(feeAmount);
+    TransferToDanaResponse transferToDana= api.transferToDana(transferToDanaRequest);
+    System.out.println(transferToDana.getResponseCode());
+    return originalPartnerReferenceNo;
   }
 
   @Test
-  void testTransferToDanaInquiryStatusTransactionNotFound() {
-    String caseName = "TransferToDanaInquiryStatusTransactionNotFound";
+  void testInquiryTopUpStatusValidPaid() throws IOException {
+    partnerReferencePaid = prepareTransferSuccessPaid();
+    String caseName = "InquiryTopUpStatusValidPaid";
+
+    TransferToDanaInquiryStatusRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
+        caseName, TransferToDanaInquiryStatusRequest.class);
+
+    // Assign unique reference
+    requestData.setOriginalPartnerReferenceNo(partnerReferencePaid);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("originalPartnerReferenceNo", partnerReferencePaid);
+
+    TransferToDanaInquiryStatusResponse response = api.transferToDanaInquiryStatus(requestData);
+    variableDict.put("originalReferenceNo", response.getOriginalReferenceNo());
+    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testInquiryTopUpStatusValidFail() throws IOException {
+    partnerReferenceFailed = prepareTransferSuccessFail();
+    String caseName = "InquiryTopUpStatusValidFail";
+
+    TransferToDanaInquiryStatusRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
+            caseName, TransferToDanaInquiryStatusRequest.class);
+
+    // Assign unique reference
+    requestData.setOriginalPartnerReferenceNo(partnerReferencePaid);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("originalPartnerReferenceNo", partnerReferencePaid);
+
+    TransferToDanaInquiryStatusResponse response = api.transferToDanaInquiryStatus(requestData);
+    variableDict.put("originalReferenceNo", response.getOriginalReferenceNo());
+    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testInquiryTopUpStatusNotFoundTransaction() throws IOException {
+    String caseName = "InquiryTopUpStatusNotFoundTransaction";
     TransferToDanaInquiryStatusRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
         caseName, TransferToDanaInquiryStatusRequest.class);
 
@@ -94,24 +135,80 @@ class TransferToDanaInquiryStatusTest {
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("originalPartnerReferenceNo", originalPartnerReferenceNo);
 
-    try {
-      TransferToDanaInquiryStatusResponse response = api.transferToDanaInquiryStatus(requestData);
-
-      String status = response.getResponseCode().substring(0, 3).trim();
-
-      if (TestUtil.isSuccessful(status)) {
-        fail("Expected an error but the API call succeeded");
-      } else {
-        if (StringUtils.equals(status, "404")) {
-          TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-        } else {
-          fail("Expected bad request failed but got status code: " + status);
-        }
-      }
-    } catch (Exception e) {
-      log.error("Transfer to DANA inquiry status test failed:", e);
-      fail("Transfer to DANA inquiry status test failed: " + e.getMessage());
-    }
+    TransferToDanaInquiryStatusResponse response = api.transferToDanaInquiryStatus(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
+  @Test
+  void testInquiryTopUpStatusInvalidFieldFormat() throws IOException {
+    String caseName = "InquiryTopUpStatusInvalidFieldFormat";
+    TransferToDanaInquiryStatusRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
+            caseName, TransferToDanaInquiryStatusRequest.class);
+
+    // Assign unique reference
+    String originalPartnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setOriginalPartnerReferenceNo(originalPartnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("originalPartnerReferenceNo", originalPartnerReferenceNo);
+
+    TransferToDanaInquiryStatusResponse response = api.transferToDanaInquiryStatus(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testInquiryTopUpStatusMissingMandatoryField() throws IOException {
+    Map<String, String> customHeaders = new HashMap<>();
+    String caseName = "InquiryTopUpStatusMissingMandatoryField";
+    TransferToDanaInquiryStatusRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
+            caseName, TransferToDanaInquiryStatusRequest.class);
+
+    // Assign unique reference
+    String originalPartnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setOriginalPartnerReferenceNo(originalPartnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("originalPartnerReferenceNo", originalPartnerReferenceNo);
+
+    customHeaders.put(
+            DanaHeader.X_TIMESTAMP,
+            "");
+    OkHttpClient client = new OkHttpClient.Builder()
+            .addInterceptor(new DanaAuth())
+            .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+            .build();
+
+    DisbursementApi apiCustomHeader = new DisbursementApi(client);
+
+    TransferToDanaInquiryStatusResponse response = apiCustomHeader.transferToDanaInquiryStatus(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
+  void testInquiryTopUpStatusUnauthorizedSignature() throws IOException {
+    Map<String, String> customHeaders = new HashMap<>();
+    String caseName = "InquiryTopUpStatusUnauthorizedSignature";
+    TransferToDanaInquiryStatusRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
+            caseName, TransferToDanaInquiryStatusRequest.class);
+
+    // Assign unique reference
+    String originalPartnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setOriginalPartnerReferenceNo(originalPartnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("originalPartnerReferenceNo", originalPartnerReferenceNo);
+
+    customHeaders.put(
+            DanaHeader.X_SIGNATURE,
+            "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5");
+    OkHttpClient client = new OkHttpClient.Builder()
+            .addInterceptor(new DanaAuth())
+            .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+            .build();
+
+    DisbursementApi apiCustomHeader = new DisbursementApi(client);
+
+    TransferToDanaInquiryStatusResponse response = apiCustomHeader.transferToDanaInquiryStatus(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
 }
