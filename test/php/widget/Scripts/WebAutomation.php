@@ -8,10 +8,35 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
+use Facebook\WebDriver\WebDriverKeys;
 
+/**
+ * WebAutomation class for DANA Widget E2E Testing
+ * 
+ * This class provides comprehensive browser automation capabilities for testing DANA widget
+ * integration scenarios, including OAuth authentication and payment processing flows.
+ * 
+ * Features:
+ * - Cross-browser compatibility (Chrome, Firefox)
+ * - Headless and non-headless execution modes
+ * - Vue.js and React component interaction support
+ * - Mobile device emulation
+ * - Enhanced PIN input handling for modern JavaScript frameworks
+ * - Robust error handling and fallback mechanisms
+ * 
+ * @package DanaUat\Widget\Scripts
+ * @author DANA Integration Team
+ * @version 2.0.0
+ */
 class WebAutomation
 {
+    /** @var string Default Selenium server URL */
     const DEFAULT_SELENIUM_URL = 'http://localhost:4444/wd/hub';
+    
+    /** @var string Default phone number for testing */
+    const DEFAULT_PHONE_NUMBER = '811742234';
+    
+    /** @var string Default PIN for authentication */
     const DEFAULT_PIN = '123321';
     
     /**
@@ -106,9 +131,17 @@ class WebAutomation
     }
     
     /**
-     * Helper method to wait for a specific number of seconds
+     * Utility method to pause execution for a specified duration
      * 
-     * @param float $seconds Seconds to wait
+     * This method provides precise timing control for automation scenarios where
+     * elements need time to load, render, or process. Uses microsecond precision
+     * for accurate timing.
+     * 
+     * @param float $seconds Number of seconds to wait (supports decimals)
+     * 
+     * @example
+     * WebAutomation::wait(1.5);    // Wait 1.5 seconds
+     * WebAutomation::wait(0.25);   // Wait 250 milliseconds
      */
     public static function wait($seconds)
     {
@@ -260,48 +293,33 @@ class WebAutomation
                 self::wait(1.5);
             }
             
-            // Enter PIN using JavaScript
+            // Enter PIN using our enhanced JavaScript method
             echo "Looking for PIN input fields..." . PHP_EOL;
-            $pinInputResult = $driver->executeScript(
-                'const specificPinInput = document.querySelector(".txt-input-pin-field");' .
-                'if (specificPinInput) {' .
-                '  specificPinInput.value = arguments[0];' .
-                '  specificPinInput.dispatchEvent(new Event("input", { bubbles: true }));' .
-                '  specificPinInput.dispatchEvent(new Event("change", { bubbles: true }));' .
-                '  return { success: true, method: "specific", message: "Found specific PIN input field: .txt-input-pin-field" };' .
-                '}' .
-                'const inputs = document.querySelectorAll("input");' .
-                'const singlePinInput = Array.from(inputs).find(input => ' .
-                '  input.maxLength === 6 && ' .
-                '  (input.type === "text" || input.type === "tel" || input.type === "number" || input.inputMode === "numeric")' .
-                ');' .
-                'if (singlePinInput) {' .
-                '  singlePinInput.value = arguments[0];' .
-                '  singlePinInput.dispatchEvent(new Event("input", { bubbles: true }));' .
-                '  singlePinInput.dispatchEvent(new Event("change", { bubbles: true }));' .
-                '  return { success: true, method: "single", message: "Found single PIN input field with maxLength=6" };' .
-                '}' .
-                'const pinInputs = Array.from(inputs).filter(input => ' .
-                '  input.maxLength === 1 || ' .
-                '  input.type === "password" || ' .
-                '  input.className.includes("pin")' .
-                ');' .
-                'if (pinInputs.length >= arguments[0].length) {' .
-                '  for (let i = 0; i < arguments[0].length; i++) {' .
-                '    pinInputs[i].value = arguments[0].charAt(i);' .
-                '    pinInputs[i].dispatchEvent(new Event("input", { bubbles: true }));' .
-                '    pinInputs[i].dispatchEvent(new Event("change", { bubbles: true }));' .
-                '  }' .
-                '  return { success: true, method: "multi", message: `Found ${pinInputs.length} PIN inputs via JS` };' .
-                '}' .
-                'return { success: false, method: "none", message: "Could not find any suitable PIN input field" };',
-                [$pinToUse]
-            );
+            $pinInputSuccess = self::handlePinWithJavaScript($driver, $pinToUse);
             
-            if (isset($pinInputResult['success']) && $pinInputResult['success']) {
-                echo "PIN input successful: {$pinInputResult['message']} (method: {$pinInputResult['method']})" . PHP_EOL;
+            if ($pinInputSuccess) {
+                echo "PIN input successful using enhanced JavaScript method!" . PHP_EOL;
             } else {
-                echo "Warning: {$pinInputResult['message']}" . PHP_EOL;
+                echo "Warning: Enhanced PIN input method failed, trying fallback..." . PHP_EOL;
+                
+                // Fallback to the original method
+                $pinInputResult = $driver->executeScript(
+                    'const specificPinInput = document.querySelector(".txt-input-pin-field");' .
+                    'if (specificPinInput) {' .
+                    '  specificPinInput.value = arguments[0];' .
+                    '  specificPinInput.dispatchEvent(new Event("input", { bubbles: true }));' .
+                    '  specificPinInput.dispatchEvent(new Event("change", { bubbles: true }));' .
+                    '  return { success: true, method: "specific", message: "Found specific PIN input field: .txt-input-pin-field" };' .
+                    '}' .
+                    'return { success: false, method: "none", message: "Could not find PIN input field" };',
+                    [$pinToUse]
+                );
+                
+                if (isset($pinInputResult['success']) && $pinInputResult['success']) {
+                    echo "Fallback PIN input successful: {$pinInputResult['message']}" . PHP_EOL;
+                } else {
+                    echo "Warning: Both PIN input methods failed!" . PHP_EOL;
+                }
             }
             
             // Try to find and click a confirm button after PIN entry
@@ -394,12 +412,27 @@ class WebAutomation
     }
 
     /**
-     * Automate the payment process on the DANA widget payment page
+     * Automate the complete payment process on the DANA widget payment page
      *
-     * @param string $paymentUrl The payment redirect URL to open
-     * @param bool $headless Whether to run browser in headless mode
-     * @param string $outputFile Optional path to write success status
-     * @return bool True if payment was successful, false otherwise
+     * This method handles the full payment flow including:
+     * - Phone number entry with multiple selector fallbacks
+     * - PIN authentication using Vue.js-compatible JavaScript injection
+     * - Payment button interaction with error handling
+     * - Success verification and status reporting
+     *
+     * @param string $paymentUrl The payment redirect URL to open and process
+     * @param bool $headless Whether to run browser in headless mode (default: true)
+     * @param string|null $outputFile Optional path to write success status file
+     * @return bool True if payment was successfully completed, false otherwise
+     * 
+     * @throws \Exception If Selenium server is unavailable or browser fails to launch
+     * 
+     * @example
+     * $success = WebAutomation::automatePaymentWidget(
+     *     'https://m.sandbox.dana.id/n/cashier/new/checkout?bizNo=...',
+     *     true,
+     *     '/tmp/payment_success.txt'
+     * );
      */
     public static function automatePaymentWidget($paymentUrl, $headless = true, $outputFile = null)
     {
@@ -441,12 +474,6 @@ class WebAutomation
                 '--disable-dev-shm-usage'
             ]);
             
-            // Set up mobile emulation for better compatibility with payment widget
-            $mobileEmulation = [
-                'deviceName' => 'iPhone X'
-            ];
-            $chromeOptions->setExperimentalOption('mobileEmulation', $mobileEmulation);
-            
             // Configure capabilities
             $capabilities = DesiredCapabilities::chrome();
             $capabilities->setCapability(ChromeOptions::CAPABILITY, $chromeOptions);
@@ -454,18 +481,87 @@ class WebAutomation
             // Create WebDriver
             echo "Connecting to WebDriver..." . PHP_EOL;
             $driver = RemoteWebDriver::create($seleniumUrl, $capabilities);
-            $driver->manage()->window()->setSize(new WebDriverDimension(390, 844));
-            
+            $driver->manage()->window()->maximize();
+
             // Navigate to the payment URL
             echo "Navigating to payment URL..." . PHP_EOL;
             $driver->get($paymentUrl);
             
-            // Wait for page to load and payment button to be visible
-            echo "Waiting for payment button..." . PHP_EOL;
             try {
+                // Selector
+                $inputPinSelector = ".txt-input-pin-field";
+                $buttonPaySelector = ".btn.btn-primary.btn-pay";
+                $submitPhoneNumberSelector = ".agreement__button>.btn-continue";
+                $phoneSelectors = [
+                    '.desktop-input>.txt-input-phone-number-field',  // Primary selector for desktop layout
+                    '.txt-input-phone-number-field',                 // Fallback without parent container
+                    'input[type="tel"]',                             // Standard telephone input
+                    'input[name="phone"]',                           // By name attribute
+                    'input[placeholder*="phone"]',                   // By placeholder containing "phone"
+                    'input[placeholder*="nomor"]',                   // Indonesian placeholder text
+                    'input[inputmode="tel"]',                        // By input mode for mobile
+                    'input[type="text"]',                            // Generic text input fallback
+                    'input:not([type="hidden"]):not([type="submit"]):not([type="button"])' // Any visible input
+                ];
+                
+                // Attempt to locate phone number input field
+                $phoneSelectorElement = null;
+                $usedSelector = null;
+                
+                // Try each selector until we find a phone input field
+                foreach ($phoneSelectors as $selector) {
+                    try {
+                        $elements = $driver->findElements(WebDriverBy::cssSelector($selector));
+                        if (count($elements) > 0) {
+                            $phoneSelectorElement = $elements[0];
+                            $usedSelector = $selector;
+                            echo "Found phone input with selector: {$selector}" . PHP_EOL;
+                            break;
+                        }
+                    } catch (\Exception $e) {
+                        // Continue to next selector if current one fails
+                    }
+                }
+
+                // Process phone number entry and PIN input
+                echo "Filling phone number and PIN..." . PHP_EOL;
+                if ($phoneSelectorElement) {
+                    // Enter phone number and proceed to PIN authentication
+                    $phoneSelectorElement->sendKeys(self::DEFAULT_PHONE_NUMBER);
+                    $driver->getKeyboard()->pressKey(WebDriverKeys::ENTER);
+                    
+                    // Wait for PIN fields to appear after phone number submission
+                    echo "Waiting for PIN fields to appear..." . PHP_EOL;
+                    self::wait(3.0);
+                    
+                    // Use enhanced JavaScript PIN handling method for Vue.js compatibility
+                    echo "Entering PIN using JavaScript method..." . PHP_EOL;
+                    $pinSuccess = self::handlePinWithJavaScript($driver, self::DEFAULT_PIN);
+                    
+                    // Fallback to traditional WebDriver method if JavaScript approach fails
+                    // Fallback to traditional WebDriver method if JavaScript approach fails
+                    if (!$pinSuccess) {
+                        echo "JavaScript PIN method failed, trying fallback WebDriver method..." . PHP_EOL;
+                        try {
+                            $driver->findElement(WebDriverBy::cssSelector($inputPinSelector))->sendKeys(self::DEFAULT_PIN);
+                            echo "Fallback PIN entry completed" . PHP_EOL;
+                        } catch (\Exception $pinError) {
+                            echo "Both PIN methods failed: {$pinError->getMessage()}" . PHP_EOL;
+                        }
+                    }
+
+                    // Wait for PIN processing and potential page transition
+                    echo "Waiting for PIN processing..." . PHP_EOL;
+                    self::wait(1.0);
+                } else {
+                    echo "Could not find phone number input field with any selector" . PHP_EOL;
+                    echo "This might indicate the page hasn't loaded completely or has a different structure" . PHP_EOL;
+                }
+
+                // Wait for payment button to become visible after authentication
                 $driver->wait(60, 1000)->until(
                     WebDriverExpectedCondition::visibilityOfElementLocated(
-                        WebDriverBy::cssSelector('.btn.btn-primary.btn-pay')
+                        WebDriverBy::cssSelector($buttonPaySelector)
                     )
                 );
             } catch (\Exception $e) {
@@ -500,10 +596,9 @@ class WebAutomation
             }
             
             // Click the payment button
-            sleep(2);
             echo "Clicking payment button..." . PHP_EOL;
             try {
-                $payButton = $driver->findElement(WebDriverBy::cssSelector('.btn.btn-primary.btn-pay'));
+                $payButton = $driver->findElement(WebDriverBy::cssSelector($buttonPaySelector));
                 $payButton->click();
             } catch (\Exception $e) {
                 echo "Error clicking primary payment button: {$e->getMessage()}, trying JavaScript click..." . PHP_EOL;
@@ -569,5 +664,195 @@ class WebAutomation
         }
         
         return $success;
+    }
+    
+    /**
+     * Handle PIN input using advanced JavaScript for Vue.js and React compatibility
+     * 
+     * This method provides robust PIN entry capabilities that work with modern JavaScript
+     * frameworks by using native DOM manipulation and comprehensive event simulation.
+     * 
+     * Key features:
+     * - Multiple selector strategies for different PIN field implementations
+     * - Vue.js reactive system compatibility using native setters
+     * - Comprehensive event simulation (input, change, blur, keydown, keyup)
+     * - Automatic form submission with Enter key simulation
+     * - Fallback button clicking for various UI patterns
+     * 
+     * Supported PIN field types:
+     * - Single input fields (maxlength=6)
+     * - Vue.js component fields with data attributes
+     * - Password type inputs
+     * - Numeric input mode fields
+     * - Pattern-based validation fields
+     * 
+     * @param RemoteWebDriver $driver Active WebDriver instance
+     * @param string|null $pin PIN code to enter (uses DEFAULT_PIN if null)
+     * @return bool True if PIN was successfully entered and submitted, false otherwise
+     * 
+     * @example
+     * $success = WebAutomation::handlePinWithJavaScript($driver, '123456');
+     * if (!$success) {
+     *     echo "PIN entry failed, check if element exists and is visible";
+     * }
+     */
+    public static function handlePinWithJavaScript($driver, $pin = null)
+    {
+        $pinToUse = $pin ?: self::DEFAULT_PIN;
+        
+        echo "Attempting to enter PIN using JavaScript method..." . PHP_EOL;
+        
+        // JavaScript to find and fill the PIN input element
+        $jsScript = "
+            // Function to find PIN input element with comprehensive selector coverage
+            function findPinInput() {
+                // Try multiple selectors for PIN input fields in order of specificity
+                const selectors = [
+                    'input.txt-input-pin-field',                    // Primary DANA PIN field
+                    'input[class*=\"txt-input-pin-field\"]',        // Class contains PIN field
+                    'input[type=\"text\"][inputmode=\"numeric\"]',  // Numeric text input
+                    'input[type=\"text\"][pattern=\"[0-9]*\"]',     // Text input with numeric pattern
+                    'input[maxlength=\"6\"][pattern=\"[0-9]*\"]',   // 6-digit numeric input
+                    'input[data-v-3a4f5050]',                       // Vue.js component instance
+                    'input[autofocus=\"true\"][maxlength=\"6\"]',   // Auto-focused 6-digit input
+                    'input[type=\"password\"]',                     // Password type input
+                    'input[name=\"pin\"]',                          // By name attribute
+                    'input[name=\"password\"]',                     // By password name
+                    'input[placeholder*=\"PIN\"]',                  // Placeholder contains PIN
+                    'input[placeholder*=\"pin\"]',                  // Lowercase PIN in placeholder
+                    'input[class*=\"pin\"]',                        // Class contains pin
+                    'input[id*=\"pin\"]',                           // ID contains pin
+                    'input[inputmode=\"numeric\"]',                 // Any numeric input mode
+                    'input[pattern*=\"[0-9]\"]'                     // Any numeric pattern
+                ];
+                
+                // Try each selector and return the first match
+                for (let selector of selectors) {
+                    const element = document.querySelector(selector);
+                    if (element && element.offsetParent !== null) {
+                        console.log('Found PIN input with selector:', selector);
+                        return element;
+                    }
+                }
+                
+                console.log('PIN input not found with any selector');
+                return null;
+            }
+            
+            // Function to set PIN value and trigger appropriate events for Vue.js compatibility
+            function setPinValue(element, value) {
+                // Clear any existing value
+                element.value = '';
+                
+                // Set the new value using native setter to bypass Vue.js reactivity system
+                const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+                nativeSetter.call(element, value);
+                
+                // Trigger essential input events for Vue.js component reactivity
+                element.dispatchEvent(new Event('input', { bubbles: true }));
+                element.dispatchEvent(new Event('change', { bubbles: true }));
+                element.dispatchEvent(new Event('blur', { bubbles: true }));
+                
+                // Focus the element and simulate individual key presses
+                element.focus();
+                
+                // Simulate keydown and keyup events for each digit to trigger validation
+                for (let i = 0; i < value.length; i++) {
+                    const char = value[i];
+                    element.dispatchEvent(new KeyboardEvent('keydown', { 
+                        key: char, 
+                        code: 'Digit' + char,
+                        bubbles: true 
+                    }));
+                    element.dispatchEvent(new KeyboardEvent('keyup', { 
+                        key: char, 
+                        code: 'Digit' + char,
+                        bubbles: true 
+                    }));
+                }
+                
+                // Trigger Enter key to submit the PIN
+                element.dispatchEvent(new KeyboardEvent('keydown', { 
+                    key: 'Enter', 
+                    code: 'Enter',
+                    bubbles: true 
+                }));
+                element.dispatchEvent(new KeyboardEvent('keyup', { 
+                    key: 'Enter', 
+                    code: 'Enter',
+                    bubbles: true 
+                }));
+                
+                console.log('PIN value set to:', element.value);
+                return true;
+            }
+            
+            // Main execution
+            const pinInput = findPinInput();
+            if (pinInput) {
+                return setPinValue(pinInput, arguments[0]);
+            }
+            
+            return false;
+        ";
+        
+        try {
+            $result = $driver->executeScript($jsScript, [$pinToUse]);
+            
+            if ($result) {
+                echo "PIN entered successfully using JavaScript!" . PHP_EOL;
+                
+                // Wait a moment for the events to process
+                sleep(2);
+                
+                // Try to find and click submit button after PIN entry
+                $submitScript = "
+                    const submitSelectors = [
+                        'button[type=\"submit\"]',
+                        '.btn-submit',
+                        '.btn-primary',
+                        '.dana-button',
+                        'button:contains(\"Submit\")',
+                        'button:contains(\"Confirm\")',
+                        'button:contains(\"Continue\")'
+                    ];
+                    
+                    for (let selector of submitSelectors) {
+                        const button = document.querySelector(selector);
+                        if (button && button.offsetParent !== null) {
+                            button.click();
+                            console.log('Clicked submit button with selector:', selector);
+                            return true;
+                        }
+                    }
+                    
+                    // Try clicking any visible button as fallback
+                    const allButtons = document.querySelectorAll('button');
+                    for (let button of allButtons) {
+                        if (button.offsetParent !== null && button.textContent.trim()) {
+                            button.click();
+                            console.log('Clicked fallback button:', button.textContent);
+                            return true;
+                        }
+                    }
+                    
+                    return false;
+                ";
+                
+                $submitResult = $driver->executeScript($submitScript);
+                if ($submitResult) {
+                    echo "Submit button clicked successfully!" . PHP_EOL;
+                }
+                
+                return true;
+            } else {
+                echo "Failed to find PIN input element" . PHP_EOL;
+                return false;
+            }
+            
+        } catch (\Exception $e) {
+            echo "Error executing PIN JavaScript: {$e->getMessage()}" . PHP_EOL;
+            return false;
+        }
     }
 }

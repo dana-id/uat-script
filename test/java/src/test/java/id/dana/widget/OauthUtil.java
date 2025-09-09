@@ -22,6 +22,7 @@ public class OauthUtil {
     private final static String DEFAULT_USER_PIN = "123321";
     private final static String DEFAULT_USER_PHONENUMBER = "0811742234";
     private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
+    private static final String redirecrUrl = ConfigUtil.getConfig("REDIRECT_URL_OAUTH", "https://google.com");
     public static String generateSeamlessData(
             String phoneNumber,
             String bizScenario,
@@ -142,7 +143,7 @@ public class OauthUtil {
                 partnerId,
                 channelId,
                 "DEFAULT_BASIC_PROFILE,QUERY_BALANCE,CASHIER,MINI_DANA",
-                "https://google.com",
+                redirecrUrl,
                 seamlessData,
                 seamlessSign
         );
@@ -153,30 +154,32 @@ public class OauthUtil {
     public static String getOauthViaView(String urlRedirectLinkAuthCode, String phoneNumber, String pin) {
         try (Playwright playwright = Playwright.create()) {
             Browser browser = playwright.webkit().launch();
-            playwright.firefox().launch(new BrowserType.LaunchOptions().setHeadless(true));
+            playwright.firefox().launch(new BrowserType.LaunchOptions());
             Page page = browser.newPage();
 //            Redirect to page login user with phone number
             page.navigate(urlRedirectLinkAuthCode);
 
             Thread.sleep(5000); // Wait for the page to load
 
+            String inputPhoneNumber = ".desktop-input>.txt-input-phone-number-field";
+            String buttonSubmitPhoneNumber = ".agreement__button>.btn-continue";
+            String inputPin = ".txt-input-pin-field";
+
 //            Do action input phone number
-            if (page.locator("//*[contains(@class,\"desktop-input\")]//input").isVisible())
-                page.locator("//*[contains(@class,\"desktop-input\")]//input").fill(phoneNumber);
-            page.locator("//*[contains(@class,\"agreement__button\")]//button").click();
+            if (page.locator(inputPhoneNumber).isVisible())
+                page.locator(inputPhoneNumber).fill(phoneNumber);
+                page.locator(buttonSubmitPhoneNumber).click();
 
 //            Input pin user
-            page.locator("//*[contains(@class,\"input-pin\")]//input").fill(pin);
+            page.locator(inputPin).fill(pin);
 
 //            wait until google page visible
             page.locator("//*[contains(@action,\"/search\")]").waitFor();
             page.locator("//*[contains(@action,\"/search\")]").isVisible();
 
-            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("example.png")));
-
             String currentUrl = page.url();
             String tempCurrentUrl = currentUrl
-                    .replace("https://www.google.com/?","");
+                    .replace(redirecrUrl + "/?","");
 
             authCode = tempCurrentUrl.split("authCode=")[1].split("&")[0];
 

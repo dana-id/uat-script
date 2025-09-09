@@ -778,7 +778,7 @@
                 "responseMessage": "Request Timeout"
             }
         },
-        "PaymentFailIdempotent": {
+        "PaymentIdempotent": {
             "request": {
                 "additionalInfo": {
                     "envInfo": {
@@ -810,8 +810,8 @@
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
-                "responseCode": "4095000",
-                "responseMessage": "Idempotent Request"
+                "responseCode": "2005400",
+                "responseMessage": "Success"
             }
         }
     },

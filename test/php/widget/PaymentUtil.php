@@ -74,54 +74,6 @@ class PaymentUtil extends TestCase
             'webRedirectUrl' => $responseArray['webRedirectUrl'] ?? ''
         ];
     }
-
-    public static function cancelPaymentWidget(
-        string $orderOrigin
-    ): string {
-        $dataOrder = self::createPaymentWidget("PaymentSuccess");
-        $jsonDict = Util::getRequest(
-            self::$jsonPathFileWidget,
-            "CancelOrder",
-            "CancelOrderValidScenario"
-        );
-
-        $jsonDict['merchantId'] = getenv('MERCHANT_ID');
-        $jsonDict['originalPartnerReferenceNo'] = $dataOrder['partnerReferenceNo'];
-
-        $requestObj = ObjectSerializer::deserialize(
-            $jsonDict,
-            'Dana\Widget\v1\Model\CancelOrderRequest'
-        );
-        $apiResponse = self::$apiInstanceWidget->cancelOrder($requestObj);
-        assert($apiResponse != null, "Cancel order failed");
-        return (string)$dataOrder['partnerReferenceNo'];
-    }
-
-    public static function refundPaymentWidget(
-        string $orderOrigin
-    ): string {
-        $dataOrder = self::payOrderWidget(
-            "08123456789",
-            "123456",
-            $orderOrigin
-        );
-        $jsonDict = Util::getRequest(
-            self::$jsonPathFileWidget,
-            "RefundOrder",
-            $orderOrigin
-        );
-
-        $jsonDict['merchantId'] = getenv('MERCHANT_ID');
-        $jsonDict['originalPartnerReferenceNo'] = $dataOrder['partnerReferenceNo'];
-
-        $requestObj = ObjectSerializer::deserialize(
-            $jsonDict,
-            'Dana\Widget\v1\Model\RefundOrderRequest'
-        );
-        $apiResponse = self::$apiInstanceWidget->refundOrder($requestObj);
-        assert($apiResponse != null, "Cancel order failed");
-        return (string)$dataOrder['partnerReferenceNo'];
-    }
     
     /**
      * Creates a payment and completes the full payment flow including automated payment
@@ -228,6 +180,63 @@ class PaymentUtil extends TestCase
         
         // 5. Append OTT to payment widget URL and automate payment
         $webRedirectUrl = $dataOrder['webRedirectUrl'] . "&ott=" . $ott;
+        WebAutomation::automatePaymentWidget(
+            $webRedirectUrl
+        );
+        
+        // 6. Query the payment status to verify success
+        $queryOrderJsonDict = \DanaUat\Helper\Util::getRequest(
+            'resource/request/components/Widget.json',
+            "QueryOrder",
+            "QueryOrderSuccessPaid"
+        );
+        $queryOrderJsonDict['merchantId'] = getenv('MERCHANT_ID');
+        $queryOrderJsonDict['originalPartnerReferenceNo'] = $dataOrder['partnerReferenceNo'];
+        $queryOrderJsonDict['transactionDate'] = (new \DateTime('now', new \DateTimeZone('Asia/Jakarta')))->format('Y-m-d\\TH:i:s+07:00');
+        $queryRequestObj = ObjectSerializer::deserialize(
+            $queryOrderJsonDict,
+            'Dana\\Widget\\v1\\Model\\QueryPaymentRequest'
+        );
+        $queryApiResponse = self::$apiInstanceWidget->queryPayment($queryRequestObj);
+        $queryResponseArray = json_decode($queryApiResponse->__toString(), true);
+        $status = $queryResponseArray['transactionStatusDesc'] ?? null;
+        if ($status !== 'SUCCESS') {
+            throw new \Exception("Payment status is not SUCCESS. Actual status: " . print_r($queryResponseArray, true));
+        }
+        
+        // Cache the successful payment reference for future use
+        self::$cachedPaidPaymentReference = (string)$dataOrder['partnerReferenceNo'];
+        echo "\nCached new paid payment reference: " . self::$cachedPaidPaymentReference . "\n";
+        
+        return self::$cachedPaidPaymentReference;
+    }
+
+    public static function createPaymentWidgetPaid(
+        string $orderOrigin = "PaymentSuccess",
+        bool $forceNewPayment = false
+    ): string {
+        // Check if we already have a cached payment reference
+        if (!$forceNewPayment && self::$cachedPaidPaymentReference !== null) {
+            echo "\nReusing cached paid payment reference: " . self::$cachedPaidPaymentReference . "\n";
+            return self::$cachedPaidPaymentReference;
+        }
+        
+        echo "\nCreating new paid payment...\n";
+        
+        // Set up configuration with authentication settings if not already done
+        if (!isset(self::$configuration) || !isset(self::$apiInstanceWidget)) {
+            self::$configuration = new Configuration();
+            self::$configuration->setApiKey('PRIVATE_KEY', getenv('PRIVATE_KEY'));
+            self::$configuration->setApiKey('ORIGIN', getenv('ORIGIN'));
+            self::$configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
+            self::$configuration->setApiKey('ENV', Env::SANDBOX);
+            self::$apiInstanceWidget = new WidgetApi(null, self::$configuration);
+        }
+        
+        // 1. Create payment order
+        $dataOrder = self::createPaymentWidget($orderOrigin);
+        $webRedirectUrl = $dataOrder['webRedirectUrl'];
+
         WebAutomation::automatePaymentWidget(
             $webRedirectUrl
         );

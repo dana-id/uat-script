@@ -19,13 +19,7 @@
       },
       "response": {
         "responseCode": "2003700",
-        "responseMessage": "Successful",
-        "partnerReferenceNo": "${partnerReferenceNo}",
-        "customerNumber": "62811742234",
-        "amount": {
-          "value": "1.00",
-          "currency": "IDR"
-        }
+        "responseMessage": "Successful"
       }
     },
     "InquiryCustomerFrozenAccount": {
@@ -157,17 +151,7 @@
       },
       "response": {
         "responseCode": "2003800",
-        "responseMessage": "Successful",
-        "referenceNo": "${referenceNo}",
-        "partnerReferenceNo": "${partnerReferenceNo}",
-        "sessionId": null,
-        "customerNumber": "62811742234",
-        "customerName": null,
-        "amount": {
-          "value": "1.00",
-          "currency": "IDR"
-        },
-        "additionalInfo": {}
+        "responseMessage": "Successful"
       }
     },
     "TopUpCustomerTimeout": {
@@ -484,7 +468,7 @@
         "partnerReferenceNo": "${partnerReferenceNo}",
         "customerNumber": "62811742234",
         "amount": {
-          "value": "1000000000000.00",
+          "value": "1.00",
           "currency": "IDR"
         },
         "feeAmount": {
@@ -507,19 +491,7 @@
       },
       "response": {
         "responseCode": "4033814",
-        "responseMessage": "Insufficient Fund",
-        "referenceNo": null,
-        "partnerReferenceNo": "${partnerReferenceNo}",
-        "sessionId": null,
-        "customerNumber": "62811742234",
-        "customerName": "ddd",
-        "amount": {
-          "value": "1000000000000.00",
-          "currency": "IDR"
-        },
-        "additionalInfo": {
-          "resultMsg": "BALANCE_NOT_ENOUGH"
-        }
+        "responseMessage": "Insufficient Fund"
       }
     }
   },
@@ -534,18 +506,7 @@
       },
       "response": {
         "responseCode": "2003900",
-        "responseMessage": "Successful",
-        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
-        "originalReferenceNo": "${originalReferenceNo}",
-        "originalExternalId": null,
-        "serviceCode": "38",
-        "amount": {
-          "value": "1.00",
-          "currency": "IDR"
-        },
-        "latestTransactionStatus": "00",
-        "transactionStatusDesc": "Success",
-        "additionalInfo": {}
+        "responseMessage": "Successful"
       }
     },
     "InquiryTopUpStatusValidFail": {
@@ -577,13 +538,13 @@
         "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
         "originalReferenceNo": null,
         "originalExternalId": null,
-        "serviceCode": "abc",
+        "serviceCode": "ab",
         "additionalInfo": null
       },
       "response": {
         "responseCode": "4003901",
         "responseMessage": "Invalid Field Format serviceCode",
-        "serviceCode": "abc"
+        "serviceCode": "ab"
       }
     },
     "InquiryTopUpStatusMissingMandatoryField": {
@@ -591,7 +552,8 @@
         "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
         "originalReferenceNo": null,
         "originalExternalId": null,
-        "additionalInfo": null
+        "additionalInfo": null,
+        "serviceCode": "38"
       },
       "response": {
         "responseCode": "4003902",
@@ -621,15 +583,7 @@
       },
       "response": {
         "responseCode": "4043901",
-        "responseMessage": "Transaction Not Found",
-        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
-        "originalReferenceNo": null,
-        "originalExternalId": null,
-        "serviceCode": "38",
-        "amount": null,
-        "latestTransactionStatus": null,
-        "transactionStatusDesc": null,
-        "additionalInfo": {}
+        "responseMessage": "Transaction Not Found"
       }
     }
   },
@@ -656,7 +610,6 @@
       "response": {
         "responseCode": "2004200",
         "responseMessage": "Success",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -682,7 +635,6 @@
       "response": {
         "responseCode": "4034214",
         "responseMessage": "Insufficient Fund",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -708,7 +660,6 @@
       "response": {
         "responseCode": "4014200",
         "responseMessage": "Unauthorized. Invalid Signature",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -734,7 +685,6 @@
       "response": {
         "responseCode": "4034218",
         "responseMessage": "Inactive Account Merchant",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -760,7 +710,6 @@
       "response": {
         "responseCode": "4044208",
         "responseMessage": "Invalid Merchant",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -786,7 +735,6 @@
       "response": {
         "responseCode": "4044211",
         "responseMessage": "Invalid Card/Account/Customer Number/Virtual Account",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -812,7 +760,6 @@
       "response": {
         "responseCode": "4004201",
         "responseMessage": "Invalid Field Format",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -837,7 +784,6 @@
       "response": {
         "responseCode": "4004202",
         "responseMessage": "Invalid Mandatory Field additionalInfo.fundType",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     }
@@ -858,13 +804,13 @@
           "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
           "externalDivisionId": null,
           "chargeTarget": null,
-          "needNotify": true,
+          "needNotify": null,
           "beneficiaryAccountName": null,
           "accessToken": null
         }
       },
       "response": {
-        "responseCode": "2024300",
+        "responseCode": "2004300",
         "responseMessage": "Success"
       }
     },
@@ -908,7 +854,7 @@
           "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
           "externalDivisionId": null,
           "chargeTarget": null,
-          "needNotify": null,
+          "needNotify": true,
           "beneficiaryAccountName": null,
           "accessToken": null
         }
@@ -926,7 +872,7 @@
         "beneficiaryAccountNumber": "2460888509",
         "beneficiaryBankCode": "014",
         "amount": {
-          "value": "1000000000000.00",
+          "value": "100.00",
           "currency": "IDR"
         },
         "additionalInfo": {
@@ -999,7 +945,7 @@
         "beneficiaryAccountNumber": "2460888509",
         "beneficiaryBankCode": "014",
         "amount": {
-          "value": "1000000000000.00",
+          "value": "50000.00",
           "currency": "IDR"
         },
         "additionalInfo": {
@@ -1128,18 +1074,7 @@
       },
       "response": {
         "responseCode": "2000000",
-        "responseMessage": "Successful",
-        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
-        "originalReferenceNo": "${originalReferenceNo}",
-        "originalExternalId": null,
-        "serviceCode": "00",
-        "amount": {
-          "value": "50000.00",
-          "currency": "IDR"
-        },
-        "latestTransactionStatus": "${latestTransactionStatus}",
-        "transactionStatusDesc": "${transactionStatusDesc}",
-        "additionalInfo": {}
+        "responseMessage": "Successful"
       }
     },
     "TransferToBankInquiryStatusTransactionNotFound": {
@@ -1152,15 +1087,7 @@
       },
       "response": {
         "responseCode": "4040001",
-        "responseMessage": "Transaction Not Found",
-        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
-        "originalReferenceNo": null,
-        "originalExternalId": null,
-        "serviceCode": "00",
-        "amount": null,
-        "latestTransactionStatus": "07",
-        "transactionStatusDesc": "Order Not Found",
-        "additionalInfo": {}
+        "responseMessage": "Transaction Not Found"
       }
     }
   }

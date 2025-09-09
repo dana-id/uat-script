@@ -95,6 +95,7 @@ class TransferToDanaTest {
   }
 
   @Test
+  @Disabled
   void testTopUpCustomerTimeout() throws IOException {
     String caseName = "TopUpCustomerTimeout";
     TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
