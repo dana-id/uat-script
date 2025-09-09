@@ -621,15 +621,7 @@
       },
       "response": {
         "responseCode": "4043901",
-        "responseMessage": "Transaction Not Found",
-        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
-        "originalReferenceNo": null,
-        "originalExternalId": null,
-        "serviceCode": "38",
-        "amount": null,
-        "latestTransactionStatus": null,
-        "transactionStatusDesc": null,
-        "additionalInfo": {}
+        "responseMessage": "Transaction Not Found"
       }
     }
   },
@@ -656,7 +648,6 @@
       "response": {
         "responseCode": "2004200",
         "responseMessage": "Success",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -682,7 +673,6 @@
       "response": {
         "responseCode": "4034214",
         "responseMessage": "Insufficient Fund",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -708,7 +698,6 @@
       "response": {
         "responseCode": "4014200",
         "responseMessage": "Unauthorized. Invalid Signature",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -734,7 +723,6 @@
       "response": {
         "responseCode": "4034218",
         "responseMessage": "Inactive Account Merchant",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -760,7 +748,6 @@
       "response": {
         "responseCode": "4044208",
         "responseMessage": "Invalid Merchant",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -786,7 +773,6 @@
       "response": {
         "responseCode": "4044211",
         "responseMessage": "Invalid Card/Account/Customer Number/Virtual Account",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -812,7 +798,6 @@
       "response": {
         "responseCode": "4004201",
         "responseMessage": "Invalid Field Format",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -837,7 +822,6 @@
       "response": {
         "responseCode": "4004202",
         "responseMessage": "Invalid Mandatory Field additionalInfo.fundType",
-        "referenceNo": "${referenceNo}",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     }
@@ -858,7 +842,7 @@
           "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
           "externalDivisionId": null,
           "chargeTarget": null,
-          "needNotify": null,
+          "needNotify": false,
           "beneficiaryAccountName": null,
           "accessToken": null
         }

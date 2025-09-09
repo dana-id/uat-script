@@ -236,8 +236,8 @@ public class PaymentTest {
     }
 
     @Test
-    void testPaymentFailIdempotent() throws InterruptedException {
-        String caseName = "PaymentFailIdempotent";
+    void testPaymentIdempotent() throws InterruptedException {
+        String caseName = "PaymentIdempotent";
 
         int numberOfThreads = 10;
         ExecutorService executor = Executors.newFixedThreadPool(numberOfThreads);

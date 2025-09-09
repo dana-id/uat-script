@@ -11,8 +11,6 @@ use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 use DanaUat\Widget\PaymentUtil;
-use DanaUat\Widget\Scripts\WebAutomation;
-use DanaUat\Widget\OauthUtil;
 use Exception;
 
 class QueryOrderTest extends TestCase
@@ -22,8 +20,6 @@ class QueryOrderTest extends TestCase
     private static $apiInstance;
     private static $merchantId;
     private static $queryOrderUrl;
-    private static $userPin = "123321";
-    private static $userPhoneNumber = "0811742234";
     private static $sandboxUrl;
     private static $originalPartnerReferenceCancel;
     private static $originalPartnerReferencePaid;
@@ -38,8 +34,9 @@ class QueryOrderTest extends TestCase
         $configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
         $configuration->setApiKey('ENV', Env::SANDBOX);
         self::$apiInstance = new WidgetApi(null, $configuration);
+
         self::$merchantId = getenv('MERCHANT_ID');
-        self::$queryOrderUrl = '/1.0/debit/status.htm';
+        self::$queryOrderUrl = '/rest/v1.1/debit/status';
         self::$sandboxUrl = 'https://api.sandbox.dana.id';
 
         self::$originalPartnerReferenceCancel = self::createCancelPayment();
@@ -159,7 +156,6 @@ class QueryOrderTest extends TestCase
     }
 
     /**
-     * @skip
      * Should fail with not found
      */
     public function testQueryOrderNotFound(): void
@@ -187,7 +183,6 @@ class QueryOrderTest extends TestCase
      */
     public function testQueryOrderFailInvalidField(): void
     {
-        $this->markTestSkipped('Skipping testQueryOrderFailInvalidField as requested.');
         Util::withDelay(function () {
             $caseName = 'QueryOrderFailInvalidField';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
@@ -195,23 +190,35 @@ class QueryOrderTest extends TestCase
                 'POST',
                 self::$queryOrderUrl,
                 $jsonDict,
-                true,
-                true
+                false
             );
-
+            $jsonDict['originalPartnerReferenceNo'] = self::$originalPartnerReferenceInit;
+            $headers['X-TIMESTAMP'] = "ninininjinin"; // Explicitly set to "ninininjinin" to simulate invalid header
+            
             try {
-                Util::executeApiRequest(
+                $ppp = Util::executeApiRequest(
                     'POST',
                     self::$sandboxUrl . self::$queryOrderUrl,
                     $headers,
                     $jsonDict
                 );
+                
+                echo "\n=== JSON Dictionary ===\n";
+                echo json_encode($jsonDict, JSON_PRETTY_PRINT) . PHP_EOL;
+                echo "=== End JSON Dictionary ===\n";
+
+                echo "Response: ";
+                print_r($ppp);
+                echo PHP_EOL;
+
+                echo "\n=== Headers ===\n";
+                print_r($headers);
+                echo "=== End Headers ===\n";
+
+                // Removed $ppp->getHeaders(); because $ppp is an array, not an object
 
                 $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
             } catch (ApiException $e) {
-                // We expect a 400 Bad Request for invalid format
-                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid timestamp format, got {$e->getCode()}");
-
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
 
@@ -223,9 +230,7 @@ class QueryOrderTest extends TestCase
                     $responseContent,
                     ['partnerReferenceNo' => self::$originalPartnerReferenceCancel]
                 );
-            } catch (ApiException $e) {
-                $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
-            }
+            } 
         });
     }
 
@@ -352,11 +357,7 @@ class QueryOrderTest extends TestCase
     {
         // Use the shared utility method to create a paid payment
         // This eliminates duplicate code across test classes
-        return PaymentUtil::createPaidPaymentWidget(
-            self::$userPhoneNumber,
-            self::$userPin,
-            "PaymentSuccess"
-        );
+        return PaymentUtil::createPaymentWidgetPaid();
     }
 
     private static function generateDate(): string

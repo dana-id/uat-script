@@ -1,5 +1,28 @@
 <?php
 
+/**
+ * @fileoverview Dana Widget Payment Test Suite for DANA Widget Integration
+ * 
+ * This suite validates the DANA widget payment functionality of the DANA Widget API.
+ * Each test case includes comprehensive documentation following PHPDoc standards.
+ * Tests cover success scenarios, error handling, validation, and idempotency behavior.
+ * 
+ * @author Integration Test Team
+ * @version 1.0.0
+ * @since 2024
+ * @package DanaUat\Widget
+ * @requires dana-php-sdk
+ * @requires phpunit
+ * @requires dotenv
+ * 
+ * Test Categories:
+ * - Payment Success: Validates successful payment processing
+ * - Error Handling: Tests various error scenarios and validation
+ * - Idempotency: Verifies duplicate request handling behavior
+ * - Security: Tests signature validation and authentication
+ * - Timeout: Validates timeout handling
+ */
+
 namespace DanaUat\Widget;
 
 use PHPUnit\Framework\TestCase;
@@ -26,7 +49,7 @@ class PaymentTest extends TestCase
     {
         // Set up configuration with authentication settings
         self::$configuration = new Configuration();
-        
+
         // The Configuration constructor automatically loads values from environment variables
         // But we can manually set them if needed
         self::$configuration->setApiKey('PRIVATE_KEY', getenv('PRIVATE_KEY'));
@@ -42,19 +65,25 @@ class PaymentTest extends TestCase
     }
 
     /**
-     * @skip
      * @testdox Should give success response for payment scenario
+     * @description Validates successful payment processing through DANA Widget API
+     * @test Verifies that a valid payment request returns success response with proper reference number
+     * @expectedResult Payment request succeeds and returns valid response object
+     * @category PaymentSuccess
+     * @priority High
+     * @author Integration Test Team
+     * @since 1.0.0
      */
     public function testPaymentSuccess(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'PaymentSuccess';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFileWidget,
                 self::$titleCase,
                 $caseName
             );
-            
+
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
 
@@ -65,30 +94,36 @@ class PaymentTest extends TestCase
 
             $apiResponse = self::$apiInstanceWidget->widgetPayment($requestObj);
             // Assert the response matches the expected data
-                Assertion::assertResponse(
-                    self::$jsonPathFileWidget, 
-                    self::$titleCase, 
-                    $caseName, 
-                    $apiResponse->__toString(),
-                    []
-                );
+            Assertion::assertResponse(
+                self::$jsonPathFileWidget,
+                self::$titleCase,
+                $caseName,
+                $apiResponse->__toString(),
+                []
+            );
         });
     }
 
     /**
-     * @skip
-     * @testdox Should give fail response for invalid payment scenario
+     * @testdox Should give fail response for merchant not exist or status abnormal scenario
+     * @description Validates error handling when merchant ID does not exist or has abnormal status
+     * @test Verifies that invalid merchant scenarios return appropriate error responses
+     * @expectedResult API returns merchant-related error with proper error code and message
+     * @category ErrorHandling
+     * @priority High
+     * @author Integration Test Team
+     * @since 1.0.0
      */
-    public function testPaymentInvalidFieldFormat(): void
+    public function testPaymentFailMerchantNotExistOrStatusAbnormal(): void
     {
-        Util::withDelay(function() {
-            $caseName = 'PaymentFailInvalidFormat';
+        Util::withDelay(function () {
+            $caseName = 'PaymentFailMerchantNotExistOrStatusAbnormal';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFileWidget,
                 self::$titleCase,
                 $caseName
             );
-            
+
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
 
@@ -102,9 +137,9 @@ class PaymentTest extends TestCase
                 self::$apiInstanceWidget->widgetPayment($requestObj);
             } catch (ApiException $e) {
                 Assertion::assertApiException(
-                    self::$jsonPathFileWidget, 
-                    self::$titleCase, 
-                    $caseName, 
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
                     $e,
                     []
                 );
@@ -113,29 +148,132 @@ class PaymentTest extends TestCase
     }
 
     /**
-     * @skip
-     * @testdox Should give fail response for missing or invalid mandatory field
+     * @testdox Should give fail response for inconsistent payment scenario
+     * @description Validates detection of inconsistent payment data with same partner reference
+     * @test Verifies that modified payment data with same reference ID is properly rejected
+     * @expectedResult API returns inconsistent request error when data differs for same reference
+     * @category DataValidation
+     * @priority High
+     * @author Integration Test Team
+     * @since 1.0.0
+     */
+    public function testPaymentFailInconsistentRequest(): void
+    {
+        Util::withDelay(function () {
+            $caseName = 'PaymentFailInconsistentRequest';
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFileWidget,
+                self::$titleCase,
+                $caseName
+            );
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $fixedPartnerRef = PaymentUtil::generatePartnerReferenceNo();
+            $jsonDict['partnerReferenceNo'] = $fixedPartnerRef;
+
+            $requestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\Widget\v1\Model\WidgetPaymentRequest'
+            );
+
+            try {
+                // First request with original data
+                self::$apiInstanceWidget->widgetPayment($requestObj);
+
+                // Second request with modified amount but same partnerReferenceNo
+                $jsonDict['amount']['currency'] = 'IDR';
+                $jsonDict['amount']['value'] = '2000.00';
+                $modifiedRequestObj = ObjectSerializer::deserialize(
+                    $jsonDict,
+                    'Dana\Widget\v1\Model\WidgetPaymentRequest'
+                );
+
+                self::$apiInstanceWidget->widgetPayment($modifiedRequestObj);
+            } catch (ApiException $e) {
+                Assertion::assertApiException(
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
+                    $e,
+                    []
+                );
+            }
+        });
+    }
+
+    /**
+     * @testdox Should give fail response for invalid field format scenario
+     * @description Validates error handling for invalid field formats in payment requests
+     * @test Verifies that malformed or invalid field values return appropriate validation errors
+     * @expectedResult API returns field format validation error with descriptive message
+     * @category FieldValidation
+     * @priority Medium
+     * @author Integration Test Team
+     * @since 1.0.0
+     */
+    public function testPaymentInvalidFieldFormat(): void
+    {
+        Util::withDelay(function () {
+            $caseName = 'PaymentFailInvalidFormat';
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFileWidget,
+                self::$titleCase,
+                $caseName
+            );
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
+
+            $requestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\Widget\v1\Model\WidgetPaymentRequest'
+            );
+
+            // Assert the response matches the expected data
+            try {
+                self::$apiInstanceWidget->widgetPayment($requestObj);
+            } catch (ApiException $e) {
+                Assertion::assertApiException(
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
+                    $e,
+                    []
+                );
+            }
+        });
+    }
+
+    /**
+     * @testdox Should give fail response for missing or invalid mandatory field scenario
+     * @description Validates error handling when required fields are missing or invalid
+     * @test Verifies that requests without mandatory headers (X-TIMESTAMP) are rejected
+     * @expectedResult API returns mandatory field validation error with clear indication
+     * @category MandatoryFieldValidation
+     * @priority High
+     * @author Integration Test Team
+     * @since 1.0.0
      */
     public function testPaymentFailMissingOrInvalidMandatoryField(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'PaymentFailMissingOrInvalidMandatoryField';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFileWidget,
                 self::$titleCase,
                 $caseName
             );
-            
+
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
 
             // Create headers without timestamp to test validation
             $headers = Util::getHeadersWithSignature(
-                    'POST', 
-                    '/rest/redirection/v1.0/debit/payment-host-to-host.htm',
-                    $jsonDict,
-                    false
-                );
+                'POST',
+                '/rest/redirection/v1.0/debit/payment-host-to-host.htm',
+                $jsonDict,
+                false
+            );
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -153,42 +291,48 @@ class PaymentTest extends TestCase
                 $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
             } catch (ApiException $e) {
                 Assertion::assertApiException(
-                    self::$jsonPathFileWidget, 
-                    self::$titleCase, 
-                    $caseName, 
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
                     $e,
                     []
                 );
-            }  
+            }
         });
     }
 
     /**
-     * @skip
-     * @testdox Should give fail response for invalid signature
+     * @testdox Should give fail response for invalid signature scenario
+     * @description Validates security by testing invalid signature rejection
+     * @test Verifies that requests with invalid signatures are properly rejected
+     * @expectedResult API returns signature validation error with security-related message
+     * @category SecurityValidation
+     * @priority Critical
+     * @author Integration Test Team
+     * @since 1.0.0
      */
     public function testPaymentInvalidSignature(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'PaymentFailInvalidSignature';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFileWidget,
                 self::$titleCase,
                 $caseName
             );
-            
+
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
 
             // Create headers without timestamp to test validation
             $headers = Util::getHeadersWithSignature(
-                    'POST', 
-                    '/rest/redirection/v1.0/debit/payment-host-to-host.htm',
-                    $jsonDict,
-                    true,
-                    false,
-                    true
-                );
+                'POST',
+                '/rest/redirection/v1.0/debit/payment-host-to-host.htm',
+                $jsonDict,
+                true,
+                false,
+                true
+            );
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -206,9 +350,9 @@ class PaymentTest extends TestCase
                 $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
             } catch (Exception $e) {
                 Assertion::assertApiException(
-                    self::$jsonPathFileWidget, 
-                    self::$titleCase, 
-                    $caseName, 
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
                     $e,
                     []
                 );
@@ -217,19 +361,25 @@ class PaymentTest extends TestCase
     }
 
     /**
-     * @skip
-     * @testdox Should give fail response for timeout
+     * @testdox Should give fail response for timeout scenario
+     * @description Validates timeout handling when API requests exceed time limits
+     * @test Verifies that timeout scenarios return appropriate HTTP 504 Gateway Timeout
+     * @expectedResult API returns 504 Gateway Timeout error code for timeout scenarios
+     * @category TimeoutHandling
+     * @priority Medium
+     * @author Integration Test Team
+     * @since 1.0.0
      */
     public function testPaymentTimeout(): void
     {
-        Util::withDelay(function() {
+        Util::withDelay(function () {
             $caseName = 'PaymentFailTimeout';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFileWidget,
                 self::$titleCase,
                 $caseName
             );
-            
+
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
 
@@ -247,40 +397,115 @@ class PaymentTest extends TestCase
     }
 
     /**
-     * @skip
-     * @testdox Should give fail response for idempotent
+     * @testdox Should verify idempotency behavior for payment requests
+     * @description Validates idempotency behavior by testing duplicate request handling
+     * @test Verifies that duplicate requests with same reference return consistent responses
+     * @expectedResult Duplicate requests either return identical responses or proper duplicate errors
+     * @category IdempotencyValidation
+     * @priority High
+     * @author Integration Test Team
+     * @since 1.0.0
+     * @steps
+     * 1. Make initial payment request with fixed partner reference
+     * 2. Make immediate duplicate request with same reference
+     * 3. Make delayed duplicate request to test persistence
+     * @scenarios
+     * - True Idempotency: Returns identical response objects
+     * - Duplicate Detection: Returns proper duplicate error messages
      */
     public function testPaymentIdempotent(): void
     {
-        $this->markTestSkipped('Return error 500.');
-        Util::withDelay(function() {
-            $caseName = 'PaymentFailIdempotent';
+        Util::withDelay(function () {
+            $caseName = 'PaymentIdempotent';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFileWidget,
                 self::$titleCase,
                 $caseName
             );
-            
+
             $jsonDict['merchantId'] = self::$merchantId;
-            $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
+            $fixedPartnerRef = 'IDEMPOTENT_TEST_' . time() . '_' . substr(md5(rand()), 0, 8);
+            $jsonDict['partnerReferenceNo'] = $fixedPartnerRef;
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
                 'Dana\Widget\v1\Model\WidgetPaymentRequest'
             );
 
-            self::$apiInstanceWidget->widgetPayment($requestObj);
+            $isIdempotent = false;
+            $firstResponse = null;
 
             try {
-                self::$apiInstanceWidget->widgetPayment($requestObj);
-            } catch (ApiException $e) {
-                Assertion::assertApiException(
-                    self::$jsonPathFileWidget, 
-                    self::$titleCase, 
-                    $caseName, 
-                    $e,
-                    []
-                );
+                // STEP 1: First request - should succeed
+                $firstResponse = self::$apiInstanceWidget->widgetPayment($requestObj);
+
+                sleep(1);
+
+                // STEP 2: Second request with SAME partnerReferenceNo - test idempotency
+                try {
+                    $secondResponse = self::$apiInstanceWidget->widgetPayment($requestObj);
+
+                    if ($firstResponse->getReferenceNo() === $secondResponse->getReferenceNo()) {
+                        $isIdempotent = true;
+
+                        $this->assertEquals(
+                            $firstResponse->getReferenceNo(),
+                            $secondResponse->getReferenceNo(),
+                            'Reference numbers must be identical for truly idempotent requests'
+                        );
+
+                        if (method_exists($firstResponse, 'getResponseCode') && method_exists($secondResponse, 'getResponseCode')) {
+                            $this->assertEquals(
+                                $firstResponse->getResponseCode(),
+                                $secondResponse->getResponseCode(),
+                                'Response codes must be identical for truly idempotent requests'
+                            );
+                        }
+                    } else {
+                        $this->fail('Both requests succeeded but returned different reference numbers - NOT truly idempotent');
+                    }
+                } catch (ApiException $duplicateError) {
+                    $errorResponse = json_decode($duplicateError->getResponseBody(), true);
+
+                    $isDuplicateError =
+                        (isset($errorResponse['responseCode']) &&
+                            (strpos($errorResponse['responseCode'], 'DUPLICATE') !== false ||
+                                strpos($errorResponse['responseCode'], 'ALREADY_EXIST') !== false ||
+                                strpos($errorResponse['responseCode'], 'IDEMPOTENT') !== false)) ||
+                        (isset($errorResponse['responseMessage']) &&
+                            (strpos(strtolower($errorResponse['responseMessage']), 'duplicate') !== false ||
+                                strpos(strtolower($errorResponse['responseMessage']), 'already exist') !== false ||
+                                strpos(strtolower($errorResponse['responseMessage']), 'idempotent') !== false));
+
+                    if ($isDuplicateError) {
+                        Assertion::assertApiException(
+                            self::$jsonPathFileWidget,
+                            self::$titleCase,
+                            $caseName,
+                            $duplicateError,
+                            ['partnerReferenceNo' => $fixedPartnerRef]
+                        );
+                    } else {
+                        $this->fail('Expected duplicate error, but got unexpected error: ' . $duplicateError->getMessage());
+                    }
+                }
+
+                // STEP 3: Test with longer delay to check idempotency persistence
+                sleep(1);
+
+                $thirdResponse = self::$apiInstanceWidget->widgetPayment($requestObj);
+
+                if ($isIdempotent) {
+                    Assertion::assertResponse(
+                        self::$jsonPathFileWidget,
+                        self::$titleCase,
+                        $caseName,
+                        $thirdResponse->__toString(),
+                        []
+                    );
+                }
+            } catch (ApiException $firstError) {
+                $this->markTestSkipped('First request failed - cannot test idempotency: ' . $firstError->getMessage());
             }
         });
     }

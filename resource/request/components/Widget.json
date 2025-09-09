@@ -350,7 +350,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -386,7 +386,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -422,7 +422,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -458,7 +458,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -494,7 +494,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -530,7 +530,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -566,7 +566,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -602,7 +602,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -638,7 +638,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -674,7 +674,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -710,7 +710,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -746,7 +746,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -773,7 +773,7 @@
                 "responseMessage": "Request Timeout"
             }
         },
-        "PaymentFailIdempotent": {
+        "PaymentIdempotent": {
             "request": {
                 "additionalInfo": {
                     "envInfo": {
@@ -782,7 +782,7 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "",
+                        "orderTerminalType": "APP",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
@@ -805,8 +805,8 @@
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
-                "responseCode": "4095000",
-                "responseMessage": "Idempotent Request"
+                "responseCode": "2005400",
+                "responseMessage": "Successful"
             }
         }
     },
@@ -824,8 +824,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "transactionStatusDesc": "SUCCESS",
@@ -845,8 +844,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "responseMessage": "Successful",
@@ -867,8 +865,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "transactionStatusDesc": "INIT",
@@ -888,8 +885,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "responseMessage": "Successful",
@@ -910,8 +906,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "responseCode": "4045501",
@@ -931,8 +926,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "responseCode": "4005501",
@@ -952,8 +946,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "responseMessage": "Invalid Mandatory Field X-TIMESTAMP",
@@ -973,8 +966,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "responseCode": "4015500",
@@ -994,8 +986,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "54",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "responseMessage": "Transaction Not Found",
@@ -1015,8 +1006,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "serviceCode": "AZ",
-                "subMerchantId": "",
-                "transactionDate": ""
+                "subMerchantId": ""
             },
             "response": {
                 "responseMessage": "Internal Server Error",

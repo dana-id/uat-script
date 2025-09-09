@@ -23,8 +23,6 @@ class QueryPaymentTest extends TestCase
     private static $orderReferenceNumber;
     private static $orderPaidReferenceNumber;
     private static $orderCanceledReferenceNumber;
-    private static $userPin = "123321";
-    private static $userPhoneNumber = "0811742234";
 
     public static function setUpBeforeClass(): void
     {
@@ -564,6 +562,7 @@ class QueryPaymentTest extends TestCase
         // Set a unique partner reference number
         $partnerReferenceNo = Util::generatePartnerReferenceNo();
         $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+        $jsonDict['validUpTo'] = Util::generateDateString('+24 hour');
 
         // Create a CreateOrderByRedirectRequest object from the JSON request data
         $createOrderRequestObj = ObjectSerializer::deserialize(
