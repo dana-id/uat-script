@@ -231,8 +231,10 @@ class Util
             $generatedTimestamp = self::generateTimestamp($invalidTimestamp);
             if ($withTimestamp) {
                 $headers['X-TIMESTAMP'] = $generatedTimestamp[0];
+                echo "Setting X-TIMESTAMP to {$generatedTimestamp[0]} for invalid signature test\n";
             } else {
                 $headers['X-TIMESTAMP'] = "";
+                echo "Setting X-TIMESTAMP to empty string for invalid signature test\n";
             }
         } else {
             if ($method === null || $resourcePath === null || $requestObj === null) {
@@ -333,6 +335,26 @@ class Util
             mt_rand(0, 0xffff)
         );
     }
+
+    /**
+     * Generate date string in format YYYY-MM-DDTHH:mm:ss+07:00
+     * 
+     * @param string|null $dateTime Optional datetime string to format. If null, uses current datetime.
+     * @return string Formatted date string with timezone offset +07:00
+     */
+    public static function generateDateString($dateTime = null): string
+    {
+        // Use provided datetime or current datetime
+        if ($dateTime === null) {
+            $date = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
+        } else {
+            $date = new \DateTime($dateTime, new \DateTimeZone('Asia/Jakarta'));
+        }
+        
+        // Format as YYYY-MM-DDTHH:mm:ss+07:00
+        return $date->format('Y-m-d\TH:i:sP');
+    }
+
     public static function runWithRetry(
         callable $testCallback, 
         int $maxRetries = 3, 

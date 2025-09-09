@@ -937,6 +937,31 @@
         "responseMessage": "Invalid Field Format"
       }
     },
+    "DisbursementBankInvalidMandatoryFieldFormat": {
+      "request": {
+        "partnerReferenceNo": "${partnerReferenceNo}",
+        "customerNumber": "62811742234",
+        "accountType": null,
+        "beneficiaryAccountNumber": "2460888509",
+        "beneficiaryBankCode": "014",
+        "amount": {
+          "value": "1000.00",
+          "currency": "USD"
+        },
+        "additionalInfo": {
+          "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
+          "externalDivisionId": null,
+          "chargeTarget": null,
+          "needNotify": null,
+          "beneficiaryAccountName": null,
+          "accessToken": null
+        }
+      },
+      "response": {
+        "responseCode": "4004302",
+        "responseMessage": "Invalid Mandatory Field X-SIGNATURE"
+      }
+    },
     "DisbursementBankInconsistentRequest": {
       "request": {
         "partnerReferenceNo": "${partnerReferenceNo}",

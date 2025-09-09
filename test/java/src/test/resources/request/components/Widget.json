@@ -335,15 +335,111 @@
         }
     },
     "BalanceInquiry": {
-        "BalanceInquirySuccess": {},
-        "BalanceInquiryFailInvalidFormat": {},
-        "BalanceInquiryFailMissingOrInvalidMandatoryField": {},
-        "BalanceInquiryFailInvalidSignature": {},
-        "BalanceInquiryFailTokenExpired": {},
-        "BalanceInquiryFailTokenNotFound": {},
-        "BalanceInquiryFailInvalidUserStatus": {},
-        "BalanceInquiryFailInternalServerError": {},
-        "BalanceInquiryFailUnexpectedResponse": {}
+        "BalanceInquirySuccess": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "2005400",
+                "responseMessage": "Successful"
+            }
+        },
+        "BalanceInquiryFailInvalidFormat": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes": "test",
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4005402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "BalanceInquiryFailMissingOrInvalidMandatoryField": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4005402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "BalanceInquiryFailInvalidSignature": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4005402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "BalanceInquiryFailTokenExpired": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4005402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "BalanceInquiryFailAccountAbnormal": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4005402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
+        "BalanceInquiryFailAccountInactive": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4005402",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        }
     },
     "Payment": {
         "PaymentSuccess": {
@@ -876,7 +972,7 @@
                 "transactionDate": ""
             },
             "response": {
-                "transactionStatusDesc": "INIT",
+                "transactionStatusDesc": "PAYING",
                 "responseCode": "2005500"
             }
         },
@@ -1419,7 +1515,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "435817.00",
+                    "value": "10000.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
