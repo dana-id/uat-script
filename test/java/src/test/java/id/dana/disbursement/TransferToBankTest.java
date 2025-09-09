@@ -157,6 +157,34 @@ class TransferToBankTest {
   }
 
   @Test
+  void testDisbursementBankInvalidMandatoryFieldFormat() throws IOException {
+    Map<String, String> customHeaders = new HashMap<>();
+    String caseName = "DisbursementBankInvalidMandatoryFieldFormat";
+    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+            TransferToBankRequest.class);
+
+    // Assign unique reference
+    String partnerReferenceNo = UUID.randomUUID().toString();
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    customHeaders.put(
+            DanaHeader.X_SIGNATURE,
+            "");
+    OkHttpClient client = new OkHttpClient.Builder()
+            .addInterceptor(new DanaAuth())
+            .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+            .build();
+
+    DisbursementApi apiCustomHeader = new DisbursementApi(client);
+
+    TransferToBankResponse response = apiCustomHeader.transferToBank(requestData);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+  }
+
+  @Test
   void testDisbursementBankMissingMandatoryField() throws IOException {
     String caseName = "DisbursementBankMissingMandatoryField";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,

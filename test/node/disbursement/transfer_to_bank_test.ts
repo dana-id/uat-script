@@ -461,4 +461,53 @@ describe('Disbursement - Transfer To Bank Tests', () => {
       throw e;
     }
   });
+
+  /**
+   * Test Case: Transfer To Bank with Invalid Mandatory Field Format
+   * 
+   * @description Validates that transfer requests with invalid mandatory field formats are properly rejected
+   * @testId DISBURSEMENT_BANK_INVALID_MANDATORY_FIELD_FORMAT_012
+   * @priority High
+   * @category Validation Test
+   * @expectedResult HTTP 400 with invalid mandatory field format error response
+   * @prerequisites Valid partner credentials but malformed mandatory field formats
+   * @errorCode INVALID_MANDATORY_FIELD_FORMAT
+   * @author Integration Test Team
+   * @since 1.0.0
+   */
+  test('DisbursementBankInvalidMandatoryFieldFormat - should fail transfer due to invalid mandatory field format', async () => {
+    const caseName = "DisbursementBankInvalidMandatoryFieldFormat";
+    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+
+    // Assign unique reference for test isolation
+    const partnerReferenceNo = uuidv4();
+    requestData.partnerReferenceNo = partnerReferenceNo;
+
+    try {
+      const baseUrl: string = 'https://api.sandbox.dana.id';
+      const apiPath: string = '/v1.0/emoney/transfer-bank.htm';
+
+      const customHeaders: Record<string, string> = {
+        'X-SIGNATURE': ''
+      };
+
+      await executeManualApiRequest(
+        caseName,
+        "POST",
+        baseUrl + apiPath,
+        apiPath,
+        requestData,
+        customHeaders
+      );
+      fail("Expected an error but the API call succeeded");
+    } catch (e: any) {
+      // If a ResponseError occurs, assert the failure response
+      if (e instanceof ResponseError) {
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
+      } else {
+        // If another error occurs, fail the test with the error message
+        fail('Payment test failed: ' + (e.message || e));
+      }
+    }
+  });
 });

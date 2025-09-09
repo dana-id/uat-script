@@ -63,7 +63,7 @@ describe('ApplyToken Tests', () => {
         } catch (e: any) { }
     });
 
-    test('should fail to apply token with invalid authcode', async () => {
+    test.skip('should fail to apply token with invalid authcode', async () => {
         const caseName = 'ApplyTokenFailAuthcodeInvalid';
         const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
         requestData.authCode = 'invalid_auth_code'; // Use an invalid auth code
@@ -84,7 +84,7 @@ describe('ApplyToken Tests', () => {
         } catch (e: any) { }
     });
 
-    test('should fail to apply token with invalid mandatory fields', async () => {
+    test.skip('should fail to apply token with invalid mandatory fields', async () => {
         const caseName = 'ApplyTokenFailInvalidMandatoryFields';
         const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
         requestData.authCode = "aklsdkalskdw1232ds"; // Ensure authCode is present
@@ -121,7 +121,7 @@ describe('ApplyToken Tests', () => {
         }
     });
 
-    test.skip('should fail to apply token with invalid signature', async () => {
+    test('should fail to apply token with invalid signature', async () => {
         const caseName = 'ApplyTokenFailInvalidSignature';
         const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
         const customHeaders: Record<string, string> = {

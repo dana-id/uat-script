@@ -21,7 +21,7 @@ import * as dotenv from 'dotenv';
 // Import helper functions and assertion utilities
 import { getRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
-import { fail } from 'assert';
+import { AssertionError, fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 
@@ -151,6 +151,7 @@ describe('Disbursement - Transfer To DANA Tests', () => {
       await dana.disbursementApi.transferToDana(requestData);
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
+      console.log(e);
       // If a ResponseError occurs, assert the failure response
       if (e instanceof ResponseError) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
