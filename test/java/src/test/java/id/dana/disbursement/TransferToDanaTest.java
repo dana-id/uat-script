@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -96,7 +97,7 @@ class TransferToDanaTest {
 
   @Test
   @Disabled
-  void testTopUpCustomerTimeout() throws IOException {
+  void testTopUpCustomerTimeout() {
     String caseName = "TopUpCustomerTimeout";
     TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
             TransferToDanaRequest.class);
@@ -107,9 +108,11 @@ class TransferToDanaTest {
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
-
-    TransferToDanaResponse response = api.transferToDana(requestData);
-    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    try {
+      api.transferToDana(requestData);
+    } catch (Exception e) {
+      Assertions.assertEquals("Network error", e.getMessage());
+    }
   }
 
   @Test

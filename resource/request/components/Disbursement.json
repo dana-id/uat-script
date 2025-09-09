@@ -804,7 +804,7 @@
           "fundType": "MERCHANT_WITHDRAW_FOR_CORPORATE",
           "externalDivisionId": null,
           "chargeTarget": null,
-          "needNotify": null,
+          "needNotify": false,
           "beneficiaryAccountName": null,
           "accessToken": null
         }
