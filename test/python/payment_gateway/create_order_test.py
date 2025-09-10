@@ -1,7 +1,7 @@
 import os
 from uuid import uuid4
 import pytest
-
+from datetime import datetime, timedelta, timezone
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.payment_gateway.v1.enum import *
 from dana.payment_gateway.v1.models import *
@@ -25,7 +25,8 @@ configuration = SnapConfiguration(
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
         CLIENT_SECRET=os.environ.get("CLIENT_SECRET"),
-        ENV=Env.SANDBOX
+        ENV=Env.SANDBOX,
+        DANA_ENV=Env.SANDBOX
     )
 )
 
@@ -51,6 +52,7 @@ def test_create_order_redirect_scenario():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByRedirectRequest.from_dict(json_dict)
@@ -86,6 +88,7 @@ def test_create_order_api_scenario():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -110,6 +113,7 @@ def test_create_order_network_pay_pg_qris():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     json_dict["subMerchantId"] = shop_id
     
     # Convert the request data to a CreateOrderRequest object
@@ -138,6 +142,7 @@ def test_create_order_network_pay_pg_other_wallet():
         partner_reference_no = generate_partner_reference_no()
         json_dict["partnerReferenceNo"] = partner_reference_no
         json_dict["merchantId"] = merchant_id
+        json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
         
         # Convert the request data to a CreateOrderRequest object
         create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -170,6 +175,7 @@ def test_create_order_network_pay_pg_other_va_bank():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -192,6 +198,7 @@ def test_create_order_invalid_field_format():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
     
@@ -217,6 +224,7 @@ def test_create_order_inconsistent_request():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -257,6 +265,7 @@ def test_create_order_invalid_mandatory_field():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -296,6 +305,7 @@ def test_create_order_unauthorized():
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -327,6 +337,7 @@ def create_shop():
     partner_reference_no = generate_partner_reference_no()
     json_dict["mainName"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateShopRequest object
     create_shop_request_obj = CreateShopRequest.from_dict(json_dict)

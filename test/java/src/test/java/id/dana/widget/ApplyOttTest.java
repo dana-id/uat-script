@@ -22,8 +22,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 public class ApplyOttTest {
-    private final static String USER_PIN = "131000";
-    private final static String USER_PHONENUMBER = "087875849373";
+    private final static String USER_PIN = "123321";
+    private final static String USER_PHONENUMBER = "0811742234";
     private static final String titleCase = "ApplyOtt";
     private static final String jsonPathFile = ApplyToken.class.getResource("/request/components/Widget.json")
             .getPath();

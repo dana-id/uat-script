@@ -331,6 +331,40 @@ async function automatePayment(
   }
 }
 
+
+/**
+ * Generates a formatted date string in ISO format with timezone offset and optional second offset
+ * @param offsetSeconds - Number of seconds to add/subtract from current time (optional, defaults to 0)
+ * @param timezoneOffset - Timezone offset in hours (optional, defaults to +7 for Jakarta/Asia timezone)
+ * @returns Formatted date string in format: 2030-05-01T00:46:43+07:00
+ * 
+ * @example
+ * generateFormattedDate() // Current time: "2025-09-09T14:30:15+07:00"
+ * generateFormattedDate(3600) // 1 hour from now: "2025-09-09T15:30:15+07:00"
+ * generateFormattedDate(-1800) // 30 minutes ago: "2025-09-09T14:00:15+07:00"
+ * generateFormattedDate(0, -5) // Current time with EST timezone: "2025-09-09T14:30:15-05:00"
+ */
+function generateFormattedDate(offsetSeconds: number = 0, timezoneOffset: number = 7): string {
+  // Create date with offset seconds applied
+  const targetDate = new Date();
+  targetDate.setSeconds(targetDate.getSeconds() + offsetSeconds);
+  
+  // Get date components
+  const year = targetDate.getFullYear();
+  const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const day = String(targetDate.getDate()).padStart(2, '0');
+  const hours = String(targetDate.getHours()).padStart(2, '0');
+  const minutes = String(targetDate.getMinutes()).padStart(2, '0');
+  const seconds = String(targetDate.getSeconds()).padStart(2, '0');
+  
+  // Format timezone offset
+  const offsetHours = Math.abs(timezoneOffset);
+  const offsetSign = timezoneOffset >= 0 ? '+' : '-';
+  const offsetString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:00`;
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetString}`;
+}
+
 /**
  * Export all utility functions for use in test files
  * 
@@ -346,4 +380,5 @@ export {
   getResponseCode,
   retryOnInconsistentRequest,
   automatePayment,
+  generateFormattedDate
 };

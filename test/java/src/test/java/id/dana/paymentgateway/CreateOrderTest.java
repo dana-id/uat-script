@@ -77,7 +77,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -101,7 +101,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -125,7 +125,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -151,7 +151,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
     requestData.setSubMerchantId(shopId);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -177,7 +177,7 @@ public class CreateOrderTest {
       String partnerReferenceNo = UUID.randomUUID().toString();
       requestData.setPartnerReferenceNo(partnerReferenceNo);
       requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
       Map<String, Object> variableDict = new HashMap<>();
       variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -214,7 +214,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -248,7 +248,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -302,7 +302,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -344,7 +344,7 @@ public class CreateOrderTest {
     String partnerReferenceNo = UUID.randomUUID().toString();
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(1440));
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
