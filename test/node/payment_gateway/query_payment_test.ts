@@ -37,7 +37,7 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 
 // Import helper functions
-import { getRequest, automatePayment } from '../helper/util';
+import { getRequest, automatePayment, generateFormattedDate } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { CreateOrderByRedirectRequest, CreateOrderByApiRequest, QueryPaymentRequest, CancelOrderRequest } from 'dana-node/payment_gateway/v1';
@@ -49,6 +49,9 @@ dotenv.config();
 // Test configuration constants
 const titleCase = "QueryPayment";
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/PaymentGateway.json');
+
+// Merchant configuration from environment variables
+const merchantId = process.env.MERCHANT_ID || "216620010016033632482";
 
 // Initialize DANA Payment Gateway client with environment credentials
 const dana = new Dana({
@@ -121,6 +124,8 @@ describe('Query Payment Tests', () => {
     const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
     sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
+    createOrderRequestData.merchantId = merchantId;
+    createOrderRequestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
 
     try {
       // Add delay before creating order to ensure system readiness

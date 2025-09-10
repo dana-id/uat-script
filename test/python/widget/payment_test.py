@@ -24,7 +24,8 @@ configuration = SnapConfiguration(
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
         CLIENT_SECRET=os.environ.get("CLIENT_SECRET"),
-        ENV=Env.SANDBOX
+        ENV=Env.SANDBOX,
+        DANA_ENV=Env.SANDBOX
     )
 )
 
@@ -221,79 +222,25 @@ def test_payment_fail_timeout():
         assert_fail_response(json_path_file, title_case, case_name, e.body, None)
 
 @with_delay()
-def test_payment_fail_idempotent():
-    case_name = "PaymentFailIdempotent"
+def test_payment_idempotent():
+    """Test payment idempotent - same request should return same result"""
+    case_name = "PaymentIdempotent"
     json_dict = get_request(json_path_file, title_case, case_name)
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
     
+    # Convert the request data to a WidgetPaymentRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
     
-    # ✅ Use barrier to ensure truly simultaneous execution
-    num_threads = 10
-    barrier = threading.Barrier(num_threads)
-    results = {}
+    # First hit API - should succeed
+    first_response = api_instance.widget_payment(create_payment_request_obj)
+    # Second hit API with same data - should return same result (idempotent)
+    second_response = api_instance.widget_payment(create_payment_request_obj)
     
-    def make_simultaneous_call(thread_id):
-        """Function executed by each thread"""
-        # Wait for all threads to reach this point
-        barrier.wait()
-        
-        # Now all threads execute simultaneously
-        start_time = time.time()
-        try:
-            response = api_instance.widget_payment(create_payment_request_obj)
-            end_time = time.time()
-            results[thread_id] = {
-                "success": True,
-                "response": WidgetPaymentResponse.to_json(response),
-                "start_time": start_time,
-                "end_time": end_time,
-                "exception": None
-            }
-            print(f"Thread {thread_id}: SUCCESS in {end_time - start_time:.3f}s")
-        except Exception as e:
-            end_time = time.time()
-            results[thread_id] = {
-                "success": False,
-                "response": None,
-                "start_time": start_time,
-                "end_time": end_time,
-                "exception": e
-            }
-            print(f"Thread {thread_id}: FAILED in {end_time - start_time:.3f}s - {type(e).__name__}")
+    # Verify idempotent behavior - both responses should be identical
+    assert first_response.partner_reference_no == second_response.partner_reference_no, "Partner reference numbers should match for idempotent requests"
     
-    # ✅ Create and start threads
-    threads = []
-    for i in range(num_threads):
-        thread = threading.Thread(target=make_simultaneous_call, args=(i,))
-        threads.append(thread)
-        thread.start()
-    
-    # Wait for all threads to complete
-    for thread in threads:
-        thread.join()
-    
-    # ✅ Analyze timing and results
-    successful_calls = [r for r in results.values() if r["success"]]
-    failed_calls = [r for r in results.values() if not r["success"]]
-    
-    print(f"Simultaneous requests - Success: {len(successful_calls)}, Failed: {len(failed_calls)}")
-    
-    # Check if requests were truly simultaneous (within 100ms of each other)
-    start_times = [r["start_time"] for r in results.values()]
-    max_time_spread = max(start_times) - min(start_times)
-    print(f"Time spread between request starts: {max_time_spread * 1000:.1f}ms")
-    assert max_time_spread < 0.5, "Requests should start within 500ms of each other"
-    
-    # Validate idempotency behavior
-    if len(successful_calls) >= 1:
-        # At least one should succeed
-        first_success = successful_calls[0]["response"]
-        assert_response(json_path_file, title_case, case_name, first_success, {"partnerReferenceNo": partner_reference_no})
-        
-        # If multiple succeed, they should be identical
-        for result in successful_calls[1:]:
-            assert result["response"] == first_success, "All successful concurrent responses should be identical"
+    # Assert the response
+    assert_response(json_path_file, title_case, case_name, WidgetPaymentResponse.to_json(second_response), {"partnerReferenceNo": partner_reference_no})

@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 
 // Import helper functions and assertion utilities for robust testing
-import { getRequest, retryOnInconsistentRequest } from '../helper/util';
+import { getRequest, retryOnInconsistentRequest, generateFormattedDate } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
@@ -122,6 +122,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
+    requestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
 
     try {
       // Execute create order API call
@@ -154,6 +155,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
+    requestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
 
     try {
       // Use retry mechanism to handle potential inconsistent request errors
@@ -185,6 +187,9 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
+    requestData.validUpTo = generateFormattedDate(10);
+
+    console.log('Request Data:', JSON.stringify(requestData, null, 2));
 
     try {
       // Execute create order API call with VA bank payment method
@@ -218,6 +223,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
+    requestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
     requestData.subMerchantId = shopId;
 
     try {
@@ -251,6 +257,7 @@ describe('Payment Gateway - Create Order Tests', () => {
       const partnerReferenceNo = generatePartnerReferenceNo();
       requestData.partnerReferenceNo = partnerReferenceNo;
       requestData.merchantId = merchantId;
+    requestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
 
       try {
         // Execute create order API call with wallet payment method
@@ -292,6 +299,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
+    requestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
 
     try {
       // This API call should fail due to invalid field format
@@ -327,6 +335,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
+    requestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
 
     try {
       // First request with original data - establish the baseline transaction
@@ -378,6 +387,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
+    requestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
 
     // Custom headers: deliberately omit X-TIMESTAMP to trigger validation error
     const customHeaders: Record<string, string> = {

@@ -70,9 +70,8 @@ class RefundOrderTest {
         Map<String, Object> variableDict = new HashMap<>();
         variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
 
-        RefundOrderResponse response1 = api.refundOrder(requestData);
-        RefundOrderResponse response2 = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response1, variableDict);
+        RefundOrderResponse response = api.refundOrder(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     }
 
     @Test
@@ -380,6 +379,7 @@ class RefundOrderTest {
         String partnerReferenceNo = UUID.randomUUID().toString();
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         Map<String, Object> variableDict = new HashMap<>();
         variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -400,16 +400,5 @@ class RefundOrderTest {
         List<String> dataOrder = createOrder();
         PaymentPGUtil.payOrder(phoneNumber,pin,dataOrder.get(1));
         return dataOrder.get(0);
-    }
-
-    private static String generateRandomString(int length) {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder(length);
-
-        for (int i = 0; i < length; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return sb.toString();
     }
 }

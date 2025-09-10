@@ -24,7 +24,8 @@ configuration = SnapConfiguration(
         PRIVATE_KEY=os.environ.get("PRIVATE_KEY"),
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
-        ENV=Env.SANDBOX
+        ENV=Env.SANDBOX,
+        DANA_ENV=Env.SANDBOX
     )
 )
 
@@ -46,6 +47,7 @@ def create_test_order(partner_reference_no):
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=300)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -65,7 +67,7 @@ def create_test_order_canceled(partner_reference_no):
     json_dict["partnerReferenceNo"] = partner_reference_no
 
     # Set the expiration time to 1 second from now
-    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=1)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=300)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)

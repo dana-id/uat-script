@@ -38,7 +38,7 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 
 // Import helper functions
-import { getRequest, automatePayment } from '../helper/util';
+import { getRequest, automatePayment, generateFormattedDate } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { CreateOrderByRedirectRequest, CreateOrderByApiRequest, RefundOrderRequest } from 'dana-node/payment_gateway/v1';
@@ -110,6 +110,8 @@ describe('Payment Gateway - Refund Order Tests', () => {
         const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
         sharedOriginalPartnerReference = generatePartnerReferenceNo();
         createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference
+        createOrderRequestData.merchantId = merchantId;
+        createOrderRequestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
         await dana.paymentGatewayApi.createOrder(createOrderRequestData);
     }
 
@@ -127,6 +129,8 @@ describe('Payment Gateway - Refund Order Tests', () => {
         const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
         sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
         createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
+        createOrderRequestData.merchantId = merchantId;
+        createOrderRequestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
 
         try {
             // Add delay before creating order to ensure system readiness

@@ -33,6 +33,7 @@ public class PaymentPGUtil {
         String inputPin = ".txt-input-pin-field";
         String buttonPay = ".btn.btn-primary";
         String urlSuccessPaid = "**/v1/test";
+        String textAlreadyPaid = "//*[contains(text(),'order is already paid.')]";
 
         try (Playwright playwright = Playwright.create()) {
             Browser browser = playwright.webkit().launch(new BrowserType.LaunchOptions().setHeadless(true));
@@ -47,6 +48,12 @@ public class PaymentPGUtil {
             Locator.WaitForOptions waitForOptions = new Locator.WaitForOptions();
             waitForOptions.setTimeout(5000);
 
+//            Payment with Dana
+            if (page.locator(buttonDana).isVisible()) {
+                page.locator(buttonDana).waitFor(waitForOptions);
+                page.locator(buttonDana).click();
+            }
+
 //            Input phone number and pin
             log.info("Input phone number: {} and pin: {}", phoneNumber, pin);
             page.locator(inputPhoneNumber).waitFor(waitForOptions);
@@ -59,9 +66,12 @@ public class PaymentPGUtil {
             }
 //            Click button pay
             page.locator(buttonPay).click();
-//            Wait payemnt success
-            log.info("Wait for URL success payment: {}", urlSuccessPaid);
-            page.waitForURL(urlSuccessPaid);
+            waitForOptions.setTimeout(4000);
+
+            page.navigate(redirectUrlPay);
+            page.locator(buttonPay).click();
+            page.locator(textAlreadyPaid).isVisible();
+            log.info("Order already paid ...");
         }
     }
 

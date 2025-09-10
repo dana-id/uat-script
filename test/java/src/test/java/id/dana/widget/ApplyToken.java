@@ -77,14 +77,25 @@ public class ApplyToken {
     @Test
     @Disabled
     void testApplyTokenFailExpiredAuthcode() throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, SignatureException, InvalidKeyException {
+        String authCode = OauthUtil.getAuthCode(
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                USER_PHONENUMBER,
+                USER_PIN);
+
+        OauthUtil.getAuthCode(
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                ConfigUtil.getConfig("X_PARTNER_ID", ""),
+                USER_PHONENUMBER,
+                USER_PIN);
+
         // Create an order with an initial status
         Map<String, Object> variableDict = new HashMap<>();
         String caseName = "ApplyTokenFailExpiredAuthcode";
         ApplyTokenAuthorizationCodeRequest requestData = TestUtil.getRequest(jsonPathFile, "ApplyToken", "ApplyTokenSuccess",
                 ApplyTokenAuthorizationCodeRequest.class);
 
-        //GtRLpA0TyqK3becMq4dCMnVf1N9KLHNixVfC1800 is authcode expired
-        requestData.setAuthCode("GtRLpA0TyqK3becMq4dCMnVf1N9KLHNixVfC1800");
+        requestData.setAuthCode(authCode);
 
         ApplyTokenResponse response = widgetApi.applyToken(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);

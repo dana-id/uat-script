@@ -223,6 +223,7 @@ class QueryOrderTest {
         String partnerReferenceNo = UUID.randomUUID().toString();
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         Map<String, Object> variableDict = new HashMap<>();
         variableDict.put("partnerReferenceNo", partnerReferenceNo);

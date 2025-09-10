@@ -24,6 +24,7 @@ import java.util.UUID;
 public class GetOauthUrl {
     private static String seamlessData;
     private static String seamlessSign;
+    private static final String redirecrUrl = ConfigUtil.getConfig("REDIRECT_URL_OAUTH", "https://google.com");
 
     @BeforeEach
     void setUp() throws
@@ -54,7 +55,7 @@ public class GetOauthUrl {
         queryParams.put("externalId", "test");
         queryParams.put("channelId", ConfigUtil.getConfig("X_PARTNER_ID", "95221"));
         queryParams.put("scopes", "CASHIER,AGREEMENT_PAY,QUERY_BALANCE,DEFAULT_BASIC_PROFILE,MINI_DANA");
-        queryParams.put("redirectUrl", "https://google.com");
+        queryParams.put("redirectUrl", redirecrUrl);
         queryParams.put("state", "02c92610-aa7c-42b0-bf26-23bb06e4d475");
         queryParams.put("isSnapBI", "true");
         queryParams.put("seamlessData", seamlessData);

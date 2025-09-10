@@ -1,7 +1,8 @@
 import os
 import pytest
-import time
 import asyncio
+import time
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.payment_gateway.v1.enum import *
@@ -29,7 +30,8 @@ configuration = SnapConfiguration(
         PRIVATE_KEY=os.environ.get("PRIVATE_KEY"),
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
-        ENV=Env.SANDBOX
+        ENV=Env.SANDBOX,
+        DANA_ENV=Env.SANDBOX
     )
 )
 
@@ -45,7 +47,6 @@ def generate_partner_reference_no():
 def create_test_order_init():
     data_order = []
     """Helper function to create a test order"""
-    case_name = "CreateOrderApi"
     
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, "CreateOrder", "CreateOrderApi")
@@ -53,6 +54,7 @@ def create_test_order_init():
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = generate_partner_reference_no()
     json_dict["merchantId"] = merchant_id
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -484,15 +486,19 @@ def test_refund_order_idempotent():
 
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = order_reference_number
-    json_dict["partnerRefundNo"] = order_reference_number
+    json_dict["partnerRefundNo"] = generate_partner_reference_no()  # Use unique refund reference
     json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
     
-    # First hit API
-    api_instance.refund_order(refund_order_request_obj)
-    # Second hit API with same data
-    api_response = api_instance.refund_order(refund_order_request_obj)
+    # First hit API - should succeed
+    first_response = api_instance.refund_order(refund_order_request_obj)
+    # Second hit API with same data - should return same result (idempotent)
+    second_response = api_instance.refund_order(refund_order_request_obj)
+    
+    # Verify idempotent behavior - both responses should be identical
+    assert first_response.refund_no == second_response.refund_no, "Refund numbers should match for idempotent requests"
+
     # Assert the response
-    assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(api_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
+    assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(second_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})

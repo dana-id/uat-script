@@ -173,7 +173,6 @@
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
-                "subMerchantId": "",
                 "amount": {
                     "value": "22200.00",
                     "currency": "IDR"
@@ -217,7 +216,6 @@
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
-                "subMerchantId": "",
                 "amount": {
                     "value": "22200.00",
                     "currency": "IDR"
@@ -271,7 +269,6 @@
             "request": {                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
-                "subMerchantId": "",
                 "amount": {
                     "value": "22200.00",
                     "currency": "IDR"
@@ -517,7 +514,6 @@
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "",
-                "subMerchantId": "",
                 "amount": {
                     "value": "22200",
                     "currency": "IDR"
@@ -572,7 +568,6 @@
             "request": {
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
-                "subMerchantId": "",
                 "amount": {
                     "value": "22200.00",
                     "currency": "IDR"

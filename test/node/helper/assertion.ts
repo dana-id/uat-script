@@ -341,6 +341,7 @@ function assertResponse(jsonPathFile: string, title: string, data: string, respo
 
     // Log successful response validation
     console.log(`Response assertion passed: API response matches expected data`);
+    console.log(`Request Data File: ${path.basename(jsonPathFile)}`);
     console.log(`Expected: ${JSON.stringify(processedExpectedData)}`);
     console.log(`Actual: ${JSON.stringify(actualResponse)}`);
     return true;

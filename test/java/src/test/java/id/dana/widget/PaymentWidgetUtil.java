@@ -5,6 +5,7 @@ import id.dana.invoker.Dana;
 import id.dana.invoker.model.DanaConfig;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
+import id.dana.paymentgateway.CreateOrderTest;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
 import id.dana.widget.v1.api.WidgetApi;
@@ -18,6 +19,7 @@ import java.util.*;
 
 public class PaymentWidgetUtil {
     private static final String titleCase = "Payment";
+    private static final Logger log = LoggerFactory.getLogger(CreateOrderTest.class);
     private static final String jsonPathFile = PaymentTest.class.getResource(
             "/request/components/Widget.json").getPath();
     private static WidgetApi widgetApi;
@@ -32,6 +34,7 @@ public class PaymentWidgetUtil {
         String buttonSubmitPhoneNumber = ".agreement__button>.btn-continue";
         String inputPin = ".txt-input-pin-field";
         String buttonPay = ".btn.btn-primary";
+        String textAlreadyPaid = "//*[contains(text(),'order is already paid.')]";
 
         try (Playwright playwright = Playwright.create()) {
             Browser browser = playwright.webkit().launch();
@@ -64,6 +67,12 @@ public class PaymentWidgetUtil {
 
 //            Wait transaction success
             Thread.sleep(10000);
+
+//            Wait payment success
+            page.navigate(redirectUrlPay);
+            page.locator(buttonPay).click();
+            page.locator(textAlreadyPaid).isVisible();
+            log.info("Order already paid ...");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
