@@ -189,8 +189,6 @@ describe('Payment Gateway - Create Order Tests', () => {
     requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(10);
 
-    console.log('Request Data:', JSON.stringify(requestData, null, 2));
-
     try {
       // Execute create order API call with VA bank payment method
       const response = await dana.paymentGatewayApi.createOrder(requestData);

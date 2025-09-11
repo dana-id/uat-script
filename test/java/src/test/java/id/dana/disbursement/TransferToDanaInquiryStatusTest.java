@@ -113,10 +113,10 @@ class TransferToDanaInquiryStatusTest {
             caseName, TransferToDanaInquiryStatusRequest.class);
 
     // Assign unique reference
-    requestData.setOriginalPartnerReferenceNo(partnerReferencePaid);
+    requestData.setOriginalPartnerReferenceNo(partnerReferenceFailed);
 
     Map<String, Object> variableDict = new HashMap<>();
-    variableDict.put("originalPartnerReferenceNo", partnerReferencePaid);
+    variableDict.put("originalPartnerReferenceNo", partnerReferenceFailed);
 
     TransferToDanaInquiryStatusResponse response = api.transferToDanaInquiryStatus(requestData);
     variableDict.put("originalReferenceNo", response.getOriginalReferenceNo());
