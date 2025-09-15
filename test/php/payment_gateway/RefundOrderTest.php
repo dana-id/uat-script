@@ -82,6 +82,7 @@ class RefundOrderTest extends TestCase
         // Set the partner reference number
         $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
         $jsonDict['merchantId'] = getenv('MERCHANT_ID');
+        $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
 
         // Create a CreateOrderByApiRequest object from the JSON request data
         $createOrderRequestObj = ObjectSerializer::deserialize(

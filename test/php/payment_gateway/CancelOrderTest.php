@@ -663,6 +663,7 @@ class CancelOrderTest extends TestCase
                 $newPartnerReference = Util::generatePartnerReferenceNo();
                 $createOrderRequestData['partnerReferenceNo'] = $newPartnerReference;
                 $createOrderRequestData['merchantId'] = self::$merchantId;
+                $createOrderRequestData['validUpTo'] = Util::generateFormattedDate(25600, 7);
 
                 // Create the order
                 $createOrderRequestObj = ObjectSerializer::deserialize(
@@ -773,6 +774,7 @@ class CancelOrderTest extends TestCase
         // Set a unique partner reference number
         $partnerReferenceNo = Util::generatePartnerReferenceNo();
         $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+        $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
 
         // Create a CreateOrderByRedirectRequest object from the JSON request data
         $createOrderRequestObj = ObjectSerializer::deserialize(

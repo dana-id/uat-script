@@ -55,6 +55,7 @@ class PaymentUtil extends TestCase
             $createOrderTitleCase,
             $caseName
         );
+        $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
 
         // Create a CreateOrderByRedirectRequest object from the JSON request data
         $createOrderRequestObj = ObjectSerializer::deserialize(
