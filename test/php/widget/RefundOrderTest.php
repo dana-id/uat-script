@@ -17,7 +17,7 @@ class RefundOrderTest extends TestCase
     private static $titleCase = 'RefundOrder';
     private static $jsonPathFile = 'resource/request/components/Widget.json';
     private static $apiInstance;
-    private static $sharedOriginalPartnerReference, $sharedOriginalPartnerReferencePaid;
+    private static $sharedOriginalPartnerReference, $sharedOriginalPartnerReferencePaid, $sharedOriginalPartnerReferenceDuplicate;
     private static $merchantId;
     private static $refundUrl;
     private static $sandboxUrl;
@@ -39,6 +39,7 @@ class RefundOrderTest extends TestCase
         self::$sharedOriginalPartnerReference = $dataOrder['partnerReferenceNo'];
         
         self::$sharedOriginalPartnerReferencePaid = self::paidPayment();
+        self::$sharedOriginalPartnerReferenceDuplicate = self::paidPayment();
     }
 
     /**
@@ -57,9 +58,14 @@ class RefundOrderTest extends TestCase
             $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
                         
             $apiResponse = self::$apiInstance->refundOrder($requestObj);
-            $responseJson = json_decode($apiResponse->__toString(), true);
-            $this->assertEquals('2005800', $responseJson['responseCode'], 'Expected success response code');
-            $this->assertEquals('Successful', $responseJson['responseMessage'], 'Expected success response message');
+
+            // Assert the API response
+            Assertion::assertResponse(
+                self::$jsonPathFile, 
+                self::$titleCase, 
+                $caseName, 
+                $apiResponse->__toString()
+            );
         });
     }
 
@@ -194,19 +200,29 @@ class RefundOrderTest extends TestCase
      * @skip
      */
     public function testRefundFailDuplicateRequest(): void
-    {
-        $this->markTestSkipped('Widget scenario skipped because it gives error 4035815.');
-        
+    {   
         Util::withDelay(function () {
             $caseName = 'RefundFailDuplicateRequest';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
+            $jsonDict['originalPartnerReferenceNo'] = self::$sharedOriginalPartnerReferencePaid;
+            $jsonDict['partnerRefundNo'] = self::$sharedOriginalPartnerReferencePaid;
+            $jsonDict['merchantId'] = self::$merchantId;
+
             $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
+                        
             try {
                 self::$apiInstance->refundOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
             } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
+                    self::$jsonPathFile, 
+                    self::$titleCase, 
+                    $caseName, 
+                    $responseContent,
+                    ['partnerReferenceNo' => self::$sharedOriginalPartnerReferencePaid]
+                );
             }
         });
     }
@@ -219,13 +235,12 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailOrderNotPaid(): void
     {
-        $this->markTestSkipped('Widget scenario skipped because it gives error 4035818.');
-        
         Util::withDelay(function () {
             $caseName = 'RefundFailOrderNotPaid';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
             $jsonDict['originalPartnerReferenceNo'] = self::$sharedOriginalPartnerReference;
-            $jsonDict['merchantId'] = getenv('MERCHANT_ID');
+            $jsonDict['partnerRefundNo'] = self::$sharedOriginalPartnerReference;
+            $jsonDict['merchantId'] = self::$merchantId;
             $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
             try {
                 self::$apiInstance->refundOrder($requestObj);

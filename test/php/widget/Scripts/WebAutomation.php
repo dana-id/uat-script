@@ -206,12 +206,6 @@ class WebAutomation
                 '--disable-extensions'
             ]);
             
-            // Set up mobile emulation for better compatibility
-            $mobileEmulation = [
-                'deviceName' => 'iPhone X'
-            ];
-            $chromeOptions->setExperimentalOption('mobileEmulation', $mobileEmulation);
-            
             // Configure capabilities
             $capabilities = DesiredCapabilities::chrome();
             $capabilities->setCapability(ChromeOptions::CAPABILITY, $chromeOptions);
@@ -219,7 +213,7 @@ class WebAutomation
             // Create WebDriver
             echo "Connecting to WebDriver..." . PHP_EOL;
             $driver = RemoteWebDriver::create($seleniumUrl, $capabilities);
-            $driver->manage()->window()->setSize(new WebDriverDimension(375, 812));
+            $driver->manage()->window()->maximize();
             
             // Navigate to the OAuth URL
             echo "Navigating to OAuth URL..." . PHP_EOL;
@@ -257,8 +251,7 @@ class WebAutomation
             $submitButtonClicked = $driver->executeScript(
                 'const buttons = document.querySelectorAll("button");' .
                 'for (const button of Array.from(buttons)) {' .
-                '  if (button.type === "submit" || ' .
-                '      button.innerText.includes("Next") || ' .
+                '  if (button.innerText.includes("Next") || ' .
                 '      button.innerText.includes("Continue") || ' .
                 '      button.innerText.includes("Submit") || ' .
                 '      button.innerText.includes("Lanjutkan")) {' .
@@ -488,7 +481,7 @@ class WebAutomation
             $driver->get($paymentUrl);
             
             try {
-                // Selector
+                // Selector definitions
                 $inputPinSelector = ".txt-input-pin-field";
                 $buttonPaySelector = ".btn.btn-primary.btn-pay";
                 $submitPhoneNumberSelector = ".agreement__button>.btn-continue";
@@ -503,10 +496,19 @@ class WebAutomation
                     'input[type="text"]',                            // Generic text input fallback
                     'input:not([type="hidden"]):not([type="submit"]):not([type="button"])' // Any visible input
                 ];
-                
+                $buttonDanaPaymentSelector = "//*[contains(@class,'dana')]/*[contains(@class,'bank-title')]";
+
+                $buttonElements = $driver->findElements(WebDriverBy::xpath($buttonDanaPaymentSelector));
+                if (count($buttonElements) > 0) {
+                    echo "DANA payment option found, clicking it..." . PHP_EOL;
+                    $buttonElements[0]->click();
+                    self::wait(1.0); // Wait for the page to update
+                } else {
+                    echo "DANA payment option not found, proceeding..." . PHP_EOL;
+                }
+
                 // Attempt to locate phone number input field
                 $phoneSelectorElement = null;
-                $usedSelector = null;
                 
                 // Try each selector until we find a phone input field
                 foreach ($phoneSelectors as $selector) {
@@ -514,7 +516,6 @@ class WebAutomation
                         $elements = $driver->findElements(WebDriverBy::cssSelector($selector));
                         if (count($elements) > 0) {
                             $phoneSelectorElement = $elements[0];
-                            $usedSelector = $selector;
                             echo "Found phone input with selector: {$selector}" . PHP_EOL;
                             break;
                         }
@@ -528,7 +529,7 @@ class WebAutomation
                 if ($phoneSelectorElement) {
                     // Enter phone number and proceed to PIN authentication
                     $phoneSelectorElement->sendKeys(self::DEFAULT_PHONE_NUMBER);
-                    $driver->getKeyboard()->pressKey(WebDriverKeys::ENTER);
+                    $driver->findElement(WebDriverBy::cssSelector($submitPhoneNumberSelector))->click();
                     
                     // Wait for PIN fields to appear after phone number submission
                     echo "Waiting for PIN fields to appear..." . PHP_EOL;

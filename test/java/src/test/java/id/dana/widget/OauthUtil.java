@@ -173,9 +173,8 @@ public class OauthUtil {
 //            Input pin user
             page.locator(inputPin).fill(pin);
 
-//            wait until google page visible
-            page.locator("//*[contains(@action,\"/search\")]").waitFor();
-            page.locator("//*[contains(@action,\"/search\")]").isVisible();
+//            wait until page authcode visible
+            page.waitForURL(redirecrUrl + "/*", new Page.WaitForURLOptions().setTimeout(15000));
 
             String currentUrl = page.url();
             String tempCurrentUrl = currentUrl

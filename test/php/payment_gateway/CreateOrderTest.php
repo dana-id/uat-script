@@ -52,6 +52,7 @@ class CreateOrderTest extends TestCase
             // Set a unique partner reference number
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
             
             // Create a CreateOrderByRedirectRequest object from the JSON request data
             $createOrderRequestObj = ObjectSerializer::deserialize(
@@ -100,6 +101,7 @@ class CreateOrderTest extends TestCase
             // Set a unique partner reference number
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
             
             // Create a CreateOrderByApiRequest object from the JSON request data
             $createOrderRequestObj = ObjectSerializer::deserialize(
@@ -151,6 +153,7 @@ class CreateOrderTest extends TestCase
             // Set a unique partner reference number
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
             
             // Create a CreateOrderByApiRequest object from the JSON request data
             $createOrderRequestObj = ObjectSerializer::deserialize(
@@ -205,6 +208,7 @@ class CreateOrderTest extends TestCase
                 // Set a unique partner reference number
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+                $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
                 
                 // Create a CreateOrderByApiRequest object from the JSON request data
                 $createOrderRequestObj = ObjectSerializer::deserialize(
@@ -260,6 +264,7 @@ class CreateOrderTest extends TestCase
             // Set a unique partner reference number
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
             
             // Create a CreateOrderByApiRequest object from the JSON request data
             $createOrderRequestObj = ObjectSerializer::deserialize(
@@ -310,6 +315,7 @@ class CreateOrderTest extends TestCase
                 // Generate a unique partner reference number
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $requestData['partnerReferenceNo'] = $partnerReferenceNo;
+                $requestData['validUpTo'] = Util::generateFormattedDate(25600, 7);
                 
                 // Create a CreateOrderByApiRequest object from the JSON request data
                 $createOrderRequestObj = ObjectSerializer::deserialize(
@@ -367,6 +373,7 @@ class CreateOrderTest extends TestCase
                 // Generate a unique partner reference number
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $requestData['partnerReferenceNo'] = $partnerReferenceNo;
+                $requestData['validUpTo'] = Util::generateFormattedDate(25600, 7);
                 
                 // Create request object for first call
                 $createOrderRequestObj = ObjectSerializer::deserialize(

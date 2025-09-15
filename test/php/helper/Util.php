@@ -337,22 +337,40 @@ class Util
     }
 
     /**
-     * Generate date string in format YYYY-MM-DDTHH:mm:ss+07:00
+     * Generates a formatted date string in ISO format with timezone offset and optional second offset
      * 
-     * @param string|null $dateTime Optional datetime string to format. If null, uses current datetime.
-     * @return string Formatted date string with timezone offset +07:00
+     * @param int $offsetSeconds Number of seconds to add/subtract from current time (can be negative for past dates)
+     * @param int $timezoneOffset Timezone offset in hours (defaults to +7 for Jakarta/Asia timezone)
+     * @return string Formatted date string in format: 2030-05-01T00:46:43+07:00
+     * 
+     * Examples:
+     * - generateFormattedDate(0, 7)     // Current time: "2025-09-10T14:30:15+07:00"
+     * - generateFormattedDate(3600, 7)  // 1 hour from now: "2025-09-10T15:30:15+07:00"
+     * - generateFormattedDate(-1800, 7) // 30 minutes ago: "2025-09-10T14:00:15+07:00"
+     * - generateFormattedDate(0, -5)    // Current time with EST timezone: "2025-09-10T14:30:15-05:00"
      */
-    public static function generateDateString($dateTime = null): string
+    public static function generateFormattedDate(int $offsetSeconds = 0, int $timezoneOffset = 7): string
     {
-        // Use provided datetime or current datetime
-        if ($dateTime === null) {
-            $date = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
-        } else {
-            $date = new \DateTime($dateTime, new \DateTimeZone('Asia/Jakarta'));
-        }
+        // Create DateTime object with offset seconds applied
+        $targetDateTime = new \DateTime();
+        $targetDateTime->modify(sprintf('%+d seconds', $offsetSeconds));
         
-        // Format as YYYY-MM-DDTHH:mm:ss+07:00
-        return $date->format('Y-m-d\TH:i:sP');
+        // Format timezone offset
+        $offsetSign = $timezoneOffset >= 0 ? '+' : '-';
+        $absOffset = abs($timezoneOffset);
+        $timezoneStr = sprintf('%s%02d:00', $offsetSign, $absOffset);
+        
+        // Format the date in the required format: 2030-05-01T00:46:43+07:00
+        return sprintf(
+            '%04d-%02d-%02dT%02d:%02d:%02d%s',
+            $targetDateTime->format('Y'),
+            $targetDateTime->format('m'),
+            $targetDateTime->format('d'),
+            $targetDateTime->format('H'),
+            $targetDateTime->format('i'),
+            $targetDateTime->format('s'),
+            $timezoneStr
+        );
     }
 
     public static function runWithRetry(
