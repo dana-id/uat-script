@@ -174,7 +174,7 @@ public class OauthUtil {
             page.locator(inputPin).fill(pin);
 
 //            wait until page authcode visible
-            page.waitForURL(redirecrUrl + "/*", new Page.WaitForURLOptions().setTimeout(15000));
+            page.waitForURL("**/**authCode**", new Page.WaitForURLOptions().setTimeout(15000));
 
             String currentUrl = page.url();
             String tempCurrentUrl = currentUrl
