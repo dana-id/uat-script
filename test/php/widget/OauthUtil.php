@@ -5,6 +5,7 @@ namespace DanaUat\Widget;
 use DanaUat\Widget\Scripts\WebAutomation;
 use Dana\Widget\v1\Util\Util;
 use Dana\Widget\v1\Model\Oauth2UrlData;
+use Dana\Env;
 
 class OauthUtil
 {
@@ -24,7 +25,7 @@ class OauthUtil
         $merchantId = getenv('MERCHANT_ID');
         
         $oauth2UrlData = new Oauth2UrlData();
-        $oauth2UrlData->setRedirectUrl('https://google.com');
+        $oauth2UrlData->setRedirectUrl($redirectUrl);
         $oauth2UrlData->setMerchantId($merchantId);
         $oauth2UrlData->setSeamlessData([
             'mobileNumber' => '0811742234'
@@ -47,6 +48,10 @@ class OauthUtil
      */
     public static function getAuthCode($partnerId, $state = null, $phoneNumber = null, $pinCode = null, $redirectUrl = null)
     {
+        if ($redirectUrl == null) {
+            $redirectUrl = getenv('REDIRECT_URL_OAUTH');
+        }
+        echo "Starting OAuth automation..." . PHP_EOL;
         $phoneNumber = $phoneNumber ?: '0811742234';
         $pinCode = $pinCode ?: '123321';
         

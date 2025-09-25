@@ -15,6 +15,7 @@ from widget.automate_oauth import automate_oauth
 
 title_case = "AccountUnbinding"
 json_path_file = "resource/request/components/Widget.json"
+merchant_id = os.environ.get("MERCHANT_ID", "default_merchant_id")
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -37,38 +38,39 @@ def get_auth_code():
     return auth_code
 
 @pytest.fixture(scope="module")
-def test_account_unbinding_reference_number():
+def test_account_unbinding_access_token():
     auth_code = get_auth_code()
+    print(auth_code)
     return get_access_token(auth_code)
 
 @with_delay()
-def test_account_unbind_success(test_account_unbinding_reference_number):
+def test_account_unbind_success(test_account_unbinding_access_token):
     case_name = "AccountUnbindSuccess"
-    access_token = test_account_unbinding_reference_number
+    access_token = test_account_unbinding_access_token
     json_dict = get_request(json_path_file, title_case, case_name)
-    additional_info = AccountUnbindingRequestAdditionalInfo(
-        access_token=access_token,
-        device_id="123123"
-    )
-    json_dict["additionalInfo"] = additional_info.to_dict()
+    accountUnbindingRequestAdditionalInfo = AccountUnbindingRequestAdditionalInfo.from_dict(json_dict.get("additionalInfo", {}))
+    accountUnbindingRequestAdditionalInfo.access_token = access_token
+    accountUnbindingRequestAdditionalInfo.device_id = "deviceid123"
+    json_dict["additionalInfo"] = accountUnbindingRequestAdditionalInfo.to_dict()
+    json_dict["merchantId"] = merchant_id
     account_unbinding_request_obj = AccountUnbindingRequest.from_dict(json_dict)
     api_response = api_instance.account_unbinding(account_unbinding_request_obj)
     assert_response(json_path_file, title_case, case_name, AccountUnbindingResponse.to_json(api_response))
 
 @with_delay()
-def test_account_unbind_fail_access_token_not_exist(test_account_unbinding_reference_number):
+def test_account_unbind_fail_access_token_not_exist(test_account_unbinding_access_token):
     case_name = "AccountUnbindFailAccessTokenNotExist"
     json_dict = get_request(json_path_file, title_case, case_name)
     pytest.skip("SKIP: Placeholder test")
 
 @with_delay()
-def test_account_unbind_fail_invalid_user_status(test_account_unbinding_reference_number):
+def test_account_unbind_fail_invalid_user_status(test_account_unbinding_access_token):
     case_name = "AccountUnbindFailInvalidUserStatus"
     json_dict = get_request(json_path_file, title_case, case_name)
     pytest.skip("SKIP: Placeholder test")
 
 @with_delay()
-def test_account_unbind_fail_invalid_params(test_account_unbinding_reference_number):
+def test_account_unbind_fail_invalid_params(test_account_unbinding_access_token):
     case_name = "AccountUnbindFailInvalidParams"
     json_dict = get_request(json_path_file, title_case, case_name)
     pytest.skip("SKIP: Placeholder test")

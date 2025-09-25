@@ -546,9 +546,10 @@ class CancelOrderTest extends TestCase
                 );
 
                 // Generate a unique partner reference number
-                $requestData['originalPartnerReferenceNo'] = self::$sharedOriginalPartnerReference;
-                $requestData['merchantId'] = self::$merchantId;
                 $partnerReferenceNo = self::$sharedOriginalPartnerReference;
+                $requestData['originalPartnerReferenceNo'] = $partnerReferenceNo;
+                $requestData['merchantId'] = self::$merchantId;
+                
 
                 // Create headers with invalid signature to test authorization failure
                 $headers = Util::getHeadersWithSignature(

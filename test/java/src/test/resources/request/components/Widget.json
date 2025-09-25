@@ -468,7 +468,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "merchantId": "${merchantId}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -540,7 +540,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.0000"
+                    "value": "5.0000"
                 },
                 "merchantId": "${merchantId}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -576,7 +576,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.0000"
+                    "value": "5.0000"
                 },
                 "merchantId": "${merchantId}",
                 "partnerReferenceNo": ""
@@ -612,7 +612,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.0000"
+                    "value": "5.0000"
                 },
                 "merchantId": "${merchantId}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -756,7 +756,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "merchantId": "${merchantId}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -900,7 +900,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "merchantId": "${merchantId}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -917,7 +917,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -938,7 +938,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -960,7 +960,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -981,7 +981,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -1003,7 +1003,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -1024,7 +1024,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -1045,7 +1045,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -1066,7 +1066,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -1087,7 +1087,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -1108,7 +1108,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "5.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${merchantId}",
@@ -1141,7 +1141,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1371,7 +1371,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1515,7 +1515,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1587,7 +1587,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1611,7 +1611,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "123123123123123",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1659,7 +1659,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1707,7 +1707,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",

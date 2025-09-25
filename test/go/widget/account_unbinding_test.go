@@ -16,32 +16,25 @@ import (
 
 const (
 	widgetAccountUnbindingCase  = "AccountUnbinding"
-	widgetJsonPath      = "../../../resource/request/components/Widget.json"
 )
 
-var (
-	merchantID   = os.Getenv("MERCHANT_ID")
-	phoneNumber  = "0811742234"
-	pin          = "123321"
-	
-)
 // AccountUnbinding
 func TestAccountUnbindSuccess(t *testing.T) {
 	caseName := "AccountUnbindSuccess"
 	redirectUrlAuthCode, _ := widget_helper.GetRedirectOauthUrl(
-		phoneNumber,
-        pin,
+		helper.TestConfig.PhoneNumber,
+        helper.TestConfig.PIN,
 	)
 	authCode, _ := widget_helper.GetAuthCode(
-		phoneNumber,
-		pin,
+		helper.TestConfig.PhoneNumber,
+		helper.TestConfig.PIN,
 		redirectUrlAuthCode)
 	// Get access token
     accessToken := widget_helper.GetAccessToken(authCode)
     fmt.Printf("Access Token: %s\n", accessToken)
 	
 		// Get the request data from JSON
-	jsonDict, err := helper.GetRequest(widgetJsonPath, widgetAccountUnbindingCase, caseName)
+	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetAccountUnbindingCase, caseName)
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
@@ -79,7 +72,7 @@ func TestAccountUnbindSuccess(t *testing.T) {
 	}
 
 	err = helper.AssertResponse(
-		widgetJsonPath,
+		helper.TestConfig.JsonWidgetPath,
 		widgetAccountUnbindingCase,
 		caseName,
 		string(responseJSON),
@@ -94,16 +87,16 @@ func TestAccountUnbindFailInvalidUserStatus(t *testing.T) {
 	t.Skip("Skipping test AccountUnbindFailInvalidUserStatus")
 	caseName := "AccountUnbindFailInvalidUserStatus"
 	redirectUrlAuthCode, _ := widget_helper.GetRedirectOauthUrl(
-		phoneNumber,
-		pin,
+		helper.TestConfig.PhoneNumber,
+		helper.TestConfig.PIN,
 	)
 	authCode, _ := widget_helper.GetAuthCode(
-		phoneNumber,
-		pin,
+		helper.TestConfig.PhoneNumber,
+		helper.TestConfig.PIN,
 		redirectUrlAuthCode)
 	
 		// Get the request data from JSON
-	jsonDict, err := helper.GetRequest(widgetJsonPath, widgetAccountUnbindingCase, caseName)
+	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetAccountUnbindingCase, caseName)
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
@@ -138,7 +131,7 @@ func TestAccountUnbindFailInvalidUserStatus(t *testing.T) {
 	}
 
 	err = helper.AssertResponse(
-		widgetJsonPath,
+		helper.TestConfig.JsonWidgetPath,
 		widgetAccountUnbindingCase,
 		caseName,
 		string(responseJSON),

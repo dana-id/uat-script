@@ -44,6 +44,9 @@ class QueryPaymentTest extends TestCase
         $dataOrder = self::createOrder();
         self::$orderReferenceNumber = $dataOrder['partnerReferenceNo'];
 
+        // Order in paid status (PAID) - using OtherWallet payment method with specific amount
+        self::$orderPaidReferenceNumber = self::createTestOrderPaid();
+
         // Order in canceled status (CANCELLED)
         self::$orderCanceledReferenceNumber = self::createTestOrderCanceled();
     }
@@ -159,9 +162,7 @@ class QueryPaymentTest extends TestCase
 
             $caseName = 'QueryPaymentPaidOrder';
 
-            // Order in paid status (PAID) - using OtherWallet payment method with specific amount
-            $orderPaidReferenceNumber = self::createTestOrderPaid();
-            $partnerReferenceNo = $orderPaidReferenceNumber;
+            
 
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
@@ -171,7 +172,7 @@ class QueryPaymentTest extends TestCase
             );
             
             // Set the correct partner reference number
-            $jsonDict['originalPartnerReferenceNo'] = $partnerReferenceNo;
+            $jsonDict['originalPartnerReferenceNo'] = self::$orderPaidReferenceNumber;
             $jsonDict['merchantId'] = getenv('MERCHANT_ID');
             
             // Create a QueryPaymentRequest object from the JSON request data
@@ -193,7 +194,7 @@ class QueryPaymentTest extends TestCase
                     self::$titleCase, 
                     $caseName, 
                     $apiResponse->__toString(),
-                    ['partnerReferenceNo' => $partnerReferenceNo]
+                    ['partnerReferenceNo' => self::$orderPaidReferenceNumber]
                 );
                 
                 $this->assertTrue(true);
@@ -215,7 +216,6 @@ class QueryPaymentTest extends TestCase
     {
         Util::withDelay(function() {
             $caseName = 'QueryPaymentCanceledOrder';
-            $partnerReferenceNo = self::$orderCanceledReferenceNumber;
             
             // Get the request data from the JSON file
             $jsonDict = Util::getRequest(
@@ -225,7 +225,7 @@ class QueryPaymentTest extends TestCase
             );
             
             // Set the correct partner reference number
-            $jsonDict['originalPartnerReferenceNo'] = $partnerReferenceNo;
+            $jsonDict['originalPartnerReferenceNo'] = self::$orderCanceledReferenceNumber;
             $jsonDict['merchantId'] = getenv('MERCHANT_ID');
             
             // Create a QueryPaymentRequest object from the JSON request data
@@ -244,7 +244,7 @@ class QueryPaymentTest extends TestCase
                     self::$titleCase, 
                     $caseName, 
                     $apiResponse->__toString(),
-                    ['partnerReferenceNo' => $partnerReferenceNo]
+                    ['partnerReferenceNo' => self::$orderCanceledReferenceNumber]
                 );
                 
                 $this->assertTrue(true);
@@ -564,7 +564,7 @@ class QueryPaymentTest extends TestCase
         // Set a unique partner reference number
         $partnerReferenceNo = Util::generatePartnerReferenceNo();
         $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
-        $jsonDict['validUpTo'] = Util::generateFormattedDate(30);
+        $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
 
         // Create a CreateOrderByRedirectRequest object from the JSON request data
         $createOrderRequestObj = ObjectSerializer::deserialize(

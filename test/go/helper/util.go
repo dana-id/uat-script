@@ -178,3 +178,45 @@ func RetryTest(t *testing.T, attempts int, delay time.Duration, testFunc func() 
 	// All attempts failed
 	t.Fatalf("Test failed after %d attempts. Last error: %v", attempts, err)
 }
+
+// GenerateFormattedDate generates a formatted date string in ISO format with timezone offset and optional second offset
+// Parameters:
+//   - offsetSeconds: Number of seconds to add/subtract from current time (can be negative for past dates)
+//   - timezoneOffset: Timezone offset in hours (defaults to +7 for Jakarta/Asia timezone)
+//
+// Returns: Formatted date string in format: 2030-05-01T00:46:43+07:00
+//
+// Examples:
+//
+//	GenerateFormattedDate(0, 7)     // Current time: "2025-09-10T14:30:15+07:00"
+//	GenerateFormattedDate(3600, 7)  // 1 hour from now: "2025-09-10T15:30:15+07:00"
+//	GenerateFormattedDate(-1800, 7) // 30 minutes ago: "2025-09-10T14:00:15+07:00"
+//	GenerateFormattedDate(0, -5)    // Current time with EST timezone: "2025-09-10T14:30:15-05:00"
+func GenerateFormattedDate(offsetSeconds int, timezoneOffset int) string {
+	// Create date with offset seconds applied
+	targetTime := time.Now().Add(time.Duration(offsetSeconds) * time.Second)
+
+	// Create timezone offset
+	var offsetSign string
+	absOffset := timezoneOffset
+	if timezoneOffset >= 0 {
+		offsetSign = "+"
+	} else {
+		offsetSign = "-"
+		absOffset = -timezoneOffset
+	}
+
+	// Format timezone offset as +HH:MM or -HH:MM
+	timezoneStr := fmt.Sprintf("%s%02d:00", offsetSign, absOffset)
+
+	// Format the date in the required format: 2030-05-01T00:46:43+07:00
+	return fmt.Sprintf("%04d-%02d-%02dT%02d:%02d:%02d%s",
+		targetTime.Year(),
+		targetTime.Month(),
+		targetTime.Day(),
+		targetTime.Hour(),
+		targetTime.Minute(),
+		targetTime.Second(),
+		timezoneStr,
+	)
+}

@@ -644,6 +644,7 @@ func createTestOrderInit() (string, string, error) {
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+		jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
