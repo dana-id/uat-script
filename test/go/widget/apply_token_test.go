@@ -3,7 +3,6 @@
 package widget_test
 
 import (
-	"os"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -17,14 +16,6 @@ import (
 
 const (
 	widgetApplyTokenCase  = "ApplyToken"
-	widgetJsonPath      = "../../../resource/request/components/Widget.json"
-)
-
-var (
-	merchantID   = os.Getenv("MERCHANT_ID")
-	phoneNumber  = "0811742234"
-	pin          = "123321"
-	
 )
 
 func TestApplyTokenSuccess(t *testing.T) {
@@ -32,16 +23,16 @@ func TestApplyTokenSuccess(t *testing.T) {
 	caseName := "ApplyTokenSuccess"
 
 	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-		phoneNumber,
-		pin,
+		helper.TestConfig.PhoneNumber,
+		helper.TestConfig.PIN,
 	)
 	authCode, _ := widget_helper.GetAuthCode(
-		phoneNumber,
-		pin,
+		helper.TestConfig.PhoneNumber,
+		helper.TestConfig.PIN,
 		redirectUrlAuthCode)
 
 	// Get the request data from JSON
-	jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyTokenCase, caseName)
+	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
@@ -85,7 +76,7 @@ func TestApplyTokenSuccess(t *testing.T) {
 	}
 
 	err = helper.AssertResponse(
-		widgetJsonPath,
+		helper.TestConfig.JsonWidgetPath,
 		widgetApplyTokenCase,
 		caseName,
 		string(responseJSON),
@@ -101,17 +92,17 @@ func TestApplyTokenFailInvalidSignature(t *testing.T) {
 	caseName := "ApplyTokenFailInvalidSignature"
 
 	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-		phoneNumber, 
-		pin,
+		helper.TestConfig.PhoneNumber, 
+		helper.TestConfig.PIN,
 	)
 	authCode, _ := widget_helper.GetAuthCode(
-		phoneNumber, 
-		pin,
+		helper.TestConfig.PhoneNumber, 
+		helper.TestConfig.PIN,
 		redirectUrlAuthCode,
 	)
 	
 	// Get the request data from JSON
-	jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyTokenCase, caseName)
+	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
@@ -145,7 +136,7 @@ func TestApplyTokenFailInvalidSignature(t *testing.T) {
 
 	// Set custom headers with invalid signature to trigger authorization error
 	customHeaders := map[string]string{
-		"X-SIGNATURE": "xyzu", // Invalid signature
+		"X-SIGNATURE": "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5",
 	}
 
 	_ = helper.ExecuteAndAssertErrorResponse(
@@ -155,7 +146,7 @@ func TestApplyTokenFailInvalidSignature(t *testing.T) {
 		"POST",
 		endpoint,
 		resourcePath,
-		widgetJsonPath,
+		helper.TestConfig.JsonWidgetPath,
 		widgetApplyTokenCase,
 		caseName,
 		customHeaders,
@@ -168,18 +159,18 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 		caseName := "ApplyTokenFailAuthcodeUsed"
 
 		redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-			phoneNumber, 
-			pin,
+			helper.TestConfig.PhoneNumber, 
+			helper.TestConfig.PIN,
 		)
 		authCode, _ := widget_helper.GetAuthCode(
-			phoneNumber, 
-			pin,
+			helper.TestConfig.PhoneNumber, 
+			helper.TestConfig.PIN,
 			redirectUrlAuthCode,
 		)
 		widget_helper.GetAccessToken(authCode)
 
 		// Get the request data from JSON
-		jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyTokenCase, caseName)
+		jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
 		if err != nil {
 			t.Fatalf("Failed to get request data: %v", err)
 		}
@@ -215,7 +206,7 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 		_, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(*applyTokenRequest).Execute()
 		if err != nil {
 			// Assert the API error response
-			err = helper.AssertFailResponse(widgetJsonPath, widgetApplyTokenCase, caseName, httpResponse, map[string]interface{}{
+			err = helper.AssertFailResponse(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName, httpResponse, map[string]interface{}{
 				"partnerReferenceNo": "4035703",
 			})
 			if err != nil {

@@ -49,6 +49,7 @@ def test_apply_ott_success(test_apply_ott_access_token):
     json_dict = get_request(json_path_file, title_case, case_name)
     applyOTTRequestAdditionalInfo = ApplyOTTRequestAdditionalInfo.from_dict(json_dict.get("additionalInfo", {}))
     applyOTTRequestAdditionalInfo.access_token = access_token
+    applyOTTRequestAdditionalInfo.device_id = "deviceid123"
     json_dict["additionalInfo"] = applyOTTRequestAdditionalInfo.to_dict()
     apply_ott_request_obj = ApplyOTTRequest.from_dict(json_dict)
     api_response = api_instance.apply_ott(apply_ott_request_obj)
@@ -85,6 +86,7 @@ def test_apply_ott_fail_token_not_found():
     json_dict = get_request(json_path_file, title_case, case_name)
     applyOTTRequestAdditionalInfo = ApplyOTTRequestAdditionalInfo.from_dict(json_dict.get("additionalInfo", {}))
     applyOTTRequestAdditionalInfo.access_token = "GtRLpA0TyqK3becMq4dCMnVf1N9KLHNixVfC1800"
+    applyOTTRequestAdditionalInfo.device_id = "deviceid123"
     json_dict["additionalInfo"] = applyOTTRequestAdditionalInfo.to_dict()
     apply_ott_request_obj = ApplyOTTRequest.from_dict(json_dict)
 

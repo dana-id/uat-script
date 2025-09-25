@@ -174,7 +174,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -217,7 +217,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -254,7 +254,7 @@
                         "payMethod": "BALANCE",
                         "payOption": "",
                         "transAmount": {
-                            "value": "22200.00",
+                            "value": "5.00",
                             "currency": "IDR"
                         }
                     }
@@ -270,7 +270,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -307,7 +307,7 @@
                         "payMethod": "BALANCE",
                         "payOption": "",
                         "transAmount": {
-                            "value": "10000.00",
+                            "value": "5.00",
                             "currency": "IDR"
                         }
                     }
@@ -324,7 +324,7 @@
                 "merchantId": "${merchantId}",
                 "subMerchantId": "${subMerchantId}",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "urlParams": [
@@ -361,7 +361,7 @@
                         "payOption": "NETWORK_PAY_PG_QRIS",
                         "transAmount": {
                             "currency": "IDR",
-                            "value": "10000.00"
+                            "value": "5.00"
                         },
                         "feeAmount": {
                             "currency": "IDR",
@@ -461,7 +461,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "222000.00",
+                    "value": "15000.00",
                     "currency": "IDR"
                 },
                 "urlParams": [
@@ -494,7 +494,7 @@
                         "payMethod": "VIRTUAL_ACCOUNT",
                         "payOption": "VIRTUAL_ACCOUNT_CIMB",
                         "transAmount": {
-                            "value": "222000.00",
+                            "value": "15000.00",
                             "currency": "IDR"
                         }
                     }
@@ -515,7 +515,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "",
                 "amount": {
-                    "value": "22200",
+                    "value": "1500",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -552,7 +552,7 @@
                         "payMethod": "BALANCE",
                         "payOption": "",
                         "transAmount": {
-                            "value": "22200",
+                            "value": "1500",
                             "currency": "IDR"
                         }
                     }
@@ -569,7 +569,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -606,7 +606,7 @@
                         "payMethod": "BALANCE",
                         "payOption": "",
                         "transAmount": {
-                            "value": "222000.00",
+                            "value": "15000.00",
                             "currency": "IDR"
                         }
                     }
@@ -623,7 +623,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "222000.00",
+                    "value": "15000.00",
                     "currency": "IDR"
                 },
                 "urlParams": [
@@ -656,7 +656,7 @@
                         "payMethod": "VIRTUAL_ACCOUNT",
                         "payOption": "VIRTUAL_ACCOUNT_BNI",
                         "transAmount": {
-                            "value": "222000.00",
+                            "value": "15000.00",
                             "currency": "IDR"
                         }
                     }
@@ -672,7 +672,7 @@
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${merchantId}",
                 "amount": {
-                    "value": "222000.00",
+                    "value": "15000.00",
                     "currency": "IDR"
                 },
                 "urlParams": [
@@ -705,7 +705,7 @@
                         "payMethod": "VIRTUAL_ACCOUNT",
                         "payOption": "VIRTUAL_ACCOUNT_BNI",
                         "transAmount": {
-                            "value": "222000.00",
+                            "value": "15000.00",
                             "currency": "IDR"
                         }
                     }
@@ -734,18 +734,18 @@
                 "latestTransactionStatus": "01",
                 "transactionStatusDesc": "INIT",
                 "transAmount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "title": "Payment Gateway Order",
                 "additionalInfo": {
                     "amountDetail": {
                         "orderAmount": {
-                            "value": "22200.00",
+                            "value": "5.00",
                             "currency": "IDR"
                         }
                     },
@@ -775,18 +775,18 @@
                 "latestTransactionStatus": "00",
                 "transactionStatusDesc": "SUCCESS",
                 "transAmount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "title": "Payment Gateway Order",
                 "additionalInfo": {
                     "amountDetail": {
                         "orderAmount": {
-                            "value": "22200.00",
+                            "value": "5.00",
                             "currency": "IDR"
                         }
                     },
@@ -816,18 +816,18 @@
                 "latestTransactionStatus": "05",
                 "transactionStatusDesc": "CANCELLED",
                 "transAmount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "title": "Payment Gateway Order",
                 "additionalInfo": {
                     "amountDetail": {
                         "orderAmount": {
-                            "value": "22200.00",
+                            "value": "5.00",
                             "currency": "IDR"
                         }
                     },
@@ -860,7 +860,7 @@
                 "serviceCode": "54",
                 "transactionDate": "2030-05-01T00:46:43+07:00",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "merchantId": "${merchantId}",
@@ -881,7 +881,7 @@
                 "serviceCode": "54",
                 "transactionDate": "2030-05-01T00:46:43+07:00",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "merchantId": "${merchantId}",
@@ -902,7 +902,7 @@
                 "serviceCode": "AZ",
                 "transactionDate": "2030-05-01T00:46:43+07:00",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "merchantId": "${merchantId}",
@@ -931,7 +931,7 @@
                 "merchantId": "23489182303312",
                 "subMerchantId": "23489182303312",
                 "amount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "latestTransactionStatus": "00",
@@ -996,7 +996,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1016,7 +1016,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1084,7 +1084,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1104,7 +1104,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1188,7 +1188,7 @@
                 "reason": "",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1208,7 +1208,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1228,7 +1228,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -1266,7 +1266,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1372,7 +1372,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1394,7 +1394,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1438,7 +1438,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1460,7 +1460,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "22200.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1504,7 +1504,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "5.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",

@@ -3,6 +3,7 @@ package payment_gateway_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -34,6 +35,7 @@ func createOrderInit() (string, string, error) {
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+		jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
@@ -67,14 +69,27 @@ func createOrderInit() (string, string, error) {
 		return partnerReferenceNo, nil
 	}, 3, 2*time.Second)
 	if err != nil {
+		return "", "", fmt.Errorf("failed to create order after retries: %w", err)
 	}
+
+	// Check if result is nil before type assertion
+	if result == nil {
+		return "", "", fmt.Errorf("createOrderInit returned nil result")
+	}
+
 	return result.(string), webRedirectUrl, nil
 }
 
 func createPaidOrder(phoneNumber, pin string) (string, error) {
 	partnerReferenceNo, webRedirectUrl, err := createOrderInit()
+	if err != nil {
+		return "", fmt.Errorf("failed to create order: %w", err)
+	}
+
+	// Execute payment - PayOrder returns interface{}, not error
 	payment.PayOrder(phoneNumber, pin, webRedirectUrl)
-	return partnerReferenceNo, err
+
+	return partnerReferenceNo, nil
 }
 
 // TestRefundOrderInProgress tests refunding an order that is in progress

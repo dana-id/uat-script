@@ -5,7 +5,9 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 import { getRequest } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
+import { AccountUnbindingRequest, ApplyTokenRequest } from 'dana-node/widget/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
+import { generateAuthCode } from '../helper/auth-utils';
 
 dotenv.config();
 
@@ -19,21 +21,32 @@ const dana = new Dana({
     env: process.env.ENV || 'sandbox',
 });
 
-// Utility function to generate unique reference numbers (if needed in future)
-function generateReferenceNo(): string {
-  return uuidv4();
+async function generateApplyToken(phoneNumber?: string, pinCode?: string): Promise<string> {
+    const caseName = 'ApplyTokenSuccess';
+    const requestData: ApplyTokenRequest = getRequest<ApplyTokenRequest>(jsonPathFile, "ApplyToken", caseName);
+
+    requestData.authCode = await generateAuthCode(phoneNumber, pinCode);
+
+    const response = await dana.widgetApi.applyToken(requestData);
+    return response.accessToken;
 }
 
-describe.skip('Account Unbinding Tests', () => {
+describe('Account Unbinding Tests', () => {
   // Add beforeAll if any shared setup is needed in the future
 
-  test.skip('should successfully unbind account', async () => {
+  test('should successfully unbind account', async () => {
     const caseName = 'AccountUnbindSuccess';
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+    const requestData: AccountUnbindingRequest = getRequest<AccountUnbindingRequest>(jsonPathFile, titleCase, caseName);
+    requestData.additionalInfo.accessToken = await generateApplyToken();
+    requestData.additionalInfo.deviceId = "deviceid123";
+    requestData.merchantId = process.env.MERCHANT_ID || '';
+
     try {
       const response = await dana.widgetApi.accountUnbinding(requestData);
+      console.log("Response Data for Account Unbinding:", JSON.stringify(response, null, 2));
       await assertResponse(jsonPathFile, titleCase, caseName, response);
     } catch (e: any) {
+      console.error("Error during Account Unbinding:", e);
       fail('Account unbinding test failed: ' + (e.message || e));
     }
   });

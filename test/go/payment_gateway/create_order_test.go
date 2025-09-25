@@ -53,6 +53,7 @@ func TestCreateOrderRedirectScenario(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -111,6 +112,7 @@ func TestCreateOrderApiScenario(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -176,6 +178,7 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -261,6 +264,7 @@ func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 		partnerReferenceNo := generatePartnerReferenceNo()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+		jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		jsonBytes, err := json.Marshal(jsonDict)
@@ -340,6 +344,7 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -398,6 +403,7 @@ func TestCreateOrderInvalidFieldFormat(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -446,6 +452,7 @@ func TestCreateOrderInconsistentRequest(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderByApiRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -508,6 +515,7 @@ func TestCreateOrderInvalidMandatoryField(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -571,6 +579,7 @@ func TestCreateOrderUnauthorized(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderByApiRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -634,6 +643,7 @@ func createShop() (string, string, error) {
 	emailName := strings.ToLower("test" + shopName + "@mailinator.com")
 	jsonDict["mainName"] = shopName
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 	jsonDict["externalShopId"] = externalShopId
 
 	extInfo := map[string]interface{}{

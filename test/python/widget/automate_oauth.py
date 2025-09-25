@@ -56,13 +56,8 @@ async def automate_oauth(phone_number=None, pin=None, show_log=False):
             '--disable-blink-features=AutomationControlled',
             '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
         ])
-        context = await browser.new_context(
-            **p.devices['iPhone 12'],
-            locale='id-ID',
-            geolocation={'longitude': 106.8456, 'latitude': -6.2088},
-            permissions=['geolocation']
-        )
-        page = await context.new_page()
+        
+        page = await browser.new_page()
         # Only print browser console messages that are not warnings
         def handle_console(msg):
             if msg.type != 'warning' and show_log:

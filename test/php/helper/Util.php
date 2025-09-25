@@ -268,6 +268,8 @@ class Util
             }
         }
 
+        echo "Headers with invalid signature: " . print_r($headers, true) . PHP_EOL;
+
         return $headers;
     }
 

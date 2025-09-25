@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 	"uat-script/helper"
 	widget_helper "uat-script/widget"
@@ -16,14 +15,6 @@ import (
 
 const (
 	widgetApplyOttCase  = "ApplyOtt"
-	widgetJsonPath      = "../../../resource/request/components/Widget.json"
-)
-
-var (
-	merchantID   = os.Getenv("MERCHANT_ID")
-	phoneNumber  = "0811742234"
-	pin          = "123321"
-	
 )
 
 // ApplyOtt
@@ -32,13 +23,13 @@ func TestApplyOttSuccess(t *testing.T) {
 	caseName := "ApplyOttSuccess"
 	 // Get OAuth redirect URL
     redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-        phoneNumber,
-        pin,
+        helper.TestConfig.PhoneNumber,
+        helper.TestConfig.PIN,
     )
     // Get auth code
     authCode, err := widget_helper.GetAuthCode(
-        phoneNumber,
-        pin,
+        helper.TestConfig.PhoneNumber,
+        helper.TestConfig.PIN,
         redirectUrlAuthCode,
     )
     // Get access token
@@ -46,7 +37,7 @@ func TestApplyOttSuccess(t *testing.T) {
     fmt.Printf("Access Token: %s\n", accessToken)
 
     // Get the request data from JSON
-    jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyOttCase, caseName)
+    jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyOttCase, caseName)
     if err != nil {
         t.Fatalf("Failed to get request data: %v", err)
     }
@@ -83,7 +74,7 @@ func TestApplyOttSuccess(t *testing.T) {
 	}
 
 	err = helper.AssertResponse(
-		widgetJsonPath,
+		helper.TestConfig.JsonWidgetPath,
 		widgetApplyOttCase,
 		caseName,
 		string(responseJSON),
@@ -98,7 +89,7 @@ func TestApplyOttSuccess(t *testing.T) {
 func TestApplyOttFailTokenNotFound(t *testing.T) {
 	caseName := "ApplyOttCustomerTokenNotFound"
 	// Get the request data from JSON
-    jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyOttCase, caseName)
+    jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyOttCase, caseName)
     if err != nil {
         t.Fatalf("Failed to get request data: %v", err)
     }
@@ -125,7 +116,7 @@ func TestApplyOttFailTokenNotFound(t *testing.T) {
 	_, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyOTT(ctx).ApplyOTTRequest(applyOttReq).Execute()
 	if err != nil {
 		// Assert the error response matches expected error pattern
-		err = helper.AssertFailResponse(widgetJsonPath, widgetApplyOttCase, caseName, httpResponse, nil)
+		err = helper.AssertFailResponse(helper.TestConfig.JsonWidgetPath, widgetApplyOttCase, caseName, httpResponse, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -140,7 +131,7 @@ func TestApplyOttFailInvalidUserStatus(t *testing.T) {
 	t.Skip("Skipping test ApplyOttFailInvalidUserStatus")
 	caseName := "ApplyOttFailInvalidUserStatus"
 	// Get the request data from JSON
-	jsonDict, err := helper.GetRequest(widgetJsonPath, widgetApplyOttCase, caseName)
+	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyOttCase, caseName)
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
@@ -165,7 +156,7 @@ func TestApplyOttFailInvalidUserStatus(t *testing.T) {
 	_, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyOTT(ctx).ApplyOTTRequest(*applyOTTRequest).Execute()
 	if err != nil {
 		// Assert the error response matches expected error pattern
-		err = helper.AssertFailResponse(widgetJsonPath, widgetApplyOttCase, caseName, httpResponse, nil)
+		err = helper.AssertFailResponse(helper.TestConfig.JsonWidgetPath, widgetApplyOttCase, caseName, httpResponse, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
