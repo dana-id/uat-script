@@ -10,6 +10,7 @@ from dana.exceptions import *
 
 from helper.util import get_request, with_delay
 from helper.assertion import *
+from helper.api_helpers import execute_and_assert_api_error, get_headers_with_signature
 
 title_case = "ConsultPay"
 json_path_file = "resource/request/components/PaymentGateway.json"
@@ -86,8 +87,24 @@ def test_consult_pay_invalid_mandatory_field():
     # Convert the request data to a ConsultPayRequest object
     consult_pay_request_obj = ConsultPayRequest.from_dict(json_dict)
     
-    # Make the API call
-    try:
-        api_instance.consult_pay(consult_pay_request_obj)
-    except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body)
+    # Prepare headers without timestamp to trigger mandatory field error
+    # This now handles the signature generation internally
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/v1.0/payment-gateway/consult-pay.htm",
+        request_obj=json_dict,
+        with_timestamp=False
+    )
+    
+    # Execute the API request and assert the error
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "http://api.sandbox.dana.id/v1.0/payment-gateway/consult-pay.htm",
+        consult_pay_request_obj,
+        headers,
+        400,  # Expected status code
+        json_path_file,
+        title_case,
+        case_name
+    )

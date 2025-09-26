@@ -62,41 +62,6 @@
         },
         "ConsultPayBalancedInvalidFieldFormat": {
             "request": {
-                "merchantId": "${merchantId}",
-                "amount": {
-                    "value": "",
-                    "currency": "IDR"
-                },
-                "additionalInfo": {
-                    "buyer": {
-                        "externalUserId": "8392183912832913821",
-                        "externalUserType": "",
-                        "nickname": "",
-                        "userId": ""
-                    },
-                    "envInfo": {
-                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
-                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
-                        "websiteLanguage": "en_US",
-                        "clientIp": "10.15.8.189",
-                        "osType": "Windows.PC",
-                        "appVersion": "1.0",
-                        "sdkVersion": "1.0",
-                        "sourcePlatform": "IPG",
-                        "orderOsType": "IOS",
-                        "merchantAppVersion": "1.0",
-                        "terminalType": "SYSTEM",
-                        "orderTerminalType": "WEB"
-                    }
-                }
-            },
-            "response": {
-                "responseMessage": "Invalid Field Format amount",
-                "responseCode": "4000001"
-            }
-        },
-        "ConsultPayBalancedInvalidMandatoryField": {
-            "request": {
                 "merchantId": "",
                 "amount": {
                     "value": "12345678.00",
@@ -126,10 +91,43 @@
                 }
             },
             "response": {
-                "resultInfo": {
-                    "responseCode": "4000002",
-                    "responseMessage": "MerchantId can not be empty"
+                "responseMessage": "Invalid Field Format",
+                "responseCode": "4000001"
+            }
+        },
+        "ConsultPayBalancedInvalidMandatoryField": {
+            "request": {
+                "merchantId": "${merchantId}",
+                "amount": {
+                    "value": "12345678.00",
+                    "currency": "IDR"
+                },
+                "additionalInfo": {
+                    "buyer": {
+                        "externalUserId": "8392183912832913821",
+                        "externalUserType": "",
+                        "nickname": "",
+                        "userId": ""
+                    },
+                    "envInfo": {
+                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
+                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
+                        "websiteLanguage": "en_US",
+                        "clientIp": "10.15.8.189",
+                        "osType": "Windows.PC",
+                        "appVersion": "1.0",
+                        "sdkVersion": "1.0",
+                        "sourcePlatform": "IPG",
+                        "orderOsType": "IOS",
+                        "merchantAppVersion": "1.0",
+                        "terminalType": "SYSTEM",
+                        "orderTerminalType": "WEB"
+                    }
                 }
+            },
+            "response": {
+                "responseCode": "4000002",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
             }
         },
         "ConsultPayBalancedUnauthorized": {

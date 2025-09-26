@@ -47,7 +47,7 @@ func ExecuteAPIRequestWithCustomHeaders(
 	// Prepare final headers
 	headers := map[string]string{
 		"X-PARTNER-ID":  os.Getenv("X_PARTNER_ID"),
-		"CHANNEL-ID":    os.Getenv("CHANNEL_ID"),
+		"CHANNEL-ID":    "95221",
 		"Content-Type":  "application/json",
 		"ORIGIN":        os.Getenv("ORIGIN"),
 		"X-EXTERNAL-ID": uuid.New().String(),
