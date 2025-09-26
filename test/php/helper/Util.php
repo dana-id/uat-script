@@ -118,7 +118,7 @@ class Util
     {
         $headers = [
             'X-PARTNER-ID' => getenv('X_PARTNER_ID'),
-            'CHANNEL-ID' => getenv('CHANNEL_ID'),
+            'CHANNEL-ID' => '95221',
             'ORIGIN' => getenv('ORIGIN'),
             'X-EXTERNAL-ID' => uniqid(),
             'Content-Type' => 'application/json'

@@ -72,9 +72,6 @@ public class PaymentTest {
 
         widgetApi = Dana.getInstance().getWidgetApi();
         paymentGatewayApi = Dana.getInstance().getPaymentGatewayApi();
-
-        List<String> dataOrder = PaymentWidgetUtil.createPayment("PaymentSuccess");
-        partnerReferenceNo = dataOrder.get(0);
     }
 
     @Test

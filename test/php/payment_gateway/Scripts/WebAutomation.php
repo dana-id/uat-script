@@ -118,15 +118,8 @@ class WebAutomation
                 $buttonPaySelector = ".btn.btn-primary.btn-pay";
                 $submitPhoneNumberSelector = ".agreement__button>.btn-continue";
                 $phoneSelectors = [
-                    '.desktop-input>.txt-input-phone-number-field',  // Primary selector for desktop layout
-                    '.txt-input-phone-number-field',                 // Fallback without parent container
-                    'input[type="tel"]',                             // Standard telephone input
-                    'input[name="phone"]',                           // By name attribute
-                    'input[placeholder*="phone"]',                   // By placeholder containing "phone"
-                    'input[placeholder*="nomor"]',                   // Indonesian placeholder text
-                    'input[inputmode="tel"]',                        // By input mode for mobile
-                    'input[type="text"]',                            // Generic text input fallback
-                    'input:not([type="hidden"]):not([type="submit"]):not([type="button"])' // Any visible input
+                    '.desktop-input>.txt-input-phone-number-field', // Primary selector for desktop layout
+                    '.desktop-input>input'                          // Selector for input inside desktop-input container
                 ];
                 $buttonDanaPaymentSelector = "//*[contains(@class,'dana')]/*[contains(@class,'bank-title')]";
 

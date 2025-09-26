@@ -79,7 +79,7 @@ async function executeManualApiRequest(
   // Initialize default headers required for DANA API authentication
   const headers: Record<string, string> = {
     'X-PARTNER-ID': process.env.X_PARTNER_ID || '',
-    'CHANNEL-ID': process.env.CHANNEL_ID || '',
+    'CHANNEL-ID': '95221',
     'Content-Type': 'application/json',
     'ORIGIN': process.env.ORIGIN || '',
     'X-EXTERNAL-ID': uuidv4() // Generate unique external ID for request tracking

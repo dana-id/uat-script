@@ -36,7 +36,7 @@ def get_standard_headers(with_timestamp=True):
     """
     headers = {
         "X-PARTNER-ID": os.getenv("X_PARTNER_ID"),
-        "CHANNEL-ID": os.getenv("CHANNEL_ID"),
+        "CHANNEL-ID": "95221",
         "ORIGIN": os.getenv("ORIGIN"),
         "X-EXTERNAL-ID": str(uuid4()),
         "CLIENT_SECRET": os.getenv("CLIENT_SECRET"),
