@@ -35,6 +35,9 @@ main() {
     "help" | "-h" | "--help")
         display_help
         ;;
+    "list" | "-ls" | "--list")
+        display_list_solutions "$2"
+        ;;
     *)
         echo "Invalid option. Please choose a valid interpreter."
         display_help
@@ -60,6 +63,31 @@ display_help() {
     echo "  ./run-test.sh python                 # Run all Python tests"
     echo "  ./run-test.sh node payment_gateway   # Run Node.js tests in payment_gateway folder"
     echo "  ./run-test.sh php payment_gateway CancelOrderTest # Run specific PHP test"
+}
+
+display_list_solutions() {
+    language=$1
+    language_lower=$(echo "$language" | tr '[:upper:]' '[:lower:]')
+    case $language_lower in
+        "python"|"node"|"php"|"go")
+            # Valid language, continue
+            cd test/$language_lower || {
+                echo "Invalid language specified solution.";
+                echo "Example: ./run-test.sh list <language_lower>";
+                exit 1; 
+                }
+            ls -d */ | grep -v "^helper/" | grep -v "^node_modules/" | grep -v "^vendor/" | grep -v "^__pycache__/"
+            ;;
+        "java")
+            cd test/java/src/test/java/id/dana
+            ls -d */ | grep -v "^util/" | grep -v "^interceptor/"
+            exit 1
+            ;;
+        *)
+            echo "Invalid language specified: $language"
+            exit 1
+            ;;
+    esac
 }
 
 # Call main function with all arguments
