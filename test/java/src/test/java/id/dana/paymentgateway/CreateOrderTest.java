@@ -50,6 +50,7 @@ public class CreateOrderTest {
   private PaymentGatewayApi api;
   private static MerchantManagementApi managementMerchantApi;
   private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
+  private static final String externalStoreId = ConfigUtil.getConfig("EXTERNAL_SHOP_ID", "216620010016033632482");
 
   @BeforeEach
   void setUp() {
@@ -63,8 +64,6 @@ public class CreateOrderTest {
     DanaConfig.getInstance(danaConfigBuilder);
 
     api = Dana.getInstance().getPaymentGatewayApi();
-    managementMerchantApi = Dana.getInstance().getMerchantManagementApi();
-
   }
 
   @Test
@@ -142,7 +141,6 @@ public class CreateOrderTest {
   @Test
   @Disabled
   void testCreateOrderNetworkPayPgQris() {
-    String shopId = createShop();
     String caseName = "CreateOrderNetworkPayPgQris";
     CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
         CreateOrderByApiRequest.class);
@@ -152,7 +150,7 @@ public class CreateOrderTest {
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
     requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
-    requestData.setSubMerchantId(shopId);
+    requestData.setExternalStoreId(externalStoreId);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -374,34 +372,5 @@ public class CreateOrderTest {
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }
-  }
-
-  private static String generateRandomString(int length) {
-    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    SecureRandom random = new SecureRandom();
-    StringBuilder sb = new StringBuilder(length);
-
-    for (int i = 0; i < length; i++) {
-      sb.append(chars.charAt(random.nextInt(chars.length())));
-    }
-    return sb.toString();
-  }
-  public static String createShop() {
-    CreateShopRequest requestData = TestUtil.getRequest(jsonPathFileMerchantManagement, "Shop", "CreateShop",
-            CreateShopRequest.class);
-    String mainName = generateRandomString(8);
-    String externalShopId =  generateRandomString(10);
-
-    Map<String, Object> extInfoMap = new HashMap<>();
-    extInfoMap.put("mainName", mainName + "@mailinator.com");
-
-//        Assign unique reference and merchant ID
-    requestData.setMainName(mainName);
-    requestData.setMerchantId(merchantId);
-    requestData.setExternalShopId(externalShopId);
-    requestData.setExtInfo(extInfoMap);
-
-    CreateShopResponse response = managementMerchantApi.createShop(requestData);
-    return response.getResponse().getBody().getShopId();
   }
 }

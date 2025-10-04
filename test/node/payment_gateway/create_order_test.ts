@@ -44,6 +44,7 @@ const dana = new Dana({
 
 // Merchant configuration from environment variables
 const merchantId = process.env.MERCHANT_ID || "216620010016033632482";
+const externalShopId = process.env.EXTERNAL_SHOP_ID || "default_external_shop_id";
 
 /**
  * Generates a unique partner reference number using UUID v4
@@ -67,33 +68,6 @@ function generateRandomString(length: number = 10, charset: string = 'ABCDEFGHIJ
     result += charset.charAt(Math.floor(Math.random() * charset.length));
   }
   return result;
-}
-
-async function createShop(): Promise<any> {
-
-  const requestData: any = getRequest(jsonMerchantManagementPathFile, "Shop", "CreateShop");
-  const shopName = `shop${generateRandomString(5)}`; // Generate a random shop name
-
-  requestData.merchantId = merchantId;
-  requestData.mainName = shopName;
-  requestData.externalShopId = shopName;
-  requestData.extInfo = {
-    "PIC_EMAIL": shopName + "@example.com",
-    "PIC_PHONENUMBER": "62-81234567890",
-    "SUBMITTER_EMAIL": "submitter@email.com",
-    "GOODS_SOLD_TYPE": "DIGITAL",
-    "USECASE": "QRIS_DIGITAL",
-    "USER_PROFILING": "B2B",
-    "AVG_TICKET": "100000-500000",
-    "OMZET": "5BIO-10BIO",
-    "EXT_URLS": "https://www.dana.id",
-  };
-
-  // Execute create order API call
-  const response = await dana.merchantManagementApi.createShop(requestData);
-  const shopId = response.response.body.shopId; // Extract shop ID from response
-  console.log(`Created shop with ID: ${shopId}`);
-  return shopId;
 }
 
 /**
@@ -187,7 +161,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(10);
+    requestData.validUpTo = generateFormattedDate(360);
 
     try {
       // Execute create order API call with VA bank payment method
@@ -214,15 +188,13 @@ describe('Payment Gateway - Create Order Tests', () => {
   test.skip('CreateOrderNetworkPayPgQris - should successfully create order with API scenario and pay with QRIS payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgQris";
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-    
-    const shopId = await createShop();
 
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
-    requestData.subMerchantId = shopId;
+    requestData.externalStoreId = externalShopId;
 
     try {
       // Execute create order API call with QRIS payment method

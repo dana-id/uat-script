@@ -30,32 +30,41 @@ For documentation of each DANA Client library visit:
    ```bash
    cp .env-example .env
    ```
-   Edit the `.env` file with your credential information
+   Edit the `.env` file with your credential information.
    
-   > **Note:** You can fill `PRIVATE_KEY` and `PRIVATE_KEY_PATH` simultaneously, but if you fill both and the key values are different, we will prioritize the key in `PRIVATE_KEY_PATH`. The same applied to `DANA_PUBLIC_KEY` and `DANA_PUBLIC_KEY_PATH`. The `CLIENT_SECRET` env is for `disbursement` business solution.
+   > **Note:** 
+   >   - You can fill `PRIVATE_KEY` and `PRIVATE_KEY_PATH` simultaneously, but if you fill both and the key values are different, we will prioritize the key in `PRIVATE_KEY_PATH`. The same applied to `DANA_PUBLIC_KEY` and `DANA_PUBLIC_KEY_PATH`. The `CLIENT_SECRET` env is for `disbursement` business solution.
+   >   - You can find your `EXTERNAL_SHOP_ID` in your Merchant Portal account(Submerchant Menu).
 
 3. **Run the tests:**
    
-   Run the command with your preferred programming language.
-   ```bash
-   sh run-test.sh python
-   ```
-   You can run the command with your specific business solution.
-   ```bash
-   sh run-test.sh python payment_gateway
-   ```
-   You can run the command with your specific API in business solution.
-   ```bash
-   sh run-test.sh python payment_gateway create_order_test
-   ```
+   - Run the command with your preferred programming language.
+      ```bash
+      sh run-test.sh python
+      ```
+   - You can run the command with your specific business solution.
+      ```bash
+      sh run-test.sh python payment_gateway
+      ```
 
-   View the results in your terminal and in your Merchant Portal dashboard
+      > **Note:** You can find specific solution that you choose with this command
+      ```bash
+      sh run-test.sh --list python
+      ```
+   - You can run the command with your specific API in business solution.
+      ```bash
+      sh run-test.sh python payment_gateway create_order_test
+      ```
+      > **Note:** You can find specific API solution that you choose with this command. First, get your solution.
+      ```bash
+      sh run-test.sh --list node
+      ```
+      Copy paste solution to this command and delete slash `/` , then continue like this example command.
+      ```bash
+      sh run-test.sh --list python payment_gateway  
+      ```
 
-   > **Note:** You can find specific API solution that you choose with this command
-   ```bash
-   sh run-test.sh --list python
-   ```
-
+      View the results in your terminal and in your Merchant Portal dashboard
 
 ## Supported Languages
 

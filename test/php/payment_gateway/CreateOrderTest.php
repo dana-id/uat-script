@@ -153,6 +153,8 @@ class CreateOrderTest extends TestCase
             // Set a unique partner reference number
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+            $jsonDict['merchantId'] = getenv('MERCHANT_ID');
+            $jsonDict['externalStoreId'] = getenv('EXTERNAL_SHOP_ID');
             $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
             
             // Create a CreateOrderByApiRequest object from the JSON request data

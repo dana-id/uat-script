@@ -18,6 +18,7 @@ title_case = "CreateOrder"
 json_path_file = "resource/request/components/PaymentGateway.json"
 json_path_file_merchant_management = "resource/request/components/MerchantManagement.json"
 merchant_id = os.environ.get("MERCHANT_ID", "default_merchant_id")
+external_store_id = os.environ.get("EXTERNAL_SHOP_ID", "default_external_shop_id")
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -102,7 +103,6 @@ def test_create_order_api_scenario():
 @pytest.mark.skip(reason="skipped by request: scenario CreateOrderNetworkPayPgQris")
 @with_delay()
 def test_create_order_network_pay_pg_qris():
-    shop_id = create_shop()
     """Should create an order using API scenario with QRIS payment method"""
     case_name = "CreateOrderNetworkPayPgQris"
     
@@ -114,8 +114,8 @@ def test_create_order_network_pay_pg_qris():
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
-    json_dict["subMerchantId"] = shop_id
-    
+    json_dict["externalStoreId"] = external_store_id
+
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
     
@@ -327,23 +327,3 @@ def test_create_order_unauthorized():
         case_name,
         {"partnerReferenceNo": partner_reference_no}
     )
-
-def create_shop():
-    """Helper function to create a shop and return its ID and external store ID"""
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file_merchant_management, "Shop", "CreateShop")
-    
-    # Set a unique partner reference number
-    partner_reference_no = generate_partner_reference_no()
-    json_dict["mainName"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
-    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
-    
-    # Convert the request data to a CreateShopRequest object
-    create_shop_request_obj = CreateShopRequest.from_dict(json_dict)
-
-    # Make the API call
-    api_response = api_instance_merchant.create_shop(create_shop_request_obj)
-
-    shopId = api_response.shop_id
-    return shopId
