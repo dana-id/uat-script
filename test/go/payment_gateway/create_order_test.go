@@ -6,11 +6,9 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
-	merchantManagement "github.com/dana-id/dana-go/merchant_management/v1"
 	pg "github.com/dana-id/dana-go/payment_gateway/v1"
 
 	"github.com/google/uuid"
@@ -166,8 +164,6 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	t.Skip("Skip: Test not capable to do automation, need to be run manually CreateOrderNetworkPayPgQris")
 	caseName := "CreateOrderNetworkPayPgQris"
 
-	// fmt.Print("Creating order with shopId: ", shopId, " and externalStoreId: ", externalStoreId)
-
 	// Get the request data from the JSON file
 	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
 	if err != nil {
@@ -178,6 +174,7 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+	jsonDict["externalStoreId"] = os.Getenv("EXTERNAL_SHOP_ID")
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
@@ -344,7 +341,7 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(360, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -373,6 +370,7 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 		}
 		defer httpResponse.Body.Close()
 		responseJSON, err := apiResponse.MarshalJSON()
+		print("API Response JSON: ", string(responseJSON), "\n")
 		if err != nil {
 			return nil, err
 		}
@@ -626,76 +624,4 @@ func TestCreateOrderUnauthorized(t *testing.T) {
 		customHeaders,
 		variableDict,
 	)
-}
-
-func createShop() (string, string, error) {
-	var shopId string
-
-	// Get the request data from the JSON file
-	jsonDict, err := helper.GetRequest(shopJsonPath, "Shop", "CreateShop")
-	if err != nil {
-		return "", "", fmt.Errorf("failed to get request data: %v", err)
-	}
-
-	// Set a unique partner reference number
-	shopName := RandomString(10)
-	externalShopId := RandomString(10)
-	emailName := strings.ToLower("test" + shopName + "@mailinator.com")
-	jsonDict["mainName"] = shopName
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
-	jsonDict["externalShopId"] = externalShopId
-
-	extInfo := map[string]interface{}{
-		"PIC_EMAIL":       emailName,
-		"PIC_PHONENUMBER": "081234567890",
-		"SUBMITTER_EMAIL": "admin_merchant@email.com",
-		"GOODS_SOLD_TYPE": "GENERAL_GOODS",
-		"USECASE":         "QRIS_DIGITAL",
-		"USER_PROFILING":  "ONLINE",
-		"AVG_TICKET":      "100000-500000",
-		"OMZET":           "5BIO-10BIO",
-		"EXT_URLS":        "https://www.instagram.com",
-	}
-
-	jsonDict["extInfo"] = extInfo
-
-	createShopRequest := &merchantManagement.CreateShopRequest{}
-
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to marshal JSON: %v", err)
-	}
-
-	// Unmarshal directly into CreateOrderByRedirectRequest
-	err = json.Unmarshal(jsonBytes, createShopRequest)
-	if err != nil {
-		return "", "", fmt.Errorf("failed to unmarshal JSON: %v", err)
-	}
-
-	// Make the API call
-	ctx := context.Background()
-	apiResponse, httpResponse, err := helper.ApiClient.MerchantManagementAPI.CreateShop(ctx).CreateShopRequest(*createShopRequest).Execute()
-
-	defer httpResponse.Body.Close()
-	// Convert the response to JSON for assertion
-	responseJSON, err := apiResponse.MarshalJSON()
-	if err != nil {
-		return "", "", fmt.Errorf("failed to convert response to JSON: %v", err)
-	}
-	fmt.Printf("Response JSON Create Division: %s\n", string(responseJSON))
-	if err != nil {
-		return "", "", fmt.Errorf("failed to create division: %v", err)
-	}
-	apiResponseJSON := apiResponse.GetResponse().Body
-	shopId = apiResponseJSON.GetShopId()
-
-	if err != nil {
-		return "", "", fmt.Errorf("failed to get externalShopId from response: %v", err)
-	}
-
-	fmt.Printf("Shop ID: %s\n", shopId)
-	fmt.Printf("External Shop ID: %s\n", externalShopId)
-
-	return shopId, externalShopId, nil
 }
