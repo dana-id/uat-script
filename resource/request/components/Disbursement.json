@@ -468,7 +468,7 @@
         "partnerReferenceNo": "${partnerReferenceNo}",
         "customerNumber": "62811742234",
         "amount": {
-          "value": "1.00",
+          "value": "1000000000000.00",
           "currency": "IDR"
         },
         "feeAmount": {
@@ -506,7 +506,11 @@
       },
       "response": {
         "responseCode": "2003900",
-        "responseMessage": "Successful"
+        "responseMessage": "Successful",
+        "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+        "latestTransactionStatus": "00",
+        "transactionStatusDesc": "Success",
+        "additionalInfo": {}
       }
     },
     "InquiryTopUpStatusValidFail": {
@@ -521,15 +525,8 @@
         "responseCode": "2003900",
         "responseMessage": "Successful",
         "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
-        "originalReferenceNo": "${originalReferenceNo}",
-        "originalExternalId": null,
-        "serviceCode": "38",
-        "amount": {
-          "value": "1.00",
-          "currency": "IDR"
-        },
-        "latestTransactionStatus": "00",
-        "transactionStatusDesc": "Success",
+        "latestTransactionStatus": "06",
+        "transactionStatusDesc": "Failed",
         "additionalInfo": {}
       }
     },
@@ -773,6 +770,7 @@
           "currency": "IDR"
         },
         "additionalInfo": {
+          "fundType": "",
           "externalDivisionId": null,
           "chargeTarget": null,
           "beneficiaryBankCode": "014",
@@ -894,6 +892,7 @@
         "customerNumber": "62811742234",
         "accountType": null,
         "beneficiaryBankCode": "014",
+        "beneficiaryAccountNumber": "",
         "amount": {
           "value": "100.00",
           "currency": "IDR"

@@ -124,8 +124,9 @@ describe('ApplyToken Tests', () => {
     test('should fail to apply token with invalid signature', async () => {
         const caseName = 'ApplyTokenFailInvalidSignature';
         const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+        requestData.authCode = await generateAuthCode("087875849373","131000");
         const customHeaders: Record<string, string> = {
-            'X-SIGNATURE': '', // Use an invalid timestamp for testing
+            'X-SIGNATURE': 'invalid_signature',
         }
         try {
             const baseUrl: string = 'https://api.sandbox.dana.id';

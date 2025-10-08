@@ -70,17 +70,11 @@ class TransferToDanaInquiryStatusTest {
 
   private String prepareTransferSuccessFail() {
     TransferToDanaRequest transferToDanaRequest = TestUtil.getRequest(
-            jsonPathFile, "TransferToDana", "TopUpCustomerValid", TransferToDanaRequest.class);
+            jsonPathFile, "TransferToDana", "TopUpCustomerExceedAmountLimit", TransferToDanaRequest.class);
 
     String originalPartnerReferenceNo = UUID.randomUUID().toString();
     transferToDanaRequest.setPartnerReferenceNo(originalPartnerReferenceNo);
-    transferToDanaRequest.setCustomerNumber("6281298055138");
-    Money feeAmount = new Money();
-    feeAmount.setCurrency("IDR");
-    feeAmount.setValue("1.00");
-    transferToDanaRequest.setAmount(feeAmount);
-    transferToDanaRequest.setFeeAmount(feeAmount);
-    TransferToDanaResponse transferToDana = api.transferToDana(transferToDanaRequest);
+    api.transferToDana(transferToDanaRequest);
     return originalPartnerReferenceNo;
   }
 
@@ -104,7 +98,6 @@ class TransferToDanaInquiryStatusTest {
   }
 
   @Test
-  @Disabled
   void testInquiryTopUpStatusValidFail() throws IOException {
     partnerReferenceFailed = prepareTransferSuccessFail();
     String caseName = "InquiryTopUpStatusValidFail";

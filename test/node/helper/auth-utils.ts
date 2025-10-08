@@ -104,15 +104,15 @@ export async function generateAuthCode(phoneNumber?: string, pinCode?: string): 
             }
 
             // Handle object response format
-            if (authCodeResult && typeof authCodeResult === 'object' && authCodeResult.auth_code) {
-                console.log(`Successfully generated auth code: ${authCodeResult.auth_code.substring(0, 10)}...`);
-                return authCodeResult.auth_code;
+            if (authCodeResult && typeof authCodeResult === 'object' && authCodeResult.authCode) {
+                console.log(`Successfully generated auth code: ${authCodeResult.authCode.substring(0, 10)}...`);
+                return authCodeResult.authCode;
             }
 
-            throw new Error('auth_code not found in automateOAuth result');
+            throw new Error('authCode not found in automateOAuth result');
 
         } catch (error: any) {
-            lastError = new Error(`Failed to get auth_code: ${error.message}`);
+            lastError = new Error(`Failed to get authCode: ${error.message}`);
             console.warn(`Auth code generation attempt ${attempt} failed: ${error.message}`);
 
             // Wait before retry (except on last attempt)

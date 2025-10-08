@@ -281,10 +281,10 @@ async function automateOAuth(oauthUrl, phoneNumber, pinCode, options = {}) {
                 try {
                   const urlObj = new URL(url);
                   const params = urlObj.searchParams;
-                  if (params.has('auth_code')) {
+                  if (params.has('authCode')) {
                     resolved = true;
                     cleanup();
-                    resolve(params.get('auth_code'));
+                    resolve(params.get('authCode'));
                   }
                 } catch (e) { /* ignore */ }
               }

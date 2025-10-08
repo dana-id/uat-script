@@ -34,7 +34,7 @@ run_go_runner(){
         if [ -n "$module" ]; then
             echo "Running Go test file(s) for module/pattern: $module ${subCase:-}"  
             # If module matches a known test directory
-            if [ "$module" = "widget" ] || [ "$module" = "payment_gateway" ]; then
+            if [ "$module" = "widget" ] || [ "$module" = "payment_gateway" ] || [ "$module" = "disbursement" ]; then
                 test_dir="./$module"
                 if [ -n "$subCase" ]; then
                     # Filter by subCase pattern in file names
@@ -47,10 +47,11 @@ run_go_runner(){
                 # Treat module as a file name pattern across both directories
                 pg_files=$(find ./payment_gateway -type f -name "*${module}*.go" 2>/dev/null || true)
                 widget_files=$(find ./widget -type f -name "*${module}*.go" 2>/dev/null || true)
-                
-                if [ -n "$pg_files" ] && [ -n "$widget_files" ]; then
-                    # Found files in both directories - run them separately
-                    echo "\033[36mFound matching files in both directories, running separately:\033[0m"
+                disbursement_files=$(find ./disbursement -type f -name "*${module}*.go" 2>/dev/null || true)
+
+                if [ -n "$pg_files" ] && [ -n "$widget_files" ] && [ -n "$disbursement_files" ]; then
+                    # Found files in all three directories - run them separately
+                    echo "\033[36mFound matching files in all three directories, running separately:\033[0m"
                     echo "\033[36mPayment Gateway files:\033[0m"
                     for f in $pg_files; do
                         echo "  \033[33m- $f\033[0m"
@@ -83,20 +84,33 @@ run_go_runner(){
                         else {print $0}
                     }'
                     widget_exit_code=$?
-                    
+
+                    echo "\n\033[36m=== Running Disbursement Tests ===\033[0m"
+                    go test -v $disbursement_files 2>&1 | awk '{
+                        if ($0 ~ /=== RUN/) {print "\n\033[36m" $0 "\033[0m"}
+                        else if ($0 ~ /--- PASS/) {print "\033[32m" $0 "\033[0m"}
+                        else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
+                        else if ($0 ~ /--- SKIP/) {print "\033[33m" $0 "\033[0m"}
+                        else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 "\033[0m"}
+                        else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 "\033[0m"}
+                        else {print $0}
+                    }'
+                    disbursement_exit_code=$?
+
                     # Combine found files for total count
-                    found_files="$pg_files $widget_files"
-                    
+                    found_files="$pg_files $widget_files $disbursement_files"
+
                     # Calculate total tests from both directories
                     pg_total=$(go test -list . $pg_files 2>/dev/null | grep -c 'Test' || echo "0")
                     widget_total=$(go test -list . $widget_files 2>/dev/null | grep -c 'Test' || echo "0")
-                    total=$((pg_total + widget_total))
-                    
+                    disbursement_total=$(go test -list . $disbursement_files 2>/dev/null | grep -c 'Test' || echo "0")
+                    total=$((pg_total + widget_total + disbursement_total))
+
                     echo "\n\033[1;36mTotal scenarios run: $total\033[0m"
                     echo "\n\033[1;35m==== Go Test Results Summary Complete ====\033[0m"
                     
                     # Exit with error if either test run failed
-                    if [ $pg_exit_code -ne 0 ] || [ $widget_exit_code -ne 0 ]; then
+                    if [ $pg_exit_code -ne 0 ] || [ $widget_exit_code -ne 0 ] || [ $disbursement_exit_code -ne 0 ]; then
                         exit 1
                     else
                         exit 0
@@ -107,6 +121,9 @@ run_go_runner(){
                 elif [ -n "$widget_files" ]; then
                     # Only found files in widget
                     found_files="$widget_files"
+                elif [ -n "$disbursement_files" ]; then
+                    # Only found files in disbursement
+                    found_files="$disbursement_files"
                 else
                     # No files found
                     found_files=""
@@ -114,7 +131,7 @@ run_go_runner(){
             fi
             
             # Only run normal single-directory test if we didn't handle multi-directory case above
-            if [ -z "$pg_files" ] || [ -z "$widget_files" ]; then
+            if [ -z "$pg_files" ] || [ -z "$widget_files" ] || [ -z "$disbursement_files" ]; then
             if [ -z "$found_files" ]; then
                 echo "\033[31mERROR: No Go test files were found containing file pattern: $module\033[0m" >&2
                 exit 1
@@ -139,9 +156,9 @@ run_go_runner(){
             echo "\n\033[1;35m==== Go Test Results Summary Complete ====\033[0m"
             exit $test_exit_code
         else
-            # Run all tests from both payment_gateway and widget directories
-            echo "Running all Go tests from payment_gateway and widget directories..."
-            go test -v ./payment_gateway/... ./widget/... 2>&1 | awk '{
+            # Run all tests from both payment_gateway, widget and disbursement directories
+            echo "Running all Go tests from payment_gateway, widget and disbursement directories..."
+            go test -v ./payment_gateway/... ./widget/... ./disbursement/... 2>&1 | awk '{
                 if ($0 ~ /=== RUN/) {print "\n\033[36m" $0 "\033[0m"}
                 else if ($0 ~ /--- PASS/) {print "\033[32m" $0 "\033[0m"}
                 else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
@@ -151,7 +168,7 @@ run_go_runner(){
                 else {print $0}
             }'
             test_exit_code=$?
-            total=$(go test -list . ./payment_gateway/... ./widget/... | grep -c 'Test')
+            total=$(go test -list . ./payment_gateway/... ./widget/... ./disbursement/... | grep -c 'Test')
             echo "\n\033[1;36mTotal scenarios run: $total\033[0m"
             echo "\n\033[1;35m==== Go Test Results Summary Complete ====\033[0m"
             exit $test_exit_code

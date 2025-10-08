@@ -359,8 +359,8 @@ class WebAutomation
                     if (isset($urlParts['query'])) {
                         parse_str($urlParts['query'], $queryParams);
                         
-                        if (isset($queryParams['auth_code'])) {
-                            $foundAuthCode = $queryParams['auth_code'];
+                        if (isset($queryParams['authCode'])) {
+                            $foundAuthCode = $queryParams['authCode'];
                             echo "Auth code found: {$foundAuthCode}" . PHP_EOL;
                             break;
                         }

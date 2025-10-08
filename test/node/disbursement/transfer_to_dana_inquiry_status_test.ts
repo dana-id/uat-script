@@ -48,6 +48,7 @@ function generatePartnerReferenceNo(): string {
 
 // Shared test data for cross-test dependencies
 let originalPartnerReferencePaid: string;
+let originalPartnerReferenceFailed: string;
 
 /**
  * Transfer To DANA Inquiry Status Test Suite
@@ -85,10 +86,10 @@ describe('Disbursement - Transfer To DANA Inquiry Status Tests', () => {
     await dana.disbursementApi.transferToDana(disbursementRequest);
   }
 
-  async function createDisbursementFail() {
-    const disbursementRequest: TransferToDanaRequest = getRequest<TransferToDanaRequest>(jsonPathFile, "TransferToDana", "TopUpCustomerValid");
-    originalPartnerReferencePaid = generatePartnerReferenceNo();
-    disbursementRequest.partnerReferenceNo = originalPartnerReferencePaid;
+  async function createDisbursementFailed() {
+    const disbursementRequest: TransferToDanaRequest = getRequest<TransferToDanaRequest>(jsonPathFile, "TransferToDana", "TopUpCustomerExceedAmountLimit");
+    originalPartnerReferenceFailed = generatePartnerReferenceNo();
+    disbursementRequest.partnerReferenceNo = originalPartnerReferenceFailed;
     await dana.disbursementApi.transferToDana(disbursementRequest);
   }
 
@@ -104,6 +105,8 @@ describe('Disbursement - Transfer To DANA Inquiry Status Tests', () => {
     try {
       await createDisbursementPaid()
       console.log(`Shared order created with reference: ${originalPartnerReferencePaid}`);
+      await createDisbursementFailed()
+      console.log(`Shared order created with reference: ${originalPartnerReferenceFailed}`);
     } catch (e) {
       console.error('Failed to create shared order - tests cannot continue:', e);
     }
@@ -132,6 +135,43 @@ describe('Disbursement - Transfer To DANA Inquiry Status Tests', () => {
     requestData.originalPartnerReferenceNo = originalPartnerReferencePaid;
 
     const variableDict: Record<string, any> = { originalPartnerReferenceNo: originalPartnerReferencePaid };
+
+    try {
+      // Execute inquiry status API call
+      const response = await dana.disbursementApi.transferToDanaInquiryStatus(requestData);
+
+      variableDict.originalReferenceNo = response.originalReferenceNo;
+
+      await assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    } catch (e) {
+      console.error('Transfer to DANA inquiry status test failed:', e);
+      throw e;
+    }
+  });
+
+  /**
+   * Test Case: Successful Transfer To DANA Status Inquiry - FAILED
+   *
+   * @description Validates that status inquiry for a failed transfer returns FAILED status
+   * @testId INQUIRY_TOPUP_STATUS_VALID_FAILED_001
+   * @priority High
+   * @category Positive Test
+   * @expectedResult HTTP 200 with FAILED status and transaction details
+   * @prerequisites Previously failed transfer to DANA transaction
+   * @dependsOn createDisbursementFailed
+   * @author Integration Test Team
+   * @since 1.0.0
+   */
+  test('InquiryTopUpStatusValidFailed - should successfully inquire transfer to DANA status FAILED', async () => {
+    const caseName = "InquiryTopUpStatusValidFail";
+
+    // Prepare transfer to DANA request and inquiry status request
+    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+
+    // Assign unique reference for test isolation
+    requestData.originalPartnerReferenceNo = originalPartnerReferenceFailed;
+
+    const variableDict: Record<string, any> = { originalPartnerReferenceNo: originalPartnerReferenceFailed };
 
     try {
       // Execute inquiry status API call

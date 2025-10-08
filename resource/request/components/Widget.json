@@ -92,8 +92,7 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "4017400",
-                "responseMessage": "java.security.SignatureException: Signature length not correct: got 3 but was expecting 256"
+                "responseCode": "4017400"
             }
         }
     },

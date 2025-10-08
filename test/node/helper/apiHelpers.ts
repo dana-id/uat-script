@@ -82,7 +82,8 @@ async function executeManualApiRequest(
     'CHANNEL-ID': '95221',
     'Content-Type': 'application/json',
     'ORIGIN': process.env.ORIGIN || '',
-    'X-EXTERNAL-ID': uuidv4() // Generate unique external ID for request tracking
+    'X-EXTERNAL-ID': uuidv4(), // Generate unique external ID for request tracking
+    'X-CLIENT-KEY': process.env.X_PARTNER_ID || ''
   };
 
   // Generate timestamp in Jakarta timezone (UTC+7) format

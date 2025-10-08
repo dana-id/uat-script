@@ -107,6 +107,7 @@ describe('Query Payment Tests', () => {
     const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
     sharedOriginalPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference
+    createOrderRequestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
     await dana.paymentGatewayApi.createOrder(createOrderRequestData);
   }
 
@@ -178,6 +179,7 @@ describe('Query Payment Tests', () => {
     const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
     sharedOriginalCanceledPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalCanceledPartnerReference;
+    createOrderRequestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
     await dana.paymentGatewayApi.createOrder(createOrderRequestData);
     // await new Promise(resolve => setTimeout(resolve, 4000));
 

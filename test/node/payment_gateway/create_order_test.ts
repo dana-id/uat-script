@@ -185,7 +185,7 @@ describe('Payment Gateway - Create Order Tests', () => {
    * @paymentMethod QRIS (Quick Response Code Indonesian Standard)
    * @skipped Currently disabled - may require specific merchant configuration or testing environment
    */
-  test.skip('CreateOrderNetworkPayPgQris - should successfully create order with API scenario and pay with QRIS payment method', async () => {
+  test('CreateOrderNetworkPayPgQris - should successfully create order with API scenario and pay with QRIS payment method', async () => {
     const caseName = "CreateOrderNetworkPayPgQris";
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 

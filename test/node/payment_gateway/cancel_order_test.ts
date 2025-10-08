@@ -15,7 +15,7 @@ import * as dotenv from 'dotenv';
 import { fail } from 'assert';
 
 // Import helper functions for API testing and automation
-import { getRequest, retryOnInconsistentRequest, automatePayment } from '../helper/util';
+import { getRequest, retryOnInconsistentRequest, automatePayment, generateFormattedDate } from '../helper/util';
 import { executeManualApiRequest } from '../helper/apiHelpers';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { CreateOrderByApiRequest, CreateOrderByRedirectRequest, CancelOrderRequest, RefundOrderRequest, QueryPaymentRequest } from 'dana-node/payment_gateway/v1';
@@ -77,6 +77,7 @@ describe('Cancel Order Tests', () => {
     // Generate unique reference number for the shared order
     sharedOriginalPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference;
+    createOrderRequestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
     createOrderRequestData.merchantId = merchantId;
 
     try {

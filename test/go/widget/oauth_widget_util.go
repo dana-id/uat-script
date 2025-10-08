@@ -130,7 +130,7 @@ func GetAuthCode(phoneNumber, pin, redirectUrl string) (string, error) {
 	oauth = strings.Replace(oauth, "https://www.google.com/?", "", 1) // Remove unwanted prefix if present
 
 	// Extract authCode correctly
-	parts := strings.Split(oauth, "auth_code=")
+	parts := strings.Split(oauth, "authCode=")
 	if len(parts) < 2 {
 		return "", fmt.Errorf("error: authCode not found in URL: %s", oauth)
 	}

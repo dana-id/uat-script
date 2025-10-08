@@ -564,11 +564,11 @@
         "originalExternalId": null,
         "serviceCode": "38",
         "amount": {
-          "value": "10100.00",
+          "value": "21000000.00",
           "currency": "IDR"
         },
-        "latestTransactionStatus": "00",
-        "transactionStatusDesc": "Success",
+        "latestTransactionStatus": "06",
+        "transactionStatusDesc": "Failed",
         "additionalInfo": {}
       }
     },
@@ -811,6 +811,7 @@
           "currency": "IDR"
         },
         "additionalInfo": {
+          "fundType": "",
           "externalDivisionId": null,
           "chargeTarget": null,
           "beneficiaryBankCode": "014",
@@ -932,6 +933,7 @@
         "customerNumber": "62811742234",
         "accountType": null,
         "beneficiaryBankCode": "014",
+        "beneficiaryAccountNumber": "",
         "amount": {
           "value": "100.00",
           "currency": "IDR"
