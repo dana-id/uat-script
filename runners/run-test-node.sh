@@ -7,7 +7,7 @@ run_node_runner(){
     folderName=$1
     caseName=$2
     
-    if ! command node --version &> /dev/null; then
+    if ! command -v node &> /dev/null; then
         echo "Node.js not available in this system. Please install Node.js."
         exit 0 
     fi
