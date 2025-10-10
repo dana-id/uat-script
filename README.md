@@ -34,6 +34,7 @@ For documentation of each DANA Client library visit:
    
    > **Note:** 
    >   - You can fill `PRIVATE_KEY` and `PRIVATE_KEY_PATH` simultaneously, but if you fill both and the key values are different, we will prioritize the key in `PRIVATE_KEY_PATH`. The same applied to `DANA_PUBLIC_KEY` and `DANA_PUBLIC_KEY_PATH`. The `CLIENT_SECRET` env is for `disbursement` business solution.
+   >   - You can set `REDIRECT_URL_OAUTH` to get auth code via url.
    >   - You can find your `EXTERNAL_SHOP_ID` in your Merchant Portal account(Submerchant Menu).
 
 3. **Run the tests:**
