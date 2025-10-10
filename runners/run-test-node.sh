@@ -7,7 +7,7 @@ run_node_runner(){
     folderName=$1
     caseName=$2
     
-    if ! command -v node &> /dev/null; then
+    if ! command -v node >/dev/null 2>&1; then
         echo "Node.js not available in this system. Please install Node.js."
         exit 0 
     fi
@@ -35,17 +35,11 @@ run_node_runner(){
         echo "Widget tests detected or all tests running. Installing Playwright..."
         npm install --save-dev @playwright/test playwright
         
-        # Check if we're running in CI (Alpine container)
-        if [ -n "${CI}" ] || command -v apk &> /dev/null; then
-            echo "Detected CI or Alpine environment, using system Chrome if available"
+        # Check if we're running in CI
+        if [ -n "${CI}" ]; then
+            echo "Detected CI environment, using system Chrome if available"
             # Set environment variables to use system Chrome if available
             export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-            
-            # If we're in Alpine, install chromium (this won't hurt if it's already installed)
-            if command -v apk &> /dev/null; then
-                echo "Installing Chromium on Alpine..."
-                apk add --no-cache chromium
-            fi
             
             # Set path to system Chrome binary
             export PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$(which chromium-browser 2>/dev/null || which chromium 2>/dev/null || which chrome 2>/dev/null || which google-chrome-stable 2>/dev/null || echo "")
