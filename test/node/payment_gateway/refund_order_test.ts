@@ -107,11 +107,11 @@ describe('Payment Gateway - Refund Order Tests', () => {
      * @returns {Promise<void>} Resolves when unpaid order is successfully created
      */
     async function createOrder() {
-        const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
+        const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
         sharedOriginalPartnerReference = generatePartnerReferenceNo();
         createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference
         createOrderRequestData.merchantId = merchantId;
-        createOrderRequestData.validUpTo = generateFormattedDate(43200); // Set validUpTo to 30 seconds from now
+        createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
         await dana.paymentGatewayApi.createOrder(createOrderRequestData);
     }
 
@@ -130,7 +130,7 @@ describe('Payment Gateway - Refund Order Tests', () => {
         sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
         createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
         createOrderRequestData.merchantId = merchantId;
-        createOrderRequestData.validUpTo = generateFormattedDate(43200); // Set validUpTo to 6 minutes from now
+        createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 6 minutes from now
 
         try {
             // Add delay before creating order to ensure system readiness

@@ -333,34 +333,38 @@ async function automatePayment(
 
 
 /**
- * Generates a formatted date string in ISO format with timezone offset and optional second offset
+ * Generates a formatted date string in Indonesia timezone (UTC+7) with optional second offset
  * @param offsetSeconds - Number of seconds to add/subtract from current time (optional, defaults to 0)
- * @param timezoneOffset - Timezone offset in hours (optional, defaults to +7 for Jakarta/Asia timezone)
+ * @param timezoneOffset - Timezone offset in hours (optional, defaults to +7 for Indonesia/Jakarta timezone)
  * @returns Formatted date string in format: 2030-05-01T00:46:43+07:00
  * 
  * @example
- * generateFormattedDate() // Current time: "2025-09-09T14:30:15+07:00"
- * generateFormattedDate(3600) // 1 hour from now: "2025-09-09T15:30:15+07:00"
- * generateFormattedDate(-1800) // 30 minutes ago: "2025-09-09T14:00:15+07:00"
- * generateFormattedDate(0, -5) // Current time with EST timezone: "2025-09-09T14:30:15-05:00"
+ * generateFormattedDate() // Current Indonesia time: "2025-10-10T14:30:15+07:00"
+ * generateFormattedDate(3600) // 1 hour from now in Indonesia: "2025-10-10T15:30:15+07:00"
+ * generateFormattedDate(-1800) // 30 minutes ago in Indonesia: "2025-10-10T14:00:15+07:00"
+ * generateFormattedDate(0, -5) // Current time with EST timezone: "2025-10-10T02:30:15-05:00"
  */
 function generateFormattedDate(offsetSeconds: number = 0, timezoneOffset: number = 7): string {
-  const now = new Date(Date.now() + offsetSeconds * 1000);
-
-    // Format timezone offset (+07:00, -05:00, dll)
+    // Get current UTC time and add offset seconds
+    const utcTime = new Date(Date.now() + offsetSeconds * 1000);
+    
+    // Convert to Indonesia time (UTC+7) by adding timezone offset
+    const indonesiaTime = new Date(utcTime.getTime() + (timezoneOffset * 60 * 60 * 1000));
+    
+    // Format timezone offset (+07:00, -05:00, etc.)
     const offsetSign = timezoneOffset >= 0 ? '+' : '-';
     const absOffset = Math.abs(timezoneOffset);
     const timezoneStr = `${offsetSign}${absOffset.toString().padStart(2, '0')}:00`;
 
-    // Ambil komponen tanggal-waktu
-    const year = now.getFullYear();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hour = now.getHours().toString().padStart(2, '0');
-    const minute = now.getMinutes().toString().padStart(2, '0');
-    const second = now.getSeconds().toString().padStart(2, '0');
+    // Extract date-time components from Indonesia time
+    const year = indonesiaTime.getUTCFullYear();
+    const month = (indonesiaTime.getUTCMonth() + 1).toString().padStart(2, '0');
+    const day = indonesiaTime.getUTCDate().toString().padStart(2, '0');
+    const hour = indonesiaTime.getUTCHours().toString().padStart(2, '0');
+    const minute = indonesiaTime.getUTCMinutes().toString().padStart(2, '0');
+    const second = indonesiaTime.getUTCSeconds().toString().padStart(2, '0');
 
-    // Gabungkan ke format yang diinginkan
+    // Combine to desired format
     return `${year}-${month}-${day}T${hour}:${minute}:${second}${timezoneStr}`;
 }
 

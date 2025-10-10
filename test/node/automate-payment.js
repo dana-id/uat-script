@@ -238,7 +238,7 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
 
     try {
         console.log(`Navigating to payment URL: ${redirectUrl}`);
-        await page.goto(redirectUrl);
+        await page.goto(redirectUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
         // Check if DANA payment option is available and click it using multi-selector
         const danaButton = await isAnyVisible(page, MULTI_SELECTORS.DANA_BUTTON, 20000);
@@ -250,7 +250,8 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
 
         // Wait for phone input field with retry logic using multi-selector
         await waitForPhoneInputWithRetry(page, MULTI_SELECTORS.PHONE_INPUT, MULTI_SELECTORS.DANA_BUTTON);
-        
+        await page.waitForTimeout(3000);
+
         // Fill phone number (remove leading 0 if present) using multi-selector
         const cleanPhoneNumber = phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber;
         console.log(`Entering phone number: ${cleanPhoneNumber}`);
@@ -265,7 +266,7 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
         console.log('Initiating payment...');
         await clickAnySelector(page, MULTI_SELECTORS.PAY_BUTTON);
 
-        await page.goto(redirectUrl);
+        await page.goto(redirectUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
         // Wait for payment result
         return await waitForPaymentResult(page);
 
@@ -288,7 +289,7 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
  * @param {number} maxRetries - Maximum number of retry attempts
  * @throws {Error} When input field is not found after maximum retries
  */
-async function waitForPhoneInputWithRetry(page, inputSelectors, danaButtonSelectors, maxRetries = 3) {
+async function waitForPhoneInputWithRetry(page, inputSelectors, danaButtonSelectors, maxRetries = 10) {
     let inputFound = false;
     let retryCount = 0;
 

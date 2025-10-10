@@ -96,7 +96,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(43200, 7); // Set validUpTo to 1 hour from now
+    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 1 hour from now
     try {
       // Execute create order API call
       const response = await dana.paymentGatewayApi.createOrder(requestData);
@@ -128,11 +128,11 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(35000, 7); // Set validUpTo to 9 hours and 43 minutes from now
+    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 9 hours and 43 minutes from now
 
     try {
       // Use retry mechanism to handle potential inconsistent request errors
-      const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 1000);
+      const response = await dana.paymentGatewayApi.createOrder(requestData)
 
       // Validate API response against expected result
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
@@ -160,7 +160,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(39000, 7);
+    requestData.validUpTo = generateFormattedDate(1800);
 
     try {
       // Execute create order API call with VA bank payment method
@@ -192,7 +192,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(35000, 7); // Set validUpTo to 1 hour from now
+    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 1 hour from now
     requestData.externalStoreId = externalShopId;
     
     const response = await dana.paymentGatewayApi.createOrder(requestData);
@@ -220,7 +220,7 @@ describe('Payment Gateway - Create Order Tests', () => {
       const partnerReferenceNo = generatePartnerReferenceNo();
       requestData.partnerReferenceNo = partnerReferenceNo;
       requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(43200); // Set validUpTo to 30 seconds from now
+    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
       try {
         // Execute create order API call with wallet payment method
@@ -262,7 +262,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(43200); // Set validUpTo to 30 seconds from now
+    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     try {
       // This API call should fail due to invalid field format
@@ -298,7 +298,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(43200); // Set validUpTo to 30 seconds from now
+    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     try {
       // First request with original data - establish the baseline transaction
@@ -350,7 +350,7 @@ describe('Payment Gateway - Create Order Tests', () => {
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.merchantId = merchantId;
-    requestData.validUpTo = generateFormattedDate(43200); // Set validUpTo to 30 seconds from now
+    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     // Custom headers: deliberately omit X-TIMESTAMP to trigger validation error
     const customHeaders: Record<string, string> = {

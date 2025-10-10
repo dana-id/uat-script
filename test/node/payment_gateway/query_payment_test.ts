@@ -107,7 +107,7 @@ describe('Query Payment Tests', () => {
     const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderApi");
     sharedOriginalPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference
-    createOrderRequestData.validUpTo = generateFormattedDate(43200); // Set validUpTo to 30 seconds from now
+    createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
     await dana.paymentGatewayApi.createOrder(createOrderRequestData);
   }
 
@@ -126,7 +126,7 @@ describe('Query Payment Tests', () => {
     sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
     createOrderRequestData.merchantId = merchantId;
-    createOrderRequestData.validUpTo = generateFormattedDate(43200); // Set validUpTo to 30 seconds from now
+    createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     try {
       // Add delay before creating order to ensure system readiness
@@ -179,7 +179,7 @@ describe('Query Payment Tests', () => {
     const createOrderRequestData: CreateOrderByApiRequest = getRequest<CreateOrderByApiRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
     sharedOriginalCanceledPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalCanceledPartnerReference;
-    createOrderRequestData.validUpTo = generateFormattedDate(3600); // Set validUpTo to 30 seconds from now
+    createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
     await dana.paymentGatewayApi.createOrder(createOrderRequestData);
     // await new Promise(resolve => setTimeout(resolve, 4000));
 
