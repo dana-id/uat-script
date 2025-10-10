@@ -345,24 +345,23 @@ async function automatePayment(
  * generateFormattedDate(0, -5) // Current time with EST timezone: "2025-09-09T14:30:15-05:00"
  */
 function generateFormattedDate(offsetSeconds: number = 0, timezoneOffset: number = 7): string {
-  // Create date with offset seconds applied
-  const targetDate = new Date();
-  targetDate.setSeconds(targetDate.getSeconds() + offsetSeconds);
-  
-  // Get date components
-  const year = targetDate.getFullYear();
-  const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-  const day = String(targetDate.getDate()).padStart(2, '0');
-  const hours = String(targetDate.getHours()).padStart(2, '0');
-  const minutes = String(targetDate.getMinutes()).padStart(2, '0');
-  const seconds = String(targetDate.getSeconds()).padStart(2, '0');
-  
-  // Format timezone offset
-  const offsetHours = Math.abs(timezoneOffset);
-  const offsetSign = timezoneOffset >= 0 ? '+' : '-';
-  const offsetString = `${offsetSign}${String(offsetHours).padStart(2, '0')}:00`;
-  
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetString}`;
+  const now = new Date(Date.now() + offsetSeconds * 1000);
+
+    // Format timezone offset (+07:00, -05:00, dll)
+    const offsetSign = timezoneOffset >= 0 ? '+' : '-';
+    const absOffset = Math.abs(timezoneOffset);
+    const timezoneStr = `${offsetSign}${absOffset.toString().padStart(2, '0')}:00`;
+
+    // Ambil komponen tanggal-waktu
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hour = now.getHours().toString().padStart(2, '0');
+    const minute = now.getMinutes().toString().padStart(2, '0');
+    const second = now.getSeconds().toString().padStart(2, '0');
+
+    // Gabungkan ke format yang diinginkan
+    return `${year}-${month}-${day}T${hour}:${minute}:${second}${timezoneStr}`;
 }
 
 /**

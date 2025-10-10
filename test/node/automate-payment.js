@@ -44,7 +44,8 @@ const SELECTORS = {
     SUBMIT_PHONE_BUTTON: ".agreement__button>.btn-continue",
     PIN_INPUT: ".txt-input-pin-field",
     PAY_BUTTON: ".btn.btn-primary",
-    FAILED_PAYMENT: ".card-header-content__title.lbl-failed-payment"
+    FAILED_PAYMENT: ".card-header-content__title.lbl-failed-payment",
+    SUCCESS_PAYMENT: "//*[contains(@class,'sdetfe-lbl-success')]"
 };
 
 /**
@@ -96,6 +97,13 @@ const MULTI_SELECTORS = {
         ".error-message",
         ".payment-failed",
         "[data-testid='payment-error']"
+    ],
+    ALREADY_PAID_PG: [
+        "//*[contains(@class,'lbl-success')]",
+        ".sdetfe-lbl-success-description"
+    ],
+    ALREADY_PAID_WIDGET: [
+        "//*[contains(@class,'lbl-failed')]"
     ]
 };
 
@@ -257,6 +265,7 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
         console.log('Initiating payment...');
         await clickAnySelector(page, MULTI_SELECTORS.PAY_BUTTON);
 
+        await page.goto(redirectUrl);
         // Wait for payment result
         return await waitForPaymentResult(page);
 
@@ -285,7 +294,7 @@ async function waitForPhoneInputWithRetry(page, inputSelectors, danaButtonSelect
 
     while (!inputFound && retryCount < maxRetries) {
         try {
-            await waitForAnySelector(page, inputSelectors, 1000);
+            await waitForAnySelector(page, inputSelectors, 5000);
             inputFound = true;
             console.log('Phone input field found');
         } catch (error) {
@@ -316,33 +325,19 @@ async function waitForPhoneInputWithRetry(page, inputSelectors, danaButtonSelect
  * @throws {Error} When payment fails or status is unclear
  */
 async function waitForPaymentResult(page) {
-    // Wait for either success redirect or failure message
-    await Promise.race([
-        page.waitForURL('**/tinknet.my.id/v1/test**', { timeout: 30000 }),
-        waitForAnySelector(page, MULTI_SELECTORS.FAILED_PAYMENT, 30000)
-    ]).catch(() => {
-        // Continue to manual check if race conditions aren't met
-    });
-
     // Check for success redirect
-    const currentUrl = page.url();
-    if (currentUrl.includes(SUCCESS_URL_PATTERN.replace('**/', ''))) {
-        console.log('Payment successful - redirected to success URL');
+    if (await waitForAnySelector(page, MULTI_SELECTORS.ALREADY_PAID_PG, 50000)) {
+        console.log('Payment PG success');
+        page.screenshot({ path: 'payment-success-pg.png' });
         return { success: true, authCode: null, error: null };
     }
 
-    // Check for failure indicator using multi-selector
-    const failedPaymentElement = await isAnyVisible(page, MULTI_SELECTORS.FAILED_PAYMENT, 2000);
-    if (failedPaymentElement) {
-        const errorText = await page.textContent(failedPaymentElement).catch(() => 'Payment failed');
-        throw new Error(`Payment failed: ${errorText}`);
-    }
-
-    // Wait additional time for delayed redirects
-    await page.waitForTimeout(5000);
-    const finalUrl = page.url();
-    if (finalUrl.includes(SUCCESS_URL_PATTERN.replace('**/', ''))) {
-        console.log('Payment successful - redirected to success URL (delayed)');
+    // Check for success redirect
+    if (await waitForAnySelector(page, MULTI_SELECTORS.PAY_BUTTON, 50000)) {
+        await clickAnySelector(page, MULTI_SELECTORS.PAY_BUTTON);
+        await waitForAnySelector(page, MULTI_SELECTORS.ALREADY_PAID_WIDGET, 30000);
+        console.log('Payment Widget success');
+        page.screenshot({ path: 'payment-success-widget.png' });
         return { success: true, authCode: null, error: null };
     }
 

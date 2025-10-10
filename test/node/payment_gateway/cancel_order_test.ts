@@ -77,7 +77,7 @@ describe('Cancel Order Tests', () => {
     // Generate unique reference number for the shared order
     sharedOriginalPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference;
-    createOrderRequestData.validUpTo = generateFormattedDate(30); // Set validUpTo to 30 seconds from now
+    createOrderRequestData.validUpTo = generateFormattedDate(40000); // Set validUpTo to 30 seconds from now
     createOrderRequestData.merchantId = merchantId;
 
     try {
