@@ -139,7 +139,6 @@ class CreateOrderTest extends TestCase
      */
     public function testCreateOrderNetworkPayPgQris(): void
     {
-        $this->markTestSkipped('skipped by request: scenario CreateOrderNetworkPayPgQris');
         Util::withDelay(function() {
             $caseName = 'CreateOrderNetworkPayPgQris';
             
@@ -153,7 +152,6 @@ class CreateOrderTest extends TestCase
             // Set a unique partner reference number
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
-            $jsonDict['merchantId'] = getenv('MERCHANT_ID');
             $jsonDict['externalStoreId'] = getenv('EXTERNAL_SHOP_ID');
             $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
             

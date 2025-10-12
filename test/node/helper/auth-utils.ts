@@ -75,7 +75,7 @@ export async function generateAuthCode(phoneNumber?: string, pinCode?: string): 
                 ],
                 externalId: uuidv4(),           // Unique external identifier
                 state: uuidv4(),                // OAuth state parameter for security
-                redirectUrl: process.env.REDIRECT_URL_OAUTH || '', // OAuth callback URL
+                redirectUrl: process.env.REDIRECT_URL_OAUTH || 'https://google.com', // OAuth callback URL
                 seamlessData: {
                     mobileNumber: phoneNumber   // Pre-fill mobile number for seamless flow
                 },
