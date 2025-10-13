@@ -570,7 +570,7 @@ describe('Cancel Order Tests', () => {
         );
 
         if (automationResult.success) {
-          console.log(`Payment automation successful after ${automationResult.attempts} attempts`);
+          console.log(`Payment automation successful`);
         } else {
           console.log(`Payment automation failed: ${automationResult.error}`);
           throw new Error(`Payment automation failed: ${automationResult.error}`);

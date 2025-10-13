@@ -361,11 +361,11 @@ EOF
     if [ -n "$folderName" ] && [ -n "$caseName" ]; then
         # Run specific test in a specific folder
         echo "Running test '$caseName' in folder 'test/php/$folderName'..."
-        test/php/vendor/bin/phpunit --configuration=phpunit.xml --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "test/php/$folderName"
+        test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "test/php/$folderName"
     elif [ -n "$folderName" ]; then
         # Run all tests in a specific folder
         echo "Running all tests in folder 'test/php/$folderName'..."
-        test/php/vendor/bin/phpunit --configuration=phpunit.xml --testdox --debug --colors=always "test/php/$folderName"
+        test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always "test/php/$folderName"
     elif [ -n "$caseName" ]; then
         # Find all test directories (excluding helper)
         TEST_DIRS=$(find test/php -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
@@ -378,7 +378,7 @@ EOF
         # Run test in all directories
         for dir in $TEST_DIRS; do
             echo "\033[36mRunning test '$caseName' in $dir...\033[0m"
-            test/php/vendor/bin/phpunit --configuration=phpunit.xml --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "$dir"
+            test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "$dir"
             # Add a 3-second gap between test runs
             sleep 3
         done
@@ -397,7 +397,7 @@ EOF
         # Run tests in all directories
         for dir in $TEST_DIRS; do
             echo "\033[36mRunning tests in $dir...\033[0m"
-            test/php/vendor/bin/phpunit --configuration=phpunit.xml --testdox --debug --colors=always "$dir"
+            test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always "$dir"
             # Add a 3-second gap between test runs
             sleep 3
         done

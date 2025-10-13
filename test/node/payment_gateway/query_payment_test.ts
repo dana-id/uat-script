@@ -145,11 +145,11 @@ describe('Query Payment Tests', () => {
           response.webRedirectUrl, // redirectUrl from create order response
           3,            // maxRetries
           2000,         // retryDelay
-          true         // headless (set to true for CI/CD)
+          false         // headless (set to true for CI/CD)
         );
 
         if (automationResult.success) {
-          console.log(`Payment automation successful after ${automationResult.attempts} attempts`);
+          console.log(`Payment automation successful`);
         } else {
           console.log(`Payment automation failed: ${automationResult.error}`);
           throw new Error(`Payment automation failed: ${automationResult.error}`);

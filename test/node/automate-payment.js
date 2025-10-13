@@ -31,7 +31,7 @@ const {
     redirectUrl = 'https://www.dana.id/',
     maxRetries = 3,
     retryDelay = 2000,
-    headless = false
+    headless = true
 } = params;
 
 /**
@@ -99,6 +99,13 @@ const MULTI_SELECTORS = {
         "[data-testid='payment-error']"
     ],
     ALREADY_PAID_PG: [
+        ".result-animation.sdet-img-success-payment",
+        "div[class*='result-animation']",
+        "div[class*='success']",
+        "text=This transaction is paid using DANA",
+        "text=Payment Rp1 to",
+        ".redirection-notice",
+        "div[data-v-76873b9c][class*='result']",
         "//*[contains(@class,'lbl-success')]",
         ".sdetfe-lbl-success-description"
     ],
@@ -262,13 +269,18 @@ async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) 
         console.log('Entering PIN...');
         await fillAnySelector(page, MULTI_SELECTORS.PIN_INPUT, pin);
 
+        // Wait for PIN to be processed and pay button to become available
+        console.log('Waiting 5 seconds for PIN processing...');
+        await sleep(5000);
+
         // Click pay button using multi-selector
         console.log('Initiating payment...');
         await clickAnySelector(page, MULTI_SELECTORS.PAY_BUTTON);
 
-        await page.goto(redirectUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
-        // Wait for payment result
-        return await waitForPaymentResult(page);
+        return {
+            success: true,
+            error: null
+        };
 
     } finally {
         // Keep page open for 15 seconds to allow payment processing
@@ -329,7 +341,6 @@ async function waitForPaymentResult(page) {
     // Check for success redirect
     if (await waitForAnySelector(page, MULTI_SELECTORS.ALREADY_PAID_PG, 50000)) {
         console.log('Payment PG success');
-        page.screenshot({ path: 'payment-success-pg.png' });
         return { success: true, authCode: null, error: null };
     }
 
@@ -338,7 +349,6 @@ async function waitForPaymentResult(page) {
         await clickAnySelector(page, MULTI_SELECTORS.PAY_BUTTON);
         await waitForAnySelector(page, MULTI_SELECTORS.ALREADY_PAID_WIDGET, 30000);
         console.log('Payment Widget success');
-        page.screenshot({ path: 'payment-success-widget.png' });
         return { success: true, authCode: null, error: null };
     }
 

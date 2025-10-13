@@ -11,8 +11,44 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 // Load environment variables from .env file if dotenv is available
 if (class_exists('\Dotenv\Dotenv')) {
-    $dotenv = \Dotenv\Dotenv::createImmutable(dirname(dirname(__DIR__)));
-    $dotenv->safeLoad();
+    $projectRoot = dirname(dirname(__DIR__));
+    $envFile = $projectRoot . '/.env';
+    
+    if (file_exists($envFile)) {
+        try {
+            $dotenv = \Dotenv\Dotenv::createImmutable($projectRoot);
+            $dotenv->safeLoad();
+        } catch (\Dotenv\Exception\InvalidFileException $e) {
+            $envContent = file_get_contents($envFile);
+            $lines = explode("\n", $envContent);
+            
+            foreach ($lines as $line) {
+                $line = trim($line);
+                
+                if (empty($line) || strpos($line, '#') === 0) {
+                    continue;
+                }
+                
+                if (strpos($line, '=') !== false) {
+                    list($key, $value) = explode('=', $line, 2);
+                    $key = trim($key);
+                    $value = trim($value);
+                    
+                    if ((substr($value, 0, 1) === '"' && substr($value, -1) === '"') ||
+                        (substr($value, 0, 1) === "'" && substr($value, -1) === "'")) {
+                        $value = substr($value, 1, -1);
+                    }
+                    
+                    if (strpos($key, 'PRIVATE_KEY') !== false) {
+                        $value = str_replace('\\n', "\n", $value);
+                    }
+                    
+                    $_ENV[$key] = $value;
+                    putenv("$key=$value");
+                }
+            }
+        }
+    }
 }
 
 // Explicitly require helper files to ensure they're loaded in any environment
