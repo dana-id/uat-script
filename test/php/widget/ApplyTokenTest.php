@@ -9,7 +9,6 @@ use Dana\ObjectSerializer;
 use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
-use DanaUat\Widget\OauthUtil;
 use DanaUat\Helper\Util;
 use Exception;
 
@@ -21,7 +20,7 @@ class ApplyTokenTest extends TestCase
     private static $phoneNumber = '0811742234';
     private static $userPin = '123321';
     private static $authCode;
-    private static $applyTokenUrl;
+    private static $partnerId;
 
     public static function setUpBeforeClass(): void
     {
@@ -31,24 +30,22 @@ class ApplyTokenTest extends TestCase
         $configuration->setApiKey('X_PARTNER_ID', getenv('X_PARTNER_ID'));
         $configuration->setApiKey('ENV', Env::SANDBOX);
         self::$apiInstance = new WidgetApi(null, $configuration);
-        self::$applyTokenUrl = '/payment-gateway/v1.0/access-token/b2b2c.htm';
 
-        
+        self::$authCode = OauthUtil::getAuthCode(
+            getenv('X_PARTNER_ID'),
+            null,
+            self::$phoneNumber,
+            self::$userPin,
+            getenv('REDIRECT_URL_OAUTH')
+        );
+        self::$partnerId = getenv('X_PARTNER_ID');
     }
 
     /**
      * Should give success response for apply token scenario
      */
     public function testApplyTokenSuccess(): void
-    {
-        self::$authCode = OauthUtil::getAuthCode(
-            getenv('X_PARTNER_ID'),
-            null,
-            self::$phoneNumber,
-            self::$userPin,
-            null
-        );
-        
+    {   
         Util::withDelay(function () {
             // Continue with your API call
             $caseName = 'ApplyTokenSuccess';
@@ -80,8 +77,7 @@ class ApplyTokenTest extends TestCase
             }
         });
     }
-
-    public function testApplyTokenFailExpiredAuthcode(): void
+     public function testApplyTokenFailExpiredAuthcode(): void
     {
         Util::withDelay(function () {
             // Continue with your API call
@@ -112,9 +108,7 @@ class ApplyTokenTest extends TestCase
     }
 
     public function testApplyTokenFailInvalidSignature(): void
-    {
-        $this->markTestSkipped('Scenario skipped because it is succeeded even using invalid signature');
-        
+    {   
         Util::withDelay(function () {
             // Continue with your API call
             $caseName = 'ApplyTokenFailInvalidSignature';
@@ -126,23 +120,24 @@ class ApplyTokenTest extends TestCase
 
             $headers = Util::getHeadersWithSignature(
                 'POST',
-                self::$applyTokenUrl,
+                "/v1.0/access-token/b2b2c.htm",
                 $jsonDict,
                 true,
                 false,
                 true
             );
-            $headers['Content-Type'] = 'application/json';
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
                 'Dana\Widget\v1\Model\ApplyTokenRequest'
             );
 
+            $headers['X-CLIENT-KEY'] = self::$partnerId;
+
             try {
                 Util::executeApiRequest(
                     'POST',
-                    'https://api.sandbox.dana.id/payment-gateway/v1.0/access-token/b2b2c.htm',
+                    'https://api.sandbox.dana.id/v1.0/access-token/b2b2c.htm',
                     $headers,
                     $requestObj
                 );

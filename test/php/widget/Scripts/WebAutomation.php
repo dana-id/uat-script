@@ -352,19 +352,36 @@ class WebAutomation
             // Keep checking current URL for auth_code parameter
             while (time() - $startTime < $timeout) {
                 $currentUrl = $driver->getCurrentURL();
+                echo "Current URL: {$currentUrl}" . PHP_EOL;
                 
-                if (strpos($currentUrl, 'google.com') !== false) {
+                // Check if URL contains auth_code parameter (regardless of domain)
+                if (strpos($currentUrl, 'auth_code=') !== false) {
+                    echo "Auth code parameter detected in URL: {$currentUrl}" . PHP_EOL;
+                    
                     // Parse URL to extract auth_code parameter
                     $urlParts = parse_url($currentUrl);
                     if (isset($urlParts['query'])) {
                         parse_str($urlParts['query'], $queryParams);
                         
-                        if (isset($queryParams['authCode'])) {
-                            $foundAuthCode = $queryParams['authCode'];
+                        if (isset($queryParams['auth_code'])) {
+                            $foundAuthCode = $queryParams['auth_code'];
                             echo "Auth code found: {$foundAuthCode}" . PHP_EOL;
                             break;
                         }
                     }
+                    
+                    // Alternative regex method as fallback
+                    if (empty($foundAuthCode) && preg_match('/auth_code=([^&]+)/', $currentUrl, $matches)) {
+                        $foundAuthCode = $matches[1];
+                        echo "Auth code found via regex: {$foundAuthCode}" . PHP_EOL;
+                        break;
+                    }
+                }
+                
+                // Also check for redirect URL match as secondary condition
+                $redirectUrl = getenv('REDIRECT_URL_OAUTH');
+                if (!empty($redirectUrl) && strpos($currentUrl, $redirectUrl) !== false) {
+                    echo "Redirect URL reached: {$currentUrl}" . PHP_EOL;
                 }
                 
                 // Short wait before checking again

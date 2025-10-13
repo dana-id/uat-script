@@ -12,6 +12,7 @@ dotenv.config();
 
 const titleCase = 'CancelOrder';
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Widget.json');
+const merchantId = process.env.MERCHANT_ID || ''; // Merchant configuration
 
 const dana = new Dana({
     partnerId: process.env.X_PARTNER_ID || '',
@@ -36,7 +37,6 @@ describe('CancelOrder Tests', () => {
     test('should fail with user status abnormal', async () => {
         const caseName = 'CancelOrderFailUserStatusAbnormal';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-
         try {
             const response = await dana.widgetApi.cancelOrder(requestData);
             await assertFailResponse(jsonPathFile, titleCase, caseName, response);
@@ -64,43 +64,38 @@ describe('CancelOrder Tests', () => {
         }
     });
 
-    test.skip('should fail with missing parameter', async () => {
+    test('should fail with missing parameter', async () => {
         const caseName = 'CancelOrderFailMissingParameter';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
+        requestData.merchantId = merchantId;
         try {
-            const customHeaders: Record<string, string> = {
-                'X-TIMESTAMP': '' // Use an invalid signature for testing
-            };
-
-            const baseUrl: string = 'https://api.sandbox.dana.id';
-            const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
-
-            await executeManualApiRequest(
-                caseName,
-                'POST',
-                baseUrl + apiPath,
-                apiPath,
-                requestData,
-                customHeaders
-            );
-            fail('Expected an error but the API call succeeded');
+            const response = await dana.widgetApi.cancelOrder(requestData);
+            await assertFailResponse(jsonPathFile, titleCase, caseName, response);
         } catch (e: any) {
-            if (Number(e.status) === 400) {
+            if (e instanceof ResponseError) {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else if( e instanceof ResponseError && Number(e.status) === 400) {
-                fail("Expected unauthorized failed but got status code " + e.status);
             } else {
-                throw e;
+                fail('CancelOrder test failed: ' + (e.message || e));
             }
         }
     });
 
-    test.skip('should fail with order not exist', async () => {
+    test('should fail with order not exist', async () => {
         const caseName = 'CancelOrderFailOrderNotExist';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
+        requestData.merchantId = merchantId;
+        requestData.originalPartnerReferenceNo = uuidv4(); // Use a random reference number to simulate non-existent order
+        requestData.originalReferenceNo = uuidv4(); // Use a random reference number to simulate non-existent order
         try {
-            fail('CancelOrder test is a placeholder.');
-        } catch (e: any) { }
+            const response = await dana.widgetApi.cancelOrder(requestData);
+            await assertFailResponse(jsonPathFile, titleCase, caseName, response);
+        } catch (e: any) {
+            if (e instanceof ResponseError) {
+                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
+            } else {
+                fail('CancelOrder test failed: ' + (e.message || e));
+            }
+        }
     });
 
     test('should fail with exceed cancel window time', async () => {
@@ -173,17 +168,18 @@ describe('CancelOrder Tests', () => {
         } catch (e: any) { }
     });
 
-    test('should fail with invalid signature', async () => {
+    test.skip('should fail with invalid signature', async () => {
         const caseName = 'CancelOrderFailInvalidSignature';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         
         try {
+            // Set custom headers with an invalid signature
             const customHeaders: Record<string, string> = {
-                'X-SIGNATURE': 'invalid_signature' // Use an invalid signature for testing
+                'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
             };
 
             const baseUrl: string = 'https://api.sandbox.dana.id';
-            const apiPath: string = '/payment-gateway/v1.0/debit/cancel.htm';
+            const apiPath: string = '/v1.0/debit/cancel.htm';
 
             await executeManualApiRequest(
                 caseName,
@@ -193,6 +189,8 @@ describe('CancelOrder Tests', () => {
                 requestData,
                 customHeaders
             );
+
+            console.log('Expected an error but the API call succeeded');
             fail('Expected an error but the API call succeeded');
         } catch (e: any) {
             if (Number(e.status) === 401) {

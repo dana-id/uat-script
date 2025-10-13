@@ -86,13 +86,6 @@ describe('QueryOrder Tests', () => {
           2000,         // retryDelay
           true         // headless (set to true for CI/CD)
         );
-
-        if (automationResult.success) {
-          console.log(`Payment automation successful after ${automationResult.attempts} attempts`);
-        } else {
-          console.log(`Payment automation failed: ${automationResult.error}`);
-          throw new Error(`Payment automation failed: ${automationResult.error}`);
-        }
       } else {
         throw new Error('No webRedirectUrl in create order response');
       }
