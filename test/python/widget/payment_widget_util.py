@@ -29,6 +29,7 @@ async def automate_payment_widget(phone_number=None, pin=None, redirectUrlPaymen
     inputPhone = ".desktop-input>.txt-input-phone-number-field"
     inputPin = ".txt-input-pin-field"
     buttonPay = "button.btn-pay"
+    labelFailedPayment = ".lbl-failed-payment"
     endpointSuccess = "**/v1/test"
 
     def log(msg):
@@ -50,17 +51,37 @@ async def automate_payment_widget(phone_number=None, pin=None, redirectUrlPaymen
 
         log('Opening Payment Widget URL...')
         await page.goto(redirectUrlPayment)
-        if page.is_visible(buttonDana, timeout=100000):
+        if await page.is_visible(buttonDana, timeout=100000):
             await page.locator(buttonDana).click()
             log('Dana button clicked, waiting for phone number input...')
 
-        if await page.is_visible(inputPhone, timeout=100000):
-            await page.locator(inputPhone).fill(phone_number)
-            await page.locator(buttonSubmitPhoneNumber).click()
-            await page.locator(inputPin).fill(pin)
+        # Input phone number
+        log('Trying to find the phone input field...')
+        try:
+            await page.wait_for_selector('.desktop-input>.txt-input-phone-number-field', timeout=30000)
+        except Exception:
+            pass
+        await page.locator(inputPhone).fill(phone_number)
+        await page.locator(buttonSubmitPhoneNumber).click()
 
+        # Input pin
+        log('Trying to find the PIN input field...')
+        try:
+            await page.wait_for_selector('.txt-input-pin-field, input[maxlength="6"], input[type="password"]', timeout=30000)
+        except Exception:
+            pass
+        await page.locator(inputPin).fill(pin)
+
+        # Submit payment
+        log('Submitting payment...')
+        await page.wait_for_selector(buttonPay, timeout=30000)
         await page.locator(buttonPay).click()
-        await page.wait_for_url(endpointSuccess)
+        
+        log('Waiting for payment success...')
+        await page.goto(redirectUrlPayment)
+        await page.wait_for_selector(buttonPay, timeout=30000)
+        await page.locator(buttonPay).click()
+        await page.wait_for_selector(labelFailedPayment, timeout=30000)
         await browser.close()
         log('Payment automation completed, browser closed')
 

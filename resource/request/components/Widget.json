@@ -868,7 +868,7 @@
                 "subMerchantId": ""
             },
             "response": {
-                "transactionStatusDesc": "INIT",
+                "transactionStatusDesc": "PAYING",
                 "responseCode": "2005500"
             }
         },

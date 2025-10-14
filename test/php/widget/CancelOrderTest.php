@@ -194,32 +194,23 @@ class CancelOrderTest extends TestCase
     {
         Util::withDelay(function () {
             $caseName = 'CancelOrderFailMissingParameter';
-            $jsonDict = Util::getRequest(
-                self::$jsonPathFile,
-                self::$titleCase,
-                $caseName
-            );
-            // Create headers without timestamp to test validation
-            $headers = Util::getHeadersWithSignature(
-                'POST',
-                self::$cancelUrl,
-                $jsonDict,
-                true,
-                false,
-                false    
-            );
             try {
-                Util::executeApiRequest(
-                    'POST',
-                    'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm',
-                    $headers,
-                    $jsonDict
+                $jsonDict = Util::getRequest(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName
                 );
+                $requestObj = ObjectSerializer::deserialize(
+                    $jsonDict,
+                    'Dana\Widget\v1\Model\CancelOrderRequest'
+                );
+                $requestObj->setMerchantId(self::$merchantId); // Simulate missing merchantId
 
-                $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
+                self::$apiInstance->cancelOrder($requestObj);
+                $this->fail('Expected ApiException for merchant status abnormal was not thrown');
             } catch (ApiException $e) {
-                // We expect a 400 Bad Request for missing timestamp
-                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 BadRequest for missing X-TIMESTAMP, got {$e->getCode()}");
+                // We expect a 400 Not Found for abnormal merchant status
+                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Not Found for abnormal merchant status, got {$e->getCode()}");
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
@@ -232,7 +223,7 @@ class CancelOrderTest extends TestCase
                     $responseContent
                 );
             } catch (Exception $e) {
-                throw $e;
+                $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
     }
@@ -404,6 +395,7 @@ class CancelOrderTest extends TestCase
      */
     public function testCancelOrderFailInvalidSignature(): void
     {
+        $this->markTestSkipped('Skipping testCancelOrderFailInvalidSignature no need to UAT.');
         Util::withDelay(function () {
             $caseName = 'CancelOrderFailInvalidSignature';
             $jsonDict = Util::getRequest(

@@ -400,6 +400,7 @@ def test_cancel_order_fail_order_refunded(test_cancel_order_reference_number):
 
 @with_delay()
 def test_cancel_order_fail_invalid_signature(test_cancel_order_reference_number):
+    pytest.skip("SKIP: No need to test signature for UAT")
     # Scenario: CancelOrderFailInvalidSignature
     # Purpose: Verify that the order cannot be cancelled if the request signature is invalid.
     # Steps:

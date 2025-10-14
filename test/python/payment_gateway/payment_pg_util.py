@@ -29,6 +29,7 @@ async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=No
     inputPin = ".txt-input-pin-field"
     buttonPay = "button.btn-pay"
     endpointSuccess = "**/v1/test"
+    textAlreadyPaid = "//*[contains(text(),'order is already paid.')]"
 
     def log(msg):
         if show_log:

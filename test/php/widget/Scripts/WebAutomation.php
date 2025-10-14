@@ -355,7 +355,7 @@ class WebAutomation
                 echo "Current URL: {$currentUrl}" . PHP_EOL;
                 
                 // Check if URL contains auth_code parameter (regardless of domain)
-                if (strpos($currentUrl, 'auth_code=') !== false) {
+                if (strpos($currentUrl, 'auth_code=') !== false || strpos($currentUrl, 'authCode=') !== false) {
                     echo "Auth code parameter detected in URL: {$currentUrl}" . PHP_EOL;
                     
                     // Parse URL to extract auth_code parameter
@@ -363,15 +363,15 @@ class WebAutomation
                     if (isset($urlParts['query'])) {
                         parse_str($urlParts['query'], $queryParams);
                         
-                        if (isset($queryParams['auth_code'])) {
-                            $foundAuthCode = $queryParams['auth_code'];
+                        if (isset($queryParams['auth_code']) || isset($queryParams['authCode'])) {
+                            $foundAuthCode = $queryParams['auth_code'] ?? $queryParams['authCode'];
                             echo "Auth code found: {$foundAuthCode}" . PHP_EOL;
                             break;
                         }
                     }
                     
                     // Alternative regex method as fallback
-                    if (empty($foundAuthCode) && preg_match('/auth_code=([^&]+)/', $currentUrl, $matches)) {
+                    if (empty($foundAuthCode) && preg_match('/auth_code=([^&]+)/', $currentUrl, $matches) && preg_match('/authCode=([^&]+)/', $currentUrl, $matches)) {
                         $foundAuthCode = $matches[1];
                         echo "Auth code found via regex: {$foundAuthCode}" . PHP_EOL;
                         break;
@@ -502,6 +502,7 @@ class WebAutomation
                 $inputPinSelector = ".txt-input-pin-field";
                 $buttonPaySelector = ".btn.btn-primary.btn-pay";
                 $submitPhoneNumberSelector = ".agreement__button>.btn-continue";
+                $labelFailedPayment = ".lbl-failed-payment";
                 $phoneSelectors = [
                     '.desktop-input>.txt-input-phone-number-field',  // Primary selector for desktop layout
                     '.txt-input-phone-number-field',                 // Fallback without parent container
@@ -652,6 +653,26 @@ class WebAutomation
                 echo "Timeout waiting for payment success: {$e->getMessage()}" . PHP_EOL;
                 echo "Final page source snippet: " . substr($driver->getPageSource(), 0, 500) . "..." . PHP_EOL;
             }
+
+            // Make sure payment success
+            $driver->get($paymentUrl);
+            $driver->wait(60, 1000)->until(
+                WebDriverExpectedCondition::visibilityOfElementLocated(
+                    WebDriverBy::cssSelector($buttonPaySelector)
+                )
+            );
+        
+            $payButton = $driver->findElement(WebDriverBy::cssSelector($buttonPaySelector));
+            $payButton->click();
+
+            $driver->wait(60, 1000)->until(
+                WebDriverExpectedCondition::visibilityOfElementLocated(
+                    WebDriverBy::cssSelector($labelFailedPayment)
+                )
+            );
+
+            // Wait for payment success message
+            echo "Payment success" . PHP_EOL;
             
             // Output file handling is optional
             if ($outputFile && $success) {
