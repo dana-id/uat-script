@@ -197,8 +197,11 @@ func RetryTest(t *testing.T, attempts int, delay time.Duration, testFunc func() 
 //	GenerateFormattedDate(-1800, 7) // 30 minutes ago: "2025-09-10T14:00:15+07:00"
 //	GenerateFormattedDate(0, -5)    // Current time with EST timezone: "2025-09-10T14:30:15-05:00"
 func GenerateFormattedDate(offsetSeconds int, timezoneOffset int) string {
-	// Create date with offset seconds applied
-	targetTime := time.Now().Add(time.Duration(offsetSeconds) * time.Second)
+	// Indonesia timezone (WIB = UTC+7)
+	indonesiaLocation := time.FixedZone("WIB", 7*60*60)
+
+	// Create date with offset seconds applied using Indonesia timezone
+	targetTime := time.Now().In(indonesiaLocation).Add(time.Duration(offsetSeconds) * time.Second)
 
 	// Create timezone offset
 	var offsetSign string
