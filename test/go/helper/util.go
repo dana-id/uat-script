@@ -120,6 +120,10 @@ func RetryOnInconsistentRequest(apiCall func() (interface{}, error), maxAttempts
 		lastErr = err
 		break
 	}
+	// Return empty string instead of nil to prevent panic in type assertion
+	if lastErr != nil {
+		return "", lastErr
+	}
 	return nil, lastErr
 }
 

@@ -3,6 +3,7 @@ package payment_gateway_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -678,6 +679,10 @@ func createTestOrderInit() (string, string, error) {
 		return partnerReferenceNo, nil
 	}, 3, 2*time.Second)
 	if err != nil {
+		return "", "", err
+	}
+	if result == nil {
+		return "", "", fmt.Errorf("result is nil from RetryOnInconsistentRequest")
 	}
 	return result.(string), webRedirectUrl, nil
 }

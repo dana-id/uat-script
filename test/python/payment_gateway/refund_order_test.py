@@ -54,7 +54,7 @@ def create_test_order_init():
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = generate_partner_reference_no()
     json_dict["merchantId"] = merchant_id
-    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=3600)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
