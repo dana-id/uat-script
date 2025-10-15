@@ -29,7 +29,7 @@ async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=No
     inputPin = ".txt-input-pin-field"
     buttonPay = "button.btn-pay"
     endpointSuccess = "**/v1/test"
-    textAlreadyPaid = "//*[contains(text(),'order is already paid.')]"
+    textFailedPayment = ".lbl-failed-payment"
 
     def log(msg):
         if show_log:
@@ -64,10 +64,16 @@ async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=No
         
         log('Waiting for payment button...')
         log('Clicking Pay button...')
+        await page.wait_for_selector(buttonPay, timeout=30000)
         await page.locator(buttonPay).click()
-        await page.wait_for_url(endpointSuccess)
+        
+        log('Waiting for payment success...')
+        await page.goto(redirectUrlPayment)
+        await page.wait_for_selector(buttonPay, timeout=30000)
+        await page.locator(buttonPay).click()
+        await page.wait_for_selector(textFailedPayment, timeout=30000)
         await browser.close()
-        log('Browser closed')
+        log('Payment automation completed, browser closed')
 
 if __name__ == '__main__':
     code = asyncio.run(automate_payment_pg())
