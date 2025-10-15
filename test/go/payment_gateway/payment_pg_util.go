@@ -3,6 +3,7 @@ package payment_gateway
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/playwright-community/playwright-go"
 )
@@ -41,6 +42,7 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 	if err != nil {
 		log.Fatalf("could not create page: %v", err)
 	}
+	print("Redirect URL:", redirectUrl, "\n")
 
 	if _, err = page.Goto(redirectUrl); err != nil {
 		log.Fatalf("could not goto: %v", err)
@@ -51,7 +53,8 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 	buttonSubmitPhoneNumber := ".agreement__button>.btn-continue"
 	inputPin := ".txt-input-pin-field"
 	buttonPay := ".btn.btn-primary"
-	urlSuccessPaid := "**/v1/test"
+	textFailedPaid := "//*[contains(@class,'lbl-failed')]"
+	textSuccess := "//*[contains(@class,'lbl-success')]"
 
 	// Wait for the phone number input to be visible
 	page.Locator(inputPhoneNumber).WaitFor()
@@ -99,9 +102,21 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 	}
 
 	page.Locator(buttonPay).Click()
-	if err := page.WaitForURL(urlSuccessPaid); err != nil {
-		return fmt.Errorf("payment failed: %w", err)
+	page.Locator(textSuccess).WaitFor()
+	// Wait for 5 seconds
+	time.Sleep(5 * time.Second)
+	if _, err = page.Goto(redirectUrl); err != nil {
+		log.Fatalf("could not goto: %v", err)
 	}
+
+	// Wait for the pay button to be visible
+	page.Locator(buttonPay).WaitFor()
+	if err != nil || countButtonPay == 0 {
+		return fmt.Errorf("error: DANA payment option not found or button not available")
+	}
+	page.Locator(buttonPay).Click()
+	page.Locator(textFailedPaid).WaitFor()
+
 	fmt.Println("Payment successful!")
 	return nil
 }

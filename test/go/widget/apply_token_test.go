@@ -26,10 +26,18 @@ func TestApplyTokenSuccess(t *testing.T) {
 		helper.TestConfig.PhoneNumber,
 		helper.TestConfig.PIN,
 	)
+
 	authCode, _ := widget_helper.GetAuthCode(
 		helper.TestConfig.PhoneNumber,
 		helper.TestConfig.PIN,
 		redirectUrlAuthCode)
+
+	if authCode == "" {
+		widget_helper.SetManualAuthCode(
+			helper.TestConfig.PhoneNumber,
+			helper.TestConfig.PIN,
+		)
+	}
 
 	// Get the request data from JSON
 	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)

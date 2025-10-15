@@ -91,7 +91,6 @@ func createOrderCancelQuery() (string, error) {
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
