@@ -73,15 +73,15 @@ run_go_runner(){
 
                 if [ "$found_in_all" = true ]; then
                     # Found files in all directories - run them separately
-                    echo "\033[36mFound matching files in all directories, running separately:\033[0m"
+                    echo "Found matching files in all directories, running separately:"
                     
                     # Display files for each business type
                     for business in $business_types; do
                         eval "files=\$${business}_files"
                         if [ -n "$files" ]; then
-                            echo "\033[36m$(echo $business | tr '_' ' ' | sed 's/\b\w/\U&/g') files:\033[0m"
+                            echo "$(echo $business | tr '_' ' ' | sed 's/\b\w/\U&/g') files:"
                             for f in $files; do
-                                echo "  \033[33m- $f\033[0m"
+                                echo "  - $f"
                             done
                         fi
                     done
@@ -96,14 +96,14 @@ run_go_runner(){
                             temp_file="/tmp/${business}_test_output_$$.txt"
                             temp_files="$temp_files $temp_file"
                             
-                            echo "\n\033[36m=== Running $business_name Tests ===\033[0m"
+                            echo "\n=== Running $business_name Tests ==="
                             go test -v $files 2>&1 | tee $temp_file | awk '{
-                                if ($0 ~ /=== RUN/) {print "\n\033[36m" $0 "\033[0m"}
-                                else if ($0 ~ /--- PASS/) {print "\033[32m" $0 "\033[0m"}
-                                else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
-                                else if ($0 ~ /--- SKIP/) {print "\033[33m" $0 "\033[0m"}
-                                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 "\033[0m"}
-                                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 "\033[0m"}
+                                if ($0 ~ /=== RUN/) {print "\n" $0 ""}
+                                else if ($0 ~ /--- PASS/) {print "" $0 ""}
+                                else if ($0 ~ /--- FAIL/) {print "" $0 ""}
+                                else if ($0 ~ /--- SKIP/) {print "" $0 ""}
+                                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 ""}
+                                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 ""}
                                 else {print $0}
                             }'
                             exit_codes="$exit_codes $?"
@@ -129,11 +129,11 @@ run_go_runner(){
                     
                     total_tests=$((total_passed + total_failed + total_skipped))
                     
-                    echo "\n\033[1;36m=== Combined Test Results Summary ===\033[0m"
-                    echo "\033[32mPassed: $total_passed\033[0m"
-                    echo "\033[31mFailed: $total_failed\033[0m"
-                    echo "\033[33mSkipped: $total_skipped\033[0m"
-                    echo "\033[1;36mTotal: $total_tests\033[0m"
+                    echo "=== Combined Test Results Summary ==="
+                    echo "Passed: $total_passed"
+                    echo "Failed: $total_failed"
+                    echo "Skipped: $total_skipped"
+                    echo "Total: $total_tests"
                     
                     # Cleanup
                     rm -f $temp_files
@@ -151,8 +151,8 @@ run_go_runner(){
                         fi
                     done
 
-                    echo "\n\033[1;36mTotal scenarios run: $total\033[0m"
-                    echo "\n\033[1;35m==== Go Test Results Summary Complete ====\033[0m"
+                    echo "Total scenarios run: $total"
+                    echo "==== Go Test Results Summary Complete ===="
                     
                     # Exit with error if any test run failed
                     for exit_code in $exit_codes; do
@@ -170,23 +170,23 @@ run_go_runner(){
             # Only run normal single-directory test if we didn't handle multi-directory case above
             if [ "$found_in_all" != true ]; then
             if [ -z "$found_files" ]; then
-                echo "\033[31mERROR: No Go test files were found containing file pattern: $module\033[0m" >&2
+                echo "ERROR: No Go test files were found containing file pattern: $module" >&2
                 exit 1
             fi
-            echo "\033[36mScenarios (test files) to run:\033[0m"
+            echo "Scenarios (test files) to run:"
             for f in $found_files; do
-                echo "  \033[33m- $f\033[0m"
+                echo "  - $f"
             done
             
             # Run tests and capture results
-            echo "\033[36mRunning tests...\033[0m"
+            echo "Running tests..."
             go test -v $found_files 2>&1 | tee /tmp/test_output_$$.txt | awk '{
-                if ($0 ~ /=== RUN/) {print "\n\033[36m" $0 "\033[0m"}
-                else if ($0 ~ /--- PASS/) {print "\033[32m" $0 "\033[0m"}
-                else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
-                else if ($0 ~ /--- SKIP/) {print "\033[33m" $0 "\033[0m"}
-                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 "\033[0m"}
-                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 "\033[0m"}
+                if ($0 ~ /=== RUN/) {print "\n" $0 ""}
+                else if ($0 ~ /--- PASS/) {print "" $0 ""}
+                else if ($0 ~ /--- FAIL/) {print "" $0 ""}
+                else if ($0 ~ /--- SKIP/) {print "" $0 ""}
+                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 ""}
+                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 ""}
                 else {print $0}
             }'
             test_exit_code=$?
@@ -198,18 +198,18 @@ run_go_runner(){
                 skipped=$(grep "^--- SKIP" /tmp/test_output_$$.txt | wc -l | tr -d ' ')
                 total=$((passed + failed + skipped))
                 
-                echo "\n\033[1;36m=== Test Results Summary ===\033[0m"
-                echo "\033[32mPassed: $passed\033[0m"
-                echo "\033[31mFailed: $failed\033[0m"
-                echo "\033[33mSkipped: $skipped\033[0m"
-                echo "\033[1;36mTotal: $total\033[0m"
+                echo "=== Test Results Summary ==="
+                echo "Passed: $passed"
+                echo "Failed: $failed"
+                echo "Skipped: $skipped"
+                echo "Total: $total"
                 
                 rm -f /tmp/test_output_$$.txt
             fi
             fi
             total=$(go test -list . $found_files | grep -c 'Test')
-            echo "\n\033[1;36mTotal scenarios run: $total\033[0m"
-            echo "\n\033[1;35m==== Go Test Results Summary Complete ====\033[0m"
+            echo "Total scenarios run: $total"
+            echo "==== Go Test Results Summary Complete ===="
             exit $test_exit_code
         else
             # Run all tests from all discovered business directories
@@ -226,12 +226,12 @@ run_go_runner(){
             
             echo "Running all Go tests from discovered directories: $(echo $test_dirs | sed 's|./||g' | sed 's|/\.\.\.||g')..."
             go test -v $test_dirs 2>&1 | tee /tmp/all_test_output_$$.txt | awk '{
-                if ($0 ~ /=== RUN/) {print "\n\033[36m" $0 "\033[0m"}
-                else if ($0 ~ /--- PASS/) {print "\033[32m" $0 "\033[0m"}
-                else if ($0 ~ /--- FAIL/) {print "\033[31m" $0 "\033[0m"}
-                else if ($0 ~ /--- SKIP/) {print "\033[33m" $0 "\033[0m"}
-                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 "\033[0m"}
-                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 "\033[0m"}
+                if ($0 ~ /=== RUN/) {print "\n" $0 ""}
+                else if ($0 ~ /--- PASS/) {print "" $0 ""}
+                else if ($0 ~ /--- FAIL/) {print "" $0 ""}
+                else if ($0 ~ /--- SKIP/) {print "" $0 ""}
+                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 ""}
+                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 ""}
                 else {print $0}
             }'
             test_exit_code=$?
@@ -243,17 +243,17 @@ run_go_runner(){
                 skipped=$(grep "^--- SKIP" /tmp/all_test_output_$$.txt | wc -l | tr -d ' ')
                 total=$((passed + failed + skipped))
                 
-                echo "\n\033[1;36m=== Test Results Summary ===\033[0m"
-                echo "\033[32mPassed: $passed\033[0m"
-                echo "\033[31mFailed: $failed\033[0m"
-                echo "\033[33mSkipped: $skipped\033[0m"
-                echo "\033[1;36mTotal: $total\033[0m"
+                echo "=== Test Results Summary ==="
+                echo "Passed: $passed"
+                echo "Failed: $failed"
+                echo "Skipped: $skipped"
+                echo "Total: $total"
                 
                 rm -f /tmp/all_test_output_$$.txt
             fi
             total=$(go test -list . $test_dirs | grep -c 'Test')
-            echo "\n\033[1;36mTotal scenarios run: $total\033[0m"
-            echo "\n\033[1;35m==== Go Test Results Summary Complete ====\033[0m"
+            echo "Total scenarios run: $total"
+            echo "==== Go Test Results Summary Complete ===="
             exit $test_exit_code
         fi
     else
