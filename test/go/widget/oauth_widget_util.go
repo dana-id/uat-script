@@ -99,83 +99,372 @@ func GetRedirectOauthUrl(phoneNumber, pin string) (string, error) {
 }
 
 func GetAuthCode(phoneNumber, pin, redirectUrl string) (string, error) {
-	// Create a custom allocator with non-headless mode
-	log.Println("Starting OAuth automation...")
+	// Start OAuth automation with mobile browser emulation
+	log.Println("Starting OAuth automation with mobile device emulation...")
 
 	if redirectUrl == "" {
-		return "", fmt.Errorf("error: no redirect URL provided")
+		return "", fmt.Errorf("Error: No redirect URL provided")
 	}
 
 	// Install playwright if it's not already installed
 	err := playwright.Install()
 	if err != nil {
-		return "", fmt.Errorf("could not install playwright: %w", err)
+		return "", fmt.Errorf("Could not install playwright: %w", err)
 	}
 
 	pw, err := playwright.Run()
 	if err != nil {
-		return "", fmt.Errorf("could not start playwright: %v", err)
+		return "", fmt.Errorf("Could not start playwright: %v", err)
 	}
 
-	// Launch browser
+	// Launch browser with mobile-first approach (iPhone 12 emulation)
+	log.Println("Launching mobile browser (iPhone 12 emulation)...")
 	browserType := pw.Chromium
 	browser, err := browserType.Launch(playwright.BrowserTypeLaunchOptions{
 		Headless: playwright.Bool(true),
+		Args: []string{
+			"--disable-web-security",
+			"--disable-features=IsolateOrigins",
+			"--disable-site-isolation-trials",
+			"--disable-features=BlockInsecurePrivateNetworkRequests",
+			"--disable-blink-features=AutomationControlled",
+			"--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
+		},
 	})
 	if err != nil {
-		return "", fmt.Errorf("could not launch browser: %w", err)
+		return "", fmt.Errorf("Could not launch browser: %w", err)
 	}
 
 	defer browser.Close()
 
-	page, err := browser.NewPage()
+	// Create mobile context with Jakarta location
+	log.Println("Setting up mobile context (Jakarta, Indonesia)...")
+	context, err := browser.NewContext(playwright.BrowserNewContextOptions{
+		Viewport:  &playwright.Size{Width: 390, Height: 844}, // iPhone 12 dimensions
+		UserAgent: playwright.String("Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"),
+		Locale:    playwright.String("id-ID"),
+		Geolocation: &playwright.Geolocation{
+			Longitude: 106.8456, // Jakarta coordinates
+			Latitude:  -6.2088,
+		},
+		Permissions:       []string{"geolocation"},
+		IsMobile:          playwright.Bool(true),
+		HasTouch:          playwright.Bool(true),
+		DeviceScaleFactor: playwright.Float(3.0), // iPhone retina display
+	})
 	if err != nil {
-		log.Fatalf("could not create page: %v", err)
+		return "", fmt.Errorf("Could not create mobile context: %w", err)
+	}
+	defer context.Close()
+
+	page, err := context.NewPage()
+	if err != nil {
+		log.Fatalf("Could not create page: %v", err)
 	}
 
-	print("Redirect URL:", redirectUrl, "\n")
+	log.Printf("Navigating to OAuth URL: %s", redirectUrl)
 
 	if _, err = page.Goto(redirectUrl); err != nil {
-		log.Fatalf("could not goto: %v", err)
+		log.Fatalf("Could not navigate to URL: %v", err)
 	}
 
-	// Elements for DANA payment
-	inputPhoneNumber := ".desktop-input>.txt-input-phone-number-field"
-	buttonSubmitPhoneNumber := ".agreement__button>.btn-continue"
-	inputPin := ".txt-input-pin-field"
+	// Start OAuth flow automation
 	urlRedirectOauth := os.Getenv("REDIRECT_URL_OAUTH")
 
-	// Wait for the phone number input to be visible
-	page.Locator(inputPhoneNumber).WaitFor()
+	// Wait for page to load completely
+	log.Println("Waiting for page to load...")
+	time.Sleep(2 * time.Second)
 
-	// Fill in the phone number and pin
-	page.Locator(inputPhoneNumber).Fill(phoneNumber)
-	page.Locator(buttonSubmitPhoneNumber).Click()
-	page.Locator(inputPin).Fill(pin)
-	time.Sleep(2 * time.Second) // Wait for 2 seconds to ensure PIN is processed
+	// Fill phone number using mobile-optimized JavaScript
+	log.Printf("Filling phone number: %s", phoneNumber)
+	phoneInputFilled, err := page.Evaluate(`
+		(mobile) => {
+			const inputs = document.querySelectorAll('input');
+			for (const input of inputs) {
+				if (input.type === 'tel' ||
+					input.placeholder === '12312345678' ||
+					input.maxLength === 13 ||
+					input.className.includes('phone-number')) {
+					input.value = mobile;
+					input.dispatchEvent(new Event('input', { bubbles: true }));
+					return { filled: true, message: 'Found and filled mobile number input' };
+				}
+			}
+			return { filled: false, message: 'No suitable mobile number input found' };
+		}
+	`, phoneNumber)
 
-	oauth := page.URL()
-	if oauth == "" {
-		return "", fmt.Errorf("error: could not retrieve OAuth URL")
+	if err != nil {
+		log.Printf("Phone input failed: %v", err)
+	} else {
+		log.Printf("Phone input: %v", phoneInputFilled)
 	}
 
-	// Extract authCode or auth_code using proper URL parsing
+	// Find and click submit button
+	log.Println("Looking for submit button...")
+	submitButtonClicked, err := page.Evaluate(`
+		() => {
+			const buttons = document.querySelectorAll('button');
+			for (const button of buttons) {
+				if (button.type === 'submit' ||
+					button.innerText.includes('Next') ||
+					button.innerText.includes('Continue') ||
+					button.innerText.includes('Submit') ||
+					button.innerText.includes('Lanjutkan')) {
+					button.click();
+					return { clicked: true, message: 'Found and clicked button via JS evaluation' };
+				}
+			}
+			return { clicked: false, message: 'No suitable submit button found' };
+		}
+	`)
+
+	if err != nil {
+		log.Printf("Submit button failed: %v", err)
+	} else {
+		log.Printf("Submit button: %v", submitButtonClicked)
+	}
+
+	time.Sleep(2 * time.Second)
+	log.Println("Waiting for PIN input page...")
+
+	// Look for additional continue button
+	_, err = page.Evaluate(`
+		() => {
+			const continueBtn = document.querySelector('button.btn-continue.fs-unmask.btn.btn-primary');
+			if (continueBtn) {
+				continueBtn.click();
+				return { clicked: true, message: 'Found another continue button' };
+			}
+			return { clicked: false, message: 'No additional continue button found' };
+		}
+	`)
+
+	time.Sleep(1500 * time.Millisecond)
+
+	// Fill PIN using mobile-optimized JavaScript
+	log.Printf("Filling PIN: %s", pin)
+	pinInputResult, err := page.Evaluate(`
+		(pinCode) => {
+			// First try specific PIN input field
+			const specificPinInput = document.querySelector('.txt-input-pin-field');
+			if (specificPinInput) {
+				specificPinInput.value = pinCode;
+				specificPinInput.dispatchEvent(new Event('input', { bubbles: true }));
+				specificPinInput.dispatchEvent(new Event('change', { bubbles: true }));
+				return { success: true, method: 'specific', message: 'Found specific PIN input field: .txt-input-pin-field' };
+			}
+
+			const inputs = document.querySelectorAll('input');
+
+			// Approach 1: Look for an input with maxlength=6 (full PIN)
+			const singlePinInput = Array.from(inputs).find(input =>
+				input.maxLength === 6 &&
+				(input.type === 'text' || input.type === 'tel' || input.type === 'number' || input.inputMode === 'numeric')
+			);
+
+			if (singlePinInput) {
+				singlePinInput.value = pinCode;
+				singlePinInput.dispatchEvent(new Event('input', { bubbles: true }));
+				singlePinInput.dispatchEvent(new Event('change', { bubbles: true }));
+				return { success: true, method: 'single', message: 'Found single PIN input field with maxLength=6' };
+			}
+
+			// Approach 2: Look for multiple inputs with common PIN input characteristics
+			const pinInputs = Array.from(inputs).filter(input =>
+				input.maxLength === 1 ||
+				input.type === 'password' ||
+				input.className.includes('pin')
+			);
+
+			if (pinInputs.length >= pinCode.length) {
+				for (let i = 0; i < pinCode.length; i++) {
+					pinInputs[i].value = pinCode.charAt(i);
+					pinInputs[i].dispatchEvent(new Event('input', { bubbles: true }));
+					pinInputs[i].dispatchEvent(new Event('change', { bubbles: true }));
+				}
+				return { success: true, method: 'multi', message: 'Found ' + pinInputs.length + ' PIN inputs via JS' };
+			}
+
+			return { success: false, method: 'none', message: 'Could not find any suitable PIN input field' };
+		}
+	`, pin)
+
+	if err != nil {
+		log.Printf("PIN input failed: %v", err)
+	} else {
+		log.Printf("PIN input: %v", pinInputResult)
+	}
+
+	// Look for confirmation/continue buttons
+	log.Println("Looking for confirmation buttons...")
+
+	buttonClicked, err := page.Evaluate(`
+		() => {
+			const allButtons = document.querySelectorAll('button');
+			let continueButton = null;
+			let backButton = null;
+
+			allButtons.forEach((button) => {
+				const buttonText = button.innerText.trim().toLowerCase();
+				// Identify buttons by text or class
+				if (buttonText.includes('lanjut') ||
+					buttonText.includes('continue') ||
+					buttonText.includes('submit') ||
+					buttonText.includes('confirm') ||
+					buttonText.includes('next') ||
+					button.className.includes('btn-continue') ||
+					button.className.includes('btn-submit') ||
+					button.className.includes('btn-confirm')) {
+					continueButton = button;
+				}
+
+				// Avoid buttons with text 'kembali'
+				if (buttonText.includes('kembali') ||
+					buttonText.includes('back') ||
+					button.className.includes('btn-back')) {
+					backButton = button;
+				}
+			});
+
+			// Prioritize continue button if found
+			if (continueButton) {
+				continueButton.click();
+				return { clicked: true, message: 'Found continue button, clicked it: ' + continueButton.innerText };
+			}
+
+			return { clicked: false, message: 'No confirm/continue button found' };
+		}
+	`)
+
+	if err != nil {
+		log.Printf("Continue button search failed: %v", err)
+	} else {
+		log.Printf("Continue button: %v", buttonClicked)
+	}
+
+	time.Sleep(500 * time.Millisecond)
+
+	// Wait for redirect to callback URL - this is where we get the auth code
+	log.Println("Waiting for OAuth redirect to callback URL...")
+
+	timeout := 30 * time.Second
+	start := time.Now()
+	lastURL := ""
+	stuckCounter := 0
+
+	for time.Since(start) < timeout {
+		// Get current URL safely
+		currentURL := page.URL()
+
+		// Check if we have the redirect URL with auth code
+		if strings.Contains(currentURL, urlRedirectOauth) &&
+			(strings.Contains(currentURL, "authCode=") || strings.Contains(currentURL, "auth_code=")) {
+			log.Printf("SUCCESS! Found redirect URL with auth code")
+			log.Printf("Final redirect URL: %s", currentURL)
+
+			// Extract and return auth code
+			authCode, err := extractAuthCodeFromURL(currentURL)
+			if err != nil {
+				return "", fmt.Errorf("failed to extract auth code from URL %s: %w", currentURL, err)
+			}
+			log.Printf("Successfully extracted auth code: %s", authCode)
+			return authCode, nil
+		}
+
+		// Check if we're stuck on the same URL and try to help with navigation
+		if currentURL == lastURL {
+			stuckCounter++
+			if stuckCounter > 6 { // After 3 seconds of being stuck
+				log.Println("Page seems stuck, attempting navigation assistance...")
+
+				// Try to click continue buttons using JavaScript (safer approach)
+				buttonClicked, err := page.Evaluate(`
+					() => {
+						const buttonSelectors = [
+							'.btn-continue',
+							'.btn-submit', 
+							'.btn-confirm',
+							'button[type="submit"]',
+							'.submit-button',
+							'[data-testid="continue-btn"]',
+							'[data-testid="submit-btn"]'
+						];
+						
+						for (const selector of buttonSelectors) {
+							const buttons = document.querySelectorAll(selector);
+							for (const button of buttons) {
+								if (button.offsetParent !== null && !button.disabled) {
+									button.click();
+									return 'clicked_' + selector;
+								}
+							}
+						}
+						
+						// Also try buttons with specific text content
+						const allButtons = document.querySelectorAll('button');
+						for (const button of allButtons) {
+							if (button.offsetParent !== null && !button.disabled) {
+								const text = button.textContent?.toLowerCase() || '';
+								if (text.includes('lanjut') || text.includes('continue') || 
+									text.includes('konfirm') || text.includes('confirm') ||
+									text.includes('next') || text.includes('submit')) {
+									button.click();
+									return 'clicked_text_button';
+								}
+							}
+						}
+						
+						return 'no_buttons_found';
+					}
+				`)
+
+				if err != nil {
+					log.Printf("Navigation assistance failed: %v", err)
+				} else if buttonClicked != "no_buttons_found" {
+					log.Printf("Clicked button to help navigation: %v", buttonClicked)
+					time.Sleep(2 * time.Second) // Wait longer after clicking
+				}
+
+				stuckCounter = 0 // Reset counter
+			}
+		} else {
+			stuckCounter = 0
+			lastURL = currentURL
+		}
+
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	// If we reach here, we timed out without finding the auth code
+	oauth := page.URL()
+	log.Printf("Timeout reached after 30 seconds")
+	log.Printf("Final URL when timeout occurred: %s", oauth)
+
+	if oauth == "" {
+		return "", fmt.Errorf("Error: Could not retrieve OAuth URL")
+	}
+
+	// Try to extract auth code from final URL as fallback
 	authCode, err := extractAuthCodeFromURL(oauth)
 	if err != nil {
 		// Fallback to string parsing if URL parsing fails
-		oauth = strings.Replace(oauth, urlRedirectOauth, "", 1) // Remove unwanted prefix if present
+		log.Printf("URL parsing failed, trying alternative extraction: %v", err)
+
+		// Clean the URL first
+		cleanedURL := strings.Replace(oauth, urlRedirectOauth, "", 1)
 
 		// First try to find "authCode="
-		if strings.Contains(oauth, "authCode=") {
-			parts := strings.Split(oauth, "authCode=")
+		if strings.Contains(cleanedURL, "authCode=") {
+			parts := strings.Split(cleanedURL, "authCode=")
 			if len(parts) >= 2 {
 				authCode = strings.Split(parts[1], "&")[0]
 			}
 		}
 
 		// If authCode not found, try "auth_code="
-		if authCode == "" && strings.Contains(oauth, "auth_code=") {
-			parts := strings.Split(oauth, "auth_code=")
+		if authCode == "" && strings.Contains(cleanedURL, "auth_code=") {
+			parts := strings.Split(cleanedURL, "auth_code=")
 			if len(parts) >= 2 {
 				authCode = strings.Split(parts[1], "&")[0]
 			}
@@ -183,13 +472,11 @@ func GetAuthCode(phoneNumber, pin, redirectUrl string) (string, error) {
 
 		// Check if we found any auth code
 		if authCode == "" {
-			return "", fmt.Errorf("error: neither authCode nor auth_code found in URL: %s", oauth)
+			return "", fmt.Errorf("Timeout: Auth code not found in final URL: %s", oauth)
 		}
 	}
 
-	fmt.Println("OAuth URL:", oauth)
-	fmt.Println("Auth Code:", authCode)
-
+	log.Printf("Auth code extracted from timeout URL: %s", authCode)
 	return authCode, nil
 }
 

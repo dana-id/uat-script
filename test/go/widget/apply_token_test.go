@@ -18,6 +18,8 @@ const (
 	widgetApplyTokenCase  = "ApplyToken"
 )
 
+var authCode string
+
 func TestApplyTokenSuccess(t *testing.T) {
 	helper.RetryTest(t, 3, 1, func() error {
 	caseName := "ApplyTokenSuccess"
@@ -31,13 +33,6 @@ func TestApplyTokenSuccess(t *testing.T) {
 		helper.TestConfig.PhoneNumber,
 		helper.TestConfig.PIN,
 		redirectUrlAuthCode)
-
-	if authCode == "" {
-		widget_helper.SetManualAuthCode(
-			helper.TestConfig.PhoneNumber,
-			helper.TestConfig.PIN,
-		)
-	}
 
 	// Get the request data from JSON
 	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
@@ -98,23 +93,31 @@ func TestApplyTokenSuccess(t *testing.T) {
 }
 func TestApplyTokenFailInvalidSignature(t *testing.T) {
 	caseName := "ApplyTokenFailInvalidSignature"
-
+	
+	// Get a fresh authCode for this test (don't reuse the global one as it might be consumed)
+	var localAuthCode string
 	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-		helper.TestConfig.PhoneNumber, 
+		helper.TestConfig.PhoneNumber,
 		helper.TestConfig.PIN,
 	)
-	authCode, _ := widget_helper.GetAuthCode(
-		helper.TestConfig.PhoneNumber, 
+	if err != nil {
+		t.Fatalf("Failed to get redirect OAuth URL: %v", err)
+	}
+
+	localAuthCode, err = widget_helper.GetAuthCode(
+		helper.TestConfig.PhoneNumber,
 		helper.TestConfig.PIN,
-		redirectUrlAuthCode,
-	)
+		redirectUrlAuthCode)
+	if err != nil {
+		t.Fatalf("Failed to get auth code: %v", err)
+	}
 	
 	// Get the request data from JSON
 	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
-	jsonDict["authCode"] = authCode
+	jsonDict["authCode"] = localAuthCode
 
 	// Marshal to JSON and unmarshal to widget SDK struct for type safety
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -129,7 +132,7 @@ func TestApplyTokenFailInvalidSignature(t *testing.T) {
 	}
 
 	// Create Apply Token request with Authorization Code
-	authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
+	authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", localAuthCode)
 	applyTokenRequestValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReq)
 	applyTokenRequest := &applyTokenRequestValue
 
@@ -139,8 +142,8 @@ func TestApplyTokenFailInvalidSignature(t *testing.T) {
 
 	// Set up the context and endpoint details
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/access-token/b2b2c.htm"
-	resourcePath := "/payment-gateway/v1.0/access-token/b2b2c.htm"
+	endpoint := "https://api.sandbox.dana.id/v1.0/access-token/b2b2c.htm"
+	resourcePath := "v1.0/access-token/b2b2c.htm"
 
 	// Set custom headers with invalid signature to trigger authorization error
 	customHeaders := map[string]string{
@@ -166,23 +169,33 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 	helper.RetryTest(t, 3, 1, func() error {
 		caseName := "ApplyTokenFailAuthcodeUsed"
 
+		// Get a fresh authCode for this test
+		var localAuthCode string
 		redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-			helper.TestConfig.PhoneNumber, 
+			helper.TestConfig.PhoneNumber,
 			helper.TestConfig.PIN,
 		)
-		authCode, _ := widget_helper.GetAuthCode(
-			helper.TestConfig.PhoneNumber, 
+		if err != nil {
+			t.Fatalf("Failed to get redirect OAuth URL: %v", err)
+		}
+
+		localAuthCode, err = widget_helper.GetAuthCode(
+			helper.TestConfig.PhoneNumber,
 			helper.TestConfig.PIN,
-			redirectUrlAuthCode,
-		)
-		widget_helper.GetAccessToken(authCode)
+			redirectUrlAuthCode)
+		if err != nil {
+			t.Fatalf("Failed to get auth code: %v", err)
+		}
+
+		// Use the authCode to get access token (this should consume the authCode)
+		widget_helper.GetAccessToken(localAuthCode)
 
 		// Get the request data from JSON
 		jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
 		if err != nil {
 			t.Fatalf("Failed to get request data: %v", err)
 		}
-		jsonDict["authCode"] = authCode
+		jsonDict["authCode"] = localAuthCode
 
 		// Marshal to JSON and unmarshal to widget SDK struct for type safety
 		jsonBytes, err := json.Marshal(jsonDict)
@@ -197,7 +210,7 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 		}
 
 		// Create Apply Token request with Authorization Code
-		authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
+		authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", localAuthCode)
 		applyTokenRequestValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReq)
 		applyTokenRequest := &applyTokenRequestValue
 

@@ -80,7 +80,6 @@ def test_disbursement_to_bank_unauthorized_signature():
     )
 
 @with_delay()
-@pytest.mark.skip(reason="skipped: skip because there is a mandatory input request in library")
 def test_disbursement_to_bank_missing_mandatory_field():
     case_name = "DisbursementBankMissingMandatoryField"
     json_dict = get_request(json_path_file, title_case, case_name)
