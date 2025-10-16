@@ -29,6 +29,7 @@ run_go_runner(){
     if [ -f "go.mod" ]; then
         # Update dana Go client to the latest version
         go get -u github.com/dana-id/dana-go
+        go get -u github.com/playwright-community/playwright-go
         go mod tidy
         go clean -testcache
         if [ -n "$module" ]; then
