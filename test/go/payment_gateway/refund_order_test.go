@@ -35,7 +35,7 @@ func createOrderInit() (string, string, error) {
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
-		jsonDict["validUpTo"] = helper.GenerateFormattedDate(3600, 7)
+		jsonDict["validUpTo"] = helper.GenerateFormattedDate(360, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
@@ -288,8 +288,8 @@ func TestRefundOrderDuplicateRefund(t *testing.T) {
 		ctx := context.Background()
 		helper.ApiClient.PaymentGatewayAPI.RefundOrder(ctx).RefundOrderRequest(*refundOrderRequest).Execute()
 
-		refundOrderRequest.RefundAmount.Currency = "IDR"
 		refundOrderRequest.RefundAmount.Value = "10000.00"
+		refundOrderRequest.RefundAmount.Currency = "IDR"
 		_, httpResponse, _ := helper.ApiClient.PaymentGatewayAPI.RefundOrder(ctx).RefundOrderRequest(*refundOrderRequest).Execute()
 
 		defer httpResponse.Body.Close()
