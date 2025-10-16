@@ -94,23 +94,41 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 	page.Locator(buttonSubmitPhoneNumber).Click()
 	page.Locator(inputPin).Fill(pin)
 
-	page.Locator(buttonPay).WaitFor()
+	// Wait until the buttonPay is visible and enabled (clickable)
+	err = page.Locator(buttonPay).WaitFor(playwright.LocatorWaitForOptions{
+		State:   playwright.WaitForSelectorStateVisible,
+		Timeout: playwright.Float(float64(10 * time.Second / time.Millisecond)),
+	})
+	if err != nil {
+		return fmt.Errorf("error: buttonPay not visible or clickable: %w", err)
+	}
 	countButtonPay, err := page.Locator(buttonPay).Count()
 	if err != nil || countButtonPay == 0 {
 		return fmt.Errorf("error: DANA payment option not found or button not available")
 	}
 
 	page.Locator(buttonPay).Click()
-	page.Locator(labelSuccessPayment).WaitFor()
-	// Wait for 10 seconds
-	time.Sleep(10 * time.Second)
+	// Wait until the labelSuccessPayment is visible
+	err = page.Locator(labelSuccessPayment).WaitFor(playwright.LocatorWaitForOptions{
+		State:   playwright.WaitForSelectorStateVisible,
+		Timeout: playwright.Float(float64(30 * time.Second / time.Millisecond)),
+	})
+	if err != nil {
+		return fmt.Errorf("error: labelSuccessPayment not visible: %w", err)
+	}
 
 	if _, err = page.Goto(redirectUrl); err != nil {
 		log.Fatalf("could not goto: %v", err)
 	}
-	page.Locator(buttonPay).WaitFor()
-	if err != nil || countButtonPay == 0 {
-		return fmt.Errorf("error: DANA payment option not found or button not available")
+	page.WaitForLoadState()
+
+	// Wait until the buttonPay is visible
+	err = page.Locator(buttonPay).WaitFor(playwright.LocatorWaitForOptions{
+		State:   playwright.WaitForSelectorStateVisible,
+		Timeout: playwright.Float(float64(30 * time.Second / time.Millisecond)),
+	})
+	if err != nil {
+		return fmt.Errorf("error: buttonPay not visible: %w", err)
 	}
 	page.Locator(buttonPay).Click()
 	page.Locator(labelFailedPayment).WaitFor()
