@@ -42,7 +42,7 @@ func ExecuteAPIRequestWithCustomHeaders(
 	dataForSnapStr = dst.String()
 
 	// Generate headers with signature
-	utils.SetSnapHeaders(headerParams, apiKey, dataForSnapStr, method, resourcePath)
+	utils.SetSnapHeaders(headerParams, apiKey, dataForSnapStr, method, resourcePath, true)
 
 	// Prepare final headers
 	headers := map[string]string{
