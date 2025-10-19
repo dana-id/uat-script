@@ -18,8 +18,6 @@ const (
 	widgetApplyTokenCase  = "ApplyToken"
 )
 
-var authCode string
-
 func TestApplyTokenSuccess(t *testing.T) {
 	helper.RetryTest(t, 3, 1, func() error {
 	caseName := "ApplyTokenSuccess"
@@ -93,7 +91,6 @@ func TestApplyTokenSuccess(t *testing.T) {
 }
 func TestApplyTokenFailInvalidSignature(t *testing.T) {
 	caseName := "ApplyTokenFailInvalidSignature"
-	
 	// Get a fresh authCode for this test (don't reuse the global one as it might be consumed)
 	var authCode string
 	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
