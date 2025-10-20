@@ -230,7 +230,7 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 			}
 		} else {
 			httpResponse.Body.Close()
-			t.Fatal("Expected error but got success response")
+			t.Fatal("Expected error but got successful response")
 		}
 		return nil
 	})
