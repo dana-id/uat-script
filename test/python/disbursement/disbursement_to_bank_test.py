@@ -23,6 +23,7 @@ configuration = SnapConfiguration(
         ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
         DANA_ENV=Env.SANDBOX,
+        X_DEBUG="true",
         CLIENT_SECRET=os.environ.get("CLIENT_SECRET"),
     )
 )

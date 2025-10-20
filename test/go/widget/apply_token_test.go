@@ -15,79 +15,79 @@ import (
 )
 
 const (
-	widgetApplyTokenCase  = "ApplyToken"
+	widgetApplyTokenCase = "ApplyToken"
 )
 
 func TestApplyTokenSuccess(t *testing.T) {
 	helper.RetryTest(t, 3, 1, func() error {
-	caseName := "ApplyTokenSuccess"
+		caseName := "ApplyTokenSuccess"
 
-	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-		helper.TestConfig.PhoneNumber,
-		helper.TestConfig.PIN,
-	)
+		redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
+			helper.TestConfig.PhoneNumber,
+			helper.TestConfig.PIN,
+		)
 
-	authCode, _ := widget_helper.GetAuthCode(
-		helper.TestConfig.PhoneNumber,
-		helper.TestConfig.PIN,
-		redirectUrlAuthCode)
+		authCode, _ := widget_helper.GetAuthCode(
+			helper.TestConfig.PhoneNumber,
+			helper.TestConfig.PIN,
+			redirectUrlAuthCode)
 
-	// Get the request data from JSON
-	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
-	if err != nil {
-		t.Fatalf("Failed to get request data: %v", err)
-	}
-	jsonDict["authCode"] = authCode
+		// Get the request data from JSON
+		jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
+		if err != nil {
+			t.Fatalf("Failed to get request data: %v", err)
+		}
+		jsonDict["authCode"] = authCode
 
-	// Marshal to JSON and unmarshal to widget SDK struct for type safety
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
+		// Marshal to JSON and unmarshal to widget SDK struct for type safety
+		jsonBytes, err := json.Marshal(jsonDict)
+		if err != nil {
+			t.Fatalf("Failed to marshal JSON: %v", err)
+		}
 
-	applyTokenAuthorizationCodeRequest := &widget.ApplyTokenAuthorizationCodeRequest{}
-	err = json.Unmarshal(jsonBytes, applyTokenAuthorizationCodeRequest)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
+		applyTokenAuthorizationCodeRequest := &widget.ApplyTokenAuthorizationCodeRequest{}
+		err = json.Unmarshal(jsonBytes, applyTokenAuthorizationCodeRequest)
+		if err != nil {
+			t.Fatalf("Failed to unmarshal JSON: %v", err)
+		}
 
-	// Create Apply Token request with Authorization Code
-	authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
-	applyTokenRequestValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReq)
-	applyTokenRequest := &applyTokenRequestValue
+		// Create Apply Token request with Authorization Code
+		authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
+		applyTokenRequestValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReq)
+		applyTokenRequest := &applyTokenRequestValue
 
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
+		if err != nil {
+			t.Fatalf("Failed to unmarshal JSON: %v", err)
+		}
 
-	// Execute the SDK API call with success expectation
-	ctx := context.Background()
+		// Execute the SDK API call with success expectation
+		ctx := context.Background()
 
-	// Make the API call using the Widget SDK
-	apiResponse, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(*applyTokenRequest).Execute()
-	if err != nil {
-		t.Fatalf("API request failed: %v", err)
-	}
-	defer httpResponse.Body.Close()
+		// Make the API call using the Widget SDK
+		apiResponse, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(*applyTokenRequest).Execute()
+		if err != nil {
+			t.Fatalf("API request failed: %v", err)
+		}
+		defer httpResponse.Body.Close()
 
-	// Convert the response to JSON for assertion
-	responseJSON, err := apiResponse.MarshalJSON()
-	if err != nil {
-		t.Fatalf("Failed to convert response to JSON: %v", err)
-	}
+		// Convert the response to JSON for assertion
+		responseJSON, err := apiResponse.MarshalJSON()
+		if err != nil {
+			t.Fatalf("Failed to convert response to JSON: %v", err)
+		}
 
-	err = helper.AssertResponse(
-		helper.TestConfig.JsonWidgetPath,
-		widgetApplyTokenCase,
-		caseName,
-		string(responseJSON),
-		nil,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return nil
-})
+		err = helper.AssertResponse(
+			helper.TestConfig.JsonWidgetPath,
+			widgetApplyTokenCase,
+			caseName,
+			string(responseJSON),
+			nil,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return nil
+	})
 }
 func TestApplyTokenFailInvalidSignature(t *testing.T) {
 	caseName := "ApplyTokenFailInvalidSignature"
@@ -108,7 +108,7 @@ func TestApplyTokenFailInvalidSignature(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get auth code: %v", err)
 	}
-	
+
 	// Get the request data from JSON
 	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
 	if err != nil {
