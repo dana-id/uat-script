@@ -107,6 +107,8 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 		return fmt.Errorf("error: buttonPay not visible: %w", err)
 	}
 
+	time.Sleep(5 * time.Second)
+
 	page.Locator(buttonPay).Click()
 	log.Println("Clicked Pay button")
 
