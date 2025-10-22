@@ -183,7 +183,7 @@ func TestQueryPaymentCreatedOrder(t *testing.T) {
 }
 
 func TestQueryPaymentPaidOrder(t *testing.T) {
-	helper.RetryTest(t, 3, 1, func() error {
+	helper.RetryTest(t, 3, 7*time.Second, func() error {
 		// Create an order first
 		partnerReferenceNo, err := createOrderPaidQuery(helper.TestConfig.PhoneNumber, helper.TestConfig.PIN)
 		if err != nil {

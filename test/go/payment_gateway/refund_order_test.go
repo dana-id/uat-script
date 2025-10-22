@@ -142,6 +142,8 @@ func TestRefundOrderInProgress(t *testing.T) {
 }
 
 func TestRefundOrderValid(t *testing.T) {
+	// Prevent parallel execution due to createPaidOrder using Playwright
+	t.Setenv("FORCE_SEQUENTIAL", "true")
 	helper.RetryTest(t, 3, 1, func() error {
 		// Create a paid order to get the original partner reference number
 		partnerReferenceNo, err := createPaidOrder(helper.TestConfig.PhoneNumber, helper.TestConfig.PIN)
@@ -252,6 +254,8 @@ func TestRefundOrderNotPaid(t *testing.T) {
 }
 
 func TestRefundOrderDuplicateRefund(t *testing.T) {
+	// Prevent parallel execution due to createPaidOrder using Playwright
+	t.Setenv("FORCE_SEQUENTIAL", "true")
 	helper.RetryTest(t, 3, 1, func() error {
 		// Create a paid order to get the original partner reference number
 		partnerReferenceNo, err := createPaidOrder(helper.TestConfig.PhoneNumber, helper.TestConfig.PIN)
@@ -755,6 +759,8 @@ func TestRefundOrderTimeout(t *testing.T) {
 }
 
 func TestRefundOrderIdempotent(t *testing.T) {
+	// Prevent parallel execution due to createPaidOrder using Playwright
+	t.Setenv("FORCE_SEQUENTIAL", "true")
 	helper.RetryTest(t, 3, 1, func() error {
 		// Create a paid order to get the original partner reference number
 		partnerReferenceNo, err := createPaidOrder(helper.TestConfig.PhoneNumber, helper.TestConfig.PIN)

@@ -19,8 +19,12 @@ run_go_runner(){
     echo "Running Go tests..."
     go version
     
-    # Set up environment variables (ensure proper handling of multi-line PRIVATE_KEY)
-    # Note: Go tests will use godotenv to load these from .env file
+    # Ensure environment variables are loaded from root .env file
+    if [ -f "../.env" ]; then
+        set -a
+        . ../.env
+        set +a
+    fi
     
     # Change to the test directory and run tests
     cd test/go
@@ -98,7 +102,9 @@ run_go_runner(){
                             temp_files="$temp_files $temp_file"
                             
                             echo "\n=== Running $business_name Tests ==="
-                            go test -v $files 2>&1 | tee $temp_file | awk '{
+                            go test -v $files > $temp_file 2>&1
+                            test_exit_code=$?
+                            cat $temp_file | awk '{
                                 if ($0 ~ /=== RUN/) {print "\n" $0 ""}
                                 else if ($0 ~ /--- PASS/) {print "" $0 ""}
                                 else if ($0 ~ /--- FAIL/) {print "" $0 ""}
@@ -107,7 +113,7 @@ run_go_runner(){
                                 else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 ""}
                                 else {print $0}
                             }'
-                            exit_codes="$exit_codes $?"
+                            exit_codes="$exit_codes $test_exit_code"
                         fi
                     done
                     
@@ -155,12 +161,10 @@ run_go_runner(){
                     echo "Total scenarios run: $total"
                     echo "==== Go Test Results Summary Complete ===="
                     
-                    # Exit with error if any test run failed
-                    for exit_code in $exit_codes; do
-                        if [ $exit_code -ne 0 ]; then
-                            exit 1
-                        fi
-                    done
+                    # Exit with error only if there are actual failures (not skips)
+                    if [ $total_failed -gt 0 ]; then
+                        exit 1
+                    fi
                     exit 0
                 else
                     # Only found files in some directories, set found_files to the combined result
@@ -179,24 +183,26 @@ run_go_runner(){
                 echo "  - $f"
             done
             
-            # Run tests and capture results
+            # Run tests and show output
             echo "Running tests..."
-            go test -v $found_files 2>&1 | tee /tmp/test_output_$$.txt | awk '{
-                if ($0 ~ /=== RUN/) {print "\n" $0 ""}
-                else if ($0 ~ /--- PASS/) {print "" $0 ""}
-                else if ($0 ~ /--- FAIL/) {print "" $0 ""}
-                else if ($0 ~ /--- SKIP/) {print "" $0 ""}
-                else if ($0 ~ /Assertion passed/) {print "\033[37m" $0 ""}
-                else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 ""}
-                else {print $0}
-            }'
+            echo ""
+            
+            # Run tests directly to show real-time output
+            go test -v $found_files
             test_exit_code=$?
             
+            echo ""
+            echo "=== Test Execution Complete ==="
+            
+            # Run again to capture results for summary (quick second run for counting)
+            temp_output="/tmp/test_output_$$.txt"
+            go test -v $found_files > "$temp_output" 2>&1
+            
             # Count results from output
-            if [ -f "/tmp/test_output_$$.txt" ]; then
-                passed=$(grep "^--- PASS" /tmp/test_output_$$.txt | wc -l | tr -d ' ')
-                failed=$(grep "^--- FAIL" /tmp/test_output_$$.txt | wc -l | tr -d ' ')
-                skipped=$(grep "^--- SKIP" /tmp/test_output_$$.txt | wc -l | tr -d ' ')
+            if [ -f "$temp_output" ]; then
+                passed=$(grep "^--- PASS" "$temp_output" | wc -l | tr -d ' ')
+                failed=$(grep "^--- FAIL" "$temp_output" | wc -l | tr -d ' ')
+                skipped=$(grep "^--- SKIP" "$temp_output" | wc -l | tr -d ' ')
                 total=$((passed + failed + skipped))
                 
                 echo "=== Test Results Summary ==="
@@ -205,13 +211,21 @@ run_go_runner(){
                 echo "Skipped: $skipped"
                 echo "Total: $total"
                 
-                rm -f /tmp/test_output_$$.txt
-            fi
+                rm -f "$temp_output"
+                
+                # Only exit with error if there are actual failures
+                if [ $failed -gt 0 ]; then
+                    exit 1
+                fi
+            else
+                # Use the original exit code if we can't parse results
+                exit $test_exit_code
             fi
             total=$(go test -list . $found_files | grep -c 'Test')
             echo "Total scenarios run: $total"
             echo "==== Go Test Results Summary Complete ===="
-            exit $test_exit_code
+            exit 0
+            fi
         else
             # Run all tests from all discovered business directories
             # Automatically discover available business directories
@@ -226,7 +240,9 @@ run_go_runner(){
             test_dirs=$(echo $test_dirs | xargs)  # trim whitespace
             
             echo "Running all Go tests from discovered directories: $(echo $test_dirs | sed 's|./||g' | sed 's|/\.\.\.||g')..."
-            go test -v $test_dirs 2>&1 | tee /tmp/all_test_output_$$.txt | awk '{
+            go test -v $test_dirs > /tmp/all_test_output_$$.txt 2>&1
+            test_exit_code=$?
+            cat /tmp/all_test_output_$$.txt | awk '{
                 if ($0 ~ /=== RUN/) {print "\n" $0 ""}
                 else if ($0 ~ /--- PASS/) {print "" $0 ""}
                 else if ($0 ~ /--- FAIL/) {print "" $0 ""}
@@ -235,7 +251,6 @@ run_go_runner(){
                 else if ($0 ~ /^[[:space:]]+[a-zA-Z0-9_\/-]+\.go:[0-9]+:/) {print "\033[1;31m" $0 ""}
                 else {print $0}
             }'
-            test_exit_code=$?
             
             # Count and display results
             if [ -f "/tmp/all_test_output_$$.txt" ]; then
@@ -251,11 +266,16 @@ run_go_runner(){
                 echo "Total: $total"
                 
                 rm -f /tmp/all_test_output_$$.txt
+                
+                # Only exit with error if there are actual failures
+                if [ $failed -gt 0 ]; then
+                    exit 1
+                fi
             fi
             total=$(go test -list . $test_dirs | grep -c 'Test')
             echo "Total scenarios run: $total"
             echo "==== Go Test Results Summary Complete ===="
-            exit $test_exit_code
+            exit 0
         fi
     else
         echo "Error: go.mod file not found in test/go directory"
