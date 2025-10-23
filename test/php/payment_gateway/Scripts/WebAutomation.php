@@ -123,6 +123,8 @@ class WebAutomation
                 ];
                 $buttonDanaPaymentSelector = "//*[contains(@class,'dana')]/*[contains(@class,'bank-title')]";
 
+                self::wait(5.0);
+                
                 $buttonElements = $driver->findElements(WebDriverBy::xpath($buttonDanaPaymentSelector));
                 if (count($buttonElements) > 0) {
                     echo "DANA payment option found, clicking it..." . PHP_EOL;
@@ -160,6 +162,8 @@ class WebAutomation
                     $phoneSelectorElement->sendKeys(self::DEFAULT_PHONE_NUMBER);
                     $driver->findElement(WebDriverBy::cssSelector($submitPhoneNumberSelector))->click();
                     
+                    self::wait(5.0);
+                    
                     // Wait for PIN fields to appear after phone number submission
                     echo "Waiting for PIN fields to appear..." . PHP_EOL;
                     self::wait(3.0);
@@ -182,14 +186,14 @@ class WebAutomation
 
                     // Wait for PIN processing and potential page transition
                     echo "Waiting for PIN processing..." . PHP_EOL;
-                    self::wait(1.0);
+                    self::wait(5.0);
                 } else {
                     echo "Could not find phone number input field with any selector" . PHP_EOL;
                     echo "This might indicate the page hasn't loaded completely or has a different structure" . PHP_EOL;
                 }
 
                 // Wait for payment button to become visible after authentication
-                $driver->wait(60, 1000)->until(
+                $driver->wait(5, 250)->until(
                     WebDriverExpectedCondition::visibilityOfElementLocated(
                         WebDriverBy::cssSelector($buttonPaySelector)
                     )
@@ -226,6 +230,7 @@ class WebAutomation
             }
             
             // Click the payment button
+            self::wait(5.0);
             echo "Clicking payment button..." . PHP_EOL;
             try {
                 $payButton = $driver->findElement(WebDriverBy::cssSelector($buttonPaySelector));
@@ -259,7 +264,7 @@ class WebAutomation
                 
                 echo "Payment completed successfully!" . PHP_EOL;
                 $success = true;
-                sleep(5); // Wait for payment to complete
+                self::wait(5.0); // Wait for payment to complete
             } catch (\Exception $e) {
                 echo "Timeout waiting for payment success: {$e->getMessage()}" . PHP_EOL;
                 echo "Final page source snippet: " . substr($driver->getPageSource(), 0, 500) . "..." . PHP_EOL;
@@ -714,7 +719,7 @@ class WebAutomation
                 echo "PIN entered successfully using JavaScript!" . PHP_EOL;
                 
                 // Wait a moment for the events to process
-                sleep(2);
+                self::wait(2.0);
                 
                 // Try to find and click submit button after PIN entry
                 $submitScript = "
