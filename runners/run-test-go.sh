@@ -187,16 +187,20 @@ run_go_runner(){
             echo "Running tests..."
             echo ""
             
-            # Run tests directly to show real-time output
-            go test -v $found_files
+            # Run tests and capture output for both display and counting
+            temp_output="/tmp/test_output_$$.txt"
+            if [ -n "$GO_TEST_SKIP" ]; then
+                go test -v -skip="$GO_TEST_SKIP" $found_files > "$temp_output" 2>&1
+            else
+                go test -v $found_files > "$temp_output" 2>&1
+            fi
             test_exit_code=$?
+            
+            # Display the captured output
+            cat "$temp_output"
             
             echo ""
             echo "=== Test Execution Complete ==="
-            
-            # Run again to capture results for summary (quick second run for counting)
-            temp_output="/tmp/test_output_$$.txt"
-            go test -v $found_files > "$temp_output" 2>&1
             
             # Count results from output
             if [ -f "$temp_output" ]; then

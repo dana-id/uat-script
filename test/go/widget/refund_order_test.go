@@ -546,7 +546,6 @@ func TestRefundFailMandatoryParameterInvalid(t *testing.T) {
 	}
 }
 func TestRefundFailOrderNotExist(t *testing.T) {
-	t.Skip("Skip: API returns 200")
 	caseName := "RefundFailOrderNotExist"
 
 	// Get the request data from JSON
