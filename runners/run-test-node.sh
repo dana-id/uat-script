@@ -132,4 +132,4 @@ EOF
 }
 
 # Always execute the runner
-run_node_runner "$@" 
+run_node_runner "$@"
