@@ -16,7 +16,7 @@ const (
 )
 
 // TestConsultPayWithStrPrivateKeySuccess tests the consult pay API with a private key string
-func TestConsultPayWithStrPrivateKeySuccess(t *testing.T) {
+func TestConsultPayBalancedSuccess(t *testing.T) {
 	caseName := "ConsultPayBalancedSuccess"
 
 	// Get the request data from the JSON file
@@ -51,28 +51,100 @@ func TestConsultPayWithStrPrivateKeySuccess(t *testing.T) {
 		t.Fatalf("Failed to convert response to JSON: %v", err)
 	}
 
-	// Parse the response JSON to check the paymentInfos array
-	var responseMap map[string]interface{}
-	if err := json.Unmarshal(responseJSON, &responseMap); err != nil {
-		t.Fatalf("Failed to parse response JSON: %v", err)
+	// Assert the API response with variable substitution
+	err = helper.AssertResponse(consultPayJsonPath, consultPayTitleCase, caseName, string(responseJSON), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestConsultPayInvalidFieldFormat tests the consult pay API with invalid field format
+func TestConsultPayInvalidFieldFormat(t *testing.T) {
+	caseName := "ConsultPayBalancedInvalidFieldFormat"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(consultPayJsonPath, consultPayTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
 	}
 
-	// Verify response code and message
-	if responseCode, ok := responseMap["responseCode"].(string); !ok || responseCode != "2005700" {
-		t.Fatalf("Expected response code 2005700, got %v", responseMap["responseCode"])
+	jsonDict["merchantId"] = "" // Set invalid format for merchantId
+
+	// Create the ConsultPayRequest object and populate it with JSON data
+	consultPayRequest := &pg.ConsultPayRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
 
-	if responseMsg, ok := responseMap["responseMessage"].(string); !ok || responseMsg != "Successful" {
-		t.Fatalf("Expected response message 'Successful', got %v", responseMap["responseMessage"])
+	err = json.Unmarshal(jsonBytes, consultPayRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	// Only check if paymentInfos array has at least one item
-	paymentInfos, ok := responseMap["paymentInfos"].([]interface{})
-	if !ok {
-		t.Fatal("paymentInfos is not an array or is missing")
+	// Make the API call - expecting it to fail
+	ctx := context.Background()
+	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.ConsultPay(ctx).ConsultPayRequest(*consultPayRequest).Execute()
+	if httpResponse != nil {
+		defer httpResponse.Body.Close()
 	}
 
-	if len(paymentInfos) == 0 {
-		t.Fatal("Expected at least one payment info item")
+	// Expecting an error for invalid field format
+	if err == nil {
+		t.Fatal("Expected an error for invalid field format, but got none")
 	}
+
+	// Validate the error response
+	err = helper.AssertFailResponse(consultPayJsonPath, consultPayTitleCase, caseName, err.Error(), nil)
+	if err != nil {
+		t.Fatalf("Assertion failed: %v", err)
+	}
+}
+
+// TestConsultPayInvalidMandatoryField tests the consult pay API with missing mandatory field
+func TestConsultPayInvalidMandatoryField(t *testing.T) {
+	caseName := "ConsultPayBalancedInvalidMandatoryField"
+
+	// Get the request data from the JSON file
+	jsonDict, err := helper.GetRequest(consultPayJsonPath, consultPayTitleCase, caseName)
+	if err != nil {
+		t.Fatalf("Failed to get request data: %v", err)
+	}
+
+	// Create the ConsultPayRequest object and populate it with JSON data
+	consultPayRequest := &pg.ConsultPayRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	err = json.Unmarshal(jsonBytes, consultPayRequest)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
+	// Use the helper function to execute the request and assert error response
+	ctx := context.Background()
+	endpoint := "https://api.sandbox.dana.id/v1.0/payment-gateway/consult-pay.htm"
+	resourcePath := "/v1.0/payment-gateway/consult-pay.htm"
+
+	// Custom headers with empty X-TIMESTAMP to trigger mandatory field error
+	customHeaders := map[string]string{
+		"X-TIMESTAMP": "", // Empty timestamp will cause validation error
+	}
+
+	// Execute manual API call and assert error response
+	_ = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		consultPayRequest,
+		"POST",
+		endpoint,
+		resourcePath,
+		consultPayJsonPath,
+		consultPayTitleCase,
+		caseName,
+		customHeaders,
+		nil,
+	)
 }

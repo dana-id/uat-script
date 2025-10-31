@@ -157,8 +157,8 @@
                 }
             },
             "response": {
-                "responseCode": "2000900",
-                "responseMessage": "Successful"
+                "responseCode": "4000901",
+                "responseMessage": "Invalid Field Format X-TIMESTAMP"
             }
         }
     },

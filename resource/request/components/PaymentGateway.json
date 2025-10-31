@@ -9,9 +9,9 @@
                 },
                 "additionalInfo": {
                     "buyer": {
-                        "externalUserId": "8392183912832913821",
                         "externalUserType": "",
                         "nickname": "",
+                        "externalUserId": "8392183912832913821",
                         "userId": ""
                     },
                     "envInfo": {
@@ -44,18 +44,34 @@
                     },
                     {
                         "payMethod": "VIRTUAL_ACCOUNT",
+                        "payOption": "VIRTUAL_ACCOUNT_BTPN"
+                    },
+                    {
+                        "payMethod": "VIRTUAL_ACCOUNT",
                         "payOption": "VIRTUAL_ACCOUNT_CIMB"
                     },
                     {
-                        "payMethod": "BALANCE"
+                        "payMethod": "NETWORK_PAY",
+                        "payOption": "NETWORK_PAY_PG_LINKAJA"
+                    },
+                    {
+                        "payMethod": "NETWORK_PAY",
+                        "payOption": "NETWORK_PAY_PG_OVO"
+                    },
+                    {
+                        "payMethod": "NETWORK_PAY",
+                        "payOption": "NETWORK_PAY_PG_CARD"
+                    },
+                    {
+                        "payMethod": "NETWORK_PAY",
+                        "payOption": "NETWORK_PAY_PG_SPAY"
                     },
                     {
                         "payMethod": "NETWORK_PAY",
                         "payOption": "NETWORK_PAY_PG_GOPAY"
                     },
                     {
-                        "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_OVO"
+                        "payMethod": "BALANCE"
                     }
                 ]
             }
@@ -97,7 +113,7 @@
         },
         "ConsultPayBalancedInvalidMandatoryField": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "",
                 "amount": {
                     "value": "12345678.00",
                     "currency": "IDR"
@@ -126,8 +142,8 @@
                 }
             },
             "response": {
-                "responseCode": "4000002",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP",
+                "responseCode": "4000002"
             }
         },
         "ConsultPayBalancedUnauthorized": {

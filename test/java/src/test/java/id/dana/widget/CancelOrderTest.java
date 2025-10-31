@@ -55,8 +55,7 @@ public class CancelOrderTest {
 
         widgetApi = Dana.getInstance().getWidgetApi();
 
-        List<String> dataOrder = createPayment("PaymentSuccess");
-        partnerReferenceNoInit = dataOrder.get(0);
+        partnerReferenceNoInit = String.valueOf(UUID.randomUUID());
     }
 
     @Test

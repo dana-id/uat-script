@@ -31,7 +31,6 @@ with ApiClient(configuration) as api_client:
 
 
 @with_delay()
-@pytest.mark.skip(reason="skipped by request: scenario ConsultPayBalancedSuccess")
 def test_consult_pay_success():
     """Should give success response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedSuccess"
@@ -41,24 +40,16 @@ def test_consult_pay_success():
     
     # Convert the request data to a ConsultPayRequest object
     consult_pay_request_obj = ConsultPayRequest.from_dict(json_dict)
+    consult_pay_request_obj.merchant_id = os.environ.get("MERCHANT_ID")
     
     # Make the API call
     api_response = api_instance.consult_pay(consult_pay_request_obj)
     
-    # Validate the API response
-    api_response_json = json.loads(ConsultPayResponse.to_json(api_response))
-    
-    # Check if response code and message are successful
-    assert api_response_json.get('responseCode') == '2005700', "Expected success response code"
-    assert api_response_json.get('responseMessage') == 'Successful', "Expected success response message"
-    
-    # Only check if paymentInfos array has at least one item
-    payment_infos = api_response_json.get('paymentInfos', [])
-    assert len(payment_infos) > 0, "Expected at least one payment info item"
-    
-    
+    # Assert the API response
+    assert_response(json_path_file, title_case, case_name, CancelOrderResponse.to_json(api_response), None)
+
+
 @with_delay()
-@pytest.mark.skip(reason="skipped by request: scenario ConsultPayBalancedInvalidFieldFormat")
 def test_consult_pay_invalid_field_format():
     """Should give fail response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedInvalidFieldFormat"
@@ -77,7 +68,6 @@ def test_consult_pay_invalid_field_format():
         
         
 @with_delay()
-@pytest.mark.skip(reason="Skipping this test temporarily.")
 def test_consult_pay_invalid_mandatory_field():
     """Should give fail response code and message and correct mandatory fields"""
     case_name = "ConsultPayBalancedInvalidMandatoryField"

@@ -162,8 +162,8 @@
                 }
             },
             "response": {
-                "responseCode": "2000900",
-                "responseMessage": "Successful"
+                "responseCode": "4000901",
+                "responseMessage": "Invalid Field Format X-TIMESTAMP"
             }
         }
     },
@@ -828,7 +828,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "21000000.00"
+                    "value": "10000001.00"
                 },
                 "merchantId": "${merchantId}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
