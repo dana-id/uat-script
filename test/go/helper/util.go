@@ -32,13 +32,20 @@ func GetRequest(jsonPath, titleCase, caseName string) (map[string]interface{}, e
 			// Look for request section
 			if request, ok := caseMap["request"].(map[string]interface{}); ok {
 				// Check for merchantId or mid and replace with value from .env if present
+				// BUT only if the current value is not explicitly empty (for invalid field format tests)
 				merchantIdEnv := os.Getenv("MERCHANT_ID")
 				if merchantIdEnv != "" {
-					if _, ok := request["merchantId"]; ok {
-						request["merchantId"] = merchantIdEnv
+					if merchantId, ok := request["merchantId"]; ok {
+						// Only replace if the current value is not an empty string (preserve empty strings for invalid tests)
+						if merchantIdStr, isString := merchantId.(string); !isString || merchantIdStr != "" {
+							request["merchantId"] = merchantIdEnv
+						}
 					}
-					if _, ok := request["mid"]; ok {
-						request["mid"] = merchantIdEnv
+					if mid, ok := request["mid"]; ok {
+						// Only replace if the current value is not an empty string (preserve empty strings for invalid tests)
+						if midStr, isString := mid.(string); !isString || midStr != "" {
+							request["mid"] = merchantIdEnv
+						}
 					}
 				}
 				return request, nil
