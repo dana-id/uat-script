@@ -67,7 +67,6 @@ describe('CancelOrder Tests', () => {
     test('should fail with missing parameter', async () => {
         const caseName = 'CancelOrderFailMissingParameter';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        requestData.merchantId = merchantId;
         try {
             const response = await dana.widgetApi.cancelOrder(requestData);
             await assertFailResponse(jsonPathFile, titleCase, caseName, response);
@@ -83,7 +82,6 @@ describe('CancelOrder Tests', () => {
     test('should fail with order not exist', async () => {
         const caseName = 'CancelOrderFailOrderNotExist';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        requestData.merchantId = merchantId;
         requestData.originalPartnerReferenceNo = uuidv4(); // Use a random reference number to simulate non-existent order
         requestData.originalReferenceNo = uuidv4(); // Use a random reference number to simulate non-existent order
         try {

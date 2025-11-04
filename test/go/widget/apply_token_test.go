@@ -89,23 +89,7 @@ func TestApplyTokenSuccess(t *testing.T) {
 }
 func TestApplyTokenFailInvalidSignature(t *testing.T) {
 	caseName := "ApplyTokenFailInvalidSignature"
-	// Get a fresh authCode for this test (don't reuse the global one as it might be consumed)
-	var authCode string
-	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-		helper.TestConfig.PhoneNumber,
-		helper.TestConfig.PIN,
-	)
-	if err != nil {
-		t.Fatalf("Failed to get redirect OAuth URL: %v", err)
-	}
-
-	authCode, err = widget_helper.GetAuthCode(
-		helper.TestConfig.PhoneNumber,
-		helper.TestConfig.PIN,
-		redirectUrlAuthCode)
-	if err != nil {
-		t.Fatalf("Failed to get auth code: %v", err)
-	}
+	authCode := "VALID_AUTH_CODE"
 
 	// Get the request data from JSON
 	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)

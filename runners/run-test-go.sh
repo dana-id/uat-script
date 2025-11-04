@@ -49,8 +49,14 @@ run_go_runner(){
             if [ -d "./$module" ] && find "./$module" -name "*_test.go" -type f 2>/dev/null | head -1 | grep -q .; then
                 test_dir="./$module"
                 if [ -n "$subCase" ]; then
-                    # Filter by subCase pattern in file names
-                    found_files=$(find "$test_dir" -type f -name "*${subCase}*_test.go" 2>/dev/null || true)
+                    # Filter by subCase pattern in file names - handle both with and without _test suffix
+                    if echo "$subCase" | grep -q "_test$"; then
+                        # subCase already has _test suffix (e.g., "cancel_order_test")
+                        found_files=$(find "$test_dir" -type f -name "${subCase}.go" 2>/dev/null || true)
+                    else
+                        # subCase doesn't have _test suffix (e.g., "cancel")
+                        found_files=$(find "$test_dir" -type f -name "*${subCase}*_test.go" 2>/dev/null || true)
+                    fi
                 else
                     # Run all test files in the module
                     found_files=$(find "$test_dir" -type f -name "*_test.go" 2>/dev/null || true)

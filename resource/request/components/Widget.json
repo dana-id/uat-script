@@ -100,7 +100,7 @@
         "AccountUnbindSuccess": {
             "request": {
                 "partnerReferenceNo": "partnerReferenceNo",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "linkId": "linkId",
                 "subMerchantId": "210000123",
                 "tokenId": "tokenId",
@@ -119,7 +119,7 @@
                 "partnerReferenceNo": "partnerReferenceNo",
                 "linkId": "linkId",
                 "subMerchantId": "210000123",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "tokenId": "tokenId",
                 "additionalInfo": {
                     "accessToken" : "${accessToken}"
@@ -135,7 +135,7 @@
                 "partnerReferenceNo": "partnerReferenceNo",
                 "linkId": "linkId",
                 "subMerchantId": "210000123",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "tokenId": "tokenId",
                 "additionalInfo": {
                     "accessToken" : "${accessToken}"
@@ -369,7 +369,7 @@
                     "currency": "IDR",
                     "value": "1.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -405,7 +405,7 @@
                     "currency": "IDR",
                     "value": "205502.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -441,7 +441,7 @@
                     "currency": "IDR",
                     "value": "10000.0000"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -477,7 +477,7 @@
                     "currency": "IDR",
                     "value": "10000.0000"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": ""
             },
             "response": {
@@ -513,7 +513,7 @@
                     "currency": "IDR",
                     "value": "10000.0000"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -549,7 +549,7 @@
                     "currency": "IDR",
                     "value": "505400.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -585,7 +585,7 @@
                     "currency": "IDR",
                     "value": "435415.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": ""
             },
             "response": {
@@ -621,7 +621,7 @@
                     "currency": "IDR",
                     "value": "445408.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": ""
             },
             "response": {
@@ -657,7 +657,7 @@
                     "currency": "IDR",
                     "value": "1.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -693,7 +693,7 @@
                     "currency": "IDR",
                     "value": "505401.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -729,7 +729,7 @@
                     "currency": "IDR",
                     "value": "21000000.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -765,7 +765,7 @@
                     "currency": "IDR",
                     "value": "545400.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -801,7 +801,7 @@
                     "currency": "IDR",
                     "value": "1.00"
                 },
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
             },
             "response": {
@@ -819,7 +819,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -839,7 +839,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -860,7 +860,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -880,7 +880,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -901,7 +901,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -921,7 +921,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -941,7 +941,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -961,7 +961,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -981,7 +981,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1001,7 +1001,7 @@
                     "value": "1.00"
                 },
                 "externalStoreId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "originalExternalId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1025,7 +1025,7 @@
                 "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1045,7 +1045,7 @@
                 "originalPartnerReferenceNo": "2025700",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1061,7 +1061,7 @@
                 "originalPartnerReferenceNo": "4035705",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1077,7 +1077,7 @@
                 "originalPartnerReferenceNo": "4045708",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1092,7 +1092,7 @@
             "request": {
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1112,7 +1112,7 @@
                 "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
                 "originalReferenceNo": "${originalReferenceNo}",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1132,7 +1132,7 @@
                 "originalPartnerReferenceNo": "4035700",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1148,7 +1148,7 @@
                 "originalPartnerReferenceNo": "4035715",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1164,7 +1164,7 @@
                 "originalPartnerReferenceNo": "4035705",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1180,7 +1180,7 @@
                 "originalPartnerReferenceNo": "4035714",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1196,7 +1196,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1217,7 +1217,7 @@
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1237,7 +1237,7 @@
                 "originalPartnerReferenceNo": "5005701",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
@@ -1252,7 +1252,7 @@
     "RefundOrder": {
         "RefundOrderValidScenario": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1276,7 +1276,7 @@
         },
         "RefundInProcess": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1300,7 +1300,7 @@
         },
         "RefundFailExceedPaymentAmount": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1324,7 +1324,7 @@
         },
         "RefundFailNotAllowedByAgreement": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1348,7 +1348,7 @@
         },
         "RefundFailExceedRefundWindowTime": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1372,7 +1372,7 @@
         },
         "RefundFailMultipleRefundNotAllowed": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1396,7 +1396,7 @@
         },
         "RefundFailDuplicateRequest": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1420,7 +1420,7 @@
         },
         "RefundFailOrderNotPaid": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1468,7 +1468,7 @@
         },
         "RefundFailMandatoryParameterInvalid": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1492,7 +1492,7 @@
         },
         "RefundFailOrderNotExist": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "123123123123123",
                 "originalReferenceNo": "",
@@ -1516,7 +1516,7 @@
         },
         "RefundFailInsufficientMerchantBalance": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1540,7 +1540,7 @@
         },
         "RefundFailInvalidSignature": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1564,7 +1564,7 @@
         },
         "RefundFailTimeout": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1588,7 +1588,7 @@
         },
         "RefundIdempotent": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1612,7 +1612,7 @@
         },
         "RefundFailMerchantStatusAbnormal": {
             "request": {
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",

@@ -436,13 +436,8 @@ func TestQueryOrderNotFound(t *testing.T) {
 	// Make the API call using the Widget SDK
 	_, httpResponse, err := helper.ApiClient.WidgetAPI.QueryPayment(ctx).QueryPaymentRequest(request).Execute()
 	if err != nil {
-		// This is expected for error test cases
-		variableDict := map[string]interface{}{
-			"originalPartnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
-		}
-
 		// Assert the error response matches expected error pattern
-		err = helper.AssertFailResponse(queryOrderJsonPath, queryOrderTitleCase, caseName, httpResponse, variableDict)
+		err = helper.AssertFailResponse(queryOrderJsonPath, queryOrderTitleCase, caseName, httpResponse, nil)
 		if err != nil {
 			t.Fatal(err)
 		}

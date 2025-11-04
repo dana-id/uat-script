@@ -78,7 +78,6 @@ describe('Cancel Order Tests', () => {
     sharedOriginalPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference;
     createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
-    createOrderRequestData.merchantId = merchantId;
 
     try {
       // Create the order with retry mechanism for handling transient failures
@@ -113,7 +112,6 @@ describe('Cancel Order Tests', () => {
       // Load test data for insufficient funds scenario
       const requestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, cancelOrderCaseName);
       requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference; // Use shared order reference
-      requestData.merchantId = merchantId; // Set merchant ID for the request
 
       // Attempt to cancel order with insufficient funds
       const response = await dana.paymentGatewayApi.cancelOrder(requestData);
@@ -550,7 +548,6 @@ describe('Cancel Order Tests', () => {
       const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
       const paidPartnerReference = generatePartnerReferenceNo();
       createOrderRequestData.partnerReferenceNo = paidPartnerReference;
-      createOrderRequestData.merchantId = merchantId;
 
       console.log(`Creating order for payment automation with reference: ${paidPartnerReference}...`);
       const createOrderResponse = await dana.paymentGatewayApi.createOrder(createOrderRequestData);
@@ -587,7 +584,6 @@ describe('Cancel Order Tests', () => {
       const refundRequestData: RefundOrderRequest = getRequest<RefundOrderRequest>(jsonPathFile, "RefundOrder", "RefundOrderValidScenario");
       refundRequestData.originalPartnerReferenceNo = paidPartnerReference;
       refundRequestData.partnerRefundNo = generatePartnerReferenceNo(); // Unique refund reference
-      refundRequestData.merchantId = merchantId;
       refundRequestData.refundAmount = createOrderRequestData.amount; // Full refund amount
 
       let refundSuccessful = false;
@@ -614,7 +610,6 @@ describe('Cancel Order Tests', () => {
       console.log(`Proceeding to cancel order with reference: ${paidPartnerReference}`);
       const cancelRequestData: CancelOrderRequest = getRequest<CancelOrderRequest>(jsonPathFile, titleCase, caseName);
       cancelRequestData.originalPartnerReferenceNo = paidPartnerReference;
-      cancelRequestData.merchantId = merchantId;
       cancelRequestData.amount = createOrderRequestData.amount; // Original order amount
 
       console.log(`Cancelling order with reference: ${paidPartnerReference}`);

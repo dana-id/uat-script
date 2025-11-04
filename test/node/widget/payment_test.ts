@@ -84,7 +84,6 @@ describe('Payment Tests', () => {
 
         // Configure request with unique reference number and merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
 
         try {
             // Execute widget payment API call
@@ -106,7 +105,6 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -197,7 +195,6 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -222,7 +219,6 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -247,7 +243,6 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID (use a non-existent merchant ID for testing)
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -274,7 +269,6 @@ describe('Payment Tests', () => {
 
         // Configure request with unique reference number and merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
 
         try {
             await dana.widgetApi.widgetPayment(requestData);
@@ -304,7 +298,6 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -329,7 +322,6 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -354,7 +346,6 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);

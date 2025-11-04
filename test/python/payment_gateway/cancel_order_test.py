@@ -47,7 +47,6 @@ def create_test_order(partner_reference_no):
     
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=300)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
@@ -96,7 +95,6 @@ def test_cancel_order(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
@@ -180,7 +178,6 @@ def test_cancel_order_invalid_mandatory_field(test_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
@@ -214,7 +211,6 @@ def test_cancel_order_transaction_not_found():
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = "123wererw"
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
@@ -328,6 +324,7 @@ def test_cancel_order_with_insufficient_funds():
     
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
+    json_dict["originalReferenceNo"] = "ajfbhifbifibwifuun92"
     
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
@@ -352,7 +349,6 @@ def test_cancel_order_unauthorized(test_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)

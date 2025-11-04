@@ -8,11 +8,16 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +30,99 @@ public final class TestUtil {
   private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
 
   private static final ObjectMapper objectMapper = new ObjectMapper();
+
+  private static final Pattern TEMPLATE_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
+
+  private static Map<String, String> envVariables = new HashMap<>();
+
+  static {
+    loadEnvironmentVariables();
+  }
+
+  /**
+   * Loads environment variables from .env file in the test directory.
+   */
+  private static void loadEnvironmentVariables() {
+    try {
+      String envFilePath = System.getProperty("user.dir") + "/.env";
+      File envFile = new File(envFilePath);
+      
+      if (envFile.exists()) {
+        List<String> lines = Files.readAllLines(Paths.get(envFilePath));
+        for (String line : lines) {
+          line = line.trim();
+          if (!line.isEmpty() && !line.startsWith("#") && line.contains("=")) {
+            String[] parts = line.split("=", 2);
+            if (parts.length == 2) {
+              String key = parts[0].trim();
+              String value = parts[1].trim();
+              // Remove quotes if present
+              value = value.replaceAll("^['\"]|['\"]$", "");
+              envVariables.put(key, value);
+            }
+          }
+        }
+        log.info("Loaded {} environment variables from .env file", envVariables.size());
+      } else {
+        log.warn("No .env file found at: {}", envFilePath);
+      }
+    } catch (IOException e) {
+      log.error("Failed to load environment variables from .env file: {}", e.getMessage());
+    }
+  }
+
+  /**
+   * Recursively replaces ${VARIABLE_NAME} patterns with environment variables.
+   *
+   * This method traverses through JSON objects, arrays, and strings to find template variables
+   * in the format ${VARIABLE_NAME} and replaces them with corresponding environment variable values.
+   *
+   * @param data The JsonNode data to process
+   * @return The JsonNode with template variables replaced
+   */
+  public static JsonNode replaceTemplateValues(JsonNode data) {
+    if (data.isArray()) {
+      ArrayNode result = objectMapper.createArrayNode();
+      for (JsonNode item : data) {
+        result.add(replaceTemplateValues(item));
+      }
+      return result;
+    } else if (data.isObject()) {
+      Iterator<Map.Entry<String, JsonNode>> fields = data.fields();
+      ObjectNode result = objectMapper.createObjectNode();
+      while (fields.hasNext()) {
+        Map.Entry<String, JsonNode> entry = fields.next();
+        result.set(entry.getKey(), replaceTemplateValues(entry.getValue()));
+      }
+      return result;
+    } else if (data.isTextual()) {
+      String text = data.asText();
+      Matcher matcher = TEMPLATE_PATTERN.matcher(text);
+      
+      String result = text;
+      while (matcher.find()) {
+        String varName = matcher.group(1);
+        // Convert variable name to uppercase for environment variable lookup
+        String envVarName = varName.toUpperCase();
+        
+        // First try system environment, then our loaded .env variables
+        String envValue = System.getenv(envVarName);
+        if (envValue == null) {
+          envValue = envVariables.get(envVarName);
+        }
+        
+        if (envValue != null) {
+          // Clean quotes from environment values if present
+          String cleanValue = envValue.replaceAll("^['\"]|['\"]$", "");
+          result = result.replace(matcher.group(0), cleanValue);
+        } else {
+        }
+      }
+      
+      return objectMapper.valueToTree(result);
+    }
+    return data;
+  }
 
   public static <T> T getRequest(String jsonPathFile, String title, String caseName,
       Class<T> clazz) {
@@ -41,7 +139,11 @@ public final class TestUtil {
     try {
       JsonNode jsonData = objectMapper.readTree(new File(jsonPathFile));
       JsonNode requestNode = jsonData.path(title).path(caseName).path(nodeKey);
-      return objectMapper.treeToValue(requestNode, clazz);
+      
+      // Apply template replacement to the entire request object
+      JsonNode replacedNode = replaceTemplateValues(requestNode);
+      
+      return objectMapper.treeToValue(replacedNode, clazz);
     } catch (IOException e) {
       log.error("Error reading {} data from {}: {}", nodeKey, jsonPathFile, e.getMessage());
       try {

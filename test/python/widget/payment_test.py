@@ -42,7 +42,6 @@ def test_payment_success():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -58,7 +57,6 @@ def test_payment_fail_invalid_format():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -79,7 +77,6 @@ def test_payment_fail_missing_or_invalid_mandatory_field():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -116,7 +113,6 @@ def test_payment_fail_invalid_signature():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -146,7 +142,6 @@ def test_payment_fail_merchant_not_exist_or_status_abnormal():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -168,7 +163,6 @@ def test_payment_fail_inconsistent_request():
     # Set the partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["originalPartnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -190,7 +184,6 @@ def test_payment_fail_internal_server_error():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -209,7 +202,6 @@ def test_payment_fail_timeout():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -230,7 +222,6 @@ def test_payment_idempotent():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a WidgetPaymentRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)

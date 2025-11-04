@@ -53,7 +53,6 @@ def test_account_unbind_success(test_account_unbinding_access_token):
     accountUnbindingRequestAdditionalInfo.access_token = access_token
     accountUnbindingRequestAdditionalInfo.device_id = "deviceid123"
     json_dict["additionalInfo"] = accountUnbindingRequestAdditionalInfo.to_dict()
-    json_dict["merchantId"] = merchant_id
     account_unbinding_request_obj = AccountUnbindingRequest.from_dict(json_dict)
     api_response = api_instance.account_unbinding(account_unbinding_request_obj)
     assert_response(json_path_file, title_case, case_name, AccountUnbindingResponse.to_json(api_response))

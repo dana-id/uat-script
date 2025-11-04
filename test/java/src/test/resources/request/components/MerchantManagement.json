@@ -3,7 +3,7 @@
         "CreateShop": {
             "request": {
                 "apiVersion": "3",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "shopParentType": "MERCHANT",
                 "mainName": "${mainName}",
                 "shopAddress": {
@@ -106,7 +106,7 @@
         "CreateDivision": {
             "request": {
                 "apiVersion": "3",
-                "merchantId": "${merchantId}",
+                "merchantId": "${MERCHANT_ID}",
                 "parentDivisionId": "${merchantId}",
                 "parentRoleType": "MERCHANT",
                 "divisionName": "${divisionName}",

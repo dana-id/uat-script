@@ -54,7 +54,6 @@ def create_test_order_init():
     
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = generate_partner_reference_no()
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
@@ -96,7 +95,6 @@ def test_refund_order_in_progress(test_order_reference_number):
 
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -122,7 +120,6 @@ def test_refund_order_valid(test_order_reference_number):
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -149,7 +146,6 @@ def test_refund_order_due_to_exceed():
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -173,7 +169,6 @@ def test_refund_order_not_allowed(test_order_reference_number):
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -199,7 +194,6 @@ def test_refund_order_due_to_exceed_refund_window_time(test_order_reference_numb
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
    
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -220,7 +214,6 @@ def test_refund_order_multiple_refund(test_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
     try:
         api_instance.refund_order(refund_order_request_obj)
@@ -237,7 +230,6 @@ def test_refund_order_not_paid(test_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
     
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
     print(f"Refund order request object: {refund_order_request_obj.to_json()}")
@@ -264,7 +256,6 @@ def test_refund_order_duplicate_request():
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -290,7 +281,6 @@ def test_refund_order_illegal_parameter(test_order_reference_number):
 
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -315,7 +305,6 @@ def test_refund_order_invalid_mandatory_field(test_order_reference_number):
     
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -349,7 +338,6 @@ def test_refund_order_not_exist(test_order_reference_number):
     
     json_dict["originalPartnerReferenceNo"] = "reference_number_not_exist"
     json_dict["partnerRefundNo"] = "reference_number_not_exist"
-    json_dict["merchantId"] = merchant_id
     
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
     try:
@@ -372,7 +360,6 @@ def test_refund_order_insufficient_funds(test_order_reference_number):
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -397,7 +384,6 @@ def test_refund_order_unauthorized(test_order_reference_number):
     
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -434,7 +420,6 @@ def test_refund_order_merchant_status_abnormal(test_order_reference_number):
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -459,7 +444,6 @@ def test_refund_order_timeout(test_order_reference_number):
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
     json_dict["partnerRefundNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
@@ -488,7 +472,6 @@ def test_refund_order_idempotent():
     # Set the partner reference number
     json_dict["originalPartnerReferenceNo"] = order_reference_number
     json_dict["partnerRefundNo"] = generate_partner_reference_no()  # Use unique refund reference
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a RefundOrderRequest object
     refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)

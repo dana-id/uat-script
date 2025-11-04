@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 	"uat-script/helper"
 	widget_helper "uat-script/widget"
@@ -36,7 +35,7 @@ func TestAccountUnbindSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["additionalInfo"] = map[string]interface{}{
 		"accessToken": accessToken,
 		"deviceId":    "1234567890",

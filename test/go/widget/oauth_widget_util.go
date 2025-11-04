@@ -98,6 +98,168 @@ func GetRedirectOauthUrl(phoneNumber, pin string) (string, error) {
 	return redirectOauthUrl, err
 }
 
+// getCurrentURLWithRetry attempts to get the current URL with retry mechanism
+func getCurrentURLWithRetry(page playwright.Page, maxRetries int) (string, error) {
+	var lastErr error
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		url := page.URL()
+		if url != "" {
+			return url, nil
+		}
+
+		lastErr = fmt.Errorf("page.URL() returned empty string on attempt %d", attempt)
+		log.Printf("Failed to get URL on attempt %d/%d: %v", attempt, maxRetries, lastErr)
+
+		if attempt < maxRetries {
+			time.Sleep(time.Duration(attempt) * 100 * time.Millisecond) // Reduced from 200ms
+		}
+	}
+	return "", fmt.Errorf("failed to get current URL after %d attempts: %w", maxRetries, lastErr)
+} // isOAuthRedirectWithAuthCode checks if the URL contains OAuth redirect with auth code
+func isOAuthRedirectWithAuthCode(currentURL, urlRedirectOauth string) bool {
+	return strings.Contains(currentURL, urlRedirectOauth) &&
+		(strings.Contains(currentURL, "authCode=") || strings.Contains(currentURL, "auth_code="))
+}
+
+// extractAuthCodeWithRetry attempts to extract auth code with retry mechanism
+func extractAuthCodeWithRetry(urlString string, maxRetries int) (string, error) {
+	var lastErr error
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		authCode, err := extractAuthCodeFromURL(urlString)
+		if err == nil && authCode != "" {
+			return authCode, nil
+		}
+
+		lastErr = err
+		log.Printf("Failed to extract auth code on attempt %d/%d: %v", attempt, maxRetries, err)
+
+		if attempt < maxRetries {
+			time.Sleep(time.Duration(attempt) * 50 * time.Millisecond) // Reduced from 100ms
+		}
+	}
+	return "", fmt.Errorf("failed to extract auth code after %d attempts: %w", maxRetries, lastErr)
+}
+
+// performNavigationAssistanceWithRetry attempts navigation assistance with retry mechanism
+func performNavigationAssistanceWithRetry(page playwright.Page, maxRetries int) bool {
+	for attempt := 1; attempt <= maxRetries; attempt++ {
+		log.Printf("Navigation assistance attempt %d/%d", attempt, maxRetries)
+
+		success, err := performNavigationAssistance(page)
+		if err != nil {
+			log.Printf("Navigation assistance attempt %d failed: %v", attempt, err)
+		} else if success {
+			log.Printf("Navigation assistance succeeded on attempt %d", attempt)
+			return true
+		}
+
+		if attempt < maxRetries {
+			time.Sleep(time.Duration(attempt) * 300 * time.Millisecond) // Reduced from 500ms
+		}
+	}
+	log.Printf("Navigation assistance failed after %d attempts", maxRetries)
+	return false
+}
+
+// performNavigationAssistance performs the actual navigation assistance logic
+func performNavigationAssistance(page playwright.Page) (bool, error) {
+	navigationResult, err := page.Evaluate(`
+		() => {
+			const results = [];
+			
+			// Strategy 1: Check for specific DANA continue buttons
+			const danaSpecificSelectors = [
+				'.btn-continue',
+				'.btn-submit', 
+				'.btn-confirm',
+				'button[type="submit"]',
+				'.submit-button',
+				'[data-testid="continue-btn"]',
+				'[data-testid="submit-btn"]',
+				'.ant-btn-primary',
+				'.button-primary',
+				'.primary-button'
+			];
+			
+			for (const selector of danaSpecificSelectors) {
+				const buttons = document.querySelectorAll(selector);
+				for (const button of buttons) {
+					if (button.offsetParent !== null && !button.disabled) {
+						button.click();
+						results.push('clicked_selector_' + selector);
+						return results.join(', ');
+					}
+				}
+			}
+			
+			// Strategy 2: Look for buttons with Indonesian/English text
+			const allButtons = document.querySelectorAll('button');
+			for (const button of allButtons) {
+				if (button.offsetParent !== null && !button.disabled) {
+					const text = (button.textContent || button.innerText || '').toLowerCase().trim();
+					if (text.includes('lanjut') || text.includes('continue') || 
+						text.includes('konfirm') || text.includes('confirm') ||
+						text.includes('next') || text.includes('submit') ||
+						text.includes('kirim') || text.includes('send') ||
+						text.includes('masuk') || text.includes('login') ||
+						text.includes('oke') || text.includes('ok')) {
+						button.click();
+						results.push('clicked_text_button: ' + text);
+						return results.join(', ');
+					}
+				}
+			}
+			
+			// Strategy 3: Try form submissions
+			const forms = document.querySelectorAll('form');
+			for (const form of forms) {
+				if (form.offsetParent !== null) {
+					const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+					form.dispatchEvent(submitEvent);
+					results.push('submitted_form');
+					return results.join(', ');
+				}
+			}
+			
+			// Strategy 4: Check if there are any input elements that need focus/blur
+			const inputs = document.querySelectorAll('input');
+			for (const input of inputs) {
+				if (input.offsetParent !== null && input.value) {
+					input.focus();
+					input.blur();
+					input.dispatchEvent(new Event('change', { bubbles: true }));
+					results.push('triggered_input_events');
+				}
+			}
+			
+			// Strategy 5: Try pressing Enter key on the document
+			const enterEvent = new KeyboardEvent('keydown', {
+				key: 'Enter',
+				code: 'Enter',
+				keyCode: 13,
+				which: 13,
+				bubbles: true
+			});
+			document.dispatchEvent(enterEvent);
+			results.push('pressed_enter');
+			
+			return results.length > 0 ? results.join(', ') : 'no_actions_taken';
+		}
+	`)
+
+	if err != nil {
+		return false, fmt.Errorf("navigation assistance JavaScript execution failed: %w", err)
+	}
+
+	resultStr, ok := navigationResult.(string)
+	if !ok {
+		return false, fmt.Errorf("unexpected navigation result type: %T", navigationResult)
+	}
+
+	log.Printf("Navigation assistance actions: %s", resultStr)
+	return resultStr != "no_actions_taken", nil
+}
+
 func GetAuthCode(phoneNumber, pin, redirectUrl string) (string, error) {
 	// Start OAuth automation with mobile browser emulation
 	log.Println("Starting OAuth automation with mobile device emulation...")
@@ -169,7 +331,8 @@ func GetAuthCode(phoneNumber, pin, redirectUrl string) (string, error) {
 	}
 
 	// Start OAuth flow automation
-	urlRedirectOauth := os.Getenv("REDIRECT_URL_OAUTH")
+	var urlRedirectOauth string
+	urlRedirectOauth = os.Getenv("REDIRECT_URL_OAUTH")
 
 	// Wait for page to load completely
 	log.Println("Waiting for page to load...")
@@ -348,136 +511,176 @@ func GetAuthCode(phoneNumber, pin, redirectUrl string) (string, error) {
 	// Wait for redirect to callback URL - this is where we get the auth code
 	log.Println("Waiting for OAuth redirect to callback URL...")
 
-	timeout := 30 * time.Second
+	timeout := 25 * time.Second // Reduced from 30s to leave room for test timeout
 	start := time.Now()
 	lastURL := ""
 	stuckCounter := 0
 
 	for time.Since(start) < timeout {
-		// Get current URL safely
-		currentURL := page.URL()
+		// Early termination check - if we're close to test timeout, exit early
+		elapsed := time.Since(start)
+		if elapsed > 20*time.Second { // If we've been running for more than 20s
+			log.Printf("Approaching timeout limit, performing quick final check...")
+			currentURL, _ := getCurrentURLWithRetry(page, 1) // Single retry only
+			if isOAuthRedirectWithAuthCode(currentURL, urlRedirectOauth) {
+				if authCode, err := extractAuthCodeWithRetry(currentURL, 1); err == nil {
+					log.Printf("Quick final check found auth code: %s", authCode)
+					return authCode, nil
+				}
+			}
+			break // Exit the loop to avoid test timeout
+		}
 
-		// Check if we have the redirect URL with auth code
-		if strings.Contains(currentURL, urlRedirectOauth) &&
-			(strings.Contains(currentURL, "authCode=") || strings.Contains(currentURL, "auth_code=")) {
+		// Get current URL safely with retry mechanism
+		currentURL, urlErr := getCurrentURLWithRetry(page, 2) // Reduced retries from 3 to 2
+		if urlErr != nil {
+			log.Printf("Failed to get current URL after retries: %v", urlErr)
+			time.Sleep(500 * time.Millisecond) // Reduced from 1s
+			continue
+		}
+
+		// Check if we have the redirect URL with auth code - use retry mechanism
+		if isOAuthRedirectWithAuthCode(currentURL, urlRedirectOauth) {
 			log.Printf("SUCCESS! Found redirect URL with auth code")
 			log.Printf("Final redirect URL: %s", currentURL)
 
-			// Extract and return auth code
-			authCode, err := extractAuthCodeFromURL(currentURL)
+			// Extract and return auth code with retry
+			authCode, err := extractAuthCodeWithRetry(currentURL, 2) // Reduced retries from 3 to 2
 			if err != nil {
-				return "", fmt.Errorf("failed to extract auth code from URL %s: %w", currentURL, err)
+				log.Printf("Failed to extract auth code after retries: %v", err)
+				// Continue the loop instead of returning error immediately
+				time.Sleep(300 * time.Millisecond) // Reduced from 500ms
+				continue
 			}
 			log.Printf("Successfully extracted auth code: %s", authCode)
 			return authCode, nil
 		}
 
-		// Check if we're stuck on the same URL and try to help with navigation
+		// Log progress every 5 seconds
+		if int(elapsed.Seconds())%5 == 0 && elapsed > 5*time.Second {
+			remaining := timeout - elapsed
+			log.Printf("OAuth progress: %v elapsed, %v remaining, current URL: %s",
+				elapsed.Round(time.Second), remaining.Round(time.Second), currentURL)
+		} // Check if we're stuck on the same URL and try to help with navigation
 		if currentURL == lastURL {
 			stuckCounter++
-			if stuckCounter > 6 { // After 3 seconds of being stuck
-				log.Println("Page seems stuck, attempting navigation assistance...")
+			if stuckCounter > 3 { // Reduced from 4 - after 1.5 seconds of being stuck (3 * 500ms)
+				log.Printf("Page seems stuck on URL: %s, attempting navigation assistance...", currentURL)
 
-				// Try to click continue buttons using JavaScript (safer approach)
-				buttonClicked, err := page.Evaluate(`
-					() => {
-						const buttonSelectors = [
-							'.btn-continue',
-							'.btn-submit', 
-							'.btn-confirm',
-							'button[type="submit"]',
-							'.submit-button',
-							'[data-testid="continue-btn"]',
-							'[data-testid="submit-btn"]'
-						];
-						
-						for (const selector of buttonSelectors) {
-							const buttons = document.querySelectorAll(selector);
-							for (const button of buttons) {
-								if (button.offsetParent !== null && !button.disabled) {
-									button.click();
-									return 'clicked_' + selector;
-								}
-							}
-						}
-						
-						// Also try buttons with specific text content
-						const allButtons = document.querySelectorAll('button');
-						for (const button of allButtons) {
-							if (button.offsetParent !== null && !button.disabled) {
-								const text = button.textContent?.toLowerCase() || '';
-								if (text.includes('lanjut') || text.includes('continue') || 
-									text.includes('konfirm') || text.includes('confirm') ||
-									text.includes('next') || text.includes('submit')) {
-									button.click();
-									return 'clicked_text_button';
-								}
-							}
-						}
-						
-						return 'no_buttons_found';
+				// First, check if we've already reached the redirect URL but missed the auth code
+				if strings.Contains(currentURL, urlRedirectOauth) {
+					log.Printf("Already on redirect URL, checking for auth code with retry...")
+					authCode, err := extractAuthCodeWithRetry(currentURL, 2) // Reduced retries
+					if err == nil {
+						log.Printf("Found auth code in current URL: %s", authCode)
+						return authCode, nil
 					}
-				`)
-
-				if err != nil {
-					log.Printf("Navigation assistance failed: %v", err)
-				} else if buttonClicked != "no_buttons_found" {
-					log.Printf("Clicked button to help navigation: %v", buttonClicked)
-					time.Sleep(2 * time.Second) // Wait longer after clicking
+					log.Printf("Could not extract auth code from redirect URL: %v", err)
 				}
 
-				stuckCounter = 0 // Reset counter
+				// Try navigation assistance with reduced retries for speed
+				success := performNavigationAssistanceWithRetry(page, 1) // Reduced from 2 to 1
+				if success {
+					// Wait shorter time after successful navigation assistance
+					time.Sleep(1 * time.Second) // Reduced from 2s
+
+					// Check URL again after assistance
+					newURL, err := getCurrentURLWithRetry(page, 2) // Reduced retries
+					if err == nil && newURL != currentURL {
+						log.Printf("Navigation assistance worked! URL changed from %s to %s", currentURL, newURL)
+						lastURL = newURL
+						stuckCounter = 0 // Reset counter after successful navigation
+						continue
+					}
+				}
+
+				stuckCounter = 0 // Reset counter after attempting assistance
 			}
 		} else {
 			stuckCounter = 0
 			lastURL = currentURL
 		}
 
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(400 * time.Millisecond) // Reduced from 500ms for faster polling
 	}
 
 	// If we reach here, we timed out without finding the auth code
-	oauth := page.URL()
-	log.Printf("Timeout reached after 30 seconds")
-	log.Printf("Final URL when timeout occurred: %s", oauth)
-
-	if oauth == "" {
-		return "", fmt.Errorf("Error: Could not retrieve OAuth URL")
+	finalURL, urlErr := getCurrentURLWithRetry(page, 2) // Reduced retries for final check
+	if urlErr != nil {
+		log.Printf("Failed to get final URL: %v", urlErr)
+		return "", fmt.Errorf("Timeout: Could not retrieve final OAuth URL: %w", urlErr)
 	}
 
-	// Try to extract auth code from final URL as fallback
-	authCode, err := extractAuthCodeFromURL(oauth)
+	log.Printf("Timeout reached after %v", timeout)
+	log.Printf("Final URL when timeout occurred: %s", finalURL)
+
+	if finalURL == "" {
+		return "", fmt.Errorf("Error: Could not retrieve OAuth URL after timeout")
+	}
+
+	// Try to extract auth code from final URL as fallback with reduced retries
+	authCode, err := extractAuthCodeWithRetry(finalURL, 2) // Reduced from 3 to 2
 	if err != nil {
-		// Fallback to string parsing if URL parsing fails
+		// Enhanced fallback to string parsing if URL parsing fails
 		log.Printf("URL parsing failed, trying alternative extraction: %v", err)
-
-		// Clean the URL first
-		cleanedURL := strings.Replace(oauth, urlRedirectOauth, "", 1)
-
-		// First try to find "authCode="
-		if strings.Contains(cleanedURL, "authCode=") {
-			parts := strings.Split(cleanedURL, "authCode=")
-			if len(parts) >= 2 {
-				authCode = strings.Split(parts[1], "&")[0]
-			}
-		}
-
-		// If authCode not found, try "auth_code="
-		if authCode == "" && strings.Contains(cleanedURL, "auth_code=") {
-			parts := strings.Split(cleanedURL, "auth_code=")
-			if len(parts) >= 2 {
-				authCode = strings.Split(parts[1], "&")[0]
-			}
-		}
+		authCode = extractAuthCodeFallback(finalURL, urlRedirectOauth)
 
 		// Check if we found any auth code
 		if authCode == "" {
-			return "", fmt.Errorf("Timeout: Auth code not found in final URL: %s", oauth)
+			return "", fmt.Errorf("Timeout: Auth code not found in final URL after %v: %s", timeout, finalURL)
 		}
 	}
 
 	log.Printf("Auth code extracted from timeout URL: %s", authCode)
 	return authCode, nil
+}
+
+// extractAuthCodeFallback performs fallback auth code extraction using string parsing
+func extractAuthCodeFallback(oauth, urlRedirectOauth string) string {
+	// Clean the URL first
+	cleanedURL := strings.Replace(oauth, urlRedirectOauth, "", 1)
+
+	// First try to find "authCode="
+	if strings.Contains(cleanedURL, "authCode=") {
+		parts := strings.Split(cleanedURL, "authCode=")
+		if len(parts) >= 2 {
+			return strings.Split(parts[1], "&")[0]
+		}
+	}
+
+	// If authCode not found, try "auth_code="
+	if strings.Contains(cleanedURL, "auth_code=") {
+		parts := strings.Split(cleanedURL, "auth_code=")
+		if len(parts) >= 2 {
+			return strings.Split(parts[1], "&")[0]
+		}
+	}
+
+	return ""
+}
+
+// waitForURLChangeWithRetry waits for URL to change with retry mechanism
+func waitForURLChangeWithRetry(page playwright.Page, previousURL string, timeout time.Duration) (string, bool) {
+	start := time.Now()
+	checkInterval := 100 * time.Millisecond
+
+	for time.Since(start) < timeout {
+		currentURL, err := getCurrentURLWithRetry(page, 2)
+		if err != nil {
+			log.Printf("Failed to get URL during change detection: %v", err)
+			time.Sleep(checkInterval)
+			continue
+		}
+
+		if currentURL != previousURL {
+			log.Printf("URL changed from %s to %s", previousURL, currentURL)
+			return currentURL, true
+		}
+
+		time.Sleep(checkInterval)
+	}
+
+	return previousURL, false
 }
 
 func GetAccessToken(authCode string) string {

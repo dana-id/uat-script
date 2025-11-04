@@ -69,7 +69,6 @@ def create_test_order_init():
     
     # Set the partner reference number
     json_dict["partnerReferenceNo"] = generate_partner_reference_no()
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=300)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
@@ -93,7 +92,6 @@ def create_test_order_canceled():
     
     # Set the original partner reference number
     json_dict_cancel["originalPartnerReferenceNo"] = data_order[0]
-    json_dict_cancel["merchantId"] = merchant_id
 
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict_cancel)
@@ -128,7 +126,6 @@ def test_query_payment_created_order(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
 
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -155,7 +152,6 @@ def test_query_payment_paid_order():
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_paid_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -178,7 +174,6 @@ def test_query_payment_canceled_order(test_order_canceled_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_canceled_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -200,7 +195,6 @@ def test_query_payment_invalid_format(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -242,7 +236,6 @@ def test_query_payment_invalid_mandatory_field(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -281,7 +274,6 @@ def test_query_payment_unauthorized(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -315,7 +307,6 @@ def test_query_payment_transaction_not_found(test_order_reference_number):
     
     # Modify the reference number to ensure it's not found
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number + "_NOT_FOUND"
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -343,7 +334,6 @@ def test_query_payment_general_error(test_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)

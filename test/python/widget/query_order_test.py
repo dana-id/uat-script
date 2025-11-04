@@ -68,7 +68,6 @@ def create_widget_order_init():
 
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -90,7 +89,6 @@ def create_widget_order_paying():
 
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -111,7 +109,6 @@ def create_widget_order_canceled():
     
     # Set the original partner reference number
     json_dict_cancel["originalPartnerReferenceNo"] = data_order[0]
-    json_dict_cancel["merchantId"] = merchant_id
 
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict_cancel)
@@ -145,7 +142,6 @@ def test_query_order_success_paid():
     case_name = "QueryOrderSuccessPaid"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = widget_order_paid_reference_number
-    json_dict["merchantId"] = merchant_id
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call
@@ -165,7 +161,6 @@ def test_query_order_success_initiated(widget_order_reference_number):
     case_name = "QueryOrderSuccessInitiated"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number
-    json_dict["merchantId"] = merchant_id
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call
@@ -185,7 +180,6 @@ def test_query_order_success_paying(widget_order_paying_reference_number):
     case_name = "QueryOrderSuccessPaying"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = widget_order_paying_reference_number
-    json_dict["merchantId"] = merchant_id
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call
@@ -205,7 +199,6 @@ def test_query_order_success_cancelled(widget_order_canceled_reference_number):
     case_name = "QueryOrderSuccessCancelled"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = widget_order_canceled_reference_number
-    json_dict["merchantId"] = merchant_id
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call
@@ -225,7 +218,6 @@ def test_query_order_not_found():
     case_name = "QueryOrderNotFound"
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["originalPartnerReferenceNo"] = "test123"
-    json_dict["merchantId"] = merchant_id
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call and expect an exception
@@ -257,7 +249,6 @@ def test_query_order_fail_invalid_field(widget_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -385,7 +376,6 @@ def test_query_order_fail_transaction_not_found(widget_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     # Modify the reference number to ensure it's not found
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number + "_NOT_FOUND"
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -416,7 +406,6 @@ def test_query_order_fail_general_error(widget_order_reference_number):
     
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number
-    json_dict["merchantId"] = merchant_id
     
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)

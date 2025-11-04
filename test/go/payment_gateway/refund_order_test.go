@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -34,7 +33,7 @@ func createOrderInit() (string, string, error) {
 		// Set a unique partner reference number
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 		jsonDict["validUpTo"] = helper.GenerateFormattedDate(360, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
@@ -162,7 +161,6 @@ func TestRefundOrderValid(t *testing.T) {
 
 		jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 		jsonDict["partnerRefundNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 		// Create the RefundOrderRequest object and populate it with JSON data
 		refundOrderRequest := &pg.RefundOrderRequest{}
@@ -222,7 +220,6 @@ func TestRefundOrderNotPaid(t *testing.T) {
 
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 	jsonDict["partnerRefundNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the RefundOrderRequest object and populate it with JSON data
 	refundOrderRequest := &pg.RefundOrderRequest{}
@@ -274,7 +271,6 @@ func TestRefundOrderDuplicateRefund(t *testing.T) {
 
 		jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 		jsonDict["partnerRefundNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 		// Create the RefundOrderRequest object and populate it with JSON data
 		refundOrderRequest := &pg.RefundOrderRequest{}
@@ -332,7 +328,6 @@ func TestRefundOrderExceedTransactionLimit(t *testing.T) {
 
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 	jsonDict["partnerRefundNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the RefundOrderRequest object and populate it with JSON data
 	refundOrderRequest := &pg.RefundOrderRequest{}
@@ -779,7 +774,6 @@ func TestRefundOrderIdempotent(t *testing.T) {
 
 		jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 		jsonDict["partnerRefundNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 		// Create the RefundOrderRequest object and populate it with JSON data
 		refundOrderRequest := &pg.RefundOrderRequest{}
@@ -837,7 +831,6 @@ func TestRefundOrderNotExist(t *testing.T) {
 	partnerReferenceNo := "7fcd0a69"
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 	jsonDict["partnerRefundNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the RefundOrderRequest object and populate it with JSON data
 	refundOrderRequest := &pg.RefundOrderRequest{}

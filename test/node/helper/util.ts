@@ -17,6 +17,55 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
+ * Recursively replaces ${VARIABLE_NAME} patterns with environment variables
+ * 
+ * This function traverses through objects, arrays, and strings to find template variables
+ * in the format ${VARIABLE_NAME} and replaces them with corresponding environment variable values.
+ * 
+ * @param {any} data - The data to process (can be object, array, string, or primitive)
+ * @returns {any} The data with template variables replaced
+ * 
+ * @example
+ * ```typescript
+ * const data = { merchantId: "${MERCHANT_ID}", amount: 100 };
+ * const result = replaceTemplateValues(data);
+ * // Result: { merchantId: "216620010003042554953", amount: 100 }
+ * ```
+ */
+function replaceTemplateValues(data: any): any {
+  if (typeof data === 'object' && data !== null) {
+    if (Array.isArray(data)) {
+      // Handle arrays
+      return data.map(item => replaceTemplateValues(item));
+    } else {
+      // Handle objects
+      const result: Record<string, any> = {};
+      for (const [key, value] of Object.entries(data)) {
+        result[key] = replaceTemplateValues(value);
+      }
+      return result;
+    }
+  } else if (typeof data === 'string') {
+    // Handle strings - replace ${VARIABLE_NAME} patterns
+    return data.replace(/\$\{([^}]+)\}/g, (match, varName) => {
+      // Convert variable name to uppercase for environment variable lookup
+      const envVarName = varName.toUpperCase();
+      const envValue = process.env[envVarName];
+      
+      if (envValue !== undefined) {
+        // Clean quotes from environment values if present
+        const cleanValue = envValue.replace(/^['"]|['"]$/g, '');
+        return cleanValue;
+      }
+      return match;
+    });
+  }
+  
+  // Return primitive values as-is
+  return data;
+}
+
+/**
  * Splits a string into parts using the specified delimiter
  * 
  * This utility function provides a simple string splitting functionality
@@ -63,12 +112,9 @@ function getRequest<T = Record<string, any>>(jsonPathFile: string, title: string
     const jsonData: Record<string, any> = JSON.parse(fs.readFileSync(jsonPathFile, 'utf8'));
     const request = (jsonData[title]?.[caseName]?.request || {}) as T;
 
-    // Auto-inject merchant ID from environment if available and applicable
-    const merchantId = process.env.MERCHANT_ID;
-    if (merchantId && typeof request === 'object' && request !== null && 'merchantId' in request) {
-      (request as any).merchantId = merchantId;
-    }
-    return request;
+    // Apply template replacement to the entire request object
+    const replacedRequest = replaceTemplateValues(request) as T;
+    return replacedRequest;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`Error reading request data from ${jsonPathFile}: ${errorMessage}`);

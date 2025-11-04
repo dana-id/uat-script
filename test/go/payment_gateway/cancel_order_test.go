@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -43,7 +42,6 @@ func TestCancelOrder(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -455,7 +453,6 @@ func TestCancelOrderInvalidTransactionStatus(t *testing.T) {
 
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
 	jsonDict["partnerRefundNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -644,7 +641,7 @@ func createTestOrderInit() (string, string, error) {
 		// Set a unique partner reference number
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 		jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
@@ -702,7 +699,6 @@ func createOrderRefunded() (string, error) {
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}

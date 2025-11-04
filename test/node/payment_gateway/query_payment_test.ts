@@ -125,7 +125,6 @@ describe('Query Payment Tests', () => {
     const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
     sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
     createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
-    createOrderRequestData.merchantId = merchantId;
     createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     try {

@@ -6,10 +6,52 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 )
+
+// replaceTemplateValues recursively replaces ${VARIABLE_NAME} patterns with environment variables
+func replaceTemplateValues(data interface{}) interface{} {
+	switch v := data.(type) {
+	case map[string]interface{}:
+		result := make(map[string]interface{})
+		for key, value := range v {
+			result[key] = replaceTemplateValues(value)
+		}
+		return result
+	case []interface{}:
+		result := make([]interface{}, len(v))
+		for i, value := range v {
+			result[i] = replaceTemplateValues(value)
+		}
+		return result
+	case string:
+		// Use regex to find and replace ${VARIABLE_NAME} patterns
+		re := regexp.MustCompile(`\$\{([^}]+)\}`)
+		return re.ReplaceAllStringFunc(v, func(match string) string {
+			// Extract variable name (remove ${ and })
+			varName := match[2 : len(match)-1]
+
+			// Convert variable name to uppercase for environment variable lookup
+			envVarName := strings.ToUpper(varName)
+
+			// Get value from environment variable
+			if envValue := os.Getenv(envVarName); envValue != "" {
+				// Clean quotes from environment values if present
+				envValue = strings.Trim(envValue, "'\"")
+				return envValue
+			}
+
+			// If environment variable is not found, return original for dynamic variables
+			fmt.Printf("⚠ Template variable skipped (no env mapping): %s\n", match)
+			return match
+		})
+	default:
+		return data
+	}
+}
 
 // GetRequest loads request data from a JSON file based on the title case and case name
 func GetRequest(jsonPath, titleCase, caseName string) (map[string]interface{}, error) {
@@ -31,24 +73,9 @@ func GetRequest(jsonPath, titleCase, caseName string) (map[string]interface{}, e
 		if caseMap, ok := titleMap[caseName].(map[string]interface{}); ok {
 			// Look for request section
 			if request, ok := caseMap["request"].(map[string]interface{}); ok {
-				// Check for merchantId or mid and replace with value from .env if present
-				// BUT only if the current value is not explicitly empty (for invalid field format tests)
-				merchantIdEnv := os.Getenv("MERCHANT_ID")
-				if merchantIdEnv != "" {
-					if merchantId, ok := request["merchantId"]; ok {
-						// Only replace if the current value is not an empty string (preserve empty strings for invalid tests)
-						if merchantIdStr, isString := merchantId.(string); !isString || merchantIdStr != "" {
-							request["merchantId"] = merchantIdEnv
-						}
-					}
-					if mid, ok := request["mid"]; ok {
-						// Only replace if the current value is not an empty string (preserve empty strings for invalid tests)
-						if midStr, isString := mid.(string); !isString || midStr != "" {
-							request["mid"] = merchantIdEnv
-						}
-					}
-				}
-				return request, nil
+				// Apply template replacement to the entire request object
+				replacedRequest := replaceTemplateValues(request).(map[string]interface{})
+				return replacedRequest, nil
 			}
 			return nil, fmt.Errorf("case %s not found in request", caseName)
 		}

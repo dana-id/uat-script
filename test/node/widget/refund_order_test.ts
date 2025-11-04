@@ -42,7 +42,6 @@ describe('RefundOrder Tests', () => {
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique refund reference number and set the merchant ID
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
 
         try {
             // Call the refundOrder API with the request data
@@ -64,7 +63,6 @@ describe('RefundOrder Tests', () => {
         const caseName = 'RefundFailExceedPaymentAmount';
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             const response = await dana.widgetApi.refundOrder(requestData);
             await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
@@ -86,7 +84,6 @@ describe('RefundOrder Tests', () => {
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique refund reference number and set the merchant ID
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);
@@ -113,7 +110,6 @@ describe('RefundOrder Tests', () => {
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique refund reference number and set the merchant ID
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);
@@ -140,7 +136,6 @@ describe('RefundOrder Tests', () => {
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique refund reference number and set the merchant ID
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);
@@ -183,7 +178,6 @@ describe('RefundOrder Tests', () => {
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique refund reference number and set the merchant ID
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);
@@ -242,7 +236,6 @@ describe('RefundOrder Tests', () => {
         // Get the request data from the JSON file
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Set the merchant ID
-        requestData.merchantId = merchantId;
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);
@@ -269,7 +262,6 @@ describe('RefundOrder Tests', () => {
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique refund reference number and set the merchant ID
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);
@@ -329,7 +321,6 @@ describe('RefundOrder Tests', () => {
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique refund reference number and set the merchant ID
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);
@@ -364,7 +355,6 @@ describe('RefundOrder Tests', () => {
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique refund reference number and set the merchant ID
         requestData.partnerRefundNo = generateReferenceNo();
-        requestData.merchantId = merchantId;
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);

@@ -106,7 +106,6 @@ describe('QueryOrder Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         requestData.originalPartnerReferenceNo = sharedOriginalPaidPartnerReference;
-        requestData.merchantId = merchantId;
         try {
             const response = await dana.widgetApi.queryPayment(requestData);
 
@@ -122,7 +121,6 @@ describe('QueryOrder Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         requestData.originalPartnerReferenceNo = sharedOriginalPartnerReference;
-        requestData.merchantId = merchantId;
         try {
             const response = await dana.widgetApi.queryPayment(requestData);
 
@@ -138,7 +136,6 @@ describe('QueryOrder Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         requestData.originalPartnerReferenceNo = sharedOriginalPayingPartnerReference;
-        requestData.merchantId = merchantId;
         try {
             const response = await dana.widgetApi.queryPayment(requestData);
 
@@ -154,7 +151,6 @@ describe('QueryOrder Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         requestData.originalPartnerReferenceNo = sharedOriginalCanceledPartnerReference;
-        requestData.merchantId = merchantId;
         try {
             const response = await dana.widgetApi.queryPayment(requestData);
 
@@ -170,7 +166,6 @@ describe('QueryOrder Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         requestData.originalPartnerReferenceNo = "test123";
-        requestData.merchantId = merchantId;
         try {
             const response = await dana.widgetApi.queryPayment(requestData);
 

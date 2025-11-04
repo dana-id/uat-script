@@ -4,8 +4,54 @@ import functools
 from pprint import pprint
 import random
 import os
+import re
 from uuid import uuid4
 from datetime import datetime, timezone, timedelta
+
+def replace_template_values(data):
+    """
+    Recursively replaces ${VARIABLE_NAME} patterns with environment variables.
+    
+    This function traverses through objects, arrays, and strings to find template variables
+    in the format ${VARIABLE_NAME} and replaces them with corresponding environment variable values.
+    
+    :param data: The data to process (can be dict, list, string, or primitive)
+    :return: The data with template variables replaced
+    
+    Example:
+        data = {"merchantId": "${MERCHANT_ID}", "amount": 100}
+        result = replace_template_values(data)
+        # Result: {"merchantId": "216620010003042554953", "amount": 100}
+    """
+    if isinstance(data, dict):
+        # Handle dictionaries
+        result = {}
+        for key, value in data.items():
+            result[key] = replace_template_values(value)
+        return result
+    elif isinstance(data, list):
+        # Handle lists
+        return [replace_template_values(item) for item in data]
+    elif isinstance(data, str):
+        # Handle strings - replace ${VARIABLE_NAME} patterns
+        def replace_func(match):
+            var_name = match.group(1)
+            # Convert variable name to uppercase for environment variable lookup
+            env_var_name = var_name.upper()
+            env_value = os.getenv(env_var_name)
+            
+            if env_value is not None:
+                # Clean quotes from environment values if present
+                clean_value = env_value.strip('\'"')
+                return clean_value
+            
+            # If environment variable is not found, return original for dynamic variables
+            return match.group(0)
+        
+        return re.sub(r'\$\{([^}]+)\}', replace_func, data)
+    else:
+        # Return primitive values as-is
+        return data
 
 def generate_partner_reference_no():
     return str(uuid4())
@@ -27,7 +73,7 @@ def with_delay(delay_seconds=random.uniform(0.5, 1.5)):
         return wrapper
     return decorator
 
-def get_request_with_delimiter(input_string: str, delimiter: str) -> list:
+def get_request_with_delimiter(input_string, delimiter):
         """
         Splits a string into parts using the specified delimiter.
 
@@ -37,7 +83,7 @@ def get_request_with_delimiter(input_string: str, delimiter: str) -> list:
         """
         return input_string.split(delimiter)
 
-def get_request(json_path_file: str, title: str, data: str) -> dict:
+def get_request(json_path_file, title, data):
     """
     Reads a JSON file and retrieves the request data based on the given title and data keys.
 
@@ -52,9 +98,12 @@ def get_request(json_path_file: str, title: str, data: str) -> dict:
     # Navigate to the specific request data
     request_data = json_data.get(title, {}).get(data, {}).get("request", {})
     
-    return request_data
+    # Apply template replacement to the entire request object
+    replaced_request = replace_template_values(request_data)
+    
+    return replaced_request
 
-def get_response(json_path_file: str, title: str, data: str) -> dict:
+def get_response(json_path_file, title, data):
     """
     Reads a JSON file and retrieves the request data based on the given title and data keys.
 
@@ -71,7 +120,7 @@ def get_response(json_path_file: str, title: str, data: str) -> dict:
     
     return response_data
 
-def get_response_code(json_path_file: str, title: str, data: str) -> dict:
+def get_response_code(json_path_file, title, data):
     """
     Reads a JSON file and retrieves the request data based on the given title and data keys.
 

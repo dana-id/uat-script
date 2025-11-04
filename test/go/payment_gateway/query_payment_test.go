@@ -3,7 +3,6 @@ package payment_gateway_test
 import (
 	"context"
 	"encoding/json"
-	"os"
 	"testing"
 	"time"
 
@@ -36,7 +35,7 @@ func createOrder() (string, string, error) {
 		// Set a unique partner reference number
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 		jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
@@ -90,7 +89,6 @@ func createOrderCancelQuery() (string, error) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -142,7 +140,6 @@ func TestQueryPaymentCreatedOrder(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -201,7 +198,6 @@ func TestQueryPaymentPaidOrder(t *testing.T) {
 
 		// Set the correct partner reference number
 		jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 		// Create the QueryPaymentRequest object and populate it with JSON data
 		queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -265,7 +261,6 @@ func TestQueryPaymentCanceledOrder(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -327,7 +322,6 @@ func TestQueryPaymentInvalidFormat(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -383,7 +377,6 @@ func TestQueryPaymentInvalidMandatoryField(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -439,7 +432,6 @@ func TestQueryPaymentUnauthorized(t *testing.T) {
 
 	// Set the correct partner reference number
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}
@@ -505,7 +497,6 @@ func TestQueryPaymentTransactionNotFound(t *testing.T) {
 
 	// Set the partner reference number with a modification to ensure it's not found
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo + "test"
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
 
 	// Create the QueryPaymentRequest object and populate it with JSON data
 	queryPaymentRequest := &pg.QueryPaymentRequest{}

@@ -110,7 +110,6 @@ describe('Payment Gateway - Refund Order Tests', () => {
         const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
         sharedOriginalPartnerReference = generatePartnerReferenceNo();
         createOrderRequestData.partnerReferenceNo = sharedOriginalPartnerReference
-        createOrderRequestData.merchantId = merchantId;
         createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
         await dana.paymentGatewayApi.createOrder(createOrderRequestData);
     }
@@ -129,7 +128,6 @@ describe('Payment Gateway - Refund Order Tests', () => {
         const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
         sharedOriginalPaidPartnerReference = generatePartnerReferenceNo();
         createOrderRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
-        createOrderRequestData.merchantId = merchantId;
         createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 6 minutes from now
 
         try {

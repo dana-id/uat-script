@@ -85,19 +85,15 @@ func TestConsultPayInvalidFieldFormat(t *testing.T) {
 	// Make the API call - expecting it to fail
 	ctx := context.Background()
 	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.ConsultPay(ctx).ConsultPayRequest(*consultPayRequest).Execute()
-	if httpResponse != nil {
-		defer httpResponse.Body.Close()
-	}
-
-	// Expecting an error for invalid field format
-	if err == nil {
-		t.Fatal("Expected an error for invalid field format, but got none")
-	}
-
-	// Validate the error response
-	err = helper.AssertFailResponse(consultPayJsonPath, consultPayTitleCase, caseName, err.Error(), nil)
 	if err != nil {
-		t.Fatalf("Assertion failed: %v", err)
+		// Assert the API error response
+		err = helper.AssertFailResponse(consultPayJsonPath, consultPayTitleCase, caseName, httpResponse, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+	} else {
+		httpResponse.Body.Close()
+		t.Fatal("Expected error but got successful response")
 	}
 }
 

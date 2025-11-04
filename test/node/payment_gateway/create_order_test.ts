@@ -95,7 +95,6 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 1 hour from now
     try {
       // Execute create order API call
@@ -127,7 +126,6 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 9 hours and 43 minutes from now
 
     try {
@@ -159,7 +157,6 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(1800);
 
     try {
@@ -191,7 +188,6 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 1 hour from now
     requestData.externalStoreId = externalShopId;
     
@@ -219,7 +215,6 @@ describe('Payment Gateway - Create Order Tests', () => {
       // Assign unique reference and merchant ID for test isolation
       const partnerReferenceNo = generatePartnerReferenceNo();
       requestData.partnerReferenceNo = partnerReferenceNo;
-      requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
       try {
@@ -261,7 +256,6 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     try {
@@ -297,7 +291,6 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     try {
@@ -349,7 +342,6 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.merchantId = merchantId;
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     // Custom headers: deliberately omit X-TIMESTAMP to trigger validation error

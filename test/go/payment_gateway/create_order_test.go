@@ -50,7 +50,7 @@ func TestCreateOrderRedirectScenario(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
@@ -109,7 +109,7 @@ func TestCreateOrderApiScenario(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
@@ -172,7 +172,7 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["externalStoreId"] = os.Getenv("EXTERNAL_SHOP_ID")
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
@@ -259,7 +259,7 @@ func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 		// Set a unique partner reference number
 		partnerReferenceNo := generatePartnerReferenceNo()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-		jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 		jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
@@ -339,7 +339,7 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(360, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
@@ -399,7 +399,7 @@ func TestCreateOrderInvalidFieldFormat(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
@@ -448,7 +448,7 @@ func TestCreateOrderInconsistentRequest(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderByApiRequest object and populate it with JSON data
@@ -511,7 +511,7 @@ func TestCreateOrderInvalidMandatoryField(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderRequest object and populate it with JSON data
@@ -575,7 +575,7 @@ func TestCreateOrderUnauthorized(t *testing.T) {
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["merchantId"] = os.Getenv("MERCHANT_ID")
+
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
 
 	// Create the CreateOrderByApiRequest object and populate it with JSON data

@@ -60,7 +60,6 @@ describe('Payment Gateway - Consult Pay Tests', () => {
     const requestData: ConsultPayRequest = getRequest<ConsultPayRequest>(jsonPathFile, titleCase, caseName);
 
     // Set merchant ID for the request
-    requestData.merchantId = merchantId;
 
     try {
       // Execute consult pay API call
@@ -121,7 +120,6 @@ describe('Payment Gateway - Consult Pay Tests', () => {
     const requestData: ConsultPayRequest = getRequest<ConsultPayRequest>(jsonPathFile, titleCase, caseName);
 
     // Set merchant ID for the request
-    requestData.merchantId = merchantId;
 
     try {
       // API endpoint configuration

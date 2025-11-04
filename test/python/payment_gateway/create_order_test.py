@@ -53,7 +53,6 @@ def test_create_order_redirect_scenario():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
@@ -89,7 +88,6 @@ def test_create_order_api_scenario():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
@@ -113,7 +111,6 @@ def test_create_order_network_pay_pg_qris():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     json_dict["externalStoreId"] = external_store_id
 
@@ -142,7 +139,6 @@ def test_create_order_network_pay_pg_other_wallet():
         # Set a unique partner reference number
         partner_reference_no = generate_partner_reference_no()
         json_dict["partnerReferenceNo"] = partner_reference_no
-        json_dict["merchantId"] = merchant_id
         json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
         
         # Convert the request data to a CreateOrderRequest object
@@ -175,7 +171,6 @@ def test_create_order_network_pay_pg_other_va_bank():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
@@ -198,7 +193,6 @@ def test_create_order_invalid_field_format():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -224,7 +218,6 @@ def test_create_order_inconsistent_request():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
@@ -265,7 +258,6 @@ def test_create_order_invalid_mandatory_field():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
 
     # Convert the request data to a CreateOrderRequest object
@@ -305,7 +297,6 @@ def test_create_order_unauthorized():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["merchantId"] = merchant_id
     json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
