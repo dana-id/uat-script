@@ -32,13 +32,23 @@ def extract_mobile_from_url(url):
         print(f'Error extracting mobile number: {e}')
     return '0811742234'
 
-async def automate_oauth_simple(phone_number=None, pin=None, max_retries=3):
+async def automate_oauth_simple(phone_number=None, pin=None, max_retries=3, ci_mode=False):
     """
     Simple OAuth automation with retry logic.
     Opens full desktop Chrome and waits for auth code in URL.
+    ci_mode: optimizes timeouts and browser args for CI environments
     """
     mobile_number = phone_number or extract_mobile_from_url(oauth_url)
     used_pin = pin or PIN
+    
+    # Adjust timeouts for CI
+    if ci_mode:
+        max_retries = 2  # Fewer retries in CI
+        oauth_timeout = 20  # Shorter timeout in CI
+        wait_timeout = 2000  # Shorter waits in CI
+    else:
+        oauth_timeout = 30
+        wait_timeout = 3000
     
     for attempt in range(max_retries):
         print(f"\nOAuth Attempt {attempt + 1}/{max_retries}")
@@ -46,20 +56,31 @@ async def automate_oauth_simple(phone_number=None, pin=None, max_retries=3):
         print(f"Using PIN: {used_pin}")
         
         async with async_playwright() as p:
-            # Launch full desktop Chrome
+            # Launch full desktop Chrome with CI-optimized args
+            browser_args = [
+                '--disable-gpu',
+                '--disable-web-security',
+                '--disable-features=IsolateOrigins',
+                '--disable-site-isolation-trials',
+                '--disable-features=BlockInsecurePrivateNetworkRequests',
+                '--disable-blink-features=AutomationControlled',
+                '--no-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-extensions'
+            ]
+            
+            if ci_mode:
+                browser_args.extend([
+                    '--disable-setuid-sandbox',
+                    '--disable-background-timer-throttling',
+                    '--disable-renderer-backgrounding',
+                    '--disable-features=TranslateUI',
+                    '--disable-ipc-flooding-protection',
+                ])
+            
             browser = await p.chromium.launch(
                 headless=True,
-                args=[
-                    '--disable-gpu',
-                    '--disable-web-security',
-                    '--disable-features=IsolateOrigins',
-                    '--disable-site-isolation-trials',
-                    '--disable-features=BlockInsecurePrivateNetworkRequests',
-                    '--disable-blink-features=AutomationControlled',
-                    '--no-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-extensions'
-                ]
+                args=browser_args
             )
             
             context = await browser.new_context(
@@ -73,22 +94,22 @@ async def automate_oauth_simple(phone_number=None, pin=None, max_retries=3):
                 # Navigate to OAuth URL
                 print(f"Opening OAuth URL...")
                 await page.goto(oauth_url, wait_until='domcontentloaded', timeout=30000)
-                await page.wait_for_timeout(3000)
+                await page.wait_for_timeout(wait_timeout)
                 
                 # Step 1: Fill phone number
                 print("Filling phone number...")
                 await fill_phone_number(page, mobile_number)
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(wait_timeout // 2)
                 
                 # Step 2: Click continue/submit
                 print("Clicking continue...")
                 await click_continue_button(page)
-                await page.wait_for_timeout(3000)
+                await page.wait_for_timeout(wait_timeout)
                 
                 # Step 3: Fill PIN
                 print("Filling PIN...")
                 await fill_pin(page, used_pin)
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(wait_timeout // 2)
                 
                 # Step 4: Click final submit
                 print("Clicking final submit...")
@@ -96,7 +117,7 @@ async def automate_oauth_simple(phone_number=None, pin=None, max_retries=3):
                 
                 # Step 5: Wait for auth code with retry
                 print("Waiting for auth code in URL...")
-                auth_code = await wait_for_auth_code(page, timeout=30)
+                auth_code = await wait_for_auth_code(page, timeout=oauth_timeout)
                 
                 if auth_code:
                     print(f"SUCCESS! Auth code: {auth_code}")
@@ -113,8 +134,9 @@ async def automate_oauth_simple(phone_number=None, pin=None, max_retries=3):
                 
         # Wait before retry
         if attempt < max_retries - 1:
-            print(f"Waiting 3 seconds before retry...")
-            await asyncio.sleep(3)
+            retry_wait = 2 if ci_mode else 3
+            print(f"Waiting {retry_wait} seconds before retry...")
+            await asyncio.sleep(retry_wait)
     
     print(f"All {max_retries} attempts failed!")
     return None
@@ -240,7 +262,9 @@ async def wait_for_auth_code(page, timeout=30):
 # Simple alias for backward compatibility
 async def automate_oauth(phone_number=None, pin=None, show_log=True):
     """Backward compatible wrapper"""
-    return await automate_oauth_simple(phone_number, pin, max_retries=3)
+    # Detect if running in CI by checking environment variables
+    ci_mode = os.getenv('CI') is not None or os.getenv('GITLAB_CI') is not None
+    return await automate_oauth_simple(phone_number, pin, max_retries=3, ci_mode=ci_mode)
 
 if __name__ == '__main__':
     code = asyncio.run(automate_oauth_simple())

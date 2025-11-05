@@ -8,7 +8,7 @@ import (
 	"github.com/playwright-community/playwright-go"
 )
 
-func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
+func PayOrder(phoneNumber, pin, redirectUrl string) error {
 	// Create a custom allocator with non-headless mode
 	log.Println("Starting payment automation...")
 
@@ -27,10 +27,22 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 		return fmt.Errorf("could not start playwright: %v", err)
 	}
 
-	// Launch browser
+	// Launch browser with CI-optimized settings
 	browserType := pw.Chromium
 	browser, err := browserType.Launch(playwright.BrowserTypeLaunchOptions{
 		Headless: playwright.Bool(true),
+		Args: []string{
+			"--no-sandbox",
+			"--disable-setuid-sandbox",
+			"--disable-dev-shm-usage",
+			"--disable-gpu",
+			"--disable-web-security",
+			"--disable-extensions",
+			"--disable-background-timer-throttling",
+			"--disable-renderer-backgrounding",
+			"--disable-features=TranslateUI",
+			"--disable-ipc-flooding-protection",
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("could not launch browser: %w", err)
@@ -54,7 +66,7 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 	buttonSubmitPhoneNumber := ".agreement__button>.btn-continue"
 	inputPin := ".txt-input-pin-field"
 	buttonPay := ".btn.btn-primary"
-	textFailedPaid := "//*[contains(@class,'lbl-failed')]"
+	textFailedPaid := "div.card-header-content__title.lbl-failed-payment" // More specific selector
 	textSuccess := "//*[contains(@class,'lbl-success')]"
 
 	// Wait for the phone number input to be visible
@@ -101,46 +113,55 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 	// Wait until the buttonPay is visible
 	err = page.Locator(buttonPay).WaitFor(playwright.LocatorWaitForOptions{
 		State:   playwright.WaitForSelectorStateVisible,
-		Timeout: playwright.Float(float64(30 * time.Second / time.Millisecond)),
+		Timeout: playwright.Float(float64(20 * time.Second / time.Millisecond)), // Reduced timeout for CI
 	})
 	if err != nil {
 		return fmt.Errorf("error: buttonPay not visible: %w", err)
 	}
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(2 * time.Second) // Reduced wait time
 
 	page.Locator(buttonPay).Click()
 	log.Println("Clicked Pay button")
 
-	// Wait until the textSuccess is visible
+	// Wait until the textSuccess is visible with shorter timeout
 	err = page.Locator(textSuccess).WaitFor(playwright.LocatorWaitForOptions{
 		State:   playwright.WaitForSelectorStateVisible,
-		Timeout: playwright.Float(float64(30 * time.Second / time.Millisecond)),
+		Timeout: playwright.Float(float64(20 * time.Second / time.Millisecond)), // Reduced timeout for CI
 	})
 	if err != nil {
 		return fmt.Errorf("error: textSuccess not visible: %w", err)
 	}
 
 	log.Println("Payment success label appeared")
+
+	// Second payment verification (simplified)
 	if _, err = page.Goto(redirectUrl); err != nil {
-		log.Fatalf("could not goto: %v", err)
+		return fmt.Errorf("could not goto verification URL: %w", err)
 	}
 	page.WaitForLoadState()
 
-	// Wait until the buttonPay is visible
+	// Wait until the buttonPay is visible for verification
 	err = page.Locator(buttonPay).WaitFor(playwright.LocatorWaitForOptions{
 		State:   playwright.WaitForSelectorStateVisible,
-		Timeout: playwright.Float(float64(30 * time.Second / time.Millisecond)),
+		Timeout: playwright.Float(float64(15 * time.Second / time.Millisecond)), // Shorter timeout
 	})
 	if err != nil {
-		return fmt.Errorf("error: buttonPay not visible: %w", err)
+		return fmt.Errorf("error: verification buttonPay not visible: %w", err)
 	}
 
 	log.Println("Verify payment")
-
 	page.Locator(buttonPay).Click()
-	page.Locator(textFailedPaid).WaitFor()
 
-	fmt.Println("Payment successful!")
+	// Wait for failed payment indicator (this verifies the order was already paid)
+	err = page.Locator(textFailedPaid).WaitFor(playwright.LocatorWaitForOptions{
+		State:   playwright.WaitForSelectorStateVisible,
+		Timeout: playwright.Float(float64(15 * time.Second / time.Millisecond)), // Shorter timeout
+	})
+	if err != nil {
+		return fmt.Errorf("error: textFailedPaid not visible during verification: %w", err)
+	}
+
+	log.Println("Payment successful!")
 	return nil
 }

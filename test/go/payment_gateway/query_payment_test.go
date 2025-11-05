@@ -3,6 +3,7 @@ package payment_gateway_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -114,8 +115,17 @@ func createOrderCancelQuery() (string, error) {
 
 func createOrderPaidQuery(phoneNumber, pin string) (string, error) {
 	partnerReferenceNo, webRedirectUrl, err := createOrder()
-	payment.PayOrder(phoneNumber, pin, webRedirectUrl)
-	return partnerReferenceNo, err
+	if err != nil {
+		return "", fmt.Errorf("failed to create order: %w", err)
+	}
+
+	// Use payment automation with timeout and error handling
+	paymentErr := payment.PayOrder(phoneNumber, pin, webRedirectUrl)
+	if paymentErr != nil {
+		return "", fmt.Errorf("payment automation failed: %w", paymentErr)
+	}
+
+	return partnerReferenceNo, nil
 }
 
 // TestQueryPaymentCreatedOrder tests query the payment with status created but not paid (INIT)
