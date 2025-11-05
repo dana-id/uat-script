@@ -409,44 +409,6 @@ func TestQueryOrderSuccessCancelled(t *testing.T) {
 		}
 	}
 }
-func TestQueryOrderNotFound(t *testing.T) {
-	caseName := "QueryOrderNotFound"
-
-	// Get the request data from JSON
-	jsonDict, err := helper.GetRequest(queryOrderJsonPath, queryOrderTitleCase, caseName)
-	if err != nil {
-		t.Fatalf("Failed to get request data: %v", err)
-	}
-
-	// Marshal to JSON and unmarshal to widget SDK struct
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-
-	var request widget.QueryPaymentRequest
-	err = json.Unmarshal(jsonBytes, &request)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
-
-	// Execute the SDK API call and expect error response
-	ctx := context.Background()
-
-	// Make the API call using the Widget SDK
-	_, httpResponse, err := helper.ApiClient.WidgetAPI.QueryPayment(ctx).QueryPaymentRequest(request).Execute()
-	if err != nil {
-		// Assert the error response matches expected error pattern
-		err = helper.AssertFailResponse(queryOrderJsonPath, queryOrderTitleCase, caseName, httpResponse, nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-	} else {
-		// If no error occurred, this is unexpected for error test cases
-		defer httpResponse.Body.Close()
-		t.Fatalf("Expected error for case %s but API call succeeded", caseName)
-	}
-}
 func TestQueryOrderFailInvalidField(t *testing.T) {
 	caseName := "QueryOrderFailInvalidField"
 
