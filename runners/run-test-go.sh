@@ -184,4 +184,4 @@ run_go_runner(){
 }
 
 # Always execute the runner
-run_go_runner "$@"  
+run_go_runner "$@" 

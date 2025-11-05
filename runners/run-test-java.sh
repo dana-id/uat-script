@@ -556,7 +556,7 @@ main() {
     fi
     
     # Execute runner with all arguments
-    run_java_runner "$@"
+    run_java_runner "$@" 
 }
 
 # Execute main function if script is run directly

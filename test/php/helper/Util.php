@@ -9,6 +9,47 @@ use DanaUat\Helper\Exception;
 class Util
 {   
     /**
+     * Replace template values in a string, array, or object
+     * Replaces ${VARIABLE_NAME} patterns with corresponding environment variable values
+     * 
+     * @param mixed $data The data to process (string, array, or object)
+     * @return mixed The data with template values replaced
+     */
+    public static function replaceTemplateValues($data)
+    {
+        if (is_string($data)) {
+            // Find all ${VARIABLE_NAME} patterns
+            $pattern = '/\$\{([^}]+)\}/';
+            
+            return preg_replace_callback($pattern, function($matches) {
+                $varName = $matches[1];
+                $value = getenv($varName);
+                
+                if ($value !== false) {
+                    return $value;
+                } else {
+                    return $matches[0]; // Return original if env var not found
+                }
+            }, $data);
+        } elseif (is_array($data)) {
+            // Recursively process arrays
+            $result = [];
+            foreach ($data as $key => $value) {
+                $result[$key] = self::replaceTemplateValues($value);
+            }
+            return $result;
+        } elseif (is_object($data)) {
+            // Handle objects by converting to array, processing, then back to object
+            $arrayData = (array) $data;
+            $processedArray = self::replaceTemplateValues($arrayData);
+            return (object) $processedArray;
+        }
+        
+        // Return unchanged for other data types (int, bool, etc.)
+        return $data;
+    }
+
+    /**
      * Function to generate timestamp for Dana API
      * 
      * @param bool $invalidTimestamp Whether to generate an invalid timestamp format
@@ -58,11 +99,12 @@ class Util
             throw new \Exception("Request data not found for {$titleCase}.{$caseName}");
         }
 
-        if (isset($jsonData[$titleCase][$caseName]['request']['merchantId'])) {
-            $jsonData[$titleCase][$caseName]['request']['merchantId'] = getenv('MERCHANT_ID');
-        }
+        $request = $jsonData[$titleCase][$caseName]['request'];
 
-        return $jsonData[$titleCase][$caseName]['request'];
+        // Apply template replacement to the request data
+        $request = self::replaceTemplateValues($request);
+
+        return $request;
     }
 
     /**
@@ -92,7 +134,12 @@ class Util
             throw new \Exception("Response data not found for {$titleCase}.{$caseName}");
         }
 
-        return $jsonData[$titleCase][$caseName]['response'];
+        $response = $jsonData[$titleCase][$caseName]['response'];
+
+        // Apply template replacement to the response data
+        $response = self::replaceTemplateValues($response);
+
+        return $response;
     }
 
     /**

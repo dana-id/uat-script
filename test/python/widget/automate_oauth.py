@@ -1,4 +1,6 @@
 import asyncio
+import os
+import time
 from playwright.async_api import async_playwright
 from urllib.parse import urlparse, parse_qs, unquote
 import json
@@ -7,7 +9,17 @@ import json
 PIN = '123321'  # Replace with your test PIN
 oauth_url = 'https://m.sandbox.dana.id/n/ipg/oauth?partnerId=2025021714245533502768&scopes=CASHIER,AGREEMENT_PAY,QUERY_BALANCE,DEFAULT_BASIC_PROFILE,MINI_DANA&externalId=b3b7e164-a295-4461-8475-8db546f0d509&state=02c92610-aa7c-42b0-bf26-23bb06e4d475&channelId=2025021714245533502768&redirectUrl=https://google.com&timestamp=2025-05-20T22:27:01+00:00&seamlessData=%7B%22mobile%22%3A%220811742234%22%7D&seamlessSign=IN8MCZZMge6C0SOQG4otmP9WE5yTll0%2F6OwgmUV0cfFi1e9Hj8PAWuD1ZanQ9MZcrKH1nwJEKnYTtqtQ3AdpLa24E%2B2W3%2BNJD8nh7FLicjPFQuDEIAdE%2ByEqTfpU5Z8%2B1tdB%2BW3HN4p6ko%2BiSXu28XHZOnxxXbfMZzQ0qwpwhTp76xSi2tH5eU7ksp37G9sjCB3eyFXBR8bWr7NCjDzFL5cxVlTuEZCmLieDLYh%2FiGClPfWj%2F7tnzzppyiPJsG7PjWkuM25%2B%2BwHBcb7DUA1yVllq30lxUpKeogZ3AuY%2Be9%2FeRHrhz6d%2BBFnzowI3Fk2ZA64BR9E8TSpNHyzWKCNc1A%3D%3D&isSnapBI=true'
 
+def extract_auth_code_from_url(url):
+    """Extract auth code from URL parameters"""
+    try:
+        parsed = urlparse(url)
+        params = parse_qs(parsed.query)
+        return params.get('auth_code', [None])[0] or params.get('authCode', [None])[0]
+    except Exception:
+        return None
+
 def extract_mobile_from_url(url):
+    """Extract mobile number from OAuth URL seamless data"""
     try:
         parsed = urlparse(url)
         params = parse_qs(parsed.query)
@@ -20,241 +32,216 @@ def extract_mobile_from_url(url):
         print(f'Error extracting mobile number: {e}')
     return '0811742234'
 
-async def automate_oauth(phone_number=None, pin=None, show_log=False):
+async def automate_oauth_simple(phone_number=None, pin=None, max_retries=3):
     """
-    Automates the OAuth login flow using Playwright in a headless browser, simulating a mobile device.
-    This function navigates to the OAuth URL, enters the provided or extracted phone number, submits it,
-    waits for the PIN input screen, enters the provided or default PIN, and attempts to extract the
-    authorization code from the redirect URL or page content.
-    Args:
-        phone_number (str, optional): The phone number to use for login. If not provided, attempts to extract from the OAuth URL.
-        pin (str, optional): The PIN code to use for authentication. If not provided, uses the default PIN.
-        show_log (bool, optional): If True, prints detailed log messages during the automation process.
-    Returns:
-        str or None: The extracted authorization code if found, otherwise None.
-    Notes:
-        - Requires Playwright and asyncio.
-        - Simulates an iPhone 12 device with Indonesian locale and Jakarta geolocation.
-        - Handles various input field and button selectors to maximize compatibility with different OAuth UIs.
-        - Waits for redirects and listens for URL changes to capture the authorization code.
-        - Closes the browser context after completion.
+    Simple OAuth automation with retry logic.
+    Opens full desktop Chrome and waits for auth code in URL.
     """
-    def log(msg):
-        if show_log:
-            print(msg)
-    log('Starting OAuth automation...')
-    # Use provided phone_number or extract from URL or fallback
     mobile_number = phone_number or extract_mobile_from_url(oauth_url)
-    log(f'Extracted mobile number from URL or param: {mobile_number}')
     used_pin = pin or PIN
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True, slow_mo=0, args=[
-            '--disable-web-security',
-            '--disable-features=IsolateOrigins',
-            '--disable-site-isolation-trials',
-            '--disable-features=BlockInsecurePrivateNetworkRequests',
-            '--disable-blink-features=AutomationControlled',
-            '--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
-        ])
+    
+    for attempt in range(max_retries):
+        print(f"\nOAuth Attempt {attempt + 1}/{max_retries}")
+        print(f"Using mobile: {mobile_number}")
+        print(f"Using PIN: {used_pin}")
         
-        page = await browser.new_page()
-        # Only print browser console messages that are not warnings
-        def handle_console(msg):
-            if msg.type != 'warning' and show_log:
-                print(f'Browser console: {msg.text}')
-        page.on('console', handle_console)
-        page.on('pageerror', lambda err: log(f'Browser page error: {err.message}'))
-        log('Opening OAuth URL...')
-        await page.goto(oauth_url, wait_until='domcontentloaded', timeout=60000)
-        log('Page loaded, waiting for scripts to initialize...')
-        # Reduce wait time for initialization
-        await page.wait_for_timeout(1000)
-        log('Done waiting for initialization')
-        log('Trying to find the phone input field...')
-        await page.evaluate("""
-        (mobile) => {
-            const inputs = document.querySelectorAll('input');
-            for (const input of inputs) {
-                if (input.type === 'tel' || 
-                    input.placeholder === '12312345678' || 
-                    input.maxLength === 13 ||
-                    input.className.includes('phone-number')) {
-                    input.value = mobile;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    return true;
-                }
-            }
-            return false;
-        }
-        """, mobile_number)
-        log('Looking for the submit button...')
-        await page.evaluate("""
-        () => {
-            const buttons = document.querySelectorAll('button');
-            for (const button of buttons) {
-                if (button.type === 'submit' || 
-                    button.innerText.includes('Next') || 
-                    button.innerText.includes('Continue') ||
-                    button.innerText.includes('Submit') ||
-                    button.innerText.includes('Lanjutkan')) {
-                    button.click();
-                    return true;
-                }
-            }
-            return false;
-        }
-        """)
-        log('Waiting for PIN input screen...')
-        # Use selector-based wait for PIN input instead of fixed timeout
-        try:
-            await page.wait_for_selector('.txt-input-pin-field, input[maxlength="6"], input[type="password"]', timeout=3000)
-        except Exception:
-            pass
-        need_to_continue = await page.evaluate("""
-        () => {
-            const continueBtn = document.querySelector('button.btn-continue.fs-unmask.btn.btn-primary');
-            if (continueBtn) {
-                continueBtn.click();
-                return true;
-            }
-            return false;
-        }
-        """)
-        if need_to_continue:
-            log('Clicked another continue button - waiting for PIN input to appear')
-            await page.wait_for_timeout(500)
-        success = await page.evaluate("""
-        (pinCode) => {
-            const specificPinInput = document.querySelector('.txt-input-pin-field');
-            if (specificPinInput) {
-                specificPinInput.value = pinCode;
-                specificPinInput.dispatchEvent(new Event('input', { bubbles: true }));
-                specificPinInput.dispatchEvent(new Event('change', { bubbles: true }));
-                return true;
-            }
-            const inputs = document.querySelectorAll('input');
-            const singlePinInput = Array.from(inputs).find(input => 
-                input.maxLength === 6 && 
-                (input.type === 'text' || input.type === 'tel' || input.type === 'number' || input.inputMode === 'numeric')
-            );
-            if (singlePinInput) {
-                singlePinInput.value = pinCode;
-                singlePinInput.dispatchEvent(new Event('input', { bubbles: true }));
-                singlePinInput.dispatchEvent(new Event('change', { bubbles: true }));
-                return true;
-            }
-            const pinInputs = Array.from(inputs).filter(input => 
-                input.maxLength === 1 || 
-                input.type === 'password' || 
-                input.className.includes('pin')
-            );
-            if (pinInputs.length >= pinCode.length) {
-                for (let i = 0; i < pinCode.length; i++) {
-                    pinInputs[i].value = pinCode.charAt(i);
-                    pinInputs[i].dispatchEvent(new Event('input', { bubbles: true }));
-                    pinInputs[i].dispatchEvent(new Event('change', { bubbles: true }));
-                }
-                return true;
-            }
-            return false;
-        }
-        """, used_pin)
-        if success:
-            log('Successfully entered PIN via JavaScript')
-        else:
-            log('Failed to enter PIN, no suitable input field found')
-        async def try_to_find_and_click_confirm_button():
+        async with async_playwright() as p:
+            # Launch full desktop Chrome
+            browser = await p.chromium.launch(
+                headless=True,
+                args=[
+                    '--disable-gpu',
+                    '--disable-web-security',
+                    '--disable-features=IsolateOrigins',
+                    '--disable-site-isolation-trials',
+                    '--disable-features=BlockInsecurePrivateNetworkRequests',
+                    '--disable-blink-features=AutomationControlled',
+                    '--no-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-extensions'
+                ]
+            )
+            
+            context = await browser.new_context(
+                viewport={'width': 1920, 'height': 1080},
+                user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+            )
+            
+            page = await context.new_page()
+            
             try:
-                button_clicked = await page.evaluate("""
-                () => {
-                    const allButtons = document.querySelectorAll('button');
-                    let continueButton = null;
-                    let backButton = null;
-                    allButtons.forEach((button) => {
-                        const buttonText = button.innerText.trim().toLowerCase();
-                        if (buttonText.includes('lanjut') || 
-                            buttonText.includes('continue') || 
-                            buttonText.includes('submit') || 
-                            buttonText.includes('confirm') || 
-                            buttonText.includes('next') ||
-                            button.className.includes('btn-continue') ||
-                            button.className.includes('btn-submit') ||
-                            button.className.includes('btn-confirm')) {
-                            continueButton = button;
-                        }
-                        if (buttonText.includes('kembali') || 
-                            buttonText.includes('back') || 
-                            button.className.includes('btn-back')) {
-                            backButton = button;
-                        }
-                    });
-                    if (continueButton) {
-                        continueButton.click();
-                        return true;
-                    }
-                    return false;
-                }
-                """)
-                if button_clicked:
-                    await page.wait_for_timeout(500)
-                    return True
+                # Navigate to OAuth URL
+                print(f"Opening OAuth URL...")
+                await page.goto(oauth_url, wait_until='domcontentloaded', timeout=30000)
+                await page.wait_for_timeout(3000)
+                
+                # Step 1: Fill phone number
+                print("Filling phone number...")
+                await fill_phone_number(page, mobile_number)
+                await page.wait_for_timeout(2000)
+                
+                # Step 2: Click continue/submit
+                print("Clicking continue...")
+                await click_continue_button(page)
+                await page.wait_for_timeout(3000)
+                
+                # Step 3: Fill PIN
+                print("Filling PIN...")
+                await fill_pin(page, used_pin)
+                await page.wait_for_timeout(2000)
+                
+                # Step 4: Click final submit
+                print("Clicking final submit...")
+                await click_continue_button(page)
+                
+                # Step 5: Wait for auth code with retry
+                print("Waiting for auth code in URL...")
+                auth_code = await wait_for_auth_code(page, timeout=30)
+                
+                if auth_code:
+                    print(f"SUCCESS! Auth code: {auth_code}")
+                    await browser.close()
+                    return auth_code
+                else:
+                    print(f"Attempt {attempt + 1} failed - no auth code found")
+                    
             except Exception as e:
-                if show_log:
-                    print(f'Error with PIN confirm button: {e}')
-            return False
-        button_clicked = await try_to_find_and_click_confirm_button()
-        if button_clicked:
-            log('Confirm button was clicked, waiting for action to complete...')
-            await page.wait_for_timeout(500)
-        log('Watching for redirects and URL changes...')
-        auth_code = None
-        navigation_event = asyncio.Event()
-        
-        def extract_auth_code_from_url(url):
-            parsed = urlparse(url)
-            params = parse_qs(parsed.query)
-            # Try both 'auth_code' and 'authCode' parameter names
-            return params.get('auth_code', [None])[0] or params.get('authCode', [None])[0]
+                print(f"Attempt {attempt + 1} failed with error: {e}")
+                
+            finally:
+                await browser.close()
+                
+        # Wait before retry
+        if attempt < max_retries - 1:
+            print(f"Waiting 3 seconds before retry...")
+            await asyncio.sleep(3)
+    
+    print(f"All {max_retries} attempts failed!")
+    return None
 
-        async def check_url_for_auth_code():
-            nonlocal auth_code
-            url = page.url
-            code = extract_auth_code_from_url(url)
-            if code:
-                auth_code = code
-                log(f'\n✅ SUCCESS! Auth code found in current URL: {auth_code}')
-                navigation_event.set()
-
-        async def on_frame_navigated(frame):
-            nonlocal auth_code
-            if frame == page.main_frame:
-                url = frame.url
-                code = extract_auth_code_from_url(url)
-                if code:
-                    auth_code = code
-                    log(f'\n✅ SUCCESS! Auth code found in redirect URL: {auth_code}')
-                    navigation_event.set()
-
-        page.on('framenavigated', on_frame_navigated)
-        page.on('load', lambda _: asyncio.create_task(check_url_for_auth_code()))
-
-        # Also check immediately after actions
-        await check_url_for_auth_code()
+async def fill_phone_number(page, mobile_number):
+    """Fill phone number using multiple strategies"""
+    strategies = [
+        "input[type='tel']",
+        "input[placeholder*='phone']",
+        "input[placeholder*='mobile']",
+        "input[maxlength='13']",
+        "input[class*='phone']",
+        "input[class*='mobile']",
+        "input:first-of-type"
+    ]
+    
+    for strategy in strategies:
         try:
-            await asyncio.wait_for(navigation_event.wait(), timeout=15)
-        except asyncio.TimeoutError:
-            log('\n⚠️ Timeout waiting for redirect')
-        if not auth_code:
-            content = await page.content()
-            import re
-            match = re.search(r'auth[_-]?code["\'>: ]+([a-zA-Z0-9_-]+)', content, re.IGNORECASE)
-            if match:
-                auth_code = match.group(1)
-                log(f'Found auth code reference in page content: {auth_code}')
-        await browser.close()
-        log('Browser closed')
-    return auth_code
+            element = await page.query_selector(strategy)
+            if element and await element.is_visible():
+                await element.fill(mobile_number)
+                print(f"Phone filled using: {strategy}")
+                return True
+        except Exception:
+            continue
+    
+    print("Could not find phone input field")
+    return False
+
+async def fill_pin(page, pin):
+    """Fill PIN using multiple strategies"""
+    strategies = [
+        # Single PIN field
+        "input[maxlength='6']",
+        "input[type='password']",
+        "input[class*='pin']",
+        "input[name*='pin']",
+        
+        # Multiple single-digit fields
+        "input[maxlength='1']"
+    ]
+    
+    for strategy in strategies:
+        try:
+            elements = await page.query_selector_all(strategy)
+            if elements:
+                if len(elements) == 1:
+                    # Single PIN field
+                    element = elements[0]
+                    if await element.is_visible():
+                        await element.fill(pin)
+                        print(f"PIN filled using single field: {strategy}")
+                        return True
+                elif len(elements) >= 6:
+                    # Multiple single-digit fields
+                    for i, digit in enumerate(pin[:len(elements)]):
+                        if i < len(elements):
+                            await elements[i].fill(digit)
+                    print(f"PIN filled using multiple fields: {strategy}")
+                    return True
+        except Exception:
+            continue
+    
+    print("Could not find PIN input field")
+    return False
+
+async def click_continue_button(page):
+    """Click continue/submit button using multiple strategies"""
+    strategies = [
+        "button[type='submit']",
+        "button:has-text('Continue')",
+        "button:has-text('Next')",
+        "button:has-text('Submit')",
+        "button:has-text('Lanjutkan')",
+        "button:has-text('Lanjut')",
+        "button[class*='continue']",
+        "button[class*='submit']",
+        "button[class*='btn-primary']"
+    ]
+    
+    for strategy in strategies:
+        try:
+            element = await page.query_selector(strategy)
+            if element and await element.is_visible() and await element.is_enabled():
+                await element.click()
+                print(f"Button clicked using: {strategy}")
+                return True
+        except Exception:
+            continue
+    
+    print("Could not find continue button")
+    return False
+
+async def wait_for_auth_code(page, timeout=30):
+    """Wait for auth code to appear in URL with retry logic"""
+    start_time = time.time()
+    check_interval = 0.5  # Check every 500ms
+    
+    while time.time() - start_time < timeout:
+        try:
+            current_url = page.url
+            auth_code = extract_auth_code_from_url(current_url)
+            
+            if auth_code:
+                return auth_code
+                
+            # Check if we're on redirect URL (google.com)
+            if 'google.com' in current_url:
+                print(f"Checking redirect URL: {current_url}")
+                auth_code = extract_auth_code_from_url(current_url)
+                if auth_code:
+                    return auth_code
+                    
+            await asyncio.sleep(check_interval)
+            
+        except Exception as e:
+            print(f"Error checking URL: {e}")
+            await asyncio.sleep(check_interval)
+    
+    print(f"Timeout after {timeout} seconds")
+    return None
+
+# Simple alias for backward compatibility
+async def automate_oauth(phone_number=None, pin=None, show_log=True):
+    """Backward compatible wrapper"""
+    return await automate_oauth_simple(phone_number, pin, max_retries=3)
 
 if __name__ == '__main__':
-    code = asyncio.run(automate_oauth())
-    print(f'Auth code: {code}')
+    code = asyncio.run(automate_oauth_simple())
+    print(f'Final result - Auth code: {code}')

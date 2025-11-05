@@ -109,6 +109,7 @@ def create_widget_order_canceled():
     
     # Set the original partner reference number
     json_dict_cancel["originalPartnerReferenceNo"] = data_order[0]
+    json_dict_cancel["merchantId"] = merchant_id
 
     # Convert the request data to a CancelOrderRequest object
     cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict_cancel)
