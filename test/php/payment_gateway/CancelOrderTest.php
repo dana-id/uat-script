@@ -12,6 +12,7 @@ use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
+use DanaUat\PaymentGateway\PaymentUtil;
 use Exception;
 
 class CancelOrderTest extends TestCase
@@ -42,6 +43,58 @@ class CancelOrderTest extends TestCase
 
         $dataOrder = self::createOrder();
         self::$sharedOriginalPartnerReference = (string)$dataOrder["partnerReferenceNo"];
+    }
+
+    /**
+     * Create a test order with paid status for refund tests
+     */
+    private static function createPaidOrder(): string
+    {
+        $partnerReferenceNo = PaymentUtil::getOrCreatePaidOrder(
+                self::$apiInstance,
+                self::$jsonPathFile,
+                "CreateOrder",
+                Util::generatePartnerReferenceNo()
+            );
+
+        return $partnerReferenceNo;
+    }
+
+    /**
+     * Refund a paid order using the given partner reference number
+     * 
+     * @param string $originalPartnerReferenceNo The original partner reference number of the paid order
+     * @return string The original partner reference number that was refunded
+     * @throws Exception If refund fails
+     */
+    private static function refundPaidOrder(string $originalPartnerReferenceNo): string
+    {
+        // Get the request data from the JSON file for refund
+        $refundRequestData = Util::getRequest(
+            self::$jsonPathFile,
+            'RefundOrder',
+            'RefundOrderValidScenario'
+        );
+
+        $refundRequestData['originalPartnerReferenceNo'] = $originalPartnerReferenceNo;
+        $refundRequestData['partnerRefundNo'] = Util::generatePartnerReferenceNo(); // Use different reference for refund
+        $refundRequestData['merchantId'] = self::$merchantId;
+
+        $refundRequestObj = ObjectSerializer::deserialize(
+            $refundRequestData,
+            'Dana\PaymentGateway\v1\Model\RefundOrderRequest'
+        );
+
+        echo "Refunding order with reference: $originalPartnerReferenceNo\n";
+        $refundResponse = self::$apiInstance->refundOrder($refundRequestObj);
+        $refundResponseArray = json_decode($refundResponse->__toString(), true);
+
+        // If refund is successful
+        if ($refundResponseArray && $refundResponseArray['responseCode'] === '2005800') {
+            echo "Refund successful for transaction: $originalPartnerReferenceNo\n";
+        }
+
+        return $originalPartnerReferenceNo;
     }
 
     /**
@@ -654,112 +707,49 @@ class CancelOrderTest extends TestCase
             $caseName = 'CancelOrderInvalidTransactionStatus';
 
             try {
-                // Step 1: Create a new order
-                $createOrderRequestData = Util::getRequest(
-                    self::$jsonPathFile,
-                    'CreateOrder',
-                    'CreateOrderRedirect'
-                );
+                // First, create a paid order to refund
+                $originalPartnerReferenceNo = self::createPaidOrder();
 
-                $newPartnerReference = Util::generatePartnerReferenceNo();
-                $createOrderRequestData['partnerReferenceNo'] = $newPartnerReference;
-                $createOrderRequestData['merchantId'] = self::$merchantId;
-                $createOrderRequestData['validUpTo'] = Util::generateFormattedDate(25600, 7);
+                // Attempt to refund the paid order
+                self::refundPaidOrder($originalPartnerReferenceNo);
 
-                // Create the order
-                $createOrderRequestObj = ObjectSerializer::deserialize(
-                    $createOrderRequestData,
-                    'Dana\PaymentGateway\v1\Model\CreateOrderByRedirectRequest'
-                );
-
-                echo "Creating order with reference: $newPartnerReference\n";
-                self::$apiInstance->createOrder($createOrderRequestObj);
-
-                // Wait to ensure order is created but still in INIT status
-                sleep(2);
-
-                // Step 2: Attempt to refund the order while in INIT status
-                echo "Attempting to refund order with reference: $newPartnerReference\n";
-                $refundRequestData = Util::getRequest(
-                    self::$jsonPathFile,
-                    'RefundOrder',
-                    'RefundOrderValidScenario'
-                );
-
-                $refundRequestData['originalPartnerReferenceNo'] = $newPartnerReference;
-                $refundRequestData['partnerRefundNo'] = Util::generatePartnerReferenceNo(); // Use different reference for refund
-                $refundRequestData['merchantId'] = self::$merchantId;
-                $refundRequestData['refundAmount'] = $createOrderRequestData['amount']; // Use same amount as original order
-
-                $refundSuccessful = false;
-
-                try {
-                    $refundRequestObj = ObjectSerializer::deserialize(
-                        $refundRequestData,
-                        'Dana\PaymentGateway\v1\Model\RefundOrderRequest'
-                    );
-
-                    echo "Refunding order with reference: $newPartnerReference\n";
-                    $refundResponse = self::$apiInstance->refundOrder($refundRequestObj);
-                    $refundResponseArray = json_decode($refundResponse->__toString(), true);
-
-                    // If refund is successful, mark it as such
-                    if ($refundResponseArray && $refundResponseArray['responseCode'] === '2005800') {
-                        $refundSuccessful = true;
-                        echo "Refund successful for transaction in INIT status\n";
-                    }
-                } catch (ApiException $refundError) {
-                    $refundResponseContent = (string)$refundError->getResponseBody();
-                    $refundResponseArray = json_decode($refundResponseContent, true);
-
-                    // Handle the case where refund fails due to transaction being in INIT status
-                    if ($refundResponseArray && $refundResponseArray['responseCode'] === '4045800') {
-                        echo "Refund failed as expected for INIT status transaction: " . $refundResponseArray['responseMessage'] . "\n";
-                        // This is expected behavior - transactions in INIT status cannot be refunded
-                        // We'll proceed to cancel the order instead
-                    } else {
-                        // If it's a different error, we should still try to cancel
-                        echo "Refund failed with unexpected error: $refundResponseContent\n";
-                    }
-                } catch (Exception $refundError) {
-                    echo "Refund failed with exception: " . $refundError->getMessage() . "\n";
-                }
-
-                // Step 3: Cancel the order (this should work regardless of refund status)
-                echo "Proceeding to cancel order with reference: $newPartnerReference\n";
-                $cancelRequestData = Util::getRequest(
+                // Now, attempt to cancel the refunded order
+                $requestData = Util::getRequest(
                     self::$jsonPathFile,
                     self::$titleCase,
                     $caseName
                 );
 
-                $cancelRequestData['originalPartnerReferenceNo'] = $newPartnerReference;
-                $cancelRequestData['merchantId'] = self::$merchantId;
-                $cancelRequestData['amount'] = $createOrderRequestData['amount']; // Use original order amount for cancellation
+                $requestData['originalPartnerReferenceNo'] = $originalPartnerReferenceNo;
+                $requestData['merchantId'] = self::$merchantId;
 
+                // Create the request object
                 $cancelOrderRequestObj = ObjectSerializer::deserialize(
-                    $cancelRequestData,
+                    $requestData,
                     'Dana\PaymentGateway\v1\Model\CancelOrderRequest'
                 );
 
-                echo "Cancelling order with reference: $newPartnerReference\n";
-                $cancelResponse = self::$apiInstance->cancelOrder($cancelOrderRequestObj);
+                // Make the API call to cancel the refunded order
+                self::$apiInstance->cancelOrder($cancelOrderRequestObj);
 
-                // Assert the cancellation response
-                Assertion::assertResponse(
+                $this->fail('Expected ApiException for invalid transaction status but the API call succeeded');
+            } catch (ApiException $e) {
+                // We expect a 404 Not Found for invalid transaction status
+                $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for invalid transaction status, got {$e->getCode()}");
+
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
                     self::$jsonPathFile,
                     self::$titleCase,
                     $caseName,
-                    $cancelResponse->__toString(),
-                    ['partnerReferenceNo' => $newPartnerReference]
+                    $responseContent,
+                    ['partnerReferenceNo' => $originalPartnerReferenceNo]
                 );
-
-                echo "Refund was " . ($refundSuccessful ? 'successful' : 'not applicable for INIT status') . ", but cancellation succeeded\n";
-
-                $this->assertTrue(true);
             } catch (Exception $e) {
-                echo "CancelOrderRefundedTransaction test failed: " . $e->getMessage() . "\n";
-                $this->fail('CancelOrderRefundedTransaction test failed: ' . $e->getMessage());
+                $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
     }
