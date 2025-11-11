@@ -145,41 +145,6 @@
                 "responseMessage": "Invalid Mandatory Field X-TIMESTAMP",
                 "responseCode": "4000002"
             }
-        },
-        "ConsultPayBalancedUnauthorized": {
-            "request": {
-                "merchantId": "${MERCHANT_ID}",
-                "amount": {
-                    "value": "12345678.00",
-                    "currency": "IDR"
-                },
-                "additionalInfo": {
-                    "buyer": {
-                        "externalUserId": "8392183912832913821",
-                        "externalUserType": "",
-                        "nickname": "",
-                        "userId": ""
-                    },
-                    "envInfo": {
-                        "sessionId": "8EU6mLl5mUpUBgyRFT4v7DjfQ3fcauthcenter",
-                        "tokenId": "a8d359d6-ca3d-4048-9295-bbea5f6715a6",
-                        "websiteLanguage": "en_US",
-                        "clientIp": "10.15.8.189",
-                        "osType": "Windows.PC",
-                        "appVersion": "1.0",
-                        "sdkVersion": "1.0",
-                        "sourcePlatform": "IPG",
-                        "orderOsType": "IOS",
-                        "merchantAppVersion": "1.0",
-                        "terminalType": "SYSTEM",
-                        "orderTerminalType": "WEB"
-                    }
-                }
-            },
-            "response": {
-                "responseMessage": "Unauthorized",
-                "responseCode": "4010000"
-            }
         }
     },
     "CreateOrder": {
@@ -347,7 +312,7 @@
                     "value": "1.00",
                     "currency": "IDR"
                 },
-                "externalStoreId": "${externalStoreId}",
+                "externalStoreId": "${EXTERNAL_SHOP_ID}",
                 "urlParams": [
                     {
                         "url": "https://tinknet.my.id/v1/test",
@@ -1276,28 +1241,6 @@
                 "responseMessage": "Successful"
             }
         },
-        "RefundOrderExceedsTransactionAmountLimit": {
-            "request": {
-                "merchantId": "${MERCHANT_ID}",
-                "subMerchantId": "",
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
-                "originalReferenceNo": "",
-                "originalExternalId": "",
-                "originalCaptureNo": "",
-                "partnerRefundNo": "${partnerReferenceNo}",
-                "refundAmount": {
-                    "value": "30000.00",
-                    "currency": "IDR"
-                },
-                "externalStoreId": "",
-                "reason": "Customer complain",
-                "additionalInfo": {}
-            },
-            "response": {
-                "responseCode": "4035802",
-                "responseMessage": "Exceeds Transaction Amount Limit"
-            }
-        },
         "RefundOrderNotAllowed": {
             "request": {
                 "merchantId": "${MERCHANT_ID}",
@@ -1309,50 +1252,6 @@
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
                     "value": "435815.00",
-                    "currency": "IDR"
-                },
-                "externalStoreId": "",
-                "reason": "Customer complain",
-                "additionalInfo": {}
-            },
-            "response": {
-                "responseCode": "4035815",
-                "responseMessage": "Transaction Not Permitted"
-            }
-        },
-        "RefundOrderDueToExceedRefundWindowTime": {
-            "request": {
-                "merchantId": "${MERCHANT_ID}",
-                "subMerchantId": "",
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
-                "originalReferenceNo": "",
-                "originalExternalId": "",
-                "originalCaptureNo": "",
-                "partnerRefundNo": "${partnerReferenceNo}",
-                "refundAmount": {
-                    "value": "435816.00",
-                    "currency": "IDR"
-                },
-                "externalStoreId": "",
-                "reason": "Customer complain",
-                "additionalInfo": {}
-            },
-            "response": {
-                "responseCode": "4035815",
-                "responseMessage": "Transaction Not Permitted"
-            }
-        },
-        "RefundOrderMultipleRefund": {
-            "request": {
-                "merchantId": "${MERCHANT_ID}",
-                "subMerchantId": "",
-                "originalPartnerReferenceNo": "${partnerReferenceNo}",
-                "originalReferenceNo": "",
-                "originalExternalId": "",
-                "originalCaptureNo": "",
-                "partnerRefundNo": "${partnerReferenceNo}",
-                "refundAmount": {
-                    "value": "435817.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",

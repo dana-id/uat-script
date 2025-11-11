@@ -56,31 +56,6 @@ def test_apply_ott_success(test_apply_ott_access_token):
     api_response = api_instance.apply_ott(apply_ott_request_obj)
     assert_response(json_path_file, title_case, case_name, ApplyOTTResponse.to_json(api_response))
 
-
-@with_delay()
-def test_apply_ott_fail_invalid_format(test_apply_ott_access_token):
-    case_name = "ApplyOttFailInvalidFormat"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request")
-
-@with_delay()
-def test_apply_ott_fail_missing_or_invalid_mandatory_field(test_apply_ott_access_token):
-    case_name = "ApplyOttFailMissingOrInvalidMandatoryField"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request.")
-
-@with_delay()
-def test_apply_ott_fail_invalid_signature(test_apply_ott_access_token):
-    case_name = "ApplyOttFailInvalidSignature"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request")
-
-@with_delay()
-def test_apply_ott_fail_token_expired(test_apply_ott_access_token):
-    case_name = "ApplyOttFailTokenExpired"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request")
-
 @with_delay()
 def test_apply_ott_fail_token_not_found():
     case_name = "ApplyOttFailTokenNotFound"
@@ -96,30 +71,6 @@ def test_apply_ott_fail_token_not_found():
         assert_response(json_path_file, title_case, case_name, ApplyOTTResponse.to_json(api_response))
     except Exception as e:
         print("Error occurred while processing request:", e)
-
-@with_delay()
-def test_apply_ott_fail_invalid_user_status(test_apply_ott_access_token):
-    case_name = "ApplyOttFailInvalidUserStatus"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request")
-
-@with_delay()
-def test_apply_ott_fail_non_retryable_error(test_apply_ott_access_token):
-    case_name = "ApplyOttFailNonRetryableError"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request")
-
-@with_delay()
-def test_apply_ott_fail_internal_server_error(test_apply_ott_access_token):
-    case_name = "ApplyOttFailInternalServerError"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request")
-
-@with_delay()
-def test_apply_ott_fail_unexpected_response(test_apply_ott_access_token):
-    case_name = "ApplyOttFailUnexpectedResponse"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Need to implement Authorization-Customer header in the request")
 
 def get_access_token(auth_code):
     json_dict = get_request(json_path_file, "ApplyToken", "ApplyTokenSuccess")

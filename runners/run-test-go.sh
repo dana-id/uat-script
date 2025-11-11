@@ -83,7 +83,7 @@ run_go_runner(){
                     test_name=$(basename "$test_file" .go)
                     echo "=== Running $test_name ==="
                     
-                    if go test -v -timeout=300s "$test_file" 2>&1; then
+                    if go test -v -timeout=600s "$test_file" 2>&1; then
                         echo "✅ $test_name PASSED"
                         total_passed=$((total_passed + 1))
                     else

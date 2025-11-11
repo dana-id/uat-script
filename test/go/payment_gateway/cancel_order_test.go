@@ -247,8 +247,8 @@ func TestCancelOrderInvalidMandatoryField(t *testing.T) {
 
 	// Set up the context and endpoint details
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm"
-	resourcePath := "/payment-gateway/v1.0/debit/payment-host-to-host.htm"
+	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm"
+	resourcePath := "/payment-gateway/v1.0/debit/cancel.htm"
 
 	// Set custom headers with empty X-TIMESTAMP to trigger mandatory field error
 	customHeaders := map[string]string{
@@ -435,7 +435,6 @@ func TestCancelOrderWithAccountStatusAbnormal(t *testing.T) {
 }
 
 func TestCancelOrderInvalidTransactionStatus(t *testing.T) {
-	t.Skip("Skip: Test not capable to do automation, need to be run manually CancelOrderInvalidTransactionStatus")
 	// Create an order first
 	partnerReferenceNo, err := createOrderRefunded()
 	if err != nil {
@@ -452,7 +451,6 @@ func TestCancelOrderInvalidTransactionStatus(t *testing.T) {
 	}
 
 	jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
-	jsonDict["partnerRefundNo"] = partnerReferenceNo
 
 	// Create the CancelOrderRequest object and populate it with JSON data
 	cancelOrderRequest := &pg.CancelOrderRequest{}
@@ -560,8 +558,8 @@ func TestCancelOrderUnauthorized(t *testing.T) {
 
 	// Set up the context and endpoint details
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm"
-	resourcePath := "/payment-gateway/v1.0/debit/payment-host-to-host.htm"
+	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm"
+	resourcePath := "/payment-gateway/v1.0/debit/cancel.htm"
 
 	// Set custom headers with invalid authorization to trigger unauthorized error
 	customHeaders := map[string]string{
@@ -686,9 +684,8 @@ func createTestOrderInit() (string, string, error) {
 
 // createTestOrderRefunded creates a test order and then refunds it to achieve refunded status
 func createOrderRefunded() (string, error) {
-	partnerReferenceNo, err := createOrderPaid(helper.TestConfig.PhoneNumber, helper.TestConfig.PIN)
-
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
+		partnerReferenceNo, err := createOrderPaid(helper.TestConfig.PhoneNumber, helper.TestConfig.PIN)
 		// Get the request data from the JSON file
 		jsonDict, err := helper.GetRequest(cancelOrderJsonPath, "RefundOrder", "RefundOrderValidScenario")
 		if err != nil {
@@ -696,28 +693,24 @@ func createOrderRefunded() (string, error) {
 		}
 
 		// Set a unique partner reference number
-		partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["originalPartnerReferenceNo"] = partnerReferenceNo
+		jsonDict["partnerRefundNo"] = partnerReferenceNo
 
 		// Create the CreateOrderRequest object and populate it with JSON data
-		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
+		refundOrderRequest := &pg.RefundOrderRequest{}
 		jsonBytes, err := json.Marshal(jsonDict)
 		if err != nil {
 			return "", err
 		}
 
-		err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
+		err = json.Unmarshal(jsonBytes, refundOrderRequest)
 		if err != nil {
 			return "", err
 		}
 
 		// Make the API call
 		ctx := context.Background()
-		createOrderReq := pg.CreateOrderRequest{
-			CreateOrderByApiRequest: createOrderByApiRequest,
-		}
-		_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+		_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.RefundOrder(ctx).RefundOrderRequest(*refundOrderRequest).Execute()
 		if err != nil {
 			return "", err
 		}

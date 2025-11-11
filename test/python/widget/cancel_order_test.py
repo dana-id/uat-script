@@ -61,34 +61,6 @@ def test_cancel_order_reference_number():
     return generate_partner_reference_no()
 
 @with_delay()
-def test_cancel_order_success_in_process(test_cancel_order_reference_number):
-    # Scenario: CancelOrderSuccessInProcess
-    # Purpose: Verify that an order in process state can be cancelled successfully.
-    # Steps:
-    #   1. Prepare a valid request payload with a unique partner reference number.
-    #   2. Call the cancel_order API endpoint.
-    #   3. Assert the response matches the expected output for a successful case.
-    # Expected: The API returns a response indicating the order is in process or cancelled.
-    """Should successfully cancel the order in process state."""
-    case_name = "CancelOrderSuccessInProcess"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    # Set the correct partner reference number if needed
-    # if "originalPartnerReferenceNo" in json_dict:
-    #     json_dict["originalPartnerReferenceNo"] = test_cancel_order_reference_number
-    # else:
-    #     json_dict["partnerReferenceNo"] = test_cancel_order_reference_number
-    # cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-    # api_response = api_instance.cancel_order(cancel_order_request_obj)
-    # assert_response(
-    #     json_path_file,
-    #     title_case,
-    #     case_name,
-    #     CancelOrderResponse.to_json(api_response),
-    #     {"partnerReferenceNo": test_cancel_order_reference_number}
-    # )
-    pytest.skip("SKIP: Need confirmation on responseMessage. Expected: 'Request is in process', Actual: 'Successful'")
-
-@with_delay()
 def test_cancel_order_fail_user_status_abnormal(test_cancel_order_reference_number):
     # Scenario: CancelOrderFailUserStatusAbnormal
     # Purpose: Verify that the order cannot be cancelled if the user's status is abnormal.
@@ -187,7 +159,7 @@ def test_cancel_order_fail_missing_parameter(test_cancel_order_reference_number)
     # Prepare the headers with the signature
     headers = get_headers_with_signature(
         method="POST",
-        resource_path="/payment-gateway/v1.0/debit/cancel.htm",
+        resource_path="/v1.0/debit/cancel.htm",
         request_obj=json_dict,
         with_timestamp=False
     )
@@ -196,7 +168,7 @@ def test_cancel_order_fail_missing_parameter(test_cancel_order_reference_number)
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm",
+        "https://api.sandbox.dana.id/v1.0/debit/cancel.htm",
         cancel_order_request_obj,
         headers,
         400,  # Bad Request
@@ -398,44 +370,6 @@ def test_cancel_order_fail_order_refunded(test_cancel_order_reference_number):
     case_name = "CancelOrderFailOrderRefunded"
     json_dict = get_request(json_path_file, title_case, case_name)
     pytest.skip("SKIP: Placeholder test")
-
-@with_delay()
-def test_cancel_order_fail_invalid_signature(test_cancel_order_reference_number):
-    pytest.skip("SKIP: No need to test signature for UAT")
-    # Scenario: CancelOrderFailInvalidSignature
-    # Purpose: Verify that the order cannot be cancelled if the request signature is invalid.
-    # Steps:
-    #   1. Prepare a request payload with a partner reference number and an invalid signature.
-    #   2. Call the cancel_order API endpoint.
-    #   3. Assert the response indicates an unauthorized error due to the invalid signature.
-    # Expected: The API returns a 401 Unauthorized response with an appropriate error message.
-    """Should fail to cancel the order when the request has an invalid signature."""
-    # Case name and JSON request preparation
-    case_name = "CancelOrderFailInvalidSignature"
-    json_dict = get_request(json_path_file, title_case, case_name)
-
-    # Ensure the request contains the original partner reference number
-    json_dict["originalPartnerReferenceNo"] = test_cancel_order_reference_number
-    
-    # Create the CancelOrderRequest object from the JSON dictionary
-    cancel_order_request_obj = CancelOrderRequest.from_dict(json_dict)
-
-    # Prepare the headers with an invalid signature
-    headers = get_headers_with_signature(invalid_signature=True)
-
-
-    execute_and_assert_api_error(
-        api_client,
-        "POST",
-        "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm",
-        cancel_order_request_obj,
-        headers,
-        401,  # Unauthorized
-        json_path_file,
-        title_case,
-        case_name,
-        {"partnerReferenceNo": test_cancel_order_reference_number}  
-    )
 
 @with_delay()
 def test_cancel_order_fail_timeout():

@@ -43,9 +43,6 @@ func replaceTemplateValues(data interface{}) interface{} {
 				envValue = strings.Trim(envValue, "'\"")
 				return envValue
 			}
-
-			// If environment variable is not found, return original for dynamic variables
-			fmt.Printf("⚠ Template variable skipped (no env mapping): %s\n", match)
 			return match
 		})
 	default:

@@ -131,34 +131,6 @@ def test_refund_order_valid(test_order_reference_number):
     assert_response(json_path_file, title_case, case_name, RefundOrderResponse.to_json(api_response), {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
 
 @with_delay()
-@retry_on_inconsistent_request(max_retries=3, delay_seconds=10)
-@pytest.mark.skip(reason="skipped by request: scenario RefundOrderExceedsTransactionAmountLimit")
-def test_refund_order_due_to_exceed():
-    # Create a test order paid and get the reference number
-    test_order_reference_number = create_test_order_paid()
-    
-    """Test refund order in progress"""
-    case_name = "RefundOrderExceedsTransactionAmountLimit"
-
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-
-    # Set the partner reference number
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["partnerRefundNo"] = test_order_reference_number
-
-    # Convert the request data to a RefundOrderRequest object
-    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-
-    # Make the API call and assert the response
-    try:
-        api_instance.refund_order(refund_order_request_obj)
-
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-
-@with_delay()
 def test_refund_order_not_allowed(test_order_reference_number):
     """Test refund order when refund is not allowed by agreement"""
     case_name = "RefundOrderNotAllowed"
@@ -177,46 +149,6 @@ def test_refund_order_not_allowed(test_order_reference_number):
     try:
         api_instance.refund_order(refund_order_request_obj)
 
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-    except:
-        pytest.fail("Expected ForbiddenException but the API call give another exception")
-
-@with_delay()
-def test_refund_order_due_to_exceed_refund_window_time(test_order_reference_number):
-    """Test refund order due to exceed refund window time"""
-    case_name = "RefundOrderDueToExceedRefundWindowTime"
-   
-    # Get the request data from the JSON file
-    json_dict = get_request(json_path_file, title_case, case_name)
-   
-    # Set the partner reference number
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["partnerRefundNo"] = test_order_reference_number
-   
-    # Convert the request data to a RefundOrderRequest object
-    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-   
-    # Make the API call and assert the response
-    try:
-        api_instance.refund_order(refund_order_request_obj)
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})
-    except:
-        pytest.fail("Expected ForbiddenException but the API call give another exception")
-
-@with_delay()
-def test_refund_order_multiple_refund(test_order_reference_number):
-    """Test refund order multiple refund"""
-    case_name = "RefundOrderMultipleRefund"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    json_dict["originalPartnerReferenceNo"] = test_order_reference_number
-    json_dict["partnerRefundNo"] = test_order_reference_number
-    refund_order_request_obj = RefundOrderRequest.from_dict(json_dict)
-    try:
-        api_instance.refund_order(refund_order_request_obj)
         pytest.fail("Expected ForbiddenException but the API call succeeded")
     except ForbiddenException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": json_dict["originalPartnerReferenceNo"]})

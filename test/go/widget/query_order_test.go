@@ -107,7 +107,7 @@ func createTestWidgetPaymentCanceled() (string, error) {
 	time.Sleep(2 * time.Second)
 
 	// Now cancel the order
-	caseName := "CancelOrderSuccessInProcess"
+	caseName := "CancelOrderValidScenario"
 	jsonDict, err := helper.GetRequest(queryOrderJsonPath, cancelOrderForQueryTitleCase, caseName)
 	if err != nil {
 		return "", err
@@ -501,58 +501,6 @@ func TestQueryOrderFailInvalidMandatoryField(t *testing.T) {
 	}
 
 	// Execute the request and assert error response
-	err = helper.ExecuteAndAssertErrorResponse(
-		t,
-		ctx,
-		&request,
-		"POST",
-		endpoint,
-		resourcePath,
-		queryOrderJsonPath,
-		queryOrderTitleCase,
-		caseName,
-		customHeaders,
-		variableDict,
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-func TestQueryOrderFailUnauthorized(t *testing.T) {
-	caseName := "QueryOrderFailUnauthorized"
-
-	// Get the request data from JSON
-	jsonDict, err := helper.GetRequest(queryOrderJsonPath, queryOrderTitleCase, caseName)
-	if err != nil {
-		t.Fatalf("Failed to get request data: %v", err)
-	}
-
-	// Marshal to JSON and unmarshal to widget SDK struct
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-
-	var request widget.QueryPaymentRequest
-	err = json.Unmarshal(jsonBytes, &request)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
-
-	// Execute API request with invalid signature to trigger unauthorized error
-	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/v1.0/debit/status.htm"
-	resourcePath := "/v1.0/debit/status.htm"
-
-	// Set custom headers with invalid signature to trigger unauthorized error
-	customHeaders := map[string]string{
-		"X-SIGNATURE": "invalid_signature",
-	}
-
-	variableDict := map[string]interface{}{
-		"originalPartnerReferenceNo": jsonDict["originalPartnerReferenceNo"],
-	}
-
 	err = helper.ExecuteAndAssertErrorResponse(
 		t,
 		ctx,

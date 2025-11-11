@@ -77,11 +77,25 @@ class ApplyTokenTest extends TestCase
             }
         });
     }
-     public function testApplyTokenFailExpiredAuthcode(): void
+
+    /**
+     * Test apply token failure when auth code has already been used
+     * This test verifies that using an auth code twice fails with appropriate error
+     */
+    public function testApplyTokenFailAuthcodeUsed(): void
     {
         Util::withDelay(function () {
-            // Continue with your API call
-            $caseName = 'ApplyTokenFailExpiredAuthcode';
+            $caseName = 'ApplyTokenFailAuthcodeUsed';
+            
+            // Get a fresh auth code for this test
+            $freshAuthCode = OauthUtil::getAuthCode(
+                self::$partnerId,
+                null,
+                self::$phoneNumber,
+                self::$userPin,
+                getenv('REDIRECT_URL_OAUTH')
+            );
+            
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
                 self::$titleCase,
@@ -93,13 +107,31 @@ class ApplyTokenTest extends TestCase
                 'Dana\Widget\v1\Model\ApplyTokenRequest'
             );
 
-            $requestObj->setAuthCode("GtRLpA0TyqK3becMq4dCMnVf1N9KLHNixVfC1800");
+            $requestObj->setAuthCode($freshAuthCode);
 
             try {
-                $apiResponse = self::$apiInstance->applyToken($requestObj);
-                $this->fail('Expected ApiException was not thrown');
+                // First call - should succeed and consume the auth code
+                $firstResponse = self::$apiInstance->applyToken($requestObj);
+                echo "First apply token call succeeded, auth code consumed\n";
+                
+                // Second call with the same auth code - should fail
+                $secondResponse = self::$apiInstance->applyToken($requestObj);
+                $this->fail('Expected ApiException for used auth code but the API call succeeded');
+                
             } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
+                // We expect this to fail on the second call
+                echo "Apply token failed as expected with used auth code: " . $e->getMessage() . "\n";
+                
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
+                    $responseContent
+                );
                 $this->assertTrue(true);
             } catch (Exception $e) {
                 $this->fail('Unexpected exception: ' . $e->getMessage());

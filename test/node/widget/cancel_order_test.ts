@@ -26,14 +26,6 @@ function generateReferenceNo(): string {
 }
 
 describe('CancelOrder Tests', () => {
-    test.skip('should successfully cancel order (in process)', async () => {
-        const caseName = 'CancelOrderSuccessInProcess';
-        const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        try {
-            fail('CancelOrder test is a placeholder.');
-        } catch (e: any) { }
-    });
-
     test('should fail with user status abnormal', async () => {
         const caseName = 'CancelOrderFailUserStatusAbnormal';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
@@ -164,41 +156,6 @@ describe('CancelOrder Tests', () => {
         try {
             fail('CancelOrder test is a placeholder.');
         } catch (e: any) { }
-    });
-
-    test.skip('should fail with invalid signature', async () => {
-        const caseName = 'CancelOrderFailInvalidSignature';
-        const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        
-        try {
-            // Set custom headers with an invalid signature
-            const customHeaders: Record<string, string> = {
-                'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
-            };
-
-            const baseUrl: string = 'https://api.sandbox.dana.id';
-            const apiPath: string = '/v1.0/debit/cancel.htm';
-
-            await executeManualApiRequest(
-                caseName,
-                'POST',
-                baseUrl + apiPath,
-                apiPath,
-                requestData,
-                customHeaders
-            );
-
-            console.log('Expected an error but the API call succeeded');
-            fail('Expected an error but the API call succeeded');
-        } catch (e: any) {
-            if (Number(e.status) === 401) {
-                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else if( e instanceof ResponseError && Number(e.status) === 401) {
-                fail("Expected unauthorized failed but got status code " + e.status);
-            } else {
-                throw e;
-            }
-        }
     });
 
     test('should fail with timeout', async () => {

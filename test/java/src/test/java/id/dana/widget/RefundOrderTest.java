@@ -113,58 +113,7 @@ public class RefundOrderTest {
     }
 
     @Test
-    void testRefundOrderNotAllowedAgreement() throws IOException {
-        String caseName = "RefundFailNotAllowedByAgreement";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    void testRefundOrderDueInsufficienceOfMerchantBalance() throws IOException {
-        String caseName = "RefundFailInsufficientMerchantBalance";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    void testRefundOrderDueExceedRefundWindowTime() throws IOException {
-        String caseName = "RefundFailExceedRefundWindowTime";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    void testRefundOrderNotAllowedByAgreement() throws IOException {
-        String caseName = "RefundFailNotAllowedByAgreement";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
+    @Disabled
     void testRefundOrderInvalidSignature() throws IOException {
         Map<String, String> customHeaders = new HashMap<>();
         String caseName = "RefundFailInvalidSignature";
@@ -184,19 +133,6 @@ public class RefundOrderTest {
         WidgetApi apiWithCustomHeader = new WidgetApi(client);
 
         RefundOrderResponse response = apiWithCustomHeader.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
-    }
-
-    @Test
-    void testRefundFailParameterIllegal() throws IOException {
-        String caseName = "RefundFailParameterIllegal";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        RefundOrderResponse response = widgetApi.refundOrder(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
     }
 

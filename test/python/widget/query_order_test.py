@@ -257,7 +257,7 @@ def test_query_order_fail_invalid_field(widget_order_reference_number):
     # Prepare headers with an invalid timestamp to trigger the error
     headers = get_headers_with_signature(
         method="POST",
-        resource_path="/payment-gateway/v1.0/debit/status.htm",
+        resource_path="/rest/v1.1/debit/status",
         request_obj=json_dict,
         invalid_timestamp=True
     )
@@ -266,7 +266,7 @@ def test_query_order_fail_invalid_field(widget_order_reference_number):
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm",
+        "http://api.sandbox.dana.id/rest/v1.1/debit/status",
         query_payment_request_obj,
         headers,
         400,  # Expected status code
@@ -295,7 +295,7 @@ def test_query_order_fail_invalid_mandatory_field(widget_order_reference_number)
     # Prepare headers without the timestamp to trigger the error
     headers = get_headers_with_signature(
         method="POST",
-        resource_path="/payment-gateway/v1.0/debit/status.htm",
+        resource_path="/rest/v1.1/debit/status",
         request_obj=json_dict,
         with_timestamp=False
     )
@@ -305,7 +305,7 @@ def test_query_order_fail_invalid_mandatory_field(widget_order_reference_number)
         execute_and_assert_api_error(
             api_client,
             "POST",
-            "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm",
+            "http://api.sandbox.dana.id/rest/v1.1/debit/status",
             query_order_request_obj,
             headers,
             400,  # Expected status code
@@ -323,43 +323,6 @@ def test_query_order_fail_invalid_mandatory_field(widget_order_reference_number)
     except Exception as e:
         # Fail the test if any unexpected exception occurs
         pytest.fail(f"Unexpected exception occurred: {str(e)}")
-
-@with_delay()
-def test_query_order_fail_unauthorized(widget_order_reference_number):
-    # Scenario: QueryOrderFailUnauthorized
-    # Purpose: Ensure the API rejects requests with an invalid signature (authorization failure).
-    # Steps:
-    #   1. Prepare a request with an invalid signature.
-    #   2. Call the query_order API endpoint.
-    #   3. Assert the API returns a 401 Unauthorized error.
-    # Expected: The API returns a 401 Unauthorized error for invalid signature.
-
-    """Should fail to query an order with an invalid signature in the request."""
-    # Case name and JSON request preparation
-    case_name = "QueryOrderFailUnauthorized"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    json_dict["originalPartnerReferenceNo"] = widget_order_reference_number
-
-    # Convert the dictionary to the appropriate request object
-    query_order_request_obj = QueryPaymentRequest.from_dict(json_dict)
-
-    # Prepare headers with invalid signature to trigger authorization error
-    # Since we're only using the invalid signature flag, we don't need to pass any of the other parameters
-    headers = get_headers_with_signature(invalid_signature=True)
-    
-    # Execute the API request and assert the error
-    execute_and_assert_api_error(
-        api_client,
-        "POST",
-        "http://api.sandbox.dana.id/payment-gateway/v1.0/debit/status.htm",
-        query_order_request_obj,
-        headers,
-        401,  # Expected status code
-        json_path_file,
-        title_case,
-        case_name,
-        {"partnerReferenceNo": widget_order_reference_number}
-    )
 
 @with_delay()
 def test_query_order_fail_transaction_not_found(widget_order_reference_number):

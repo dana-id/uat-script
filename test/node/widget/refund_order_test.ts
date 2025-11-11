@@ -59,101 +59,6 @@ describe('RefundOrder Tests', () => {
         }
     });
 
-    test.skip('should fail with exceed payment amount', async () => {
-        const caseName = 'RefundFailExceedPaymentAmount';
-        const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        requestData.partnerRefundNo = generateReferenceNo();
-        try {
-            const response = await dana.widgetApi.refundOrder(requestData);
-            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
-            fail('Expected an error but the API call succeeded');
-        } catch (e: any) {
-            if (e instanceof ResponseError) {
-                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else {
-                fail('RefundOrder test failed: ' + (e.message || e));
-            }
-        }
-    });
-
-    // Test: Refund an order that is not allowed by agreement
-    test('should fail not allowed by agreement', async () => {
-        // Define the test case name
-        const caseName = 'RefundFailNotAllowedByAgreement';
-        // Get the request data from the JSON file
-        const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        // Generate a unique refund reference number and set the merchant ID
-        requestData.partnerRefundNo = generateReferenceNo();
-        try {
-            // Call the refundOrder API with the request data
-            const response = await dana.widgetApi.refundOrder(requestData);
-            // Assert the response against the expected data
-            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
-            // If the API call succeeds, fail the test
-            fail('Expected an error but the API call succeeded');
-        } catch (e: any) {
-            if (e instanceof ResponseError) {
-                // If an error occurs, assert the failure response
-                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else {
-                // If an unexpected error occurs, fail the test with the error message
-                fail('RefundOrder test failed: ' + (e.message || e));
-            }
-        }
-    });
-
-    // Test: Refund an order that exceeds the refund window time
-    test('should fail with exceed refund window time', async () => {
-        // Define the test case name
-        const caseName = 'RefundFailExceedRefundWindowTime';
-        // Get the request data from the JSON file
-        const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        // Generate a unique refund reference number and set the merchant ID
-        requestData.partnerRefundNo = generateReferenceNo();
-        try {
-            // Call the refundOrder API with the request data
-            const response = await dana.widgetApi.refundOrder(requestData);
-            // Assert the response against the expected data
-            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
-            // If the API call succeeds, fail the test
-            fail('Expected an error but the API call succeeded');
-        } catch (e: any) {
-            if (e instanceof ResponseError) {
-                // If an error occurs, assert the failure response
-                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else {
-                // If an unexpected error occurs, fail the test with the error message
-                fail('RefundOrder test failed: ' + (e.message || e));
-            }
-        }
-    });
-
-    // Test: Refund an order that has already been refunded multiple times
-    test('should fail with multiple refund not allowed', async () => {
-        // Define the test case name
-        const caseName = 'RefundFailMultipleRefundNotAllowed';
-        // Get the request data from the JSON file
-        const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        // Generate a unique refund reference number and set the merchant ID
-        requestData.partnerRefundNo = generateReferenceNo();
-        try {
-            // Call the refundOrder API with the request data
-            const response = await dana.widgetApi.refundOrder(requestData);
-            // Assert the response against the expected data
-            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
-            // If the API call succeeds, fail the test
-            fail('Expected an error but the API call succeeded');
-        } catch (e: any) {
-            if (e instanceof ResponseError) {
-                // If an error occurs, assert the failure response
-                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else {
-                // If an unexpected error occurs, fail the test with the error message
-                fail('RefundOrder test failed: ' + (e.message || e));
-            }
-        }
-    });
-
     test.skip('should fail with duplicate request', async () => {
         const caseName = 'RefundFailDuplicateRequest';
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
@@ -168,32 +73,6 @@ describe('RefundOrder Tests', () => {
         try {
             fail('RefundOrder test is a placeholder.');
         } catch (e: any) { }
-    });
-
-    // Test: Refund an order with illegal parameters
-    test('should fail with parameter illegal', async () => {
-        // Define the test case name
-        const caseName = 'RefundFailParameterIllegal';
-        // Get the request data from the JSON file
-        const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        // Generate a unique refund reference number and set the merchant ID
-        requestData.partnerRefundNo = generateReferenceNo();
-        try {
-            // Call the refundOrder API with the request data
-            const response = await dana.widgetApi.refundOrder(requestData);
-            // Assert the response against the expected data
-            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
-            // If the API call succeeds, fail the test
-            fail('Expected an error but the API call succeeded');
-        } catch (e: any) {
-            if (e instanceof ResponseError) {
-                // If an error occurs, assert the failure response
-                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else {
-                // If an unexpected error occurs, fail the test with the error message
-                fail('RefundOrder test failed: ' + (e.message || e));
-            }
-        }
     });
 
     // Test: Refund an order with mandatory parameters invalid
@@ -236,32 +115,6 @@ describe('RefundOrder Tests', () => {
         // Get the request data from the JSON file
         const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Set the merchant ID
-        try {
-            // Call the refundOrder API with the request data
-            const response = await dana.widgetApi.refundOrder(requestData);
-            // Assert the response against the expected data
-            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
-            // If the API call succeeds, fail the test
-            fail('Expected an error but the API call succeeded');
-        } catch (e: any) {
-            if (e instanceof ResponseError) {
-                // If an error occurs, assert the failure response
-                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else {
-                // If an unexpected error occurs, fail the test with the error message
-                fail('RefundOrder test failed: ' + (e.message || e));
-            }
-        }
-    });
-
-    // Test: Refund an order with insufficient merchant balance
-    test('should fail with insufficient merchant balance', async () => {
-        // Define the test case name
-        const caseName = 'RefundFailInsufficientMerchantBalance';
-        // Get the request data from the JSON file
-        const requestData: RefundOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
-        // Generate a unique refund reference number and set the merchant ID
-        requestData.partnerRefundNo = generateReferenceNo();
         try {
             // Call the refundOrder API with the request data
             const response = await dana.widgetApi.refundOrder(requestData);

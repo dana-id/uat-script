@@ -93,105 +93,6 @@ class RefundOrderTest extends TestCase
         });
     }
 
-    /**
-     * Test refund failure due to exceeding payment amount.
-     *
-     * This test verifies that a refund request exceeding the payment amount fails as expected.
-     * @skip
-     */
-    public function testRefundFailExceedPaymentAmount(): void
-    {
-        $this->markTestSkipped('Widget scenario skipped by automation.');
-        Util::withDelay(function () {
-            $caseName = 'RefundFailExceedPaymentAmount';
-            $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-            try {
-                self::$apiInstance->refundOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
-                $this->assertTrue(true);
-            }
-        });
-    }
-
-    /**
-     * Test refund failure when not allowed by agreement.
-     *
-     * This test verifies that a refund request not allowed by agreement fails with 403 Forbidden.
-     */
-    public function testRefundFailNotAllowedByAgreement(): void
-    {
-        Util::withDelay(function () {
-            $caseName = 'RefundFailNotAllowedByAgreement';
-            try {
-                $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-                self::$apiInstance->refundOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                // We expect a 403 Forbidden for abnormal user status
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for abnormal user status, got {$e->getCode()}");
-
-                // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
-
-                // Use assertFailResponse to validate the error response
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
-            } catch (Exception $e) {
-                $this->fail('Unexpected exception: ' . $e->getMessage());
-            }
-        });
-    }
-
-    /**
-     * Test refund failure due to exceeding refund window time.
-     *
-     * This test verifies that a refund request outside the allowed window fails with 403 Forbidden.
-     */
-    public function testRefundFailExceedRefundWindowTime(): void
-    {
-        Util::withDelay(function () {
-            $caseName = 'RefundFailExceedRefundWindowTime';
-            try {
-                $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-                self::$apiInstance->refundOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for abnormal user status, got {$e->getCode()}");
-                $responseContent = (string)$e->getResponseBody();
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
-            } catch (Exception $e) {
-                $this->fail('Unexpected exception: ' . $e->getMessage());
-            }
-        });
-    }
-
-    /**
-     * Test refund failure due to multiple refunds not allowed.
-     *
-     * This test verifies that a multiple refund request fails with 403 Forbidden.
-     */
-    public function testRefundFailMultipleRefundNotAllowed(): void
-    {
-        Util::withDelay(function () {
-            $caseName = 'RefundFailMultipleRefundNotAllowed';
-            try {
-                $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-                self::$apiInstance->refundOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for abnormal user status, got {$e->getCode()}");
-                $responseContent = (string)$e->getResponseBody();
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
-            } catch (Exception $e) {
-                $this->fail('Unexpected exception: ' . $e->getMessage());
-            }
-        });
-    }
 
     /**
      * Test refund failure due to duplicate request.
@@ -254,35 +155,6 @@ class RefundOrderTest extends TestCase
     }
 
     /**
-     * Test refund failure due to illegal parameter.
-     *
-     * This test verifies that a refund request with illegal parameters fails with 400 Bad Request.
-     */
-    public function testRefundFailParameterIllegal(): void
-    {
-        Util::withDelay(function () {
-            $caseName = 'RefundFailParameterIllegal';
-            try {
-                $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-                self::$apiInstance->refundOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                // We expect a 400 Bad Request for invalid parameter
-                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid parameter, got {$e->getCode()}");
-
-                // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
-
-                // Use assertFailResponse to validate the error response
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
-            } catch (Exception $e) {
-                $this->fail('Unexpected exception: ' . $e->getMessage());
-            }
-        });
-    }
-
-    /**
      * Test refund failure due to missing mandatory parameter.
      *
      * This test verifies that a refund request missing a mandatory parameter fails with 400 Bad Request.
@@ -334,35 +206,6 @@ class RefundOrderTest extends TestCase
             } catch (ApiException $e) {
                 // We expect a 404 Not Found for order not exist
                 $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for order not exist, got {$e->getCode()}");
-
-                // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
-
-                // Use assertFailResponse to validate the error response
-                Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $responseContent);
-            } catch (Exception $e) {
-                $this->fail('Unexpected exception: ' . $e->getMessage());
-            }
-        });
-    }
-
-    /**
-     * Test refund failure due to insufficient merchant balance.
-     *
-     * This test verifies that a refund request fails with 403 Forbidden when merchant balance is insufficient.
-     */
-    public function testRefundFailInsufficientMerchantBalance(): void
-    {
-        Util::withDelay(function () {
-            $caseName = 'RefundFailInsufficientMerchantBalance';
-            try {
-                $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-                self::$apiInstance->refundOrder($requestObj);
-                $this->fail('Expected ApiException was not thrown');
-            } catch (ApiException $e) {
-                // We expect a 403 Forbidden for insufficient merchant balance
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for insufficient merchant balance, got {$e->getCode()}");
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();

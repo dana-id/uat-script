@@ -57,24 +57,6 @@ def test_account_unbind_success(test_account_unbinding_access_token):
     api_response = api_instance.account_unbinding(account_unbinding_request_obj)
     assert_response(json_path_file, title_case, case_name, AccountUnbindingResponse.to_json(api_response))
 
-@with_delay()
-def test_account_unbind_fail_access_token_not_exist(test_account_unbinding_access_token):
-    case_name = "AccountUnbindFailAccessTokenNotExist"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Placeholder test")
-
-@with_delay()
-def test_account_unbind_fail_invalid_user_status(test_account_unbinding_access_token):
-    case_name = "AccountUnbindFailInvalidUserStatus"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Placeholder test")
-
-@with_delay()
-def test_account_unbind_fail_invalid_params(test_account_unbinding_access_token):
-    case_name = "AccountUnbindFailInvalidParams"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    pytest.skip("SKIP: Placeholder test")
-
 def get_access_token(auth_code):
     json_dict = get_request(json_path_file, "ApplyToken", "ApplyTokenSuccess")
     # Use the provided authorization code from the fixture

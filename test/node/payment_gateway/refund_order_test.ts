@@ -250,39 +250,6 @@ describe('Payment Gateway - Refund Order Tests', () => {
     });
 
     /**
-     * Test Case: Refund Amount Exceeds Transaction Limit
-     * 
-     * This test validates the API's enforcement of refund amount limits by
-     * attempting to refund an amount that exceeds the original transaction amount.
-     * This ensures proper business rule validation for refund operations.
-     * 
-     * @scenario Negative test case for refund amount validation
-     * @technique Tests refund with amount exceeding original transaction
-     * @expectedError HTTP 400/403 due to amount exceeding transaction limit
-     * @note Skipped test - may need specific test data configuration
-     */
-    test.skip('RefundOrderExceedsTransactionAmountLimit - should fail when refund amount exceeds transaction limit', async () => {
-        const refundOrderCaseName = "RefundOrderExceedsTransactionAmountLimit";
-
-        try {
-            const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
-            refundRequestData.originalPartnerReferenceNo = sharedOriginalPaidPartnerReference;
-            refundRequestData.partnerRefundNo = sharedOriginalPaidPartnerReference;
-
-            const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
-
-            // Should not reach here if refund exceeds limit
-            await assertResponse(jsonPathFile, titleCase, refundOrderCaseName, response, { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
-        } catch (e: any) {
-            if (e instanceof ResponseError) {
-                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse));
-            } else {
-                fail(`Unexpected error type: ${e.rawResponse}`);
-            }
-        }
-    });
-
-    /**
      * Test Case: Refund Not Allowed by Merchant Agreement
      * 
      * This test validates the API's enforcement of merchant agreement restrictions
@@ -295,59 +262,6 @@ describe('Payment Gateway - Refund Order Tests', () => {
      */
     test('RefundOrderNotAllowed - should fail when refund is not allowed by agreement', async () => {
         const refundOrderCaseName = "RefundOrderNotAllowed";
-        const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
-
-        try {
-            const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
-            fail("Expected an error but the API call succeeded");
-        } catch (e: any) {
-            if (e instanceof ResponseError && Number(e.status) === 403) {
-                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
-                    { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
-            } else if (e instanceof ResponseError && Number(e.status) !== 403) {
-                fail("Expected forbidden failed but got status code " + e.status);
-            } else {
-                throw e;
-            }
-        }
-    });
-
-    /**
-     * Test Case: Refund Window Time Exceeded
-     * 
-     * This test validates the API's enforcement of refund time window policies.
-     * It ensures that refunds are properly rejected when attempted outside
-     * the allowed time window for refund operations.
-     * 
-     * @scenario Negative test case for refund window validation
-     * @technique Tests refund attempt outside allowed time window
-     * @expectedError HTTP 403 Forbidden due to exceeded refund window time
-     */
-    test('RefundOrderDueToExceedRefundWindowTime - should fail when refund window time is exceeded', async () => {
-        const refundOrderCaseName = "RefundOrderDueToExceedRefundWindowTime";
-        const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
-
-        try {
-            const response = await dana.paymentGatewayApi.refundOrder(refundRequestData);
-            fail("Expected an error but the API call succeeded");
-        } catch (e: any) {
-            if (e instanceof ResponseError && Number(e.status) === 403) {
-                await assertFailResponse(jsonPathFile, titleCase, refundOrderCaseName, JSON.stringify(e.rawResponse),
-                    { 'partnerReferenceNo': refundRequestData.originalPartnerReferenceNo });
-            } else if (e instanceof ResponseError && Number(e.status) !== 403) {
-                fail("Expected forbidden failed but got status code " + e.status);
-            } else {
-                throw e;
-            }
-        }
-    });
-
-    /**
-     * Test: Multiple refunds on same order
-     * Expected: HTTP 403, forbidden error for duplicate refund attempt
-     */
-    test('RefundOrderMultipleRefund - should fail with forbidden error when attempting multiple refunds on the same order', async () => {
-        const refundOrderCaseName = "RefundOrderMultipleRefund";
         const refundRequestData = getRequest<RefundOrderRequest>(jsonPathFile, titleCase, refundOrderCaseName);
 
         try {

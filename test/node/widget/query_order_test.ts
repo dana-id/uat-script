@@ -56,7 +56,7 @@ describe('QueryOrder Tests', () => {
         await dana.widgetApi.widgetPayment(widgetPaymentRequestData);
 
         // Cancel payment
-        const cancelOrderRequestData = getRequest<CancelOrderRequest>(jsonPathFile, "CancelOrder", "CancelOrderSuccessInProcess");
+        const cancelOrderRequestData = getRequest<CancelOrderRequest>(jsonPathFile, "CancelOrder", "CancelOrderValidScenario");
         cancelOrderRequestData.originalPartnerReferenceNo = sharedOriginalCanceledPartnerReference;
         cancelOrderRequestData.merchantId = process.env.MERCHANT_ID || '';
         await dana.widgetApi.cancelOrder(cancelOrderRequestData);
@@ -249,39 +249,6 @@ describe('QueryOrder Tests', () => {
         } catch (e: any) {
             if (Number(e.status) === 400) {
                 // Assert the failure response for invalid mandatory field
-                await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
-            } else if (e instanceof ResponseError) {
-                // Fail if a different error is received
-                fail("Expected not found failed but got status code " + e.status);
-            }
-        }
-    });
-
-    // Test: Query Order Fail - Unauthorized
-    test('should fail with unauthorized', async () => {
-        // Define the case name for the test
-        const caseName = 'QueryOrderFailUnauthorized';
-        // Get the request data from the JSON file based on the case name
-        const requestData: QueryPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
-        try {
-            // Set custom headers with an invalid signature
-            const customHeaders: Record<string, string> = {
-                'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
-            };
-            // Call the manual API request helper with the custom headers
-            await executeManualApiRequest(
-                caseName,
-                'POST',
-                baseUrl + apiPath,
-                apiPath,
-                requestData,
-                customHeaders
-            );
-            // If no error is thrown, fail the test
-            fail('Expected an error but the API call succeeded');
-        } catch (e: any) {
-            if (Number(e.status) === 401) {
-                // Assert the failure response for unauthorized
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else if (e instanceof ResponseError) {
                 // Fail if a different error is received

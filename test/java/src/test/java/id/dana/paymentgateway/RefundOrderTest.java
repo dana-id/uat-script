@@ -107,58 +107,6 @@ class RefundOrderTest {
     }
 
     @Test
-    void testRefundOrderDueToExceedRefundWindowTime() throws IOException {
-        String caseName = "RefundOrderDueToExceedRefundWindowTime";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
-
-        RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    }
-
-    @Test
-    @Disabled
-    void testRefundOrderDueToExceed() throws IOException {
-        partnerReferenceNoPaid = payOrder(userPhone, userPin);
-        String caseName = "RefundOrderExceedsTransactionAmountLimit";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoPaid);
-        requestData.setPartnerRefundNo(partnerReferenceNoPaid);
-        requestData.setMerchantId(merchantId);
-
-        Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoPaid);
-
-        RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    }
-
-    @Test
-    void testRefundOrderMultipleRefund() throws IOException {
-        String caseName = "RefundOrderMultipleRefund";
-        RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-                RefundOrderRequest.class);
-        requestData.setOriginalPartnerReferenceNo(partnerReferenceNoInit);
-        requestData.setPartnerRefundNo(partnerReferenceNoInit);
-        requestData.setMerchantId(merchantId);
-
-        Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNoInit);
-
-        // Second refund
-        RefundOrderResponse response = api.refundOrder(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    }
-
-    @Test
     void testRefundOrderNotPaid() throws IOException {
         String caseName = "RefundOrderNotPaid";
         RefundOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,

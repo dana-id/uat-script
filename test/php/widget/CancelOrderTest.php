@@ -75,40 +75,6 @@ class CancelOrderTest extends TestCase
     }
 
     /**
-     * Should give success response for CancelOrderSuccessInProcess
-     */
-    public function testCancelOrderSuccessInProcess(): void
-    {
-        Util::withDelay(function () {
-            $caseName = 'CancelOrderSuccessInProcess';
-            try {
-                $jsonDict = Util::getRequest(
-                    self::$jsonPathFile,
-                    self::$titleCase,
-                    $caseName
-                );
-
-                $requestObj = ObjectSerializer::deserialize(
-                    $jsonDict,
-                    'Dana\Widget\v1\Model\CancelOrderRequest'
-                );
-                $apiResponse = self::$apiInstance->cancelOrder($requestObj);
-                Assertion::assertResponse(
-                    self::$jsonPathFile,
-                    self::$titleCase,
-                    $caseName,
-                    $apiResponse->__toString(),
-                );
-                $this->assertTrue(true);
-            } catch (ApiException $e) {
-                $this->fail('Failed to cancel order in progress: ' . $e->getMessage());
-            } catch (Exception $e) {
-                $this->fail('Unexpected exception: ' . $e->getMessage());
-            }
-        });
-    }
-
-    /**
      * Should fail with user status abnormal
      */
     public function testCancelOrderFailUserStatusAbnormal(): void
@@ -385,62 +351,6 @@ class CancelOrderTest extends TestCase
             } catch (ApiException $e) {
                 Assertion::assertFailResponse(self::$jsonPathFile, self::$titleCase, $caseName, $e->getResponseBody());
                 $this->assertTrue(true);
-            }
-        });
-    }
-
-    /**
-     * @skip
-     * Should fail with invalid signature (FAIL: Expected ApiException was not thrown)
-     */
-    public function testCancelOrderFailInvalidSignature(): void
-    {
-        $this->markTestSkipped('Skipping testCancelOrderFailInvalidSignature no need to UAT.');
-        Util::withDelay(function () {
-            $caseName = 'CancelOrderFailInvalidSignature';
-            $jsonDict = Util::getRequest(
-                self::$jsonPathFile,
-                self::$titleCase,
-                $caseName
-            );
-            $requestObj = ObjectSerializer::deserialize(
-                $jsonDict,
-                'Dana\Widget\v1\Model\CancelOrderRequest'
-            );
-            $headers = Util::getHeadersWithSignature(
-                'POST',
-                self::$cancelUrl,
-                $jsonDict,
-                true,
-                false,
-                true
-            );
-            // Make direct API call with invalid signature
-            try {
-                Util::executeApiRequest(
-                    'POST',
-                    'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/cancel.htm',
-                    $headers,
-                    $jsonDict
-                );
-
-                $this->fail('Expected ApiException for invalid signature but the API call succeeded');
-            } catch (ApiException $e) {
-                // We expect a 401 Unauthorized for invalid signature
-                $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
-
-                // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
-
-                // Use assertFailResponse to validate the error response
-                Assertion::assertFailResponse(
-                    self::$jsonPathFile,
-                    self::$titleCase,
-                    $caseName,
-                    $responseContent
-                );
-            } catch (Exception $e) {
-                throw $e;
             }
         });
     }

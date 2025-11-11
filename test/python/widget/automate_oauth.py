@@ -40,7 +40,6 @@ async def automate_oauth_simple(phone_number=None, pin=None, max_retries=3, ci_m
     """
     mobile_number = phone_number or extract_mobile_from_url(oauth_url)
     used_pin = pin or PIN
-    
     # Adjust timeouts for CI
     if ci_mode:
         max_retries = 2  # Fewer retries in CI
