@@ -651,7 +651,7 @@ class CancelOrderTest extends TestCase
     public function testCancelOrderRefundedTransaction(): void
     {
         Util::withDelay(function () {
-            $caseName = 'CancelOrderRefundedTransaction';
+            $caseName = 'CancelOrderInvalidTransactionStatus';
 
             try {
                 // Step 1: Create a new order

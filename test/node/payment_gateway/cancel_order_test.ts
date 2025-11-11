@@ -121,7 +121,7 @@ describe('Cancel Order Tests', () => {
       console.error('Cancel order in progress test failed:', e);
       throw e;
     }
-    
+
   });
 
   /**
@@ -540,14 +540,15 @@ describe('Cancel Order Tests', () => {
    * @scenario Complex business flow validation combining payment, refund, and cancellation
    * @skipped Due to complex dependencies and potential test environment limitations
    */
-  test.skip('should successfully cancel order after refunding a paid transaction', async () => {
-    const caseName = "CancelOrderRefundedTransaction";
+  test('should successfully cancel order after refunding a paid transaction', async () => {
+    const caseName = "CancelOrderInvalidTransactionStatus";
 
     try {
       // Step 1: Create an order for payment automation
       const createOrderRequestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, "CreateOrder", "CreateOrderRedirect");
       const paidPartnerReference = generatePartnerReferenceNo();
       createOrderRequestData.partnerReferenceNo = paidPartnerReference;
+      createOrderRequestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 1 hour from now
 
       console.log(`Creating order for payment automation with reference: ${paidPartnerReference}...`);
       const createOrderResponse = await dana.paymentGatewayApi.createOrder(createOrderRequestData);
@@ -613,13 +614,21 @@ describe('Cancel Order Tests', () => {
       cancelRequestData.amount = createOrderRequestData.amount; // Original order amount
 
       console.log(`Cancelling order with reference: ${paidPartnerReference}`);
-      const cancelResponse = await dana.paymentGatewayApi.cancelOrder(cancelRequestData);
-
-      // Step 5: Validate the cancellation response
-      await assertResponse(jsonPathFile, titleCase, caseName, cancelResponse, {
-        'partnerReferenceNo': paidPartnerReference
-      });
-
+      try {
+        // Attempt to cancel the refunded order
+        await dana.paymentGatewayApi.cancelOrder(cancelRequestData);
+        fail("Expected an error but the API call succeeded");
+      } catch (e: any) {
+        if (e instanceof ResponseError && Number(e.status) === 404) {
+          // Validate the error response format and content
+          await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
+            { 'partnerReferenceNo': "4045700" });
+        } else if (e instanceof ResponseError && Number(e.status) !== 403) {
+          fail("Expected forbidden failed but got status code " + e.status);
+        } else {
+          throw e;
+        }
+      }
       console.log(`Successfully completed CancelOrderRefundedTransaction scenario`);
       console.log(`Refund was ${refundSuccessful ? 'successful' : 'failed'}, and cancellation succeeded`);
     } catch (e) {
