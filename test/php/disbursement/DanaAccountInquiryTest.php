@@ -181,8 +181,8 @@ class DanaAccountInquiryTest extends TestCase
 
                 $this->fail('Expected ApiException for frozen account but the API call succeeded');
             } catch (ApiException $e) {
-                // We expect a 400 Bad Request for frozen account
-                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for frozen account, got {$e->getCode()}");
+                // We expect a 403 Forbidden for frozen account
+                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for frozen account, got {$e->getCode()}");
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
@@ -232,8 +232,8 @@ class DanaAccountInquiryTest extends TestCase
 
                 $this->fail('Expected ApiException for unregistered account but the API call succeeded');
             } catch (ApiException $e) {
-                // We expect a 404 Not Found for unregistered account
-                $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for unregistered account, got {$e->getCode()}");
+                // We expect a 403 Forbidden for unregistered account
+                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for unregistered account, got {$e->getCode()}");
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();
@@ -283,8 +283,8 @@ class DanaAccountInquiryTest extends TestCase
 
                 $this->fail('Expected ApiException for exceeded limit but the API call succeeded');
             } catch (ApiException $e) {
-                // We expect a 429 Too Many Requests for exceeded limit
-                $this->assertEquals(429, $e->getCode(), "Expected HTTP 429 Too Many Requests for exceeded limit, got {$e->getCode()}");
+                // We expect a 403 Forbidden for exceeded limit
+                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for exceeded limit, got {$e->getCode()}");
 
                 // Get the response body from the exception
                 $responseContent = (string)$e->getResponseBody();

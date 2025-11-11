@@ -104,7 +104,7 @@ class TransferToDanaTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToDanaRequest object from the JSON request data
                 $transferToDanaRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToDanaRequest'
@@ -114,10 +114,10 @@ class TransferToDanaTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for insufficient fund but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 403 Forbidden for insufficient fund (responseCode: 4033814)
+                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for insufficient fund, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -312,7 +312,7 @@ class TransferToDanaTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToDanaRequest object from the JSON request data
                 $transferToDanaRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToDanaRequest'
@@ -322,10 +322,10 @@ class TransferToDanaTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for frozen account but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 403 Forbidden for frozen account (responseCode: 4033805)
+                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for frozen account, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -363,7 +363,7 @@ class TransferToDanaTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToDanaRequest object from the JSON request data
                 $transferToDanaRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToDanaRequest'
@@ -373,10 +373,10 @@ class TransferToDanaTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for exceed amount limit but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 403 Forbidden for exceed amount limit (responseCode: 4033813)
+                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for exceed amount limit, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -414,7 +414,7 @@ class TransferToDanaTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToDanaRequest object from the JSON request data
                 $transferToDanaRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToDanaRequest'
@@ -424,10 +424,10 @@ class TransferToDanaTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004003)
+                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for missing mandatory field, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -487,7 +487,7 @@ class TransferToDanaTest extends TestCase
                     
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 401 Unauthorized for invalid signature
+                    // We expect a 401 Unauthorized for invalid signature (responseCode: 4034001)
                     $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
 
                     // Get the response body from the exception
@@ -529,7 +529,7 @@ class TransferToDanaTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToDanaRequest object from the JSON request data
                 $transferToDanaRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToDanaRequest'
@@ -539,10 +539,10 @@ class TransferToDanaTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for invalid field format but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 400 Bad Request for invalid field format (responseCode: 4003003)
+                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid field format, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -580,7 +580,7 @@ class TransferToDanaTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToDanaRequest object from the JSON request data
                 $transferToDanaRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToDanaRequest'
@@ -598,13 +598,14 @@ class TransferToDanaTest extends TestCase
 
                 try {
                     // Preparing request with the same partner reference number but different amount
+                    $requestData = $jsonDict;
                     $requestData['amount']['value'] = '4.00';
                     $requestData['amount']['currency'] = 'IDR';
 
                     // The inconsistent field is changed here
                     $transferToDanaRequestObjSecond = ObjectSerializer::deserialize(
                         $requestData,
-                        'Dana\PaymentGateway\v1\Model\TransferToDanaRequest',
+                        'Dana\Disbursement\v1\Model\TransferToDanaRequest'
                     );
 
                     $transferToDanaRequestObjSecond->setPartnerReferenceNo($partnerReferenceNo);
@@ -614,8 +615,8 @@ class TransferToDanaTest extends TestCase
 
                     $this->fail('Expected ApiException for inconsistent request but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for inconsistent request
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 NotFoundException for inconsistent request, got {$e->getCode()}");
+                    // We expect a 404 Not Found for inconsistent request (responseCode: 4043009)
+                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for inconsistent request, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -653,7 +654,7 @@ class TransferToDanaTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToDanaRequest object from the JSON request data
                 $transferToDanaRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToDanaRequest'
@@ -663,10 +664,10 @@ class TransferToDanaTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for internal server error but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 500 Internal Server Error for internal server error (responseCode: 5003001)
+                    $this->assertEquals(500, $e->getCode(), "Expected HTTP 500 Internal Server Error for internal server error, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -704,7 +705,7 @@ class TransferToDanaTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToDanaRequest object from the JSON request data
                 $transferToDanaRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToDanaRequest'
@@ -714,10 +715,10 @@ class TransferToDanaTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for internal general error but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 500 Internal Server Error for internal general error (responseCode: 5004000)
+                    $this->assertEquals(500, $e->getCode(), "Expected HTTP 500 Internal Server Error for internal general error, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();

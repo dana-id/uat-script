@@ -104,7 +104,7 @@ class TransferToBankTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToBankRequest object from the JSON request data
                 $TransferToBankRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToBankRequest'
@@ -114,10 +114,10 @@ class TransferToBankTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for insufficient fund but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 403 Forbidden for insufficient fund (responseCode: 4034314)
+                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for insufficient fund, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -155,7 +155,7 @@ class TransferToBankTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
+                // Create a TransferToBankRequest object from the JSON request data
                 $TransferToBankRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Disbursement\v1\Model\TransferToBankRequest'
@@ -165,10 +165,10 @@ class TransferToBankTest extends TestCase
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
+                    $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004302)
+                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for missing mandatory field, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -282,8 +282,8 @@ class TransferToBankTest extends TestCase
 
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 400 Bad Request for transaction not found
+                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for transaction not found, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -339,13 +339,14 @@ class TransferToBankTest extends TestCase
 
                 try {
                     // Preparing request with the same partner reference number but different amount
-                    $requestData['amount']['value'] = '4.00';
+                    $requestData = $jsonDict;
+                    $requestData['amount']['value'] = '2.00';
                     $requestData['amount']['currency'] = 'IDR';
 
                     // The inconsistent field is changed here
                     $transferToBankRequestObjSecond = ObjectSerializer::deserialize(
                         $requestData,
-                        'Dana\PaymentGateway\v1\Model\TransferToBankRequest',
+                        'Dana\Disbursement\v1\Model\TransferToBankRequest',
                     );
 
                     $transferToBankRequestObjSecond->setPartnerReferenceNo($partnerReferenceNo);
@@ -406,8 +407,8 @@ class TransferToBankTest extends TestCase
 
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 500 Internal Server Error for transaction not found
+                    $this->assertEquals(500, $e->getCode(), "Expected HTTP 500 Internal Server Error for transaction not found, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -457,8 +458,8 @@ class TransferToBankTest extends TestCase
 
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 500 Internal Server Error for transaction not found
+                    $this->assertEquals(500, $e->getCode(), "Expected HTTP 500 Internal Server Error for transaction not found, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -508,8 +509,8 @@ class TransferToBankTest extends TestCase
 
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 403 Forbidden for transaction not found
+                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for transaction not found, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -559,8 +560,8 @@ class TransferToBankTest extends TestCase
 
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    // We expect a 403 Forbidden for transaction not found
+                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for transaction not found, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
@@ -605,28 +606,21 @@ class TransferToBankTest extends TestCase
                 );
 
                 try {
-                    // Make the API call
-                    self::$apiInstance->transferToBank($TransferToBankRequestObj);
+                    $apiResponse = self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
-                    $this->fail('Expected ApiException for transaction not found but the API call succeeded');
-                } catch (ApiException $e) {
-                    // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
-
-                    // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
-                    
-                    // Use assertFailResponse to validate the error response
-                    Assertion::assertFailResponse(
-                        self::$jsonPathFile, 
-                        self::$titleCase, 
-                        $caseName, 
-                        $responseContent,
+                    // Assert the response matches the expected data
+                    Assertion::assertResponse(
+                        self::$jsonPathFile,
+                        self::$titleCase,
+                        $caseName,
+                        $apiResponse->__toString(),
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
-                } catch (Exception $e) {
-                    $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
-                }
+                } catch (ApiException $e) {
+                $this->fail('Failed to inquire bank account: ' . $e->getMessage());
+            } catch (Exception $e) {
+                $this->fail('Unexpected exception: ' . $e->getMessage());
+            }
         });
     }
 
@@ -673,8 +667,8 @@ class TransferToBankTest extends TestCase
                     
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
-                    // We expect a 401 Unauthorized for invalid signature
-                    $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
+                    // We expect a 400 Bad Request for invalid signature
+                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid signature, got {$e->getCode()}");
 
                     // Get the response body from the exception
                     $responseContent = (string)$e->getResponseBody();
