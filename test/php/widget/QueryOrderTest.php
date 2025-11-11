@@ -161,7 +161,7 @@ class QueryOrderTest extends TestCase
     public function testQueryOrderNotFound(): void
     {
         Util::withDelay(function () {
-            $caseName = 'QueryOrderNotFound';
+            $caseName = 'QueryOrderFailTransactionNotFound';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
             $jsonDict['transactionDate'] = self::generateDate();
             $jsonDict['originalPartnerReferenceNo'] = "tesr12124";

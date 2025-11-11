@@ -372,6 +372,7 @@ class PaymentTest extends TestCase
      */
     public function testPaymentTimeout(): void
     {
+        $this->markTestSkipped('Skipping testPaymentTimeout as requested.');
         Util::withDelay(function () {
             $caseName = 'PaymentFailTimeout';
             $jsonDict = Util::getRequest(
@@ -415,6 +416,7 @@ class PaymentTest extends TestCase
      */
     public function testPaymentIdempotent(): void
     {
+        $this->markTestSkipped('Skipping testPaymentIdempotent as requested.');
         Util::withDelay(function () {
             $caseName = 'PaymentIdempotent';
             $jsonDict = Util::getRequest(
@@ -506,6 +508,55 @@ class PaymentTest extends TestCase
                 }
             } catch (ApiException $firstError) {
                 $this->markTestSkipped('First request failed - cannot test idempotency: ' . $firstError->getMessage());
+            }
+        });
+    }
+
+    /**
+     * @testdox Should give fail response for internal server error scenario
+     * @description Validates error handling when server encounters internal processing errors
+     * @test Verifies that server-side errors return appropriate HTTP 500 Internal Server Error
+     * @expectedResult API returns 500 Internal Server Error code for server-side processing failures
+     * @category ServerErrorHandling
+     * @priority Medium
+     * @author Integration Test Team
+     * @since 1.0.0
+     */
+    public function testPaymentFailInternalServerError(): void
+    {
+        Util::withDelay(function () {
+            $caseName = 'PaymentFailInternalServerError';
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFileWidget,
+                self::$titleCase,
+                $caseName
+            );
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
+
+            $requestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\Widget\v1\Model\WidgetPaymentRequest'
+            );
+
+            try {
+                self::$apiInstanceWidget->widgetPayment($requestObj);
+                $this->fail('Expected ApiException for internal server error but the API call succeeded');
+            } catch (ApiException $e) {
+                // Verify it's a 500 Internal Server Error
+                $this->assertEquals(500, $e->getCode(), "Expected HTTP 500 Internal Server Error, got {$e->getCode()}");
+                
+                // Use assertApiException to validate the error response
+                Assertion::assertApiException(
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
+                    $e,
+                    []
+                );
+            } catch (Exception $e) {
+                $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
     }

@@ -12,6 +12,7 @@ use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 use DanaUat\Widget\OauthUtil;
 use Exception;
+use GuzzleHttp\Psr7\Response;
 
 class ApplyOttTest extends TestCase
 {
@@ -105,7 +106,7 @@ class ApplyOttTest extends TestCase
     {
 
         Util::withDelay(function () {
-            $caseName = 'ApplyOttFailTokenNotFound';
+            $caseName = 'ApplyOttCustomerTokenNotFound';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
                 self::$titleCase,

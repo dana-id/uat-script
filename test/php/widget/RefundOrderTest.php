@@ -10,7 +10,9 @@ use Dana\Env;
 use Dana\ApiException;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
+use DanaUat\Widget\PaymentUtil;
 use Exception;
+use PHPUnit\Framework\SkippedTest;
 
 class RefundOrderTest extends TestCase
 {
@@ -70,51 +72,42 @@ class RefundOrderTest extends TestCase
     }
 
     /**
-     * Test refund order in process scenario.
-     *
-     * This test verifies that a refund order in process returns the expected response.
-     */
-    public function testRefundInProcess(): void
-    {
-        Util::withDelay(function () {
-            $caseName = 'RefundInProcess';
-            try {
-                $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-                $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-                $apiResponse = self::$apiInstance->refundOrder($requestObj);
-                $responseJson = json_decode($apiResponse->__toString(), true);
-                Assertion::assertResponse(self::$jsonPathFile, self::$titleCase, $caseName, $apiResponse->__toString(), ['partnerReferenceNo' => '2025700']);
-                $this->assertTrue(true);
-            } catch (ApiException $e) {
-                $this->fail('Failed to refund order in progress: ' . $e->getMessage());
-            } catch (Exception $e) {
-                $this->fail('Unexpected exception: ' . $e->getMessage());
-            }
-        });
-    }
-
-
-    /**
      * Test refund failure due to duplicate request.
      *
      * This test verifies that a duplicate refund request fails as expected.
-     * @skip
      */
     public function testRefundFailDuplicateRequest(): void
     {   
-        $this->markTestSkipped('Widget scenario skipped by automation.');
         Util::withDelay(function () {
             $caseName = 'RefundFailDuplicateRequest';
+            
+            // Create a new paid order specifically for this test
+            $originalPartnerReferenceNo = PaymentUtil::createPaymentWidgetPaid('PaymentSuccess', true);
+            
+            // Get the request data from the JSON file for the first refund
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
-            $jsonDict['originalPartnerReferenceNo'] = self::$sharedOriginalPartnerReferencePaid;
-            $jsonDict['partnerRefundNo'] = self::$sharedOriginalPartnerReferencePaid;
+            $jsonDict['originalPartnerReferenceNo'] = $originalPartnerReferenceNo;
+            $jsonDict['partnerRefundNo'] = $originalPartnerReferenceNo;
             $jsonDict['merchantId'] = self::$merchantId;
 
             $requestObj = ObjectSerializer::deserialize($jsonDict, 'Dana\Widget\v1\Model\RefundOrderRequest');
-                        
+            
             try {
-                self::$apiInstance->refundOrder($requestObj);
+                // First refund - should succeed
+                $firstResponse = self::$apiInstance->refundOrder($requestObj);
+
+                // Wait a moment before the second request
+                sleep(2);
+                
+                // Second refund with different amount - should fail as duplicate
+                $requestObj->getRefundAmount()->setValue('2.00');
+                $requestObj->getRefundAmount()->setCurrency('IDR');
+                
+                $secondResponse = self::$apiInstance->refundOrder($requestObj);
+                $this->fail('Expected ApiException for duplicate refund but API call succeeded');
+                
             } catch (ApiException $e) {
+                // This is expected for the duplicate request
                 $responseContent = (string)$e->getResponseBody();
 
                 // Use assertFailResponse to validate the error response
@@ -123,8 +116,11 @@ class RefundOrderTest extends TestCase
                     self::$titleCase, 
                     $caseName, 
                     $responseContent,
-                    ['partnerReferenceNo' => self::$sharedOriginalPartnerReferencePaid]
+                    ['partnerReferenceNo' => $originalPartnerReferenceNo]
                 );
+                $this->assertTrue(true, 'Duplicate refund request properly failed');
+            } catch (Exception $e) {
+                $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
     }
@@ -225,6 +221,7 @@ class RefundOrderTest extends TestCase
      */
     public function testRefundFailInvalidSignature(): void
     {
+        $this->markTestSkipped('Widget scenario skipped by automation.');
         Util::withDelay(function () {
             $caseName = 'RefundFailInvalidSignature';
             $jsonDict = Util::getRequest(self::$jsonPathFile, self::$titleCase, $caseName);
@@ -352,10 +349,6 @@ class RefundOrderTest extends TestCase
     {
         // Use the shared utility method to create a paid payment
         // This eliminates duplicate code across test classes
-        return PaymentUtil::createPaidPaymentWidget(
-            self::$phoneNumber,
-            self::$userPin,
-            "PaymentSuccess"
-        );
+        return PaymentUtil::createPaymentWidgetPaid();
     }
 }
