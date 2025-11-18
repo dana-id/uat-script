@@ -32,48 +32,7 @@
             },
             "response": {
                 "responseCode": "2005700",
-                "responseMessage": "Successful",
-                "paymentInfos": [
-                    {
-                        "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BNI"
-                    },
-                    {
-                        "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BRI"
-                    },
-                    {
-                        "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BTPN"
-                    },
-                    {
-                        "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_CIMB"
-                    },
-                    {
-                        "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_LINKAJA"
-                    },
-                    {
-                        "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_OVO"
-                    },
-                    {
-                        "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_CARD"
-                    },
-                    {
-                        "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_SPAY"
-                    },
-                    {
-                        "payMethod": "NETWORK_PAY",
-                        "payOption": "NETWORK_PAY_PG_GOPAY"
-                    },
-                    {
-                        "payMethod": "BALANCE"
-                    }
-                ]
+                "responseMessage": "Successful"
             }
         },
         "ConsultPayBalancedInvalidFieldFormat": {

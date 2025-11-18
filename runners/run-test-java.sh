@@ -26,7 +26,7 @@ readonly BOLD='\033[1m'
 readonly RESET='\033[0m'
 
 # Directory configuration
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 readonly JAVA_TEST_DIR="$PROJECT_ROOT/test/java"
 
@@ -564,4 +564,4 @@ case "${0##*/}" in
     "run-test-java.sh")
         main "$@"
         ;;
-esac
+esac 
