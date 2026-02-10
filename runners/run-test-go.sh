@@ -5,10 +5,11 @@ set -e
 
 run_go_runner(){
     # Adjust parameter mapping based on how run-test.sh calls this script
-    # run-test.sh calls: sh run-test-go.sh "$2" "$3"
-    # So: $1=module, $2=subCase
+    # run-test.sh calls: sh run-test-go.sh "$2" "$3" "$4"
+    # So: $1=module, $2=subCase, $3=runPattern (optional, e.g. TestCreateOrderRedirectScenario or TestA|TestB)
     module=$1       # e.g., "widget" or "payment_gateway"
-    subCase=$2      # e.g., "cancel" (optional)
+    subCase=$2      # e.g., "cancel" (optional) - filters test files by name
+    runPattern=$3   # optional - go test -run "pattern" to run specific test function(s)
     
     if ! command -v go > /dev/null 2>&1; then
         echo "ERROR: Go not available in this system. Please install Go."
@@ -43,11 +44,25 @@ run_go_runner(){
         go clean -testcache > /dev/null 2>&1
         
         if [ -n "$module" ]; then
-            echo "Running Go test file(s) for module: $module ${subCase:-}"  
+            echo "Running Go test file(s) for module: $module ${subCase:-} ${runPattern:-}"  
             
             # Check if module is a directory that exists
             if [ -d "./$module" ] && find "./$module" -name "*_test.go" -type f 2>/dev/null | head -1 | grep -q .; then
                 test_dir="./$module"
+
+                # If runPattern is set, run specific test function(s) in the package (go test -run)
+                if [ -n "$runPattern" ]; then
+                    echo "Running tests matching -run: $runPattern"
+                    echo ""
+                    if go test -v -timeout=600s -run "$runPattern" "$test_dir" 2>&1; then
+                        echo "✅ Tests passed"
+                        exit 0
+                    else
+                        echo "❌ Tests failed"
+                        exit 1
+                    fi
+                fi
+
                 if [ -n "$subCase" ]; then
                     # Filter by subCase pattern in file names - handle both with and without _test suffix
                     if echo "$subCase" | grep -q "_test$"; then

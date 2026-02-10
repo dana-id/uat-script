@@ -21,19 +21,19 @@ main() {
     
     case $INTERPRETER in
     "python")
-        sh "$RUNNERS_DIR/run-test-python.sh" "$2" "$3"
+        sh "$RUNNERS_DIR/run-test-python.sh" "$2" "$3" "$4"
         ;;
     "go")
-        sh "$RUNNERS_DIR/run-test-go.sh" "$2" "$3"
+        sh "$RUNNERS_DIR/run-test-go.sh" "$2" "$3" "$4"
         ;;
     "node")
-        sh "$RUNNERS_DIR/run-test-node.sh" "$2" "$3"
+        sh "$RUNNERS_DIR/run-test-node.sh" "$2" "$3" "$4"
         ;;
     "php")
-        sh "$RUNNERS_DIR/run-test-php.sh" "$2" "$3"
+        sh "$RUNNERS_DIR/run-test-php.sh" "$2" "$3" "$4"
         ;;
     "java")
-        sh "$RUNNERS_DIR/run-test-java.sh" "$2" "$3"
+        sh "$RUNNERS_DIR/run-test-java.sh" "$2" "$3" "$4"
         ;;
     "help" | "-h" | "--help")
         display_help
@@ -53,7 +53,7 @@ display_help() {
     echo "Usage: ./run-test.sh <command> [options]"
     echo ""
     echo "Commands:"
-    echo "  <language> [folder] [test_case]   Run tests for specific language"
+    echo "  <language> [folder] [test_case] [run_pattern]   Run tests for specific language"
     echo "  list <language> [folder]          List available folders or APIs"
     echo "  help                              Show this help message"
     echo ""
@@ -75,6 +75,16 @@ display_help() {
     echo "  ./run-test.sh node payment_gateway       # Run Node.js tests in payment_gateway folder"
     echo "  ./run-test.sh php payment_gateway CancelOrderTest # Run specific PHP test"
     echo "  ./run-test.sh java paymentgateway CreateOrderTest # Run specific Java test"
+    echo "  ./run-test.sh go payment_gateway '' 'TestCreateOrderRedirectScenario'                    # Run one Go test"
+    echo "  ./run-test.sh go payment_gateway '' 'TestCreateOrderRedirectScenario|TestQueryPaymentCreatedOrder'  # Run multiple Go tests"
+    echo "  ./run-test.sh python payment_gateway '' 'test_create_order_redirect'   # Run one Python test by -k pattern"
+    echo "  ./run-test.sh python payment_gateway '' 'test_one|test_two'              # Run multiple Python tests (| → or)"
+    echo "  ./run-test.sh node payment_gateway '' 'CreateOrderRedirect'            # Run Node tests matching name"
+    echo "  ./run-test.sh node payment_gateway '' 'CreateOrderRedirect|query payment with status created'  # Multiple (use test titles, not Go names)"
+    echo "  ./run-test.sh java paymentgateway CreateOrderTest createOrderRedirectScenario  # Run one Java test method"
+    echo "  ./run-test.sh java paymentgateway CreateOrderTest 'method1|method2'    # Run multiple Java methods (| → +)"
+    echo "  ./run-test.sh php payment_gateway '' 'testCreateOrderRedirect'         # Run PHP tests matching --filter"
+    echo "  ./run-test.sh php payment_gateway '' 'testOne|testTwo'                 # Run multiple PHP tests (| = regex OR)"
     echo ""
     echo "Examples - Listing:"
     echo "  ./run-test.sh list python                # List Python test folders"

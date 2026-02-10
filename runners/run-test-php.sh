@@ -160,6 +160,7 @@ run_php_runner(){
     fi
     folderName=$1
     caseName=$2
+    runPattern=$3   # optional: PHPUnit --filter for specific test method name(s)
     ROOT_DIR=$(pwd)
     
     echo "Running PHP tests with PHPUnit..."
@@ -357,8 +358,23 @@ EOF
     
     echo "Running PHP tests with PHPUnit..."
     
-    # Support running by folder and/or scenario name
-    if [ -n "$folderName" ] && [ -n "$caseName" ]; then
+    # Support running by folder, scenario name, and/or specific test run pattern
+    # Multiple tests: use | in pattern (e.g. testOne|testTwo) – PHPUnit --filter accepts regex
+    if [ -n "$runPattern" ]; then
+        # Run specific test method(s) by --filter pattern (| = regex OR)
+        if [ -n "$folderName" ]; then
+            echo "Running PHP tests matching '$runPattern' in folder 'test/php/$folderName'..."
+            test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="$runPattern" "test/php/$folderName"
+        else
+            echo "Running PHP tests matching '$runPattern' in all folders..."
+            TEST_DIRS=$(find test/php -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
+            for dir in $TEST_DIRS; do
+                echo "\033[36mRunning tests matching '$runPattern' in $dir...\033[0m"
+                test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="$runPattern" "$dir"
+                sleep 3
+            done
+        fi
+    elif [ -n "$folderName" ] && [ -n "$caseName" ]; then
         # Run specific test in a specific folder
         echo "Running test '$caseName' in folder 'test/php/$folderName'..."
         test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "test/php/$folderName"

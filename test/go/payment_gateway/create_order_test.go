@@ -27,7 +27,7 @@ func generatePartnerReferenceNo() string {
 	return uuid.New().String()
 }
 
-// RandomString generates a random string of the specified length
+// RandomString generates a random string of the specified length for testing
 func RandomString(length int) string {
 	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, length)

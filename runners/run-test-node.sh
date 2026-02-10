@@ -6,6 +6,7 @@ set -e
 run_node_runner(){
     folderName=$1
     caseName=$2
+    runPattern=$3   # optional: jest -t pattern for specific test name(s)
     
     if ! command -v node >/dev/null 2>&1; then
         echo "Node.js not available in this system. Please install Node.js."
@@ -88,8 +89,41 @@ module.exports = {
 EOF
     fi
     
-    # Support running by folder and/or scenario name
-    if [ -n "$folderName" ] && [ -n "$caseName" ]; then
+    # Support running by folder, scenario name, and/or specific test run pattern
+    # Multiple tests: use | in pattern (e.g. CreateOrderRedirect|query payment) – Jest -t accepts regex
+    # Note: Use substrings of the actual test() titles
+    if [ -n "$runPattern" ]; then
+        # Run specific test(s) by name (jest -t pattern, | = regex OR)
+        if [ -n "$folderName" ]; then
+            echo "Running Node.js tests matching '$runPattern' in folder '$folderName'..."
+            if [ ! -d "$folderName" ]; then
+                echo "\033[31mERROR: Folder not found: $folderName\033[0m" >&2
+                exit 1
+            fi
+            runPatternOut=$(npx jest "$folderName" -t "$runPattern" 2>&1); jestCode=$?
+            echo "$runPatternOut"
+            # Jest reports "Test Suites: 5 skipped, 0 of 5 total" when -t matches nothing
+            if echo "$runPatternOut" | grep -q "0 of [0-9]* total"; then
+                echo "" >&2
+                echo "\033[31mERROR: Pattern '$runPattern' did not match any test.\033[0m" >&2
+                echo "Node test names come from test('...') titles, not Go function names." >&2
+                echo "Examples: use 'CreateOrderRedirect' or 'query payment with status created' or 'INIT'." >&2
+                exit 1
+            fi
+            exit $jestCode
+        else
+            echo "Running Node.js tests matching '$runPattern' in all folders..."
+            runPatternOut=$(npx jest -t "$runPattern" 2>&1); jestCode=$?
+            echo "$runPatternOut"
+            if echo "$runPatternOut" | grep -q "0 of [0-9]* total"; then
+                echo "" >&2
+                echo "\033[31mERROR: Pattern '$runPattern' did not match any test.\033[0m" >&2
+                echo "Node test names come from test('...') titles. Examples: 'CreateOrderRedirect', 'query payment with status created'." >&2
+                exit 1
+            fi
+            exit $jestCode
+        fi
+    elif [ -n "$folderName" ] && [ -n "$caseName" ]; then
         # Run specific test in a specific folder
         echo "Running Node.js test '$caseName' in folder '$folderName'..."
         if [ ! -d "$folderName" ]; then

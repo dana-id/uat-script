@@ -190,9 +190,10 @@ show_usage() {
     echo
     echo "$(color_text "Three execution modes:" $BOLD)"
     echo
-    echo "$(color_text "1. Run specific test case:" $CYAN)"
+    echo "$(color_text "1. Run specific test case (optionally single method):" $CYAN)"
     echo "   sh run-test.sh java widget ApplyToken"
     echo "   sh run-test.sh java pg CreateOrder"
+    echo "   sh run-test.sh java paymentgateway CreateOrderTest createOrderRedirectScenario"
     echo
     echo "$(color_text "2. Run all tests in a business module:" $CYAN)"
     echo "   sh run-test.sh java widget"
@@ -232,10 +233,11 @@ find_test_files() {
 # TEST EXECUTION FUNCTIONS
 # ============================================================================
 
-# Run specific test case
+# Run specific test case (optional 3rd arg = single method name for -Dtest=Class#method)
 run_specific_test() {
     local module="$1"
     local test_name="$2"
+    local method_name="${3:-}"
     
     # Find the actual module (handles aliases)
     local actual_module=$(find_module "$module")
@@ -247,7 +249,7 @@ run_specific_test() {
     fi
     
     local module_display=$(get_module_display_name "$actual_module")
-    print_header "Running $module_display Test: $test_name"
+    print_header "Running $module_display Test: $test_name${method_name:+#$method_name}"
     
     # Find test files matching the pattern
     local test_files=$(find_test_files "$actual_module" "$test_name")
@@ -273,11 +275,17 @@ run_specific_test() {
     
     # Convert file path to test class pattern
     local test_class=$(echo "$test_files" | head -1 | sed "s|$JAVA_TEST_DIR/src/test/java/||" | sed 's|/|.|g' | sed 's|\.java$||')
-    print_info "Executing: $test_class"
+    local test_arg="$test_class"
+    if [ -n "$method_name" ]; then
+        # Multiple methods: use | (e.g. method1|method2) → Maven uses + for same class
+        method_arg=$(echo "$method_name" | tr '|' '+')
+        test_arg="$test_class#$method_arg"
+    fi
+    print_info "Executing: $test_arg"
     echo
     
     # Run Maven test with proper error handling
-    if mvn test -Dtest="$test_class" -q; then
+    if mvn test -Dtest="$test_arg" -q; then
         print_success "Test execution completed successfully!"
     else
         print_warning "Test execution completed with issues"
@@ -529,6 +537,7 @@ show_failure_details() {
 run_java_runner() {
     local folder_name="$1"
     local case_name="$2"
+    local run_pattern="$3"   # optional: single test method name (e.g. createOrderRedirectScenario)
     
     # Validate environment first
     validate_environment
@@ -536,8 +545,8 @@ run_java_runner() {
     
     # Execute based on arguments with improved logic
     if [ -n "$folder_name" ] && [ -n "$case_name" ]; then
-        # Run specific test case in a specific folder
-        run_specific_test "$folder_name" "$case_name"
+        # Run specific test case in a specific folder (optionally single method if run_pattern set)
+        run_specific_test "$folder_name" "$case_name" "$run_pattern"
     elif [ -n "$folder_name" ]; then
         # Run all tests in a specific folder
         run_module_tests "$folder_name"

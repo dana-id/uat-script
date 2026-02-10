@@ -6,6 +6,7 @@ set -e
 run_python_runner(){
     folderName=$1
     caseName=$2
+    runPattern=$3   # optional: pytest -k pattern for specific test function(s)
     # Check for python3 or python command
     if command -v python3 &> /dev/null; then
         PYTHON_CMD="python3"
@@ -30,7 +31,34 @@ run_python_runner(){
     
     export PYTHONPATH=$PYTHONPATH:$(pwd)/test/python:$(pwd)/runner/python
     
-    # Support running by folder and/or scenario name
+    # Support running by folder, scenario name, and/or specific test run pattern
+    # Multiple tests: use | (e.g. test_one|test_two) → converted to pytest "or" expression
+    if [ -n "$runPattern" ]; then
+        runPatternForPytest=$(echo "$runPattern" | sed 's/|/ or /g')
+        # Run specific test function(s) by -k pattern (e.g. test_create_order_redirect or TestCreateOrder)
+        if [ -n "$folderName" ]; then
+            test_path="test/python/$folderName"
+            if [ ! -d "$test_path" ]; then
+                echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
+                exit 1
+            fi
+            set +e
+            $PYTHON_CMD -m pytest -v -s "$test_path" -k "$runPatternForPytest"
+            exit_code=$?
+            set -e
+        else
+            set +e
+            $PYTHON_CMD -m pytest -v -s -k "$runPatternForPytest"
+            exit_code=$?
+            set -e
+        fi
+        if [ $exit_code -eq 5 ]; then
+            echo "\033[31mERROR: No tests were collected for run pattern: $runPattern\033[0m" >&2
+            exit 1
+        fi
+        exit $exit_code
+    fi
+
     if [ -n "$folderName" ] && [ -n "$caseName" ]; then
         # Run specific scenario in a specific folder
         test_path="test/python/$folderName"
