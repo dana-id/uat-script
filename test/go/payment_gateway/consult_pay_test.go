@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	pg "github.com/dana-id/dana-go/payment_gateway/v1"
+	pg "github.com/dana-id/dana-go/v2/payment_gateway/v1"
 
 	"uat-script/helper"
 )

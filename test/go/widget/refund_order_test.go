@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	widget "github.com/dana-id/dana-go/widget/v1"
+	widget "github.com/dana-id/dana-go/v2/widget/v1"
 	"github.com/google/uuid"
 
 	"uat-script/helper"

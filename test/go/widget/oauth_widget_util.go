@@ -17,7 +17,7 @@ import (
 	"time"
 	"uat-script/helper"
 
-	"github.com/dana-id/dana-go/widget/v1"
+	"github.com/dana-id/dana-go/v2/widget/v1"
 	"github.com/playwright-community/playwright-go"
 )
 

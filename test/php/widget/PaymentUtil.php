@@ -59,6 +59,7 @@ class PaymentUtil extends TestCase
 
         $jsonDict['merchantId'] = getenv('MERCHANT_ID');
         $jsonDict['partnerReferenceNo'] = self::generatePartnerReferenceNo();
+        $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
 
         $requestObj = ObjectSerializer::deserialize(
             $jsonDict,

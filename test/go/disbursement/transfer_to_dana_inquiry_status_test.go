@@ -8,7 +8,7 @@ import (
 	"time"
 	"uat-script/helper"
 
-	"github.com/dana-id/dana-go/disbursement/v1"
+	"github.com/dana-id/dana-go/v2/disbursement/v1"
 	"github.com/google/uuid"
 )
 

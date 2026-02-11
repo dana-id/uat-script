@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	dana "github.com/dana-id/dana-go"
-	"github.com/dana-id/dana-go/config"
+	dana "github.com/dana-id/dana-go/v2"
+	"github.com/dana-id/dana-go/v2/config"
 )
 
 var (

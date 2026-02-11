@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	widget "github.com/dana-id/dana-go/widget/v1"
+	widget "github.com/dana-id/dana-go/v2/widget/v1"
 
 	"uat-script/helper"
 )

@@ -38,7 +38,7 @@ run_go_runner(){
     # Run go mod tidy only if go.mod exists
     if [ -f "go.mod" ]; then
         echo "Updating Go dependencies..."
-        go get -u github.com/dana-id/dana-go > /dev/null 2>&1 || true
+        go get -u github.com/dana-id/dana-go/v2 > /dev/null 2>&1 || true
         go get -u github.com/playwright-community/playwright-go > /dev/null 2>&1 || true
         go mod tidy > /dev/null 2>&1
         go clean -testcache > /dev/null 2>&1

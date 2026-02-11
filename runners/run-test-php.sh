@@ -334,7 +334,7 @@ EOF
 
     # Install dependencies
     echo "Installing PHP dependencies..."
-    rm composer.lock || true
+    rm -f composer.lock
     
     # Force update to latest stable danaid/dana-php package
     echo "Updating danaid/dana-php to latest stable version..."
@@ -356,6 +356,17 @@ EOF
     echo "Changing back to project root..."
     cd "$ROOT_DIR"
     
+    # Use absolute paths so phpunit is found regardless of how the script was invoked
+    PHPUNIT_BIN="$ROOT_DIR/test/php/vendor/bin/phpunit"
+    PHPUNIT_CONFIG="$ROOT_DIR/test/php/phpunit.xml"
+    PHP_TEST_DIR="$ROOT_DIR/test/php"
+    
+    if [ ! -x "$PHPUNIT_BIN" ]; then
+        echo "\033[31mERROR: PHPUnit not found at $PHPUNIT_BIN\033[0m" >&2
+        echo "Run 'cd test/php && composer install' from the project root, or check that Composer install completed successfully." >&2
+        exit 1
+    fi
+    
     echo "Running PHP tests with PHPUnit..."
     
     # Support running by folder, scenario name, and/or specific test run pattern
@@ -364,27 +375,27 @@ EOF
         # Run specific test method(s) by --filter pattern (| = regex OR)
         if [ -n "$folderName" ]; then
             echo "Running PHP tests matching '$runPattern' in folder 'test/php/$folderName'..."
-            test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="$runPattern" "test/php/$folderName"
+            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="$runPattern" "$PHP_TEST_DIR/$folderName"
         else
             echo "Running PHP tests matching '$runPattern' in all folders..."
-            TEST_DIRS=$(find test/php -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
+            TEST_DIRS=$(find "$PHP_TEST_DIR" -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
             for dir in $TEST_DIRS; do
                 echo "\033[36mRunning tests matching '$runPattern' in $dir...\033[0m"
-                test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="$runPattern" "$dir"
+                "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="$runPattern" "$dir"
                 sleep 3
             done
         fi
     elif [ -n "$folderName" ] && [ -n "$caseName" ]; then
         # Run specific test in a specific folder
         echo "Running test '$caseName' in folder 'test/php/$folderName'..."
-        test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "test/php/$folderName"
+        "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "$PHP_TEST_DIR/$folderName"
     elif [ -n "$folderName" ]; then
         # Run all tests in a specific folder
         echo "Running all tests in folder 'test/php/$folderName'..."
-        test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always "test/php/$folderName"
+        "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$PHP_TEST_DIR/$folderName"
     elif [ -n "$caseName" ]; then
         # Find all test directories (excluding helper)
-        TEST_DIRS=$(find test/php -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
+        TEST_DIRS=$(find "$PHP_TEST_DIR" -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
         
         if [ -z "$TEST_DIRS" ]; then
             echo "\033[31mERROR: No test directories found under test/php\033[0m" >&2
@@ -394,7 +405,7 @@ EOF
         # Run test in all directories
         for dir in $TEST_DIRS; do
             echo "\033[36mRunning test '$caseName' in $dir...\033[0m"
-            test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "$dir"
+            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "$dir"
             # Add a 3-second gap between test runs
             sleep 3
         done
@@ -403,7 +414,7 @@ EOF
         echo "Running all PHP tests..."
         
         # Find all test directories (excluding helper)
-        TEST_DIRS=$(find test/php -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
+        TEST_DIRS=$(find "$PHP_TEST_DIR" -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
         
         if [ -z "$TEST_DIRS" ]; then
             echo "\033[31mERROR: No test directories found under test/php\033[0m" >&2
@@ -413,7 +424,7 @@ EOF
         # Run tests in all directories
         for dir in $TEST_DIRS; do
             echo "\033[36mRunning tests in $dir...\033[0m"
-            test/php/vendor/bin/phpunit --configuration=test/php/phpunit.xml --testdox --debug --colors=always "$dir"
+            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$dir"
             # Add a 3-second gap between test runs
             sleep 3
         done
