@@ -28,8 +28,8 @@ class QueryOrderTest {
     private static final String jsonPathFile = QueryOrderTest.class.getResource("/request/components/PaymentGateway.json")
             .getPath();
     private static final String titleCase = "QueryPayment";
-    private static String userPin = "123321";
-    private static String userPhone = "0811742234";
+    private static String userPin = "181818";
+    private static String userPhone = "083811223355";
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
     private static PaymentGatewayApi api;
     private static String partnerReferenceNoInit,partnerReferenceNoPaid,partnerReferenceNoCancel;

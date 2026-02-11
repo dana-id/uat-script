@@ -33,8 +33,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class ApplyToken {
     private static final Logger log = LoggerFactory.getLogger(CreateOrderTest.class);
-    private final static String USER_PIN = "123321";
-    private final static String USER_PHONENUMBER = "0811742234";
+    private final static String USER_PIN = "181818";
+    private final static String USER_PHONENUMBER = "083811223355";
     private static final String titleCase = "ApplyToken";
     private static final String jsonPathFile = ApplyToken.class.getResource("/request/components/Widget.json")
             .getPath();

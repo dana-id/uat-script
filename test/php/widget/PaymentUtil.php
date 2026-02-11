@@ -90,8 +90,8 @@ class PaymentUtil extends TestCase
      * @throws \Exception If any step of the payment flow fails
      */
     public static function createPaidPaymentWidget(
-        string $userPhoneNumber = "0811742234",
-        string $userPin = "123321",
+        string $userPhoneNumber = "083811223355",
+        string $userPin = "181818",
         string $orderOrigin = "PaymentSuccess",
         bool $forceNewPayment = false
     ): string {

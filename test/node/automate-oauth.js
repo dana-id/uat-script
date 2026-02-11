@@ -1,7 +1,7 @@
 const { chromium, devices } = require('playwright');
 
 // Configuration
-const pin = '123321'; // Replace with your test PIN
+const pin = '181818'; // Replace with your test PIN
 
 // Extract mobile number from the URL
 function extractMobileFromUrl(url) {
@@ -22,7 +22,7 @@ function extractMobileFromUrl(url) {
   }
 
   // Fallback to default number if extraction fails
-  return '0811742234';
+  return '083811223355';
 }
 
 async function automateOAuth(oauthUrl, phoneNumber, pinCode, options = {}) {

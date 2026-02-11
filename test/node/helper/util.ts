@@ -260,8 +260,8 @@ async function retryOnInconsistentRequest<T>(
  * through JSON serialization. This approach provides isolation and better error handling
  * for browser automation tasks.
  * 
- * @param {string} phoneNumber - User's phone number for payment authentication (default: '0811742234')
- * @param {string} pin - User's PIN for payment completion (default: '123321')
+ * @param {string} phoneNumber - User's phone number for payment authentication (default: '083811223355')
+ * @param {string} pin - User's PIN for payment completion (default: '181818')
  * @param {string} redirectUrl - Payment redirect URL obtained from create order response
  * @param {number} maxRetries - Maximum number of retry attempts for payment automation (default: 3)
  * @param {number} retryDelay - Delay between retries in milliseconds (default: 2000)
@@ -272,8 +272,8 @@ async function retryOnInconsistentRequest<T>(
  * @example
  * ```typescript
  * const result = await automatePayment(
- *   '0811742234',           // phone number
- *   '123321',               // PIN
+ *   '083811223355',         // phone number
+ *   '181818',               // PIN
  *   response.webRedirectUrl, // redirect URL from create order
  *   3,                      // max retries
  *   2000,                   // retry delay
@@ -289,8 +289,8 @@ async function retryOnInconsistentRequest<T>(
  * ```
  */
 async function automatePayment(
-  phoneNumber: string = '0811742234',
-  pin: string = '123321',
+  phoneNumber: string = '083811223355',
+  pin: string = '181818',
   redirectUrl: string,
   maxRetries: number = 3,
   retryDelay: number = 2000,

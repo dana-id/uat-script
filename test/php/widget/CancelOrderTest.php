@@ -21,8 +21,8 @@ class CancelOrderTest extends TestCase
     private static $apiInstance;
     private static $merchantId;
     private static $cancelUrl;
-    private static $phoneNumber = '0811742234';
-    private static $userPin = '123321';
+    private static $phoneNumber = '083811223355';
+    private static $userPin = '181818';
 
     public static function setUpBeforeClass(): void
     {

@@ -11,8 +11,8 @@ var TestConfig = struct {
 	JsonPgPath                 string
 	JsonMerchantManagementPath string
 }{
-	PhoneNumber:                "0811742234",
-	PIN:                        "123321",
+	PhoneNumber:                "083811223355",
+	PIN:                        "181818",
 	MerchantID:                 os.Getenv("MERCHANT_ID"),
 	JsonWidgetPath:             "../../../resource/request/components/Widget.json",
 	JsonPgPath:                 "../../../resource/request/components/PaymentGateway.json",

@@ -26,8 +26,8 @@ const fs = require('fs');
 // Parse command line parameters for standalone execution
 const params = JSON.parse(process.argv[2] || '{}');
 const {
-    phoneNumber = '0811742234',
-    pin = '123321',
+    phoneNumber = '083811223355',
+    pin = '181818',
     redirectUrl = 'https://www.dana.id/',
     maxRetries = 3,
     retryDelay = 2000,
@@ -177,7 +177,7 @@ async function clickAnySelector(page, selectors, timeout = 10000) {
  * @throws {Error} When none of the selectors can be filled
  * 
  * @example
- * await fillAnySelector(page, MULTI_SELECTORS.PHONE_INPUT, '811742234');
+ * await fillAnySelector(page, MULTI_SELECTORS.PHONE_INPUT, '83811223355');
  */
 async function fillAnySelector(page, selectors, value, timeout = 10000) {
     const foundSelector = await waitForAnySelector(page, selectors, timeout);
@@ -236,7 +236,7 @@ const SUCCESS_URL_PATTERN = "**/v1/test";
  * @throws {Error} When payment fails or automation encounters errors
  * 
  * @example
- * const result = await performPaymentAutomation(browser, '811742234', '123321', 'https://payment.url');
+ * const result = await performPaymentAutomation(browser, '83811223355', '181818', 'https://payment.url');
  * console.log(result); // { success: true, authCode: null, error: null }
  */
 async function performPaymentAutomation(browser, phoneNumber, pin, redirectUrl) {
@@ -388,16 +388,16 @@ async function sleep(ms) {
  * @example
  * // Basic payment automation
  * const result = await automatePayment({
- *     phoneNumber: '0811742234',
- *     pin: '123321',
+ *     phoneNumber: '083811223355',
+ *     pin: '181818',
  *     redirectUrl: 'https://payment.url'
  * });
  * 
  * @example
  * // Payment with custom settings
  * const result = await automatePayment({
- *     phoneNumber: '0811742234',
- *     pin: '123321',
+ *     phoneNumber: '083811223355',
+ *     pin: '181818',
  *     redirectUrl: 'https://payment.url',
  *     maxRetries: 3,
  *     retryDelay: 5000,
@@ -511,8 +511,8 @@ if (require.main === module) {
         try {
             // Example parameters for direct execution
             const params = {
-                phoneNumber: process.env.DANA_PHONE || '0811742234',
-                pin: process.env.DANA_PIN || '123321',
+                phoneNumber: process.env.DANA_PHONE || '083811223355',
+                pin: process.env.DANA_PIN || '181818',
                 redirectUrl: redirectUrl,
                 maxRetries: 3,
                 retryDelay: 2000,

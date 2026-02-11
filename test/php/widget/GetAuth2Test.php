@@ -17,7 +17,7 @@ class GetAuth2Test extends TestCase
     private static $apiInstance;
     private static $seamlessData;
     private static $seamlessSign;
-    private static $phoneNumber = '0811742234';
+    private static $phoneNumber = '083811223355';
 
     public static function setUpBeforeClass(): void
     {

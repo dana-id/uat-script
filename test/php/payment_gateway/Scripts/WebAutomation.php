@@ -30,8 +30,8 @@ use Exception;
 class WebAutomation
 {
     // Default test credentials
-    const DEFAULT_PHONE_NUMBER = '811742234';
-    const DEFAULT_PIN = '123321';
+    const DEFAULT_PHONE_NUMBER = '83811223355';
+    const DEFAULT_PIN = '181818';
     
     // Default Selenium settings
     const DEFAULT_SELENIUM_URL = 'http://localhost:4444/wd/hub';

@@ -41,7 +41,7 @@ import { v4 as uuidv4 } from 'uuid';
  * const authCode = await generateAuthCode();
  * 
  * // Generate auth code with specific credentials
- * const authCode = await generateAuthCode('0811742234', '123321');
+ * const authCode = await generateAuthCode('083811223355', '181818');
  * 
  * // Use in widget test
  * const applyTokenRequest = {

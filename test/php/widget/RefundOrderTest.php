@@ -23,8 +23,8 @@ class RefundOrderTest extends TestCase
     private static $merchantId;
     private static $refundUrl;
     private static $sandboxUrl;
-    private static $phoneNumber = '0811742234';
-    private static $userPin = '123321';
+    private static $phoneNumber = '083811223355';
+    private static $userPin = '181818';
 
     public static function setUpBeforeClass(): void
     {

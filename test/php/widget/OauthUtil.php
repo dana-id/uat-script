@@ -28,7 +28,7 @@ class OauthUtil
         $oauth2UrlData->setRedirectUrl($redirectUrl);
         $oauth2UrlData->setMerchantId($merchantId);
         $oauth2UrlData->setSeamlessData([
-            'mobileNumber' => '0811742234'
+            'mobileNumber' => '083811223355'
         ]);
         
         $privateKey = getenv('PRIVATE_KEY');
@@ -52,8 +52,8 @@ class OauthUtil
             $redirectUrl = getenv('REDIRECT_URL_OAUTH');
         }
         echo "Starting OAuth automation..." . PHP_EOL;
-        $phoneNumber = $phoneNumber ?: '0811742234';
-        $pinCode = $pinCode ?: '123321';
+        $phoneNumber = $phoneNumber ?: '083811223355';
+        $pinCode = $pinCode ?: '181818';
         
         $oauthUrl = self::getOAuthUrl($partnerId, $state, $redirectUrl, null, $phoneNumber, $pinCode);
         

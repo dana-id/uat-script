@@ -35,7 +35,7 @@ public class GetOauthUrl {
             InvalidKeyException {
 
         seamlessData = OauthUtil.generateSeamlessData(
-                "0811742234",
+                "083811223355",
                 "PAYMENT",
                 "2024-12-23T07:44:11+07:00",
                 UUID.randomUUID().toString(),

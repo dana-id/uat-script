@@ -83,8 +83,8 @@ describe('QueryOrder Tests', () => {
 
         // Automate the payment using the webRedirectUrl
         const automationResult = await automatePayment(
-          '0811742234', // phoneNumber
-          '123321',     // pin
+          '083811223355', // phoneNumber
+          '181818',     // pin
           response.webRedirectUrl, // redirectUrl from create order response
           3,            // maxRetries
           2000,         // retryDelay

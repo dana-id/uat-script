@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test;
 class RefundOrderTest {
     private static String jsonPathFile = RefundOrderTest.class.getResource("/request/components/PaymentGateway.json")
             .getPath();
-    private static String userPin = "123321";
-    private static String userPhone = "0811742234";
+    private static String userPin = "181818";
+    private static String userPhone = "083811223355";
     private final String titleCase = "RefundOrder";
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
     private static PaymentGatewayApi api;

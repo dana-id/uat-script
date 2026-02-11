@@ -17,6 +17,9 @@ run_node_runner(){
     node --version
     npm --version
     
+    # Required for ESM/dynamic import when using dana-node (e.g. account_unbinding_test)
+    export NODE_OPTIONS="${NODE_OPTIONS:-} --experimental-vm-modules"
+    
     # Change to the Node.js test directory
     cd test/node
     

@@ -37,8 +37,8 @@ public class CancelOrderTest {
             .getPath();
     private final String titleCase = "CancelOrder";
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
-    private static String userPin = "123321";
-    private static String userPhone = "0811742234";
+    private static String userPin = "181818";
+    private static String userPhone = "083811223355";
     private static WidgetApi widgetApi;
     private static String partnerReferenceNoInit,partnerReferenceNoRefunded;
 

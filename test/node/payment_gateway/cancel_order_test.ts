@@ -559,8 +559,8 @@ describe('Cancel Order Tests', () => {
 
         // Step 2: Automate payment process using browser automation
         const automationResult = await automatePayment(
-          '0811742234', // Test phone number
-          '123321',     // Test PIN
+          '083811223355', // Test phone number
+          '181818',     // Test PIN
           createOrderResponse.webRedirectUrl, // Payment redirect URL
           3,            // Maximum retry attempts
           2000,         // Retry delay in milliseconds

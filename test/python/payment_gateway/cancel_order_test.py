@@ -19,8 +19,8 @@ from payment_gateway.payment_pg_util import automate_payment_pg
 title_case = "CancelOrder"
 create_order_title_case = "CreateOrder"
 json_path_file = "resource/request/components/PaymentGateway.json"
-user_phone_number = "0811742234"
-user_pin = "123321"
+user_phone_number = "083811223355"
+user_pin = "181818"
 merchant_id = os.environ.get("MERCHANT_ID", "1234567890")  # Default to a test merchant ID if not set
 
 configuration = SnapConfiguration(

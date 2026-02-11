@@ -19,8 +19,8 @@ class ApplyOttTest extends TestCase
     private static $titleCase = 'ApplyOtt';
     private static $jsonPathFile = 'resource/request/components/Widget.json';
     private static $apiInstance;
-    private static $phoneNumber = '0811742234';
-    private static $userPin = '123321';
+    private static $phoneNumber = '083811223355';
+    private static $userPin = '181818';
     private static $authCode;
     private static $accessToken;
 

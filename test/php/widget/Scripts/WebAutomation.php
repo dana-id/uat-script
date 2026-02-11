@@ -34,10 +34,10 @@ class WebAutomation
     const DEFAULT_SELENIUM_URL = 'http://localhost:4444/wd/hub';
     
     /** @var string Default phone number for testing */
-    const DEFAULT_PHONE_NUMBER = '811742234';
+    const DEFAULT_PHONE_NUMBER = '83811223355';
     
     /** @var string Default PIN for authentication */
-    const DEFAULT_PIN = '123321';
+    const DEFAULT_PIN = '181818';
     
     /**
      * Attempts to start Selenium server if not running

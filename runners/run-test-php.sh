@@ -168,8 +168,16 @@ run_php_runner(){
     # Check PHP version
     php --version
     
-    # Check and install Composer if not available
-    if ! command -v composer &> /dev/null; then
+    # Check for Composer: prefer PATH, then common CI location /usr/local/bin/composer
+    COMPOSER_BIN=""
+    if command -v composer &> /dev/null; then
+        COMPOSER_BIN="composer"
+    elif [ -x "/usr/local/bin/composer" ]; then
+        COMPOSER_BIN="/usr/local/bin/composer"
+    fi
+
+    # Install Composer locally only if not found
+    if [ -z "$COMPOSER_BIN" ]; then
         echo "Composer not available, installing locally..."
         
         # Instead of relying on getcomposer.org which has SSL issues,
@@ -322,27 +330,33 @@ EOF
 
     # Use absolute path to test/php so composer always runs in the correct directory
     PHP_COMPOSER_DIR="$ROOT_DIR/test/php"
-    COMPOSER_CMD="composer"
-    if [ -f "$ROOT_DIR/composer.phar" ]; then
+    if [ -n "$COMPOSER_BIN" ]; then
+        COMPOSER_CMD="$COMPOSER_BIN"
+    elif [ -f "$ROOT_DIR/composer.phar" ]; then
         COMPOSER_CMD="php $ROOT_DIR/composer.phar"
+    else
+        echo "\033[31mERROR: No Composer available (install composer or run script from a context that has composer)\033[0m" >&2
+        exit 1
     fi
 
     # Clear composer cache first (global command, no --working-dir)
     echo "Clearing Composer cache..."
     COMPOSER_PROCESS_TIMEOUT=600 $COMPOSER_CMD clearcache 2>/dev/null || true
 
-    # Install dependencies (use existing composer.json and lock if present; do not overwrite with require)
-    echo "Installing PHP dependencies..."
-    COMPOSER_PROCESS_TIMEOUT=600 $COMPOSER_CMD install --no-interaction --working-dir="$PHP_COMPOSER_DIR"
-    
-    # Change back to the project root for running PHPUnit (we may have changed dir in composer)
+    # Install dependencies: cd to test/php so composer install runs in the right place (avoids --working-dir issues in CI)
+    echo "Installing PHP dependencies in $PHP_COMPOSER_DIR..."
+    cd "$PHP_COMPOSER_DIR"
+    if ! COMPOSER_PROCESS_TIMEOUT=600 $COMPOSER_CMD install --no-interaction 2>&1; then
+        echo "\033[31mERROR: composer install failed in test/php\033[0m" >&2
+        exit 1
+    fi
     cd "$ROOT_DIR"
-    
+
     # Use absolute paths so phpunit is found regardless of how the script was invoked
     PHPUNIT_BIN="$ROOT_DIR/test/php/vendor/bin/phpunit"
     PHPUNIT_CONFIG="$ROOT_DIR/test/php/phpunit.xml"
     PHP_TEST_DIR="$ROOT_DIR/test/php"
-    
+
     if [ ! -x "$PHPUNIT_BIN" ]; then
         echo "\033[31mERROR: PHPUnit not found at $PHPUNIT_BIN\033[0m" >&2
         echo "Run 'cd test/php && composer install' from the project root, or check that Composer install completed successfully." >&2

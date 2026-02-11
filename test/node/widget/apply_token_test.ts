@@ -30,7 +30,7 @@ describe('ApplyToken Tests', () => {
     test('should successfully apply token', async () => {
         const caseName = 'ApplyTokenSuccess';
         const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-        requestData.authCode = await generateAuthCode("0811742234","123321");
+        requestData.authCode = await generateAuthCode("083811223355","181818");
         try {
             const response = await dana.widgetApi.applyToken(requestData);
             await assertResponse(jsonPathFile, titleCase, caseName, response);
@@ -124,7 +124,7 @@ describe('ApplyToken Tests', () => {
     test('should fail to apply token with invalid signature', async () => {
         const caseName = 'ApplyTokenFailInvalidSignature';
         const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-        requestData.authCode = await generateAuthCode("0811742234","123321");
+        requestData.authCode = await generateAuthCode("083811223355","181818");
         const customHeaders: Record<string, string> = {
             'X-SIGNATURE': 'invalid_signature',
         }

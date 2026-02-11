@@ -2,7 +2,7 @@
     "GetOauth": {
         "GetOauthSuccess": {
             "request": {
-                "mobileNumber": "62811742234",
+                "mobileNumber": "6283811223355",
                 "bizScenario": "PAYMENT",
                 "verifiedTime": "2020-12-23T07:44:11+07:00",
                 "externalUid": "7381273821udasudy712368213",
@@ -503,6 +503,26 @@
                 "responseMessage": "Invalid Field Format X-TIMESTAMP"
             }
         },
+        "QueryOrderFailInvalidMandatoryField": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "1.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "${MERCHANT_ID}",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": ""
+            },
+            "response": {
+                "responseCode": "4005502",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
         "QueryOrderFailTransactionNotFound": {
             "request": {
                 "additionalInfo": {},
@@ -934,6 +954,30 @@
             "response": {
                 "responseCode": "4045808",
                 "responseMessage": "Invalid Merchant"
+            }
+        },
+        "RefundFailInvalidSignature": {
+            "request": {
+                "merchantId": "${MERCHANT_ID}",
+                "subMerchantId": "",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "originalCaptureNo": "",
+                "partnerRefundNo": "${partnerReferenceNo}",
+                "refundAmount": {
+                    "value": "1.00",
+                    "currency": "IDR"
+                },
+                "externalStoreId": "",
+                "reason": "Customer complain",
+                "additionalInfo": {
+                    "envInfo": {}
+                }
+            },
+            "response": {
+                "responseCode": "4015800",
+                "responseMessage": "Unauthorized. Invalid Signature"
             }
         }
     },

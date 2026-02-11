@@ -19,8 +19,8 @@ import static io.restassured.RestAssured.given;
 
 public class OauthUtil {
     private static String authCode;
-    private final static String DEFAULT_USER_PIN = "123321";
-    private final static String DEFAULT_USER_PHONENUMBER = "0811742234";
+    private final static String DEFAULT_USER_PIN = "181818";
+    private final static String DEFAULT_USER_PHONENUMBER = "083811223355";
     private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
     private static final String redirecrUrl = ConfigUtil.getConfig("REDIRECT_URL_OAUTH", "https://google.com");
     public static String generateSeamlessData(

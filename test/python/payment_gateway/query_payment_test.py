@@ -22,8 +22,8 @@ title_case = "QueryPayment"
 create_order_title_case = "CreateOrder"
 cancel_order_title_case = "CancelOrder"
 json_path_file = "resource/request/components/PaymentGateway.json"
-user_phone_number = "0811742234"
-user_pin = "123321"
+user_phone_number = "083811223355"
+user_pin = "181818"
 merchant_id = os.environ.get("MERCHANT_ID", "216620010016033632482")
 
 configuration = SnapConfiguration(
