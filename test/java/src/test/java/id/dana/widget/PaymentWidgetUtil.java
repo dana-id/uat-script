@@ -6,6 +6,7 @@ import id.dana.invoker.model.DanaConfig;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.CreateOrderTest;
+import id.dana.paymentgateway.PaymentPGUtil;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
 import id.dana.widget.v1.api.WidgetApi;
@@ -99,6 +100,7 @@ public class PaymentWidgetUtil {
         String partnerReferenceNo = UUID.randomUUID().toString();
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         Map<String, Object> variableDict = new HashMap<>();
         variableDict.put("partnerReferenceNo", partnerReferenceNo);

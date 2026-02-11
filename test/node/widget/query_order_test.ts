@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { fail } from 'assert';
-import { automatePayment, getRequest } from '../helper/util';
+import { automatePayment, getRequest, generateFormattedDate } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { CancelOrderRequest, QueryPaymentRequest, WidgetPaymentRequest } from 'dana-node/widget/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
@@ -38,14 +38,16 @@ describe('QueryOrder Tests', () => {
       async function createPaymentInit() {
         const widgetPaymentRequestData: WidgetPaymentRequest = getRequest<WidgetPaymentRequest>(jsonPathFile, "Payment", "PaymentSuccess");
         sharedOriginalPartnerReference = generateReferenceNo();
-        widgetPaymentRequestData.partnerReferenceNo = sharedOriginalPartnerReference
+        widgetPaymentRequestData.partnerReferenceNo = sharedOriginalPartnerReference;
+        widgetPaymentRequestData.validUpTo = generateFormattedDate(30 * 24 * 3600, 7);
         await dana.widgetApi.widgetPayment(widgetPaymentRequestData);
       }
 
       async function createPaymentPaying() {
         const widgetPaymentRequestData: WidgetPaymentRequest = getRequest<WidgetPaymentRequest>(jsonPathFile, "Payment", "PaymentPaying");
         sharedOriginalPayingPartnerReference = generateReferenceNo();
-        widgetPaymentRequestData.partnerReferenceNo = sharedOriginalPayingPartnerReference
+        widgetPaymentRequestData.partnerReferenceNo = sharedOriginalPayingPartnerReference;
+        widgetPaymentRequestData.validUpTo = generateFormattedDate(30 * 24 * 3600, 7);
         await dana.widgetApi.widgetPayment(widgetPaymentRequestData);
       }
 
@@ -53,6 +55,7 @@ describe('QueryOrder Tests', () => {
         const widgetPaymentRequestData: WidgetPaymentRequest = getRequest<WidgetPaymentRequest>(jsonPathFile, "Payment", "PaymentSuccess");
         sharedOriginalCanceledPartnerReference = generateReferenceNo();
         widgetPaymentRequestData.partnerReferenceNo = sharedOriginalCanceledPartnerReference;
+        widgetPaymentRequestData.validUpTo = generateFormattedDate(30 * 24 * 3600, 7);
         await dana.widgetApi.widgetPayment(widgetPaymentRequestData);
 
         // Cancel payment
@@ -66,6 +69,7 @@ describe('QueryOrder Tests', () => {
         const widgetPaymentRequestData: WidgetPaymentRequest = getRequest<WidgetPaymentRequest>(jsonPathFile, "Payment", "PaymentSuccess");
         sharedOriginalPaidPartnerReference = generateReferenceNo();
         widgetPaymentRequestData.partnerReferenceNo = sharedOriginalPaidPartnerReference;
+        widgetPaymentRequestData.validUpTo = generateFormattedDate(30 * 24 * 3600, 7);
 
         try {
         // Add delay before creating order to ensure system readiness

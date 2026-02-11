@@ -8,6 +8,7 @@ import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.paymentgateway.CreateOrderTest;
+import id.dana.paymentgateway.PaymentPGUtil;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
 import id.dana.paymentgateway.v1.model.CreateOrderByApiRequest;
 import id.dana.paymentgateway.v1.model.CreateOrderByRedirectRequest;
@@ -82,6 +83,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
@@ -95,6 +97,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         widgetApi.widgetPayment(requestData);
         Money amount = new Money();
@@ -113,6 +116,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
@@ -126,6 +130,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
@@ -140,6 +145,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         customHeaders.put(
                 DanaHeader.X_TIMESTAMP,
@@ -166,6 +172,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         customHeaders.put(
                 DanaHeader.X_SIGNATURE,
@@ -191,6 +198,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
@@ -204,6 +212,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
 
         try {
             WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);

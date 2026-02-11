@@ -320,40 +320,22 @@ EOF
         rm -rf "$TEMP_DIR"
     fi
 
-    # Change to the PHP test directory where composer.json is located
-    echo "Changing to test/php directory..."
-    cd test/php
+    # Use absolute path to test/php so composer always runs in the correct directory
+    PHP_COMPOSER_DIR="$ROOT_DIR/test/php"
+    COMPOSER_CMD="composer"
+    if [ -f "$ROOT_DIR/composer.phar" ]; then
+        COMPOSER_CMD="php $ROOT_DIR/composer.phar"
+    fi
 
-    # Clear composer cache first
+    # Clear composer cache first (global command, no --working-dir)
     echo "Clearing Composer cache..."
-    if [ -f ../../composer.phar ]; then
-        COMPOSER_PROCESS_TIMEOUT=600 php ../../composer.phar clearcache
-    else
-        COMPOSER_PROCESS_TIMEOUT=600 composer clearcache
-    fi
+    COMPOSER_PROCESS_TIMEOUT=600 $COMPOSER_CMD clearcache 2>/dev/null || true
 
-    # Install dependencies
+    # Install dependencies (use existing composer.json and lock if present; do not overwrite with require)
     echo "Installing PHP dependencies..."
-    rm -f composer.lock
+    COMPOSER_PROCESS_TIMEOUT=600 $COMPOSER_CMD install --no-interaction --working-dir="$PHP_COMPOSER_DIR"
     
-    # Force update to latest stable danaid/dana-php package
-    echo "Updating danaid/dana-php to latest stable version..."
-    if [ -f ../../composer.phar ]; then
-        COMPOSER_PROCESS_TIMEOUT=600 php ../../composer.phar require danaid/dana-php:"^1.0" --update-with-dependencies --no-interaction
-    else
-        COMPOSER_PROCESS_TIMEOUT=600 composer require danaid/dana-php:"^1.0" --update-with-dependencies --no-interaction
-    fi
-    
-    # Install remaining dependencies
-    echo "Installing remaining dependencies..."
-    if [ -f ../../composer.phar ]; then
-        COMPOSER_PROCESS_TIMEOUT=600 php ../../composer.phar install --no-interaction
-    else
-        COMPOSER_PROCESS_TIMEOUT=600 composer install --no-interaction
-    fi
-    
-    # Change back to the project root for running PHPUnit
-    echo "Changing back to project root..."
+    # Change back to the project root for running PHPUnit (we may have changed dir in composer)
     cd "$ROOT_DIR"
     
     # Use absolute paths so phpunit is found regardless of how the script was invoked

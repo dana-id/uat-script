@@ -337,6 +337,7 @@ class QueryOrderTest extends TestCase
         $partnerReferenceNo = Util::generatePartnerReferenceNo();
         $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
         $jsonDict['merchantId'] = self::$merchantId;
+        $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
 
         // Create a CreateOrderByRedirectRequest object from the JSON request data
         $createOrderRequestObj = ObjectSerializer::deserialize(

@@ -9,6 +9,7 @@ from dana.widget.v1.api import *
 from dana.api_client import ApiClient
 from dana.exceptions import *
 from uuid import uuid4
+from datetime import datetime, timezone, timedelta
 from helper.util import get_request, retry_on_inconsistent_request, generate_partner_reference_no, with_delay, generate_partner_reference_no
 from helper.assertion import assert_response
 from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error, assert_fail_response
@@ -68,7 +69,8 @@ def create_widget_order_init():
 
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    
+    json_dict["validUpTo"] = (datetime.now(timezone(timedelta(hours=7))) + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%S+07:00")
+
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
     api_response = api_instance.widget_payment(create_payment_request_obj)
@@ -89,7 +91,8 @@ def create_widget_order_paying():
 
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    
+    json_dict["validUpTo"] = (datetime.now(timezone(timedelta(hours=7))) + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%S+07:00")
+
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
     api_response = api_instance.widget_payment(create_payment_request_obj)

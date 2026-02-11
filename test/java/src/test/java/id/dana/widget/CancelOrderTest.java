@@ -191,6 +191,7 @@ public class CancelOrderTest {
         String partnerReferenceNo = UUID.randomUUID().toString();
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(id.dana.paymentgateway.PaymentPGUtil.generateDateWithOffset(30));
 
         Map<String, Object> variableDict = new HashMap<>();
         variableDict.put("partnerReferenceNo", partnerReferenceNo);
