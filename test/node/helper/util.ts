@@ -48,6 +48,19 @@ function replaceTemplateValues(data: any): any {
   } else if (typeof data === 'string') {
     // Handle strings - replace ${VARIABLE_NAME} patterns
     return data.replace(/\$\{([^}]+)\}/g, (match, varName) => {
+      // Special case: createdTime must be current time in YYYY-MM-DDTHH:mm:ss+07:00 (no env var)
+      if (varName === 'createdTime') {
+        const now = new Date();
+        // Jakarta is UTC+7: form as UTC then add 7 hours for display
+        const utc7 = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+        const y = utc7.getUTCFullYear();
+        const m = String(utc7.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(utc7.getUTCDate()).padStart(2, '0');
+        const h = String(utc7.getUTCHours()).padStart(2, '0');
+        const min = String(utc7.getUTCMinutes()).padStart(2, '0');
+        const s = String(utc7.getUTCSeconds()).padStart(2, '0');
+        return `${y}-${m}-${d}T${h}:${min}:${s}+07:00`;
+      }
       // Convert variable name to uppercase for environment variable lookup
       const envVarName = varName.toUpperCase();
       const envValue = process.env[envVarName];

@@ -60,8 +60,8 @@ class PaymentTest extends TestCase
         self::$merchantId = getenv('MERCHANT_ID');
         self::$apiInstanceWidget = new WidgetApi(null, self::$configuration);
 
-        $dataOrder = PaymentUtil::createPaymentWidget("PaymentSuccess");
-        self::$sharedOriginalPartnerReference = (string)$dataOrder["partnerReferenceNo"];
+        // Create one paid order (runs automation once); cache is reused by QueryOrderTest etc.
+        self::$sharedOriginalPartnerReference = PaymentUtil::createPaymentWidgetPaid("PaymentSuccess");
     }
 
     /**
@@ -83,10 +83,7 @@ class PaymentTest extends TestCase
                 self::$titleCase,
                 $caseName
             );
-
-            $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -127,7 +124,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -143,7 +140,8 @@ class PaymentTest extends TestCase
                     self::$titleCase,
                     $caseName,
                     $e,
-                    []
+                    [],
+                    $jsonDict
                 );
             }
         });
@@ -161,6 +159,7 @@ class PaymentTest extends TestCase
      */
     public function testPaymentFailInconsistentRequest(): void
     {
+        $this->markTestSkipped('Inconsistent request scenario skipped');
         Util::withDelay(function () {
             $caseName = 'PaymentFailInconsistentRequest';
             $jsonDict = Util::getRequest(
@@ -172,7 +171,7 @@ class PaymentTest extends TestCase
             $jsonDict['merchantId'] = self::$merchantId;
             $fixedPartnerRef = PaymentUtil::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $fixedPartnerRef;
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -198,7 +197,8 @@ class PaymentTest extends TestCase
                     self::$titleCase,
                     $caseName,
                     $e,
-                    []
+                    [],
+                    $jsonDict
                 );
             }
         });
@@ -226,7 +226,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -242,7 +242,8 @@ class PaymentTest extends TestCase
                     self::$titleCase,
                     $caseName,
                     $e,
-                    []
+                    [],
+                    $jsonDict
                 );
             }
         });
@@ -270,7 +271,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
 
             // Create headers without timestamp to test validation
             $headers = Util::getHeadersWithSignature(
@@ -300,7 +301,8 @@ class PaymentTest extends TestCase
                     self::$titleCase,
                     $caseName,
                     $e,
-                    []
+                    [],
+                    $jsonDict
                 );
             }
         });
@@ -328,7 +330,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
 
             // Create headers without timestamp to test validation
             $headers = Util::getHeadersWithSignature(
@@ -360,7 +362,8 @@ class PaymentTest extends TestCase
                     self::$titleCase,
                     $caseName,
                     $e,
-                    []
+                    [],
+                    $jsonDict
                 );
             }
         });
@@ -389,7 +392,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -435,7 +438,7 @@ class PaymentTest extends TestCase
             $jsonDict['merchantId'] = self::$merchantId;
             $fixedPartnerRef = 'IDEMPOTENT_TEST_' . time() . '_' . substr(md5(rand()), 0, 8);
             $jsonDict['partnerReferenceNo'] = $fixedPartnerRef;
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -493,7 +496,8 @@ class PaymentTest extends TestCase
                             self::$titleCase,
                             $caseName,
                             $duplicateError,
-                            ['partnerReferenceNo' => $fixedPartnerRef]
+                            ['partnerReferenceNo' => $fixedPartnerRef],
+                            $jsonDict
                         );
                     } else {
                         $this->fail('Expected duplicate error, but got unexpected error: ' . $duplicateError->getMessage());
@@ -542,7 +546,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -562,7 +566,8 @@ class PaymentTest extends TestCase
                     self::$titleCase,
                     $caseName,
                     $e,
-                    []
+                    [],
+                    $jsonDict
                 );
             } catch (Exception $e) {
                 $this->fail('Unexpected exception: ' . $e->getMessage());

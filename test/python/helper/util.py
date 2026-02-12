@@ -36,6 +36,11 @@ def replace_template_values(data):
         # Handle strings - replace ${VARIABLE_NAME} patterns
         def replace_func(match):
             var_name = match.group(1)
+            # Special case: createdTime must be current time in YYYY-MM-DDTHH:mm:ss+07:00 (no env var)
+            if var_name == "createdTime":
+                from datetime import datetime, timezone, timedelta
+                jakarta = timezone(timedelta(hours=7))
+                return datetime.now(jakarta).strftime("%Y-%m-%dT%H:%M:%S+07:00")
             # Convert variable name to uppercase for environment variable lookup
             env_var_name = var_name.upper()
             env_value = os.getenv(env_var_name)

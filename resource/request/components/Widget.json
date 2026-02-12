@@ -97,6 +97,66 @@
                 "responseCode": "4014902",
                 "responseMessage": "Invalid Customer Token"
             }
+        },
+        "ApplyOttFailInvalidSignature": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4014900",
+                "responseMessage": "Unauthorized. Invalid Signature"
+            }
+        },
+        "ApplyOttFailTokenExpired": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4014901",
+                "responseMessage": "Token Expired"
+            }
+        },
+        "ApplyOttFailTokenNotFound": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4014902",
+                "responseMessage": "Invalid Customer Token"
+            }
+        },
+        "ApplyOttFailInvalidFormat": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "123456789033"
+                },
+                "userResources": [
+                    "OTTasd!#$"
+                ]
+            },
+            "response": {
+                "responseCode": "4004901",
+                "responseMessage": "Invalid Field Format userResources"
+            }
         }
     },
     "BalanceInquiry": {
@@ -120,24 +180,25 @@
                         "extendInfo": "",
                         "merchantAppVersion": "",
                         "orderOsType": "",
-                        "orderTerminalType": "APP",
+                        "orderTerminalType": "SYSTEM",
                         "osType": "",
                         "sdkVersion": "",
                         "sessionId": "",
                         "sourcePlatform": "IPG",
-                        "terminalType": "WEB",
+                        "terminalType": "SYSTEM",
                         "tokenId": "",
                         "websiteLanguage": ""
                     },
-                    "mcc": "",
+                    "mcc": "5732",
                     "order": {
-                        "orderTitle": "shoe"
+                        "orderTitle": "DANA Widget Test Order",
+                        "createdTime": "${createdTime}"
                     },
                     "productCode": "51051000100000000001"
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "1.00"
+                    "value": "10000.00"
                 },
                 "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"

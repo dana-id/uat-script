@@ -25,7 +25,7 @@ func TestPaymentSuccess(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -66,7 +66,7 @@ func TestPaymentFailInvalidFormat(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -113,7 +113,7 @@ func TestPaymentFailMissingOrInvalidMandatoryField(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -157,7 +157,7 @@ func TestPaymentFailInvalidSignature(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -202,7 +202,7 @@ func TestPaymentFailGeneralError(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	// Add envInfo if missing for SDK compatibility
 	if additionalInfo, ok := jsonDict["additionalInfo"].(map[string]interface{}); ok {
@@ -270,7 +270,7 @@ func TestPaymentFailTransactionNotPermitted(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -317,7 +317,7 @@ func TestPaymentFailMerchantNotExistOrStatusAbnormal(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -365,7 +365,7 @@ func TestPaymentFailInconsistentRequest(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -403,7 +403,7 @@ func TestPaymentFailInternalServerError(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -451,7 +451,7 @@ func TestPaymentFailExceedsTransactionAmountLimit(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -499,7 +499,7 @@ func TestPaymentFailTimeout(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)
@@ -547,7 +547,7 @@ func TestPaymentFailIdempotent(t *testing.T) {
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 	request := &widget.WidgetPaymentRequest{}
 	jsonBytes, err := json.Marshal(jsonDict)

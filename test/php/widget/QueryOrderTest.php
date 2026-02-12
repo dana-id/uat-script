@@ -53,7 +53,6 @@ class QueryOrderTest extends TestCase
     }
 
     /**
-     * @skip
      * Should give success response for query order (paid)
      */
     public function testQueryOrderSuccessPaid(): void
@@ -326,20 +325,26 @@ class QueryOrderTest extends TestCase
     public static function createPaymentOrder(
         string $originOrder = "PaymentSuccess"
     ): array {
-        // Get the request data from the JSON file
+        // Same payload as PaymentTest::testPaymentSuccess: load from Widget.json, only set partnerReferenceNo (and merchantId for PaymentPaying)
         $jsonDict = Util::getRequest(
             self::$jsonPathFile,
             "Payment",
             $originOrder
         );
-
-        // Set a unique partner reference number
-        $partnerReferenceNo = Util::generatePartnerReferenceNo();
-        $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+        $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
         $jsonDict['merchantId'] = self::$merchantId;
-        $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
 
-        // Create a CreateOrderByRedirectRequest object from the JSON request data
+        // PaymentPaying fixture has empty orderTerminalType and may lack createdTime; ensure valid for API
+        if ($originOrder === 'PaymentPaying') {
+            if (isset($jsonDict['additionalInfo']['envInfo']['orderTerminalType']) && $jsonDict['additionalInfo']['envInfo']['orderTerminalType'] === '') {
+                $jsonDict['additionalInfo']['envInfo']['orderTerminalType'] = 'SYSTEM';
+            }
+            if (isset($jsonDict['additionalInfo']['order']) && !isset($jsonDict['additionalInfo']['order']['createdTime'])) {
+                $jakartaNow = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
+                $jsonDict['additionalInfo']['order']['createdTime'] = $jakartaNow->format('Y-m-d\TH:i:s') . '+07:00';
+            }
+        }
+
         $createOrderRequestObj = ObjectSerializer::deserialize(
             $jsonDict,
             'Dana\Widget\v1\Model\WidgetPaymentRequest',

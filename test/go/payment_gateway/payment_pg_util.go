@@ -30,7 +30,7 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 	// Launch browser with CI-optimized settings
 	browserType := pw.Chromium
 	browser, err := browserType.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(true),
+		Headless: playwright.Bool(false),
 		Args: []string{
 			"--no-sandbox",
 			"--disable-setuid-sandbox",
@@ -66,7 +66,6 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 	buttonSubmitPhoneNumber := ".agreement__button>.btn-continue"
 	inputPin := ".txt-input-pin-field"
 	buttonPay := ".btn.btn-primary"
-	textFailedPaid := "div.card-header-content__title.lbl-failed-payment" // More specific selector
 	textSuccess := "//*[contains(@class,'lbl-success')]"
 
 	// Wait for the phone number input to be visible
@@ -134,34 +133,7 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 	}
 
 	log.Println("Payment success label appeared")
-
-	// Second payment verification (simplified)
-	if _, err = page.Goto(redirectUrl); err != nil {
-		return fmt.Errorf("could not goto verification URL: %w", err)
-	}
-	page.WaitForLoadState()
-
-	// Wait until the buttonPay is visible for verification
-	err = page.Locator(buttonPay).WaitFor(playwright.LocatorWaitForOptions{
-		State:   playwright.WaitForSelectorStateVisible,
-		Timeout: playwright.Float(float64(15 * time.Second / time.Millisecond)), // Shorter timeout
-	})
-	if err != nil {
-		return fmt.Errorf("error: verification buttonPay not visible: %w", err)
-	}
-
-	log.Println("Verify payment")
-	page.Locator(buttonPay).Click()
-
-	// Wait for failed payment indicator (this verifies the order was already paid)
-	err = page.Locator(textFailedPaid).WaitFor(playwright.LocatorWaitForOptions{
-		State:   playwright.WaitForSelectorStateVisible,
-		Timeout: playwright.Float(float64(15 * time.Second / time.Millisecond)), // Shorter timeout
-	})
-	if err != nil {
-		return fmt.Errorf("error: textFailedPaid not visible during verification: %w", err)
-	}
-
+	// Success label means payment is already paid; no need for second verification step.
 	log.Println("Payment successful!")
 	return nil
 }

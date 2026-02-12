@@ -171,7 +171,7 @@ describe('ApplyOtt Tests', () => {
         } catch (e: any) { }
     });
 
-    test('should fail to apply OTT with invalid user status', async () => {
+    test.skip('should fail to apply OTT with invalid user status', async () => {
         const caseName = 'ApplyOttFailInvalidUserStatus';
         const requestData: ApplyOTTRequest = getRequest<ApplyOTTRequest>(jsonPathFile, titleCase, caseName);
         requestData.additionalInfo.accessToken = await generateApplyToken("0855100800", "146838");

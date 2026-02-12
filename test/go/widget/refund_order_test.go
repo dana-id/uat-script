@@ -32,7 +32,7 @@ func createTestWidgetPaymentForRefund() (string, error) {
 		// Set a unique partner reference number
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-		jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+		jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 		// Create the WidgetPaymentRequest object and populate it with JSON data
 		jsonBytes, err := json.Marshal(jsonDict)

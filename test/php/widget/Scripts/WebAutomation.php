@@ -654,26 +654,6 @@ class WebAutomation
                 echo "Final page source snippet: " . substr($driver->getPageSource(), 0, 500) . "..." . PHP_EOL;
             }
 
-            // Make sure payment success
-            $driver->get($paymentUrl);
-            $driver->wait(60, 1000)->until(
-                WebDriverExpectedCondition::visibilityOfElementLocated(
-                    WebDriverBy::cssSelector($buttonPaySelector)
-                )
-            );
-        
-            $payButton = $driver->findElement(WebDriverBy::cssSelector($buttonPaySelector));
-            $payButton->click();
-
-            $driver->wait(60, 1000)->until(
-                WebDriverExpectedCondition::visibilityOfElementLocated(
-                    WebDriverBy::cssSelector($labelFailedPayment)
-                )
-            );
-
-            // Wait for payment success message
-            echo "Payment success" . PHP_EOL;
-            
             // Output file handling is optional
             if ($outputFile && $success) {
                 $outputDir = dirname($outputFile);

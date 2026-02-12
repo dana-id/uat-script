@@ -161,7 +161,9 @@ run_php_runner(){
     folderName=$1
     caseName=$2
     runPattern=$3   # optional: PHPUnit --filter for specific test method name(s)
-    ROOT_DIR=$(pwd)
+    # Use script location so ROOT_DIR is always the integration-test root (where test/php lives), not cwd (CI may run from parent repo)
+    RUNNERS_DIR="$(cd "$(dirname "$0")" && pwd)"
+    ROOT_DIR="$(cd "$RUNNERS_DIR/.." && pwd)"
     
     echo "Running PHP tests with PHPUnit..."
     
@@ -283,21 +285,19 @@ EOF
         
         # Check if we have composer.phar in the temp dir
         if [ -f "$COMPOSER_PHAR" ]; then
-            # Copy to current directory
-            cp "$COMPOSER_PHAR" ./composer.phar
-            chmod +x ./composer.phar
+            cp "$COMPOSER_PHAR" "$ROOT_DIR/composer.phar"
+            chmod +x "$ROOT_DIR/composer.phar"
             echo "Composer downloaded successfully!"
         fi
         
-        # Check if composer.phar was created/downloaded
-        if [ -f "composer.phar" ]; then
-            echo "Composer is now available as ./composer.phar"
+        # Check if composer.phar was created/downloaded (in integration test root)
+        if [ -f "$ROOT_DIR/composer.phar" ]; then
+            echo "Composer is now available at $ROOT_DIR/composer.phar"
         else
             echo "ERROR: Composer installation failed completely."
             echo "As a last resort, let's create a simple dummy composer script that allows the rest of the process to continue."
             
-            # Create a minimal shell script as composer.phar
-            cat > composer.phar << 'EOF'
+            cat > "$ROOT_DIR/composer.phar" << 'EOF'
 #!/usr/bin/env php
 <?php
 // Minimal composer implementation when all else fails
@@ -320,7 +320,7 @@ if (isset($argv[1]) && $argv[1] === 'require') {
 echo "Command not implemented in minimal composer\n";
 ?>
 EOF
-            chmod +x composer.phar
+            chmod +x "$ROOT_DIR/composer.phar"
             echo "Created minimal composer.phar fallback"
         fi
         
@@ -330,6 +330,11 @@ EOF
 
     # Use absolute path to test/php so composer always runs in the correct directory
     PHP_COMPOSER_DIR="$ROOT_DIR/test/php"
+    if [ ! -d "$PHP_COMPOSER_DIR" ] || [ ! -f "$PHP_COMPOSER_DIR/composer.json" ]; then
+        echo "\033[31mERROR: PHP test directory not found at $PHP_COMPOSER_DIR (or composer.json missing). ROOT_DIR=$ROOT_DIR\033[0m" >&2
+        echo "Run this script from the integration test repo root, or ensure test/php exists." >&2
+        exit 1
+    fi
     if [ -n "$COMPOSER_BIN" ]; then
         COMPOSER_CMD="$COMPOSER_BIN"
     elif [ -f "$ROOT_DIR/composer.phar" ]; then
@@ -359,7 +364,9 @@ EOF
 
     if [ ! -x "$PHPUNIT_BIN" ]; then
         echo "\033[31mERROR: PHPUnit not found at $PHPUNIT_BIN\033[0m" >&2
-        echo "Run 'cd test/php && composer install' from the project root, or check that Composer install completed successfully." >&2
+        echo "Project root (integration test): $ROOT_DIR" >&2
+        echo "Run: cd $PHP_COMPOSER_DIR && composer install" >&2
+        echo "Or from project root: cd test/php && composer install" >&2
         exit 1
     fi
     

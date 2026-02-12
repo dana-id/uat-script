@@ -51,22 +51,70 @@ class PaymentUtil extends TestCase
         self::$configuration->setApiKey('ENV', Env::SANDBOX);
         self::$apiInstanceWidget = new WidgetApi(null, self::$configuration);
 
-        $jsonDict = Util::getRequest(
-            self::$jsonPathFileWidget,
-            'Payment',
-            $orderOrigin
-        );
-
-        $jsonDict['merchantId'] = getenv('MERCHANT_ID');
-        $jsonDict['partnerReferenceNo'] = self::generatePartnerReferenceNo();
-        $jsonDict['validUpTo'] = Util::generateFormattedDate(30, 7);
+        if ($orderOrigin === 'PaymentSuccess') {
+            $jakartaTz = new \DateTimeZone('Asia/Jakarta');
+            $jakartaNow = new \DateTime('now', $jakartaTz);
+            // Same as Go: Format("2006-01-02T15:04:05+07:00"); SDK requires exact +07:00 pattern
+            $createdTime = $jakartaNow->format('Y-m-d\TH:i:s') . '+07:00';
+            // validUpTo mandatory; Go fixture uses Now+10min (within 30min sandbox limit)
+            $validUpTo = (clone $jakartaNow)->modify('+10 minutes')->format('Y-m-d\TH:i:s') . '+07:00';
+            $jsonDict = [
+                'partnerReferenceNo' => self::generatePartnerReferenceNo(),
+                'merchantId' => getenv('MERCHANT_ID'),
+                'amount' => ['currency' => 'IDR', 'value' => '10000.00'],
+                'validUpTo' => $validUpTo,
+                'additionalInfo' => [
+                    'productCode' => '51051000100000000001',
+                    'order' => ['orderTitle' => 'DANA Widget Test Order', 'createdTime' => $createdTime],
+                    'mcc' => '5732',
+                    'envInfo' => ['sourcePlatform' => 'IPG', 'terminalType' => 'SYSTEM'],
+                ],
+            ];
+        } else {
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFileWidget,
+                'Payment',
+                $orderOrigin
+            );
+            $jsonDict['merchantId'] = getenv('MERCHANT_ID');
+            $jsonDict['partnerReferenceNo'] = self::generatePartnerReferenceNo();
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(25 * 60, 7);
+            if (isset($jsonDict['additionalInfo']['order'])) {
+                $jakartaNow = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
+                $jsonDict['additionalInfo']['order']['createdTime'] = $jakartaNow->format('Y-m-d\TH:i:s') . '+07:00';
+            }
+        }
 
         $requestObj = ObjectSerializer::deserialize(
             $jsonDict,
             'Dana\Widget\v1\Model\WidgetPaymentRequest'
         );
 
-        $apiResponse = self::$apiInstanceWidget->widgetPayment($requestObj);
+        try {
+            $apiResponse = self::$apiInstanceWidget->widgetPayment($requestObj);
+        } catch (\Throwable $e) {
+            $code = method_exists($e, 'getCode') ? $e->getCode() : 0;
+            echo "\n[API REQUEST ERROR] PaymentUtil::createPaymentWidget orderOrigin={$orderOrigin} | HTTP status={$code}" . PHP_EOL;
+            echo "[API REQUEST ERROR] request payload: " . json_encode($jsonDict, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . PHP_EOL;
+            $fullBody = '';
+            if (method_exists($e, 'getResponseBody') && $e->getResponseBody() !== null) {
+                $fullBody = $e->getResponseBody();
+            } elseif (method_exists($e, 'getResponse') && $e->getResponse() !== null) {
+                $response = $e->getResponse();
+                if (method_exists($response, 'getBody')) {
+                    $fullBody = (string) $response->getBody();
+                }
+            }
+            if ($fullBody !== '') {
+                echo "[API REQUEST ERROR] response body: " . (strlen($fullBody) > 500 ? substr($fullBody, 0, 500) . '...' : $fullBody) . PHP_EOL;
+            }
+            $msg = $e->getMessage();
+            if ($fullBody !== '') {
+                $msg .= "\nFull API response body: " . $fullBody;
+            }
+            throw new \Exception($msg, $e->getCode(), $e);
+        }
+
         assert($apiResponse != null, "Order creation failed");
 
         $responseArray = json_decode($apiResponse->__toString(), true);
@@ -202,6 +250,8 @@ class PaymentUtil extends TestCase
         $queryResponseArray = json_decode($queryApiResponse->__toString(), true);
         $status = $queryResponseArray['transactionStatusDesc'] ?? null;
         if ($status !== 'SUCCESS') {
+            echo "\n[API REQUEST ERROR] PaymentUtil paid-order flow orderOrigin={$orderOrigin} | payment status after automation: " . ($status ?? 'null') . PHP_EOL;
+            echo "[API REQUEST ERROR] query response: " . json_encode($queryResponseArray, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . PHP_EOL;
             throw new \Exception("Payment status is not SUCCESS. Actual status: " . print_r($queryResponseArray, true));
         }
         
@@ -259,6 +309,8 @@ class PaymentUtil extends TestCase
         $queryResponseArray = json_decode($queryApiResponse->__toString(), true);
         $status = $queryResponseArray['transactionStatusDesc'] ?? null;
         if ($status !== 'SUCCESS') {
+            echo "\n[API REQUEST ERROR] PaymentUtil paid-order flow orderOrigin={$orderOrigin} | payment status after automation: " . ($status ?? 'null') . PHP_EOL;
+            echo "[API REQUEST ERROR] query response: " . json_encode($queryResponseArray, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . PHP_EOL;
             throw new \Exception("Payment status is not SUCCESS. Actual status: " . print_r($queryResponseArray, true));
         }
         

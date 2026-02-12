@@ -24,6 +24,21 @@ user_pin = "181818"
 json_path_file = "resource/request/components/Widget.json"
 merchant_id = os.environ.get("MERCHANT_ID", "216620010016033632482")
 
+
+def _ensure_order_terminal_type(json_dict):
+    """Set additionalInfo.envInfo.orderTerminalType to SYSTEM if missing or empty (SDK EnvInfo enum)."""
+    if "additionalInfo" not in json_dict:
+        json_dict["additionalInfo"] = {}
+    ai = json_dict["additionalInfo"]
+    if not isinstance(ai, dict):
+        return
+    if "envInfo" not in ai:
+        ai["envInfo"] = {}
+    env = ai["envInfo"]
+    if isinstance(env, dict) and (not env.get("orderTerminalType") or env.get("orderTerminalType") == ""):
+        env["orderTerminalType"] = "SYSTEM"
+
+
 configuration = SnapConfiguration(
     api_key=AuthSettings(
         PRIVATE_KEY=os.environ.get("PRIVATE_KEY"),
@@ -148,6 +163,7 @@ def test_query_order_success_paid():
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["merchantId"] = merchant_id
     json_dict["originalPartnerReferenceNo"] = widget_order_paid_reference_number
+    _ensure_order_terminal_type(json_dict)
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call
@@ -168,6 +184,7 @@ def test_query_order_success_initiated(widget_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["merchantId"] = merchant_id
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number
+    _ensure_order_terminal_type(json_dict)
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call
@@ -188,6 +205,8 @@ def test_query_order_success_paying(widget_order_paying_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["merchantId"] = merchant_id
     json_dict["originalPartnerReferenceNo"] = widget_order_paying_reference_number
+    # SDK EnvInfo requires orderTerminalType in ('APP','WEB','WAP','SYSTEM'); ensure it is set when building request
+    _ensure_order_terminal_type(json_dict)
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
 
     try:
@@ -228,6 +247,7 @@ def test_query_order_success_cancelled(widget_order_canceled_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["merchantId"] = merchant_id
     json_dict["originalPartnerReferenceNo"] = widget_order_canceled_reference_number
+    _ensure_order_terminal_type(json_dict)
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call
@@ -248,6 +268,7 @@ def test_query_order_not_found():
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["merchantId"] = merchant_id
     json_dict["originalPartnerReferenceNo"] = "test123"
+    _ensure_order_terminal_type(json_dict)
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
     # Make the API call and expect an exception
@@ -277,13 +298,14 @@ def test_query_order_fail_invalid_field(widget_order_reference_number):
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["merchantId"] = merchant_id
-    
+
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number
-    
+    _ensure_order_terminal_type(json_dict)
+
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
-    
+
     # Prepare headers with an invalid timestamp to trigger the error
     headers = get_headers_with_signature(
         method="POST",
@@ -319,6 +341,7 @@ def test_query_order_fail_invalid_mandatory_field(widget_order_reference_number)
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["merchantId"] = merchant_id
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number
+    _ensure_order_terminal_type(json_dict)
 
     # Convert the dictionary to the appropriate request object
     query_order_request_obj = QueryPaymentRequest.from_dict(json_dict)
@@ -371,7 +394,8 @@ def test_query_order_fail_transaction_not_found(widget_order_reference_number):
     json_dict = get_request(json_path_file, title_case, case_name)
     # Modify the reference number to ensure it's not found
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number + "_NOT_FOUND"
-    
+    _ensure_order_terminal_type(json_dict)
+
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     
@@ -399,10 +423,11 @@ def test_query_order_fail_general_error(widget_order_reference_number):
     # Get the request data from the JSON file
     json_dict = get_request(json_path_file, title_case, case_name)
     json_dict["merchantId"] = merchant_id
-    
+
     # Set the correct partner reference number
     json_dict["originalPartnerReferenceNo"] = widget_order_reference_number
-    
+    _ensure_order_terminal_type(json_dict)
+
     # Convert the request data to a QueryPaymentRequest object
     query_payment_request_obj = QueryPaymentRequest.from_dict(json_dict)
     

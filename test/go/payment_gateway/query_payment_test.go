@@ -37,7 +37,7 @@ func createOrder() (string, string, error) {
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-		jsonDict["validUpTo"] = helper.GenerateFormattedDate(30, 7)
+		jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
 
 		// Create the CreateOrderRequest object and populate it with JSON data
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}

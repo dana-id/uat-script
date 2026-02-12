@@ -23,6 +23,11 @@ class Util
             
             return preg_replace_callback($pattern, function($matches) {
                 $varName = $matches[1];
+                // Special case: createdTime must be current time in Y-m-d\TH:i:s+07:00 (no env var)
+                if ($varName === 'createdTime') {
+                    $jakarta = new \DateTimeZone('Asia/Jakarta');
+                    return (new \DateTime('now', $jakarta))->format('Y-m-d\TH:i:s') . '+07:00';
+                }
                 $value = getenv($varName);
                 
                 if ($value !== false) {

@@ -8,6 +8,8 @@ run_node_runner(){
     caseName=$2
     runPattern=$3   # optional: jest -t pattern for specific test name(s)
     
+    if [ -f .env ]; then set -a; . ./.env; set +a; fi
+    
     if ! command -v node >/dev/null 2>&1; then
         echo "Node.js not available in this system. Please install Node.js."
         exit 0 
@@ -17,7 +19,6 @@ run_node_runner(){
     node --version
     npm --version
     
-    # Required for ESM/dynamic import when using dana-node (e.g. account_unbinding_test)
     export NODE_OPTIONS="${NODE_OPTIONS:-} --experimental-vm-modules"
     
     # Change to the Node.js test directory
