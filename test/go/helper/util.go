@@ -34,6 +34,11 @@ func replaceTemplateValues(data interface{}) interface{} {
 			// Extract variable name (remove ${ and })
 			varName := match[2 : len(match)-1]
 
+			// Special case: createdTime = current time in YYYY-MM-DDTHH:mm:ss+07:00 (no env var)
+			if varName == "createdTime" {
+				return GenerateFormattedDate(0, 7)
+			}
+
 			// Convert variable name to uppercase for environment variable lookup
 			envVarName := strings.ToUpper(varName)
 
