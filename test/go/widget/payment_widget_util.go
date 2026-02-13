@@ -27,10 +27,18 @@ func PayOrder(phoneNumber, pin, redirectUrl string) interface{} {
 		return fmt.Errorf("could not start playwright: %v", err)
 	}
 
-	// Launch browser
+	// Launch browser: headless + CI-friendly args so it runs on Linux/Docker (avoid "target closed")
 	browserType := pw.Chromium
 	browser, err := browserType.Launch(playwright.BrowserTypeLaunchOptions{
 		Headless: playwright.Bool(true),
+		Args: []string{
+			"--no-sandbox",
+			"--disable-setuid-sandbox",
+			"--disable-dev-shm-usage",
+			"--disable-gpu",
+			"--disable-software-rasterizer",
+			"--disable-extensions",
+		},
 	})
 	if err != nil {
 		return fmt.Errorf("could not launch browser: %w", err)

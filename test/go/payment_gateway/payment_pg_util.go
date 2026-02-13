@@ -27,21 +27,17 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 		return fmt.Errorf("could not start playwright: %v", err)
 	}
 
-	// Launch browser with CI-optimized settings
+	// Launch browser: headless true for Linux/CI (no display); args avoid "target closed" in Docker
 	browserType := pw.Chromium
 	browser, err := browserType.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(false),
+		Headless: playwright.Bool(true),
 		Args: []string{
 			"--no-sandbox",
 			"--disable-setuid-sandbox",
 			"--disable-dev-shm-usage",
 			"--disable-gpu",
-			"--disable-web-security",
+			"--disable-software-rasterizer",
 			"--disable-extensions",
-			"--disable-background-timer-throttling",
-			"--disable-renderer-backgrounding",
-			"--disable-features=TranslateUI",
-			"--disable-ipc-flooding-protection",
 		},
 	})
 	if err != nil {
