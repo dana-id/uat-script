@@ -344,15 +344,37 @@ EOF
         exit 1
     fi
 
+    # COMPOSER_AUTH is only needed in CI for private GitLab Composer registry. Composer expects a JSON object.
+    # If COMPOSER_AUTH is set to a plain token string (e.g. GitLab PAT), wrap it into the JSON Composer expects.
+    if [ -n "${COMPOSER_AUTH:-}" ]; then
+        if ! php -r 'json_decode(getenv("COMPOSER_AUTH")); exit(json_last_error() === JSON_ERROR_NONE ? 0 : 1);' 2>/dev/null; then
+            COMPOSER_AUTH=$(php -r '
+                $t = getenv("COMPOSER_AUTH");
+                echo json_encode(["http-basic" => ["gitlab.dana.id" => ["username" => "oauth2", "password" => $t]]]);
+            ')
+            export COMPOSER_AUTH
+        fi
+    fi
+
     # Clear composer cache first (global command, no --working-dir)
     echo "Clearing Composer cache..."
     COMPOSER_PROCESS_TIMEOUT=600 $COMPOSER_CMD clearcache 2>/dev/null || true
 
     # Install dependencies: cd to test/php so composer install runs in the right place (avoids --working-dir issues in CI)
+    # Works for both local (with or without composer.lock) and CI. In CI, if your env uses a private GitLab Composer registry, set COMPOSER_AUTH.
     echo "Installing PHP dependencies in $PHP_COMPOSER_DIR..."
     cd "$PHP_COMPOSER_DIR"
-    if ! COMPOSER_PROCESS_TIMEOUT=600 $COMPOSER_CMD install --no-interaction 2>&1; then
+    COMPOSER_OUTPUT=$(COMPOSER_PROCESS_TIMEOUT=600 $COMPOSER_CMD install --no-interaction 2>&1) || true
+    COMPOSER_EXIT=$?
+    echo "$COMPOSER_OUTPUT"
+    if [ "$COMPOSER_EXIT" -ne 0 ]; then
         echo "\033[31mERROR: composer install failed in test/php\033[0m" >&2
+        if echo "$COMPOSER_OUTPUT" | grep -q -e 'Invalid credentials' -e 'gitlab.dana.id'; then
+            echo "" >&2
+            echo "Looks like a private GitLab Composer registry is in use and needs auth." >&2
+            echo "In CI, set COMPOSER_AUTH (e.g. with a GitLab token). Locally, run 'composer install' in test/php once with your credentials." >&2
+        fi
+        cd "$ROOT_DIR"
         exit 1
     fi
     cd "$ROOT_DIR"
