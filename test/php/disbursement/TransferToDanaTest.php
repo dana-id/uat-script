@@ -469,7 +469,7 @@ class TransferToDanaTest extends TestCase
                 // Create headers with invalid signature to test authorization failure
                 $headers = Util::getHeadersWithSignature(
                     'POST', 
-                    '/v1.0/emoney/topup.htm',
+                    '/rest/v1.0/emoney/topup',
                     $requestData,
                     true,
                     false,
@@ -480,7 +480,7 @@ class TransferToDanaTest extends TestCase
                 try {
                     Util::executeApiRequest(
                         'POST',
-                        'https://api.sandbox.dana.id/v1.0/emoney/topup.htm',
+                        'https://api.sandbox.dana.id/rest/v1.0/emoney/topup',
                         $headers,
                         $requestData
                     );

@@ -352,8 +352,8 @@ func TestTopUpCustomerUnauthorizedSignature(t *testing.T) {
 
 	// Set up the context and endpoint details
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/v1.0/emoney/topup.htm"
-	resourcePath := "/v1.0/emoney/topup.htm"
+	endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
+	resourcePath := "/rest/v1.0/emoney/topup"
 
 	// Set custom headers with invalid authorization to trigger unauthorized error
 	customHeaders := map[string]string{

@@ -162,7 +162,7 @@ def test_inquiry_topup_status_missing_mandatory_field():
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "https://api.sandbox.dana.id/v1.0/emoney/topup-status.htm",
+        "https://api.sandbox.dana.id/rest/v1.0/emoney/topup-status",
         request_obj,
         headers,
         400,
@@ -192,7 +192,7 @@ def test_inquiry_topup_status_unauthorized_signature():
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "https://api.sandbox.dana.id/v1.0/emoney/topup-status.htm",
+        "https://api.sandbox.dana.id/rest/v1.0/emoney/topup-status",
         request_obj,
         headers,
         401,

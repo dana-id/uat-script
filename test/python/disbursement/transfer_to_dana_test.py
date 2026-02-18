@@ -220,7 +220,7 @@ def test_topup_customer_unauthorized_signature():
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "https://api.sandbox.dana.id/v1.0/emoney/topup.htm",
+        "https://api.sandbox.dana.id/rest/v1.0/emoney/topup",
         request_obj,
         headers,
         401,

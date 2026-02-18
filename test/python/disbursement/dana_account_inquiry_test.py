@@ -65,7 +65,7 @@ def test_inquiry_customer_unauthorized_signature():
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "https://api.sandbox.dana.id/v1.0/emoney/account-inquiry.htm",
+        "https://api.sandbox.dana.id/rest/v1.0/emoney/account-inquiry",
         request_obj,
         headers,
         401,

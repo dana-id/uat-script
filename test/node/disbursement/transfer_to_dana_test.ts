@@ -401,7 +401,7 @@ describe('Disbursement - Transfer To DANA Tests', () => {
 
     try {
       const baseUrl: string = 'https://api.sandbox.dana.id';
-      const apiPath: string = '/v1.0/emoney/topup.htm';
+      const apiPath: string = '/rest/v1.0/emoney/topup';
 
       const customHeaders: Record<string, string> = {
         'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'

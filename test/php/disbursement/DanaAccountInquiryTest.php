@@ -109,7 +109,7 @@ class DanaAccountInquiryTest extends TestCase
                 // Create headers with invalid signature to test authorization failure
                 $headers = Util::getHeadersWithSignature(
                     'POST', 
-                    '/v1.0/emoney/account-inquiry.htm',
+                    '/rest/v1.0/emoney/account-inquiry',
                     $requestData,
                     true,
                     false,
@@ -120,7 +120,7 @@ class DanaAccountInquiryTest extends TestCase
                 try {
                     Util::executeApiRequest(
                         'POST',
-                        'https://api.sandbox.dana.id/v1.0/emoney/account-inquiry.htm',
+                        'https://api.sandbox.dana.id/rest/v1.0/emoney/account-inquiry',
                         $headers,
                         $requestData
                     );

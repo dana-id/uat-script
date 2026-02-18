@@ -333,7 +333,7 @@ class TransferToDanaInquiryStatusTest extends TestCase
                 // Create headers without timestamp to test validation
                 $headers = Util::getHeadersWithSignature(
                     'POST', 
-                    '/v1.0/emoney/topup-status.htm',
+                    '/rest/v1.0/emoney/topup-status',
                     $requestData,
                     false  // withTimestamp = false to test missing X-TIMESTAMP
                 );
@@ -342,7 +342,7 @@ class TransferToDanaInquiryStatusTest extends TestCase
                 try {
                     Util::executeApiRequest(
                         'POST',
-                        'https://api.sandbox.dana.id/v1.0/emoney/topup-status.htm',
+                        'https://api.sandbox.dana.id/rest/v1.0/emoney/topup-status',
                         $headers,
                         $requestData
                     );
@@ -394,7 +394,7 @@ class TransferToDanaInquiryStatusTest extends TestCase
                 // Create headers with invalid signature to test authorization failure
                 $headers = Util::getHeadersWithSignature(
                     'POST', 
-                    '/v1.0/emoney/topup-status.htm',
+                    '/rest/v1.0/emoney/topup-status',
                     $requestData,
                     true,
                     false,
@@ -405,7 +405,7 @@ class TransferToDanaInquiryStatusTest extends TestCase
                 try {
                     Util::executeApiRequest(
                         'POST',
-                        'https://api.sandbox.dana.id/v1.0/emoney/topup-status.htm',
+                        'https://api.sandbox.dana.id/rest/v1.0/emoney/topup-status',
                         $headers,
                         $requestData
                     );

@@ -312,8 +312,8 @@ func TestInquiryTopUpStatusMissingMandatoryField(t *testing.T) {
 
 	// Set up the context and endpoint details
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/v1.0/emoney/topup-status.htm"
-	resourcePath := "/v1.0/emoney/topup-status.htm"
+	endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/topup-status"
+	resourcePath := "/rest/v1.0/emoney/topup-status"
 
 	// Set custom headers with invalid authorization to trigger unauthorized error
 	customHeaders := map[string]string{
@@ -367,8 +367,8 @@ func TestInquiryTopUpStatusUnauthorizedSignature(t *testing.T) {
 
 	// Set up the context and endpoint details
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/v1.0/emoney/topup-status.htm"
-	resourcePath := "/v1.0/emoney/topup-status.htm"
+	endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/topup-status"
+	resourcePath := "/rest/v1.0/emoney/topup-status"
 
 	// Set custom headers with invalid authorization to trigger unauthorized error
 	customHeaders := map[string]string{
