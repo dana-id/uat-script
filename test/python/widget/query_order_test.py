@@ -83,6 +83,7 @@ def create_widget_order_init():
 
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = (datetime.now(timezone(timedelta(hours=7))) + timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S+07:00")
 
     # Convert the request data to a CreateOrderRequest object (same as payment_test.test_payment_success)
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -103,7 +104,7 @@ def create_widget_order_paying():
 
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["validUpTo"] = (datetime.now(timezone(timedelta(hours=7))) + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%S+07:00")
+    json_dict["validUpTo"] = (datetime.now(timezone(timedelta(hours=7))) + timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S+07:00")
 
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)

@@ -292,10 +292,10 @@ run_specific_test() {
     fi
     
     cd - > /dev/null
-    
+
     # Show detailed results for only this specific test class
     local simple_class_name=$(echo "$test_class" | sed 's/.*\.//')
-    show_test_results "$simple_class_name"
+    show_test_results "$simple_class_name" || exit 1
 }
 
 # Run all tests in a module
@@ -333,9 +333,9 @@ run_module_tests() {
     fi
     
     cd - > /dev/null
-    
+
     # Show detailed results
-    show_test_results
+    show_test_results || exit 1
 }
 
 # Run all tests across all modules
@@ -370,9 +370,9 @@ run_all_tests() {
     fi
     
     cd - > /dev/null
-    
+
     # Show detailed results
-    show_test_results
+    show_test_results || exit 1
 }
 
 # ============================================================================
@@ -487,6 +487,10 @@ show_test_results() {
     if [ "$failed_tests" -gt 0 ] || [ "$error_tests" -gt 0 ]; then
         show_failure_details "$filter_class"
     fi
+
+    # Return non-zero so CI job fails when there are failures or errors
+    [ "$failed_tests" -gt 0 ] || [ "$error_tests" -gt 0 ] && return 1
+    return 0
 }
 
 # Show detailed failure information

@@ -2,6 +2,7 @@ import os
 import pytest
 import threading
 import time
+from datetime import datetime, timedelta, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.widget.v1.enum import *
@@ -34,6 +35,11 @@ with ApiClient(configuration) as api_client:
     api_instance = WidgetApi(api_client)
 
 
+def _valid_up_to_max_15_minutes():
+    """validUpTo must be at most 15 minutes from now (API requirement)."""
+    return (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S+07:00")
+
+
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3,delay_seconds=2)
 def test_payment_success():
@@ -42,6 +48,7 @@ def test_payment_success():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -57,6 +64,7 @@ def test_payment_fail_invalid_format():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -77,6 +85,7 @@ def test_payment_fail_missing_or_invalid_mandatory_field():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
 
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -113,6 +122,7 @@ def test_payment_fail_invalid_signature():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -142,6 +152,7 @@ def test_payment_fail_merchant_not_exist_or_status_abnormal():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -163,6 +174,7 @@ def test_payment_fail_inconsistent_request():
     # Set the partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["originalPartnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
 
     # Convert the request data to a RefundOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -184,6 +196,7 @@ def test_payment_fail_internal_server_error():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -204,6 +217,7 @@ def test_payment_fail_timeout():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
     
     # Convert the request data to a CreateOrderRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
@@ -225,6 +239,7 @@ def test_payment_idempotent():
     
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
     
     # Convert the request data to a WidgetPaymentRequest object
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
