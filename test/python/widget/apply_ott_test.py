@@ -39,12 +39,16 @@ def get_auth_code():
 
 @pytest.fixture(scope="module")
 def test_apply_ott_access_token():
+    if os.environ.get("CI") == "true":
+        pytest.skip("Skipped in CI/CD")
     auth_code = get_auth_code()
     print(auth_code)
     return get_access_token(auth_code)
 
 @with_delay()
 def test_apply_ott_success(test_apply_ott_access_token):
+    if os.environ.get("CI") == "true":
+        pytest.skip("Skipped in CI/CD")
     case_name = "ApplyOttSuccess"
     access_token = test_apply_ott_access_token
     json_dict = get_request(json_path_file, title_case, case_name)

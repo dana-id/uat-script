@@ -61,6 +61,33 @@ def replace_template_values(data):
 def generate_partner_reference_no():
     return str(uuid4())
 
+def retry_test(attempts=3, delay_seconds=1):
+    """
+    Decorator that retries a test function (same as Go helper.RetryTest).
+    Runs the function up to `attempts` times with `delay_seconds` between attempts.
+    Succeeds if the function returns without raising; otherwise raises after last attempt.
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            last_error = None
+            for i in range(attempts):
+                if i > 0:
+                    time.sleep(delay_seconds)
+                try:
+                    func(*args, **kwargs)
+                    return
+                except Exception as e:
+                    last_error = e
+                    if i < attempts - 1:
+                        continue
+                    raise
+            if last_error is not None:
+                raise last_error
+        return wrapper
+    return decorator
+
+
 def with_delay(delay_seconds=random.uniform(0.5, 1.5)):
     """
     Decorator that adds a delay after a function completes.

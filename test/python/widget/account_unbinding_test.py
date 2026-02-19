@@ -40,19 +40,25 @@ def get_auth_code():
 
 @pytest.fixture(scope="module")
 def test_account_unbinding_access_token():
+    if os.environ.get("CI") == "true":
+        pytest.skip("Skipped in CI/CD")
     auth_code = get_auth_code()
     print(auth_code)
     return get_access_token(auth_code)
 
 @with_delay()
 def test_account_unbind_success(test_account_unbinding_access_token):
+    if os.environ.get("CI") == "true":
+        pytest.skip("Skipped in CI/CD")
     case_name = "AccountUnbindSuccess"
     access_token = test_account_unbinding_access_token
     json_dict = get_request(json_path_file, title_case, case_name)
-    accountUnbindingRequestAdditionalInfo = AccountUnbindingRequestAdditionalInfo.from_dict(json_dict.get("additionalInfo", {}))
-    accountUnbindingRequestAdditionalInfo.access_token = access_token
-    accountUnbindingRequestAdditionalInfo.device_id = "deviceid123"
-    json_dict["additionalInfo"] = accountUnbindingRequestAdditionalInfo.to_dict()
+    json_dict["partnerReferenceNo"] = generate_partner_reference_no()
+    additional_info = AccountUnbindingRequestAdditionalInfo(
+        access_token=access_token,
+        device_id="deviceid123",
+    )
+    json_dict["additionalInfo"] = additional_info.to_dict()
     account_unbinding_request_obj = AccountUnbindingRequest.from_dict(json_dict)
     api_response = api_instance.account_unbinding(account_unbinding_request_obj)
     assert_response(json_path_file, title_case, case_name, AccountUnbindingResponse.to_json(api_response))

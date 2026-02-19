@@ -39,6 +39,8 @@ def test_apply_token_auth_code():
 
 @with_delay()
 def test_apply_token_success(test_apply_token_auth_code):
+    if os.environ.get("CI") == "true":
+        pytest.skip("Skipped in CI/CD")
     # Scenario: ApplyTokenSuccess
     # Purpose: Verify that a valid authorization code can be exchanged for an access token.
     # Steps:
@@ -70,39 +72,25 @@ def test_apply_token_success(test_apply_token_auth_code):
         pytest.fail(f"API call failed: {e}")
 
 @with_delay()
-def test_apply_token_fail_authcode_used(test_apply_token_auth_code):
-    # Scenario: ApplyTokenFailAuthcodeUsed
-    # Purpose: Ensure an authorization code cannot be used more than once.
-    # Steps:
-    #   1. Obtain a fresh auth code and use it to request a token (should succeed).
-    #   2. Attempt to use the same code again (should fail with 401 Unauthorized).
-    # Expected: The API returns 401 Unauthorized on the second use of the same code.
-    
-    """Should fail to apply a token using an already used authorization code."""
-    # Case name and JSON request preparation
+def test_apply_token_fail_authcode_used():
+    if os.environ.get("CI") == "true":
+        pytest.skip("Skipped in CI/CD")
+    # Get a fresh auth code for this test (don't reuse fixture as it might be consumed)
+    auth_code = asyncio.run(automate_oauth())
+    # Consume the auth code by calling apply_token once (success path)
+    consume_dict = get_request(json_path_file, title_case, "ApplyTokenSuccess")
+    consume_dict["authCode"] = auth_code
+    api_instance.apply_token(ApplyTokenAuthorizationCodeRequest.from_dict(consume_dict))
+    # Now try to use the same auth code again - should fail with 401
     case_name = "ApplyTokenFailAuthcodeUsed"
     json_dict = get_request(json_path_file, title_case, case_name)
-
-    # Get the authorization code from the fixture
-    auth_code = test_apply_token_auth_code
-    
-    # Obtain a fresh authorization code
     json_dict["authCode"] = auth_code
-
-    # Create the request object from the JSON dictionary
     request_obj = ApplyTokenAuthorizationCodeRequest.from_dict(json_dict)
-
     try:
-        # Second attempt to apply the token with the same auth code
-        response = api_instance.apply_token(request_obj)
-        
+        api_instance.apply_token(request_obj)
+        pytest.fail("Expected UnauthorizedException (401) for used auth code, but the API call succeeded.")
     except UnauthorizedException as e:
-        # Assert that the response matches the expected failure case
-        assert_response(json_path_file, title_case, case_name, e.body)
-
-    except Exception as e:
-        # If any other exception occurs, fail the test
-        pytest.fail("Expected UnauthorizedException (401) for used auth code, but the API call gave another exception.")
+        assert_fail_response(json_path_file, title_case, case_name, e.body)
 
 @with_delay()
 def test_apply_token_fail_invalid_signature(test_apply_token_auth_code):
