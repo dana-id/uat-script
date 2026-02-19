@@ -12,7 +12,11 @@ public final class ConfigUtil {
   }
 
   public static String getConfig(String key, String defaultValue) {
-    String value = DOTENV.get(key);
+    String value = TestUtil.getEnvVar(key);
+    if (StringUtils.isNotEmpty(value)) {
+      return value;
+    }
+    value = DOTENV.get(key);
     if (StringUtils.isNotEmpty(value)) {
       return value;
     }

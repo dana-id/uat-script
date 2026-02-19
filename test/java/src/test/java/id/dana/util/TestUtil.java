@@ -41,11 +41,15 @@ public final class TestUtil {
 
   /**
    * Loads environment variables from .env file.
-   * Tries user.dir (e.g. test/java when run via Maven), then project root (user.dir/../.env) for CI.
+   * Tries user.dir (e.g. test/java when run via Maven), then parent dirs so CI .env at project root is found.
    */
   private static void loadEnvironmentVariables() {
     String userDir = System.getProperty("user.dir");
-    String[] pathsToTry = {userDir + "/.env", userDir + "/../.env"};
+    String[] pathsToTry = {
+        userDir + "/.env",
+        userDir + "/../.env",
+        userDir + "/../../.env"   // project root when Maven runs from test/java (e.g. in CI)
+    };
     for (String envFilePath : pathsToTry) {
       File envFile = new File(envFilePath);
       if (!envFile.exists()) {
@@ -73,7 +77,15 @@ public final class TestUtil {
         return;
       }
     }
-    log.warn("No .env file found at: {} or {}", pathsToTry[0], pathsToTry[1]);
+    log.warn("No .env file found at any of: {}, {}, {}", pathsToTry[0], pathsToTry[1], pathsToTry[2]);
+  }
+
+  /**
+   * Returns a config value from the loaded .env file (if any).
+   * Used by ConfigUtil so config is available before TestUtil.getRequest() is called (e.g. in @BeforeAll).
+   */
+  public static String getEnvVar(String key) {
+    return envVariables.get(key);
   }
 
   /**
