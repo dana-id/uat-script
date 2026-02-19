@@ -40,14 +40,18 @@ public final class TestUtil {
   }
 
   /**
-   * Loads environment variables from .env file in the test directory.
+   * Loads environment variables from .env file.
+   * Tries user.dir (e.g. test/java when run via Maven), then project root (user.dir/../.env) for CI.
    */
   private static void loadEnvironmentVariables() {
-    try {
-      String envFilePath = System.getProperty("user.dir") + "/.env";
+    String userDir = System.getProperty("user.dir");
+    String[] pathsToTry = {userDir + "/.env", userDir + "/../.env"};
+    for (String envFilePath : pathsToTry) {
       File envFile = new File(envFilePath);
-      
-      if (envFile.exists()) {
+      if (!envFile.exists()) {
+        continue;
+      }
+      try {
         List<String> lines = Files.readAllLines(Paths.get(envFilePath));
         for (String line : lines) {
           line = line.trim();
@@ -62,13 +66,14 @@ public final class TestUtil {
             }
           }
         }
-        log.info("Loaded {} environment variables from .env file", envVariables.size());
-      } else {
-        log.warn("No .env file found at: {}", envFilePath);
+        log.info("Loaded {} environment variables from .env file at {}", envVariables.size(), envFilePath);
+        return;
+      } catch (IOException e) {
+        log.error("Failed to load environment variables from .env file: {}", e.getMessage());
+        return;
       }
-    } catch (IOException e) {
-      log.error("Failed to load environment variables from .env file: {}", e.getMessage());
     }
+    log.warn("No .env file found at: {} or {}", pathsToTry[0], pathsToTry[1]);
   }
 
   /**

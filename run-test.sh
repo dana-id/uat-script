@@ -14,11 +14,13 @@ RUNNERS_DIR="$SCRIPT_DIR/runners"
 chmod +x "./runners"/*.sh 2>/dev/null || true
 
 main() {
-    # Make sure env vars are available to scripts
-    set -a
-    . ./.env 2>/dev/null || true
-    set +a
-    
+    # Load .env for local runs; in CI, use CI/CD variables only (don't source .env and overwrite them)
+    if [ -z "${CI:-}" ]; then
+        set -a
+        . ./.env 2>/dev/null || true
+        set +a
+    fi
+
     case $INTERPRETER in
     "python")
         sh "$RUNNERS_DIR/run-test-python.sh" "$2" "$3" "$4"

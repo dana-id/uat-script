@@ -80,4 +80,14 @@ public class PaymentPGUtil {
         ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Jakarta"));
         return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
     }
+
+    /**
+     * Same as Go GenerateFormattedDate(offsetSeconds, 7): now + offsetSeconds in WIB (Asia/Jakarta).
+     * Used for create-order in cancel/query tests to match Go (e.g. 30 seconds).
+     */
+    public static String generateDateWithOffsetSeconds(long offsetSeconds) {
+        LocalDateTime dateTime = LocalDateTime.now().plusSeconds(offsetSeconds);
+        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Jakarta"));
+        return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
+    }
 }
