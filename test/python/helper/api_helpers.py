@@ -23,6 +23,9 @@ def execute_api_request_directly(api_client, method, endpoint, request_obj, head
     if hasattr(request_obj, "to_dict"):
         request_data = request_obj.to_dict()
     
+    # HTTP requires header values to be strings; env-based headers (e.g. CLIENT_SECRET) may be None
+    headers = {k: (v if v is not None else "") for k, v in headers.items()}
+    
     # Execute the API call with exactly the provided headers
     return api_client.call_api(method, endpoint, headers, request_data)
 
