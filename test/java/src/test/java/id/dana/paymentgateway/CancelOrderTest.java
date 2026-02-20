@@ -247,11 +247,10 @@ class CancelOrderTest {
     public static List<String> createOrder() {
         List<String> dataOrder = new ArrayList<>();
 
-        CreateOrderByApiRequest requestData = TestUtil.getRequest(
+        CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(
                 jsonPathFile,
                 "CreateOrder",
-                "CreateOrderApi",
-                CreateOrderByApiRequest.class);
+                "CreateOrderApi");
 
         String partnerReferenceNo = UUID.randomUUID().toString();
         requestData.setPartnerReferenceNo(partnerReferenceNo);

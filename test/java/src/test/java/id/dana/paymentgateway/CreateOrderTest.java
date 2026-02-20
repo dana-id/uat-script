@@ -70,8 +70,7 @@ public class CreateOrderTest {
   @Retry(value = 3, waitMs = 2000)
   void testCreateOrderRedirect() {
     String caseName = "CreateOrderRedirect";
-    CreateOrderByRedirectRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
-        caseName, CreateOrderByRedirectRequest.class);
+    CreateOrderByRedirectRequest requestData = PaymentPGUtil.getCreateOrderRedirectRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID
     String partnerReferenceNo = UUID.randomUUID().toString();
@@ -95,8 +94,7 @@ public class CreateOrderTest {
   @Retry(value = 3, waitMs = 2000)
   void testCreateOrderApi() {
     String caseName = "CreateOrderApi";
-    CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        CreateOrderByApiRequest.class);
+    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID
     String partnerReferenceNo = UUID.randomUUID().toString();
@@ -120,8 +118,7 @@ public class CreateOrderTest {
   @Retry(value = 3, waitMs = 2000)
   void testCreateOrderNetworkPayPgOtherVaBank() {
     String caseName = "CreateOrderNetworkPayPgOtherVaBank";
-    CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        CreateOrderByApiRequest.class);
+    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID
     String partnerReferenceNo = UUID.randomUUID().toString();
@@ -145,8 +142,7 @@ public class CreateOrderTest {
   @Retry(value = 3, waitMs = 2000)
   void testCreateOrderNetworkPayPgQris() {
     String caseName = "CreateOrderNetworkPayPgQris";
-    CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        CreateOrderByApiRequest.class);
+    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID
     String partnerReferenceNo = UUID.randomUUID().toString();
@@ -172,8 +168,7 @@ public class CreateOrderTest {
   void testCreateOrderNetworkPayPgOtherWallet() {
     try {
       String caseName = "CreateOrderNetworkPayPgOtherWallet";
-      CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-          CreateOrderByApiRequest.class);
+      CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
       // Assign unique reference and merchant ID
       String partnerReferenceNo = UUID.randomUUID().toString();
@@ -209,8 +204,7 @@ public class CreateOrderTest {
   @Test
   void testCreateOrderInvalidFieldFormat() {
     String caseName = "CreateOrderInvalidFieldFormat";
-    CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        CreateOrderByApiRequest.class);
+    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID
     String partnerReferenceNo = UUID.randomUUID().toString();
@@ -243,8 +237,7 @@ public class CreateOrderTest {
   @Test
   void testCreateOrderInconsistentRequest() {
     String caseName = "CreateOrderInconsistentRequest";
-    CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        CreateOrderByApiRequest.class);
+    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID
     String partnerReferenceNo = UUID.randomUUID().toString();
@@ -297,8 +290,7 @@ public class CreateOrderTest {
   @Test
   void testCreateOrderInvalidMandatoryField() {
     String caseName = "CreateOrderInvalidMandatoryField";
-    CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
-        caseName, CreateOrderByApiRequest.class);
+    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID
     String partnerReferenceNo = UUID.randomUUID().toString();
@@ -339,8 +331,7 @@ public class CreateOrderTest {
   @Test
   void testCreateOrderUnauthorized() {
     String caseName = "CreateOrderUnauthorized";
-    CreateOrderByApiRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
-        caseName, CreateOrderByApiRequest.class);
+    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID
     String partnerReferenceNo = UUID.randomUUID().toString();

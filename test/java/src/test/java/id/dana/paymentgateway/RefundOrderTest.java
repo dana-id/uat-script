@@ -317,11 +317,10 @@ class RefundOrderTest {
     public static List<String> createOrder() {
         List<String> dataOrder = new ArrayList<>();
 
-        CreateOrderByApiRequest requestData = TestUtil.getRequest(
+        CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(
                 jsonPathFile,
                 "CreateOrder",
-                "CreateOrderApi",
-                CreateOrderByApiRequest.class);
+                "CreateOrderApi");
 
         // Assign unique reference and merchant ID
         String partnerReferenceNo = UUID.randomUUID().toString();

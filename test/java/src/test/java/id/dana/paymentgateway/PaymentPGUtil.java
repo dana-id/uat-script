@@ -149,4 +149,46 @@ public class PaymentPGUtil {
                 || c == Boolean.class || c == Character.class || c == java.util.Date.class
                 || c.getPackage() != null && (c.getPackage().getName().startsWith("java.") || c.getPackage().getName().startsWith("javax."));
     }
+
+    /** Load CreateOrder API request via TestUtil.getRequest, then set validUpTo and additionalInfo so SDK validation passes. Payment Gateway only. */
+    public static CreateOrderByApiRequest getCreateOrderApiRequest(String jsonPathFile, String title, String caseName) {
+        CreateOrderByApiRequest result = TestUtil.getRequest(jsonPathFile, title, caseName, CreateOrderByApiRequest.class);
+        result.setValidUpTo(generateDateWithOffsetSeconds(600));
+        if (result.getAdditionalInfo() == null) {
+            result.setAdditionalInfo(defaultCreateOrderByApiAdditionalInfo());
+        }
+        return result;
+    }
+
+    /** Load CreateOrder Redirect request via TestUtil.getRequest, then set validUpTo and additionalInfo so SDK validation passes. Payment Gateway only. */
+    public static CreateOrderByRedirectRequest getCreateOrderRedirectRequest(String jsonPathFile, String title, String caseName) {
+        CreateOrderByRedirectRequest result = TestUtil.getRequest(jsonPathFile, title, caseName, CreateOrderByRedirectRequest.class);
+        result.setValidUpTo(generateDateWithOffsetSeconds(600));
+        if (result.getAdditionalInfo() == null) {
+            result.setAdditionalInfo(defaultCreateOrderByRedirectAdditionalInfo());
+        }
+        return result;
+    }
+
+    private static CreateOrderByApiAdditionalInfo defaultCreateOrderByApiAdditionalInfo() {
+        CreateOrderByApiAdditionalInfo info = new CreateOrderByApiAdditionalInfo();
+        info.setMcc("5732");
+        info.setEnvInfo(defaultEnvInfo());
+        return info;
+    }
+
+    private static CreateOrderByRedirectAdditionalInfo defaultCreateOrderByRedirectAdditionalInfo() {
+        CreateOrderByRedirectAdditionalInfo info = new CreateOrderByRedirectAdditionalInfo();
+        info.setMcc("5732");
+        info.setEnvInfo(defaultEnvInfo());
+        return info;
+    }
+
+    private static EnvInfo defaultEnvInfo() {
+        EnvInfo e = new EnvInfo();
+        e.setSourcePlatform(EnvInfo.SourcePlatformEnum.IPG);
+        e.setTerminalType(EnvInfo.TerminalTypeEnum.SYSTEM);
+        e.setOrderTerminalType(EnvInfo.OrderTerminalTypeEnum.WEB);
+        return e;
+    }
 }
