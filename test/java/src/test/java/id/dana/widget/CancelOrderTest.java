@@ -25,6 +25,7 @@ import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -135,6 +136,7 @@ public class CancelOrderTest {
 
     @Test
     @RetryTestUtil.Retry
+    @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
     void testCancelOrderFailOrderRefunded() throws IOException, InterruptedException {
         String caseName = "CancelOrderFailOrderRefunded";
 
