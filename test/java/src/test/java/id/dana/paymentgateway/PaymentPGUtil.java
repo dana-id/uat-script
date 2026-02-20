@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -81,13 +83,72 @@ public class PaymentPGUtil {
         return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
     }
 
-    /**
-     * Same as Go GenerateFormattedDate(offsetSeconds, 7): now + offsetSeconds in WIB (Asia/Jakarta).
-     * Used for create-order in cancel/query tests to match Go (e.g. 30 seconds).
-     */
+
     public static String generateDateWithOffsetSeconds(long offsetSeconds) {
         LocalDateTime dateTime = LocalDateTime.now().plusSeconds(offsetSeconds);
         ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Jakarta"));
         return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
+    }
+
+    /**
+     * Recursively sets any empty string ("") to null in the object and nested objects/lists.
+     * Generic: no field-specific logic, so JSON-backed requests match API expectation (null vs "").
+     */
+    public static void emptyStringToNull(Object obj) {
+        if (obj == null) return;
+        Class<?> c = obj.getClass();
+        if (c.isEnum() || c.isPrimitive() || c == String.class) return;
+        if (c.getPackage() != null && (c.getPackage().getName().startsWith("java.") || c.getPackage().getName().startsWith("javax."))) return;
+
+        if (obj instanceof List) {
+            for (Object item : (List<?>) obj) emptyStringToNull(item);
+            return;
+        }
+        if (obj instanceof Map) return;
+
+        for (Field f : getAllFields(c)) {
+            if (Modifier.isStatic(f.getModifiers())) continue;
+            f.setAccessible(true);
+            try {
+                Object val = f.get(obj);
+                if (f.getType() == String.class && "".equals(val)) {
+                    f.set(obj, null);
+                } else if (val != null && f.getType().isEnum()) {
+                    // OpenAPI enums often have getValue(); empty string should become null
+                    String enumStr = null;
+                    try {
+                        java.lang.reflect.Method getValue = val.getClass().getMethod("getValue");
+                        Object v = getValue.invoke(val);
+                        enumStr = v == null ? null : v.toString();
+                    } catch (NoSuchMethodException e) {
+                        enumStr = ((Enum<?>) val).name();
+                    } catch (Exception e) {
+                        enumStr = ((Enum<?>) val).name();
+                    }
+                    if (enumStr != null && enumStr.isEmpty()) {
+                        f.set(obj, null);
+                    }
+                } else if (val != null && !val.getClass().isEnum() && !isSimpleType(val.getClass())) {
+                    emptyStringToNull(val);
+                } else if (val instanceof List) {
+                    for (Object item : (List<?>) val) emptyStringToNull(item);
+                }
+            } catch (IllegalAccessException ignored) { }
+        }
+    }
+
+    private static List<Field> getAllFields(Class<?> c) {
+        List<Field> list = new ArrayList<>();
+        while (c != null && c != Object.class) {
+            for (Field f : c.getDeclaredFields()) list.add(f);
+            c = c.getSuperclass();
+        }
+        return list;
+    }
+
+    private static boolean isSimpleType(Class<?> c) {
+        return c.isPrimitive() || c == String.class || Number.class.isAssignableFrom(c)
+                || c == Boolean.class || c == Character.class || c == java.util.Date.class
+                || c.getPackage() != null && (c.getPackage().getName().startsWith("java.") || c.getPackage().getName().startsWith("javax."));
     }
 }

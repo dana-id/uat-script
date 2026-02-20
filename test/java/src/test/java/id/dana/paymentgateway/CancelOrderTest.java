@@ -18,6 +18,7 @@ import java.util.*;
 import id.dana.util.ConfigUtil;
 import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
@@ -25,7 +26,9 @@ import org.slf4j.LoggerFactory;
 
 class CancelOrderTest {
 
-    private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
+    private static final Logger log = LoggerFactory.getLogger(CancelOrderTest.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     private static String jsonPathFile = CancelOrderTest.class.getResource("/request/components/PaymentGateway.json")
             .getPath();
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
@@ -254,22 +257,35 @@ class CancelOrderTest {
                 "CreateOrderApi",
                 CreateOrderByApiRequest.class);
 
-        // Assign unique reference and merchant ID
         String partnerReferenceNo = UUID.randomUUID().toString();
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
         requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffsetSeconds(600));
 
-        Map<String, Object> variableDict = new HashMap<>();
-        variableDict.put("partnerReferenceNo", partnerReferenceNo);
+        // Adjust amount to satisfy API (minimum / accepted value; JSON has 1.00 which returns 4005401)
+        String validAmount = "222000.00";
+        if (requestData.getAmount() != null) {
+            requestData.getAmount().setValue(validAmount);
+        }
+        if (requestData.getPayOptionDetails() != null && !requestData.getPayOptionDetails().isEmpty()
+                && requestData.getPayOptionDetails().get(0).getTransAmount() != null) {
+            requestData.getPayOptionDetails().get(0).getTransAmount().setValue(validAmount);
+        }
+
+        PaymentPGUtil.emptyStringToNull(requestData);
+
+        try {
+            String requestJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestData);
+            log.info("CreateOrder request (verify amount, payOption, envInfo, etc.):\n{}", requestJson);
+        } catch (Exception e) {
+            log.warn("Could not serialize request for logging: {}", e.getMessage());
+        }
 
         CreateOrderResponse response = api.createOrder(requestData);
         Assertions.assertTrue(response.getResponseCode().contains("200"),
                 "Response code should be 200, but was: " + response.getResponseCode());
 
-        //Index 0 is partnerReferenceNo
         dataOrder.add(partnerReferenceNo);
-        //Index 1 is the web redirect URL
         dataOrder.add(response.getWebRedirectUrl());
 
         return dataOrder;
