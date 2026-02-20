@@ -1,5 +1,8 @@
 package id.dana.paymentgateway;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.playwright.*;
 import id.dana.invoker.Dana;
 import id.dana.invoker.model.DanaConfig;
@@ -13,6 +16,7 @@ import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -150,24 +154,42 @@ public class PaymentPGUtil {
                 || c.getPackage() != null && (c.getPackage().getName().startsWith("java.") || c.getPackage().getName().startsWith("javax."));
     }
 
-    /** Load CreateOrder API request via TestUtil.getRequest, then set validUpTo and additionalInfo so SDK validation passes. Payment Gateway only. */
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    /** Load CreateOrder API request: use TestUtil.replaceTemplateValues, patch validUpTo before deserialize, set additionalInfo if null. Payment Gateway only; TestUtil.getRequest would fail on validUpTo. */
     public static CreateOrderByApiRequest getCreateOrderApiRequest(String jsonPathFile, String title, String caseName) {
-        CreateOrderByApiRequest result = TestUtil.getRequest(jsonPathFile, title, caseName, CreateOrderByApiRequest.class);
-        result.setValidUpTo(generateDateWithOffsetSeconds(600));
-        if (result.getAdditionalInfo() == null) {
-            result.setAdditionalInfo(defaultCreateOrderByApiAdditionalInfo());
+        try {
+            JsonNode requestNode = objectMapper.readTree(new File(jsonPathFile)).path(title).path(caseName).path("request");
+            JsonNode replacedNode = TestUtil.replaceTemplateValues(requestNode);
+            if (replacedNode.isObject()) {
+                ((ObjectNode) replacedNode).put("validUpTo", generateDateWithOffsetSeconds(600));
+            }
+            CreateOrderByApiRequest result = objectMapper.treeToValue(replacedNode, CreateOrderByApiRequest.class);
+            if (result.getAdditionalInfo() == null) {
+                result.setAdditionalInfo(defaultCreateOrderByApiAdditionalInfo());
+            }
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load CreateOrder API request from " + jsonPathFile, e);
         }
-        return result;
     }
 
-    /** Load CreateOrder Redirect request via TestUtil.getRequest, then set validUpTo and additionalInfo so SDK validation passes. Payment Gateway only. */
+    /** Load CreateOrder Redirect request: use TestUtil.replaceTemplateValues, patch validUpTo before deserialize, set additionalInfo if null. Payment Gateway only. */
     public static CreateOrderByRedirectRequest getCreateOrderRedirectRequest(String jsonPathFile, String title, String caseName) {
-        CreateOrderByRedirectRequest result = TestUtil.getRequest(jsonPathFile, title, caseName, CreateOrderByRedirectRequest.class);
-        result.setValidUpTo(generateDateWithOffsetSeconds(600));
-        if (result.getAdditionalInfo() == null) {
-            result.setAdditionalInfo(defaultCreateOrderByRedirectAdditionalInfo());
+        try {
+            JsonNode requestNode = objectMapper.readTree(new File(jsonPathFile)).path(title).path(caseName).path("request");
+            JsonNode replacedNode = TestUtil.replaceTemplateValues(requestNode);
+            if (replacedNode.isObject()) {
+                ((ObjectNode) replacedNode).put("validUpTo", generateDateWithOffsetSeconds(600));
+            }
+            CreateOrderByRedirectRequest result = objectMapper.treeToValue(replacedNode, CreateOrderByRedirectRequest.class);
+            if (result.getAdditionalInfo() == null) {
+                result.setAdditionalInfo(defaultCreateOrderByRedirectAdditionalInfo());
+            }
+            return result;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load CreateOrder Redirect request from " + jsonPathFile, e);
         }
-        return result;
     }
 
     private static CreateOrderByApiAdditionalInfo defaultCreateOrderByApiAdditionalInfo() {
