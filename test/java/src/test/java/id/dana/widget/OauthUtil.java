@@ -81,7 +81,15 @@ public class OauthUtil {
             throws NoSuchAlgorithmException,
             InvalidKeySpecException {
 
-        byte[] key = Base64.getDecoder().decode(privateKeyMerchant.getBytes());
+        String base64 = privateKeyMerchant
+                .replace("\\n", "")
+                .replace("\\r", "")
+                .replaceAll("-----BEGIN PRIVATE KEY-----", "")
+                .replaceAll("-----END PRIVATE KEY-----", "")
+                .replaceAll("-----BEGIN RSA PRIVATE KEY-----", "")
+                .replaceAll("-----END RSA PRIVATE KEY-----", "")
+                .replaceAll("\\s+", "");
+        byte[] key = Base64.getDecoder().decode(base64);
         PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(key);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 
