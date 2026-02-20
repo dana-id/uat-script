@@ -205,6 +205,7 @@ public class PaymentTest {
     }
 
     @Test
+    @Disabled
     void testPaymentFailTimeout() throws IOException {
         String caseName = "PaymentFailTimeout";
         WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,

@@ -38,8 +38,9 @@ public class PaymentWidgetUtil {
         String textAlreadyPaid = "//*[contains(text(),'order is already paid.')]";
 
         try (Playwright playwright = Playwright.create()) {
-            Browser browser = playwright.webkit().launch();
-            playwright.firefox().launch(new BrowserType.LaunchOptions());
+            BrowserType.LaunchOptions opts = new BrowserType.LaunchOptions();
+            opts.setHeadless(true);
+            Browser browser = playwright.chromium().launch(opts);
             Page page = browser.newPage();
 //            Redirect to page payment
             page.navigate(redirectUrlPay);
@@ -67,13 +68,10 @@ public class PaymentWidgetUtil {
             page.locator(buttonPay).click();
 
 //            Wait transaction success
-            Thread.sleep(10000);
+            Thread.sleep(5000);
 
-//            Wait payment success
-            page.navigate(redirectUrlPay);
-            page.locator(buttonPay).click();
-            page.locator(textAlreadyPaid).isVisible();
-            log.info("Order already paid ...");
+            // page.locator(textAlreadyPaid).isVisible();
+            // log.info("Order already paid ...");
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

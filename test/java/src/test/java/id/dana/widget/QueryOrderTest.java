@@ -183,11 +183,21 @@ public class QueryOrderTest {
         QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 QueryPaymentRequest.class);
 
-        // Use the reference number for a canceled order
+        // Use a non-existent transaction ID to trigger not found error (same as Go)
+        String nonExistentRef = requestData.getOriginalPartnerReferenceNo() + "_NOT_FOUND";
+        requestData.setOriginalPartnerReferenceNo(nonExistentRef);
         requestData.setMerchantId(merchantId);
 
         QueryPaymentResponse response = widgetApi.queryPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+
+        Map<String, Object> variableDict = new HashMap<>();
+        variableDict.put("originalPartnerReferenceNo", nonExistentRef);
+
+        if (TestUtil.isSuccessful(response.getResponseCode().substring(0, 3).trim())) {
+            Assertions.fail("Expected error for case " + caseName + " but API call succeeded");
+        } else {
+            TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+        }
     }
 
     @Test
