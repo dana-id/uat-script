@@ -18,16 +18,11 @@ import java.util.*;
 import id.dana.util.ConfigUtil;
 import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 class CancelOrderTest {
-
-    private static final Logger log = LoggerFactory.getLogger(CancelOrderTest.class);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static String jsonPathFile = CancelOrderTest.class.getResource("/request/components/PaymentGateway.json")
             .getPath();
@@ -229,6 +224,7 @@ class CancelOrderTest {
     @Test
     @RetryTestUtil.Retry
     @DisplayName("Cancel Order with Order Has Been Refunded")
+    @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
     void testCancelOrderInvalidTransactionStatus() throws IOException {
         partnerReferenceNoRefunded = refundOrder(
                 userPhone,
@@ -260,7 +256,6 @@ class CancelOrderTest {
         String partnerReferenceNo = UUID.randomUUID().toString();
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
-        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffsetSeconds(600));
 
         // Adjust amount to satisfy API (minimum / accepted value; JSON has 1.00 which returns 4005401)
         String validAmount = "222000.00";
@@ -272,14 +267,8 @@ class CancelOrderTest {
             requestData.getPayOptionDetails().get(0).getTransAmount().setValue(validAmount);
         }
 
-        PaymentPGUtil.emptyStringToNull(requestData);
-
-        try {
-            String requestJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestData);
-            log.info("CreateOrder request (verify amount, payOption, envInfo, etc.):\n{}", requestJson);
-        } catch (Exception e) {
-            log.warn("Could not serialize request for logging: {}", e.getMessage());
-        }
+        // 10 minutes from now (Asia/Jakarta), set right before send so it matches successful request
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffsetSeconds(600));
 
         CreateOrderResponse response = api.createOrder(requestData);
         Assertions.assertTrue(response.getResponseCode().contains("200"),

@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -77,16 +76,15 @@ public class PaymentPGUtil {
         }
     }
 
+    /** Current time in Asia/Jakarta plus the given minutes. */
     public static String generateDateWithOffset(long offsetInMinutes) {
-        LocalDateTime dateTime = LocalDateTime.now().plusMinutes(offsetInMinutes);
-        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Jakarta"));
+        ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Jakarta")).plusMinutes(offsetInMinutes);
         return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
     }
 
 
     public static String generateDateWithOffsetSeconds(long offsetSeconds) {
-        LocalDateTime dateTime = LocalDateTime.now().plusSeconds(offsetSeconds);
-        ZonedDateTime zonedDateTime = dateTime.atZone(ZoneId.of("Asia/Jakarta"));
+        ZonedDateTime zonedDateTime = ZonedDateTime.now(ZoneId.of("Asia/Jakarta")).plusSeconds(offsetSeconds);
         return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
     }
 
