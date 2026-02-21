@@ -298,7 +298,6 @@ run_specific_test() {
     show_test_results "$simple_class_name" || exit 1
 }
 
-# Run all tests in a module (optional 2nd arg = class filter, e.g. CreateOrderTest|CancelOrderTest → only those classes)
 run_module_tests() {
     local module="$1"
     local run_pattern="${2:-}"
@@ -323,10 +322,9 @@ run_module_tests() {
     
     local test_arg
     if [ -n "$run_pattern" ]; then
-        # Restrict to specified class names: Foo|Bar → id.dana.module.Foo+id.dana.module.Bar (Maven uses + for multiple)
         local class_list
         class_list=$(echo "$run_pattern" | tr '|' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$')
-        test_arg=$(echo "$class_list" | sed "s|^|id.dana.$actual_module.|" | tr '\n' '+' | sed 's/+$//')
+        test_arg=$(echo "$class_list" | sed "s|^|id.dana.$actual_module.|" | tr '\n' ',' | sed 's/,$//')
         local count=$(echo "$class_list" | wc -l | tr -d ' ')
         print_info "Running $count test class(es): $run_pattern"
     else
