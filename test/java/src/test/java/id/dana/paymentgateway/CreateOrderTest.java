@@ -14,6 +14,7 @@ import id.dana.merchantmanagement.v1.api.MerchantManagementApi;
 import id.dana.merchantmanagement.v1.model.CreateDivisionRequestExtInfo;
 import id.dana.merchantmanagement.v1.model.CreateShopRequest;
 import id.dana.merchantmanagement.v1.model.CreateShopResponse;
+import id.dana.invoker.model.exception.DanaException;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
 import id.dana.paymentgateway.v1.model.*;
 import id.dana.util.ConfigUtil;
@@ -281,6 +282,11 @@ public class CreateOrderTest {
           log.error("Response: {}", response);
         }
       }
+    } catch (DanaException e) {
+      // SDK throws on 4xx; expect Inconsistent Request (4045418)
+      String msg = e.getMessage();
+      assertTrue(msg != null && msg.contains("4045418"),
+          "Expected 4045418 Inconsistent Request, got: " + msg);
     } catch (Exception e) {
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
