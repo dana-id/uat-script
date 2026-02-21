@@ -298,9 +298,10 @@ run_specific_test() {
     show_test_results "$simple_class_name" || exit 1
 }
 
-# Run all tests in a module
+# Run all tests in a module (optional 2nd arg = class filter, e.g. CreateOrderTest|CancelOrderTest → only those classes)
 run_module_tests() {
     local module="$1"
+    local run_pattern="${2:-}"
     
     # Find the actual module (handles aliases)
     local actual_module=$(find_module "$module")
@@ -312,21 +313,35 @@ run_module_tests() {
     fi
     
     local module_display=$(get_module_display_name "$actual_module")
-    print_header "Running All Tests in $module_display"
+    if [ -n "$run_pattern" ]; then
+        print_header "Running Tests in $module_display (filter: $run_pattern)"
+    else
+        print_header "Running All Tests in $module_display"
+    fi
     
     cd "$JAVA_TEST_DIR"
     
-    # Count tests first for better feedback
-    local test_count=$(find_test_files "$actual_module" "" | wc -l | tr -d ' ')
-    print_info "Found $test_count test file(s) in $module_display"
+    local test_arg
+    if [ -n "$run_pattern" ]; then
+        # Restrict to specified class names: Foo|Bar → id.dana.module.Foo+id.dana.module.Bar (Maven uses + for multiple)
+        local class_list
+        class_list=$(echo "$run_pattern" | tr '|' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$')
+        test_arg=$(echo "$class_list" | sed "s|^|id.dana.$actual_module.|" | tr '\n' '+' | sed 's/+$//')
+        local count=$(echo "$class_list" | wc -l | tr -d ' ')
+        print_info "Running $count test class(es): $run_pattern"
+    else
+        test_arg="id.dana.$actual_module.*Test"
+        local test_count=$(find_test_files "$actual_module" "" | wc -l | tr -d ' ')
+        print_info "Found $test_count test file(s) in $module_display"
+    fi
     echo
     
     # Run module tests
-    print_info "Executing all tests in module..."
+    print_info "Executing tests..."
     echo
     
-    # Use Maven test pattern for the module
-    if mvn test -Dtest="id.dana.$actual_module.*Test" -q; then
+    # Use Maven test pattern for the module (or filtered classes)
+    if mvn test -Dtest="$test_arg" -q; then
         print_success "Module test execution completed successfully!"
     else
         print_warning "Module test execution completed with issues"
@@ -552,8 +567,8 @@ run_java_runner() {
         # Run specific test case in a specific folder (optionally single method if run_pattern set)
         run_specific_test "$folder_name" "$case_name" "$run_pattern"
     elif [ -n "$folder_name" ]; then
-        # Run all tests in a specific folder
-        run_module_tests "$folder_name"
+        # Run tests in a specific folder (optionally only classes matching run_pattern, e.g. CreateOrderTest|CancelOrderTest)
+        run_module_tests "$folder_name" "$run_pattern"
     else
         # Run all tests
         run_all_tests
