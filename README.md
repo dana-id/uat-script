@@ -18,7 +18,7 @@ For documentation of each DANA Client library visit:
 
 1. **Set up your environment:**
    
-   Clone this repo to your deployed sandbox system (can be in Kubernetes, VM, etc.)
+   Clone this repo to your specific folder
    ```bash
    git clone git@github.com:dana-id/uat-script.git
    cd uat-script
