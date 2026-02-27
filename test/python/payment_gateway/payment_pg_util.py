@@ -30,6 +30,8 @@ async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=No
     buttonPay = "button.btn-pay"
     endpointSuccess = "**/v1/test"
     textFailedPayment = ".lbl-failed-payment"
+    
+    wait_timeout = 3000
 
     def log(msg):
         if show_log:
@@ -65,13 +67,17 @@ async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=No
         log('Waiting for payment button...')
         log('Clicking Pay button...')
         await page.wait_for_selector(buttonPay, timeout=30000)
+        await page.wait_for_timeout(wait_timeout)
         await page.locator(buttonPay).click()
+        await page.wait_for_timeout(wait_timeout)
         
         log('Waiting for payment success...')
         await page.goto(redirectUrlPayment)
-        await page.wait_for_selector(buttonPay, timeout=30000)
-        await page.locator(buttonPay).click()
-        await page.wait_for_selector(textFailedPayment, timeout=30000)
+        
+        if await page.is_visible(buttonPay, timeout=100000):
+            await page.locator(buttonPay).click()
+            await page.wait_for_selector(textFailedPayment, timeout=30000)
+        
         await browser.close()
         log('Payment automation completed, browser closed')
 

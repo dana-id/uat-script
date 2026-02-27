@@ -48,6 +48,50 @@
                 "responseCode": "4017400",
                 "responseMessage": "java.security.SignatureException: Signature length not correct: got 3 but was expecting 256"
             }
+        },
+        "ApplyTokenFailExpiredAuthCode": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4017400"
+            }
+        },
+        "ApplyTokenFailInvalidAuthCode": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4017400"
+            }
+        },
+        "ApplyTokenFailMissingField": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4007402"
+            }
+        },
+        "ApplyTokenFailInvalidField": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4007401"
+            }
         }
     },
     "AccountUnbinding": {
@@ -99,6 +143,20 @@
                 "responseCode": "4014902",
                 "responseMessage": "Invalid Customer Token"
             }
+        },
+        "ApplyOttCustomerAccountUserStatusAbnormal": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4034905"
+            }
         }
     },
     "BalanceInquiry": {
@@ -113,8 +171,7 @@
                 }
             },
             "response": {
-                "responseCode": "2005400",
-                "responseMessage": "Successful"
+                "responseCode": "2001100"
             }
         },
         "BalanceInquiryFailInvalidFormat": {
@@ -128,11 +185,10 @@
                 }
             },
             "response": {
-                "responseCode": "4005402",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseCode": "4001101"
             }
         },
-        "BalanceInquiryFailMissingOrInvalidMandatoryField": {
+        "BalanceInquiryFailInvalidMandatoryField": {
             "request": {
                 "additionalInfo": {
                     "partnerReferenceNo": "${partnerReferenceNo}",
@@ -143,11 +199,10 @@
                 }
             },
             "response": {
-                "responseCode": "4005402",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseCode": "4001102"
             }
         },
-        "BalanceInquiryFailInvalidSignature": {
+        "BalanceInquiryFailInactiveAccount": {
             "request": {
                 "additionalInfo": {
                     "partnerReferenceNo": "${partnerReferenceNo}",
@@ -158,11 +213,10 @@
                 }
             },
             "response": {
-                "responseCode": "4005402",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseCode": "4031118"
             }
         },
-        "BalanceInquiryFailTokenExpired": {
+        "BalanceInquiryFailUnauthorizedError": {
             "request": {
                 "additionalInfo": {
                     "partnerReferenceNo": "${partnerReferenceNo}",
@@ -173,11 +227,10 @@
                 }
             },
             "response": {
-                "responseCode": "4005402",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseCode": "4011100"
             }
         },
-        "BalanceInquiryFailAccountAbnormal": {
+        "BalanceInquiryFailAccessTokenInvalid": {
             "request": {
                 "additionalInfo": {
                     "partnerReferenceNo": "${partnerReferenceNo}",
@@ -188,11 +241,10 @@
                 }
             },
             "response": {
-                "responseCode": "4005402",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseCode": "4011102"
             }
         },
-        "BalanceInquiryFailAccountInactive": {
+        "BalanceInquiryFailAccountUserStatusAbnormal": {
             "request": {
                 "additionalInfo": {
                     "partnerReferenceNo": "${partnerReferenceNo}",
@@ -203,8 +255,7 @@
                 }
             },
             "response": {
-                "responseCode": "4005402",
-                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+                "responseCode": "4031105"
             }
         }
     },
@@ -235,7 +286,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -343,7 +394,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.0000"
+                    "value": "1.00"
                 },
                 "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": ""
@@ -379,7 +430,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.0000"
+                    "value": "1.00"
                 },
                 "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -451,7 +502,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -496,6 +547,111 @@
                 "responseCode": "5005401",
                 "responseMessage": "Internal Server Error"
             }
+        },
+        "PaymentFailGeneralError": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "WEB",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "505400.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "${partnerReferenceNo}"
+            },
+            "response": {
+                "responseCode": "5005400"
+            }
+        },
+        "PaymentFailNotPermitted": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "WEB",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "435415.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "${partnerReferenceNo}"
+            },
+            "response": {
+                "responseCode": "4035415"
+            }
+        },
+        "PaymentFailExceedAmountLimit": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "WEB",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "21000000.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "${partnerReferenceNo}"
+            },
+            "response": {
+                "responseCode": "4035402"
+            }
         }
     },
     "QueryOrder": {
@@ -504,7 +660,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${MERCHANT_ID}",
@@ -525,7 +681,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${MERCHANT_ID}",
@@ -547,7 +703,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${MERCHANT_ID}",
@@ -568,7 +724,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${MERCHANT_ID}",
@@ -590,7 +746,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${MERCHANT_ID}",
@@ -606,12 +762,32 @@
                 "responseMessage": "Invalid Field Format X-TIMESTAMP"
             }
         },
+        "QueryOrderFailInvalidMandatoryField": {
+            "request": {
+                "additionalInfo": {},
+                "amount": {
+                    "currency": "IDR",
+                    "value": "1.00"
+                },
+                "externalStoreId": "",
+                "merchantId": "${MERCHANT_ID}",
+                "originalExternalId": "",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "serviceCode": "54",
+                "subMerchantId": ""
+            },
+            "response": {
+                "responseCode": "4005502",
+                "responseMessage": "Invalid Mandatory Field X-TIMESTAMP"
+            }
+        },
         "QueryOrderFailTransactionNotFound": {
             "request": {
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${MERCHANT_ID}",
@@ -632,7 +808,7 @@
                 "additionalInfo": {},
                 "amount": {
                     "currency": "IDR",
-                    "value": "5.00"
+                    "value": "1.00"
                 },
                 "externalStoreId": "",
                 "merchantId": "${MERCHANT_ID}",
@@ -665,7 +841,7 @@
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "5.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -728,15 +904,15 @@
         },
         "CancelOrderFailOrderNotExist": {
             "request": {
-                "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
+                "originalPartnerReferenceNo": "4045701",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
-                "merchantId": "123123123",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "50000.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -810,7 +986,7 @@
                 "responseMessage": "Insufficient Funds"
             }
         },
-        "CancelOrderFailOrderRefunded": {
+        "CancelOrderFailOrderInvalidStatus": {
             "request": {
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -859,7 +1035,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "5.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -883,7 +1059,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "5.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -931,7 +1107,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "5.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -955,7 +1131,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "123123123123123",
                 "refundAmount": {
-                    "value": "5.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1003,7 +1179,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "5.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1039,6 +1215,30 @@
             "response": {
                 "responseCode": "4045808",
                 "responseMessage": "Invalid Merchant"
+            }
+        },
+        "RefundFailInvalidSignature": {
+            "request": {
+                "merchantId": "${MERCHANT_ID}",
+                "subMerchantId": "",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
+                "originalReferenceNo": "",
+                "originalExternalId": "",
+                "originalCaptureNo": "",
+                "partnerRefundNo": "${partnerReferenceNo}",
+                "refundAmount": {
+                    "value": "1.00",
+                    "currency": "IDR"
+                },
+                "externalStoreId": "",
+                "reason": "Customer complain",
+                "additionalInfo": {
+                    "envInfo": {}
+                }
+            },
+            "response": {
+                "responseCode": "4015800",
+                "responseMessage": "Unauthorized. Invalid Signature"
             }
         }
     },

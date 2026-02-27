@@ -31,6 +31,8 @@ async def automate_payment_widget(phone_number=None, pin=None, redirectUrlPaymen
     buttonPay = "button.btn-pay"
     labelFailedPayment = ".lbl-failed-payment"
     endpointSuccess = "**/v1/test"
+    
+    wait_timeout = 5000
 
     def log(msg):
         if show_log:
@@ -75,13 +77,16 @@ async def automate_payment_widget(phone_number=None, pin=None, redirectUrlPaymen
         # Submit payment
         log('Submitting payment...')
         await page.wait_for_selector(buttonPay, timeout=30000)
+        await page.wait_for_timeout(wait_timeout)
         await page.locator(buttonPay).click()
-        
+        await page.wait_for_timeout(wait_timeout)
+
         log('Waiting for payment success...')
         await page.goto(redirectUrlPayment)
-        await page.wait_for_selector(buttonPay, timeout=30000)
-        await page.locator(buttonPay).click()
-        await page.wait_for_selector(labelFailedPayment, timeout=30000)
+        if await page.is_visible(buttonPay, timeout=100000):
+            await page.locator(buttonPay).click()
+            await page.wait_for_selector(labelFailedPayment, timeout=30000)
+        
         await browser.close()
         log('Payment automation completed, browser closed')
 

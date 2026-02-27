@@ -1,6 +1,7 @@
 import os
 import pytest
 import asyncio
+import json
 from dana.utils.snap_configuration import SnapConfiguration, AuthSettings, Env
 from dana.widget.v1.enum import *
 from dana.widget.v1.models import *
@@ -20,7 +21,6 @@ json_path_file = "resource/request/components/Widget.json"
 configuration = SnapConfiguration(
     api_key=AuthSettings(
         PRIVATE_KEY=os.environ.get("PRIVATE_KEY"),
-        ORIGIN=os.environ.get("ORIGIN"),
         X_PARTNER_ID=os.environ.get("X_PARTNER_ID"),
         ENV=Env.SANDBOX,
         DANA_ENV=Env.SANDBOX,
@@ -91,7 +91,101 @@ def test_apply_token_fail_authcode_used():
         pytest.fail("Expected UnauthorizedException (401) for used auth code, but the API call succeeded.")
     except UnauthorizedException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body)
+        
+@with_delay()
+def test_apply_token_fail_authcode_expired():
+    if os.environ.get("CI") == "true":
+        pytest.skip("Skipped in CI/CD")
+    # Get a fresh auth code for this test (don't reuse fixture as it might be consumed)
+    auth_code = asyncio.run(automate_oauth())
+    # Consume the auth code by calling apply_token once (success path)
+    consume_dict = get_request(json_path_file, title_case, "ApplyTokenSuccess")
+    consume_dict["authCode"] = auth_code
+    api_instance.apply_token(ApplyTokenAuthorizationCodeRequest.from_dict(consume_dict))
+    # Now try to use the same auth code again - should fail with 401
+    case_name = "ApplyTokenFailExpiredAuthCode"
+    json_dict = get_request(json_path_file, title_case, case_name)
+    json_dict["authCode"] = auth_code
+    request_obj = ApplyTokenAuthorizationCodeRequest.from_dict(json_dict)
+    try:
+        api_instance.apply_token(request_obj)
+        pytest.fail("Expected UnauthorizedException (401) for used auth code, but the API call succeeded.")
+    except UnauthorizedException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body)
 
+@with_delay()
+def test_apply_token_fail_authcode_invalid():
+    if os.environ.get("CI") == "true":
+        pytest.skip("Skipped in CI/CD")
+    # Get a fresh auth code for this test (don't reuse fixture as it might be consumed)
+    case_name = "ApplyTokenFailInvalidAuthCode"
+    json_dict = get_request(json_path_file, title_case, case_name)
+    json_dict["authCode"] = "test123"
+    request_obj = ApplyTokenAuthorizationCodeRequest.from_dict(json_dict)
+    try:
+        api_instance.apply_token(request_obj)
+        pytest.fail("Expected UnauthorizedException (401) for used auth code, but the API call succeeded.")
+    except UnauthorizedException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body)
+
+@with_delay()
+def test_apply_token_fail_invalid_field_format():
+    # Now try to use the same auth code again - should fail with 401
+    case_name = "ApplyTokenFailInvalidField"
+    json_dict = get_request(json_path_file, title_case, case_name)
+    json_dict["authCode"] = "test123"
+    request_obj = ApplyTokenAuthorizationCodeRequest.from_dict(json_dict)
+    # Prepare the headers with the signature
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/v1.0/access-token/b2b2c.htm",
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=True
+    )
+
+    # Execute the API call and assert the expected error response
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "https://api.sandbox.dana.id/v1.0/access-token/b2b2c.htm",
+        request_obj,
+        headers,
+        400,  # Bad Request
+        json_path_file,
+        title_case,
+        case_name 
+    )
+
+
+@with_delay()
+def test_apply_token_fail_missing_field():
+    # Now try to use the same auth code again - should fail with 401
+    case_name = "ApplyTokenFailMissingField"
+    json_dict = get_request(json_path_file, title_case, case_name)
+    json_dict["authCode"] = "test123"
+    request_obj = ApplyTokenAuthorizationCodeRequest.from_dict(json_dict)
+    # Prepare the headers with the signature
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/v1.0/access-token/b2b2c.htm",
+        request_obj=json_dict,
+        with_timestamp=False
+    )
+
+    # Execute the API call and assert the expected error response
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "https://api.sandbox.dana.id/v1.0/access-token/b2b2c.htm",
+        request_obj,
+        headers,
+        400,  # Bad Request
+        json_path_file,
+        title_case,
+        case_name 
+    )
+    
 @with_delay()
 def test_apply_token_fail_invalid_signature(test_apply_token_auth_code):
     # Scenario: ApplyTokenFailInvalidMandatoryFields

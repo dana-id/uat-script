@@ -39,7 +39,6 @@ def _valid_up_to_max_15_minutes():
     """validUpTo must be at most 15 minutes from now (API requirement)."""
     return (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S+07:00")
 
-
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3,delay_seconds=2)
 def test_payment_success():
@@ -254,3 +253,60 @@ def test_payment_idempotent():
     
     # Assert the response
     assert_response(json_path_file, title_case, case_name, WidgetPaymentResponse.to_json(second_response), {"partnerReferenceNo": partner_reference_no})
+    
+@with_delay()
+def test_payment_fail_general_error():
+    case_name = "PaymentFailGeneralError"
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    partner_reference_no = generate_partner_reference_no()
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
+    try:
+        api_response = api_instance.widget_payment(create_payment_request_obj)
+        pytest.fail("Expected ServiceException but the API call succeeded")
+    except ServiceException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
+    except:
+        pytest.fail("Expected ServiceException but the API call give another exception")
+
+@with_delay()
+def test_payment_fail_not_permitted():
+    case_name = "PaymentFailNotPermitted"
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    partner_reference_no = generate_partner_reference_no()
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
+    try:
+        api_response = api_instance.widget_payment(create_payment_request_obj)
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception")
+
+@with_delay()
+def test_payment_fail_exceed_amount_limit():
+    case_name = "PaymentFailExceedAmountLimit"
+    json_dict = get_request(json_path_file, title_case, case_name)
+    
+    partner_reference_no = generate_partner_reference_no()
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
+    
+    # Convert the request data to a CreateOrderRequest object
+    create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
+    try:
+        api_response = api_instance.widget_payment(create_payment_request_obj)
+        pytest.fail("Expected ForbiddenException but the API call succeeded")
+    except ForbiddenException as e:
+        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
+    except:
+        pytest.fail("Expected ForbiddenException but the API call give another exception")

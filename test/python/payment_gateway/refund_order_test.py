@@ -22,7 +22,6 @@ create_order_title_case = "CreateOrder"
 json_path_file = "resource/request/components/PaymentGateway.json"
 user_phone_number = "083811223355"
 user_pin = "181818"
-merchant_id = os.environ.get("MERCHANT_ID", "216620010016033632482")
 
 # Set up configuration for the API client
 configuration = SnapConfiguration(

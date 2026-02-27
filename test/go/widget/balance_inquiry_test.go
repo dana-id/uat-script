@@ -11,7 +11,7 @@ func TestBalanceInquirySuccess(t *testing.T) {
 func TestBalanceInquiryFailInvalidFormat(t *testing.T) {
 	t.Skip("Skip: Skeleton test not implemented")
 }
-func TestBalanceInquiryFailMissingOrInvalidMandatoryField(t *testing.T) {
+func TestBalanceInquiryFailInvalidMandatoryField(t *testing.T) {
 	t.Skip("Skip: Skeleton test not implemented")
 }
 func TestBalanceInquiryFailInvalidSignature(t *testing.T) {

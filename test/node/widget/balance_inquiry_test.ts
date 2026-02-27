@@ -48,7 +48,7 @@ describe.skip('BalanceInquiry Tests', () => {
     });
 
     test.skip('should fail with missing or invalid mandatory field', async () => {
-        const caseName = 'BalanceInquiryFailMissingOrInvalidMandatoryField';
+        const caseName = 'BalanceInquiryFailInvalidMandatoryField';
         const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
         try {
             fail('BalanceInquiry test is a placeholder.');

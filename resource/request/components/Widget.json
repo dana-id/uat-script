@@ -46,6 +46,50 @@
             "response": {
                 "responseCode": "4017400"
             }
+        },
+        "ApplyTokenFailExpiredAuthCode": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4017400"
+            }
+        },
+        "ApplyTokenFailInvalidAuthCode": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4017400"
+            }
+        },
+        "ApplyTokenFailMissingField": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4007402"
+            }
+        },
+        "ApplyTokenFailInvalidField": {
+            "request": {
+                "grantType": "AUTHORIZATION_CODE",
+                "authCode": "${authCode}",
+                "refreshToken": "",
+                "additionalInfo": {}
+            },
+            "response": {
+                "responseCode": "4007401"
+            }
         }
     },
     "AccountUnbinding": {
@@ -72,7 +116,7 @@
             "request": {
                 "additionalInfo": {
                     "accessToken": "${authCode}",
-                    "deviceId": "1234567890"
+                    "deviceId": "deviceid123"
                 },
                 "userResources": [
                     "OTT"
@@ -157,18 +201,121 @@
                 "responseCode": "4004901",
                 "responseMessage": "Invalid Field Format userResources"
             }
+        },
+        "ApplyOttCustomerAccountUserStatusAbnormal": {
+            "request": {
+                "additionalInfo": {
+                    "accessToken": "${authCode}",
+                    "deviceId": "1234567890"
+                },
+                "userResources": [
+                    "OTT"
+                ]
+            },
+            "response": {
+                "responseCode": "4034905"
+            }
         }
     },
     "BalanceInquiry": {
-        "BalanceInquirySuccess": {},
-        "BalanceInquiryFailInvalidFormat": {},
-        "BalanceInquiryFailMissingOrInvalidMandatoryField": {},
-        "BalanceInquiryFailInvalidSignature": {},
-        "BalanceInquiryFailTokenExpired": {},
-        "BalanceInquiryFailTokenNotFound": {},
-        "BalanceInquiryFailInvalidUserStatus": {},
-        "BalanceInquiryFailInternalServerError": {},
-        "BalanceInquiryFailUnexpectedResponse": {}
+        "BalanceInquirySuccess": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "2001100"
+            }
+        },
+        "BalanceInquiryFailInvalidFormat": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes": "test",
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4001101"
+            }
+        },
+        "BalanceInquiryFailInvalidMandatoryField": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4001102"
+            }
+        },
+        "BalanceInquiryFailInactiveAccount": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4031118"
+            }
+        },
+        "BalanceInquiryFailUnauthorizedError": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4011100"
+            }
+        },
+        "BalanceInquiryFailAccessTokenInvalid": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4011102"
+            }
+        },
+        "BalanceInquiryFailAccountUserStatusAbnormal": {
+            "request": {
+                "additionalInfo": {
+                    "partnerReferenceNo": "${partnerReferenceNo}",
+                    "balanceTypes":["BALANCE"],
+                    "additionalInfo":{
+                        "accessToken" : "${accessToken}"
+                    }
+                }
+            },
+            "response": {
+                "responseCode": "4031105"
+            }
+        }
     },
     "Payment": {
         "PaymentSuccess": {
@@ -198,7 +345,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.00"
+                    "value": "1.00"
                 },
                 "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -306,7 +453,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.0000"
+                    "value": "1.00"
                 },
                 "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": ""
@@ -342,7 +489,7 @@
                 },
                 "amount": {
                     "currency": "IDR",
-                    "value": "10000.0000"
+                    "value": "1.00"
                 },
                 "merchantId": "${MERCHANT_ID}",
                 "partnerReferenceNo": "${partnerReferenceNo}"
@@ -458,6 +605,111 @@
             "response": {
                 "responseCode": "5005401",
                 "responseMessage": "Internal Server Error"
+            }
+        },
+        "PaymentFailGeneralError": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "WEB",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "505400.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "${partnerReferenceNo}"
+            },
+            "response": {
+                "responseCode": "5005400"
+            }
+        },
+        "PaymentFailNotPermitted": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "WEB",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "435415.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "${partnerReferenceNo}"
+            },
+            "response": {
+                "responseCode": "4035415"
+            }
+        },
+        "PaymentFailExceedAmountLimit": {
+            "request": {
+                "additionalInfo": {
+                    "envInfo": {
+                        "appVersion": "",
+                        "clientIp": "",
+                        "extendInfo": "",
+                        "merchantAppVersion": "",
+                        "orderOsType": "",
+                        "orderTerminalType": "WEB",
+                        "osType": "",
+                        "sdkVersion": "",
+                        "sessionId": "",
+                        "sourcePlatform": "IPG",
+                        "terminalType": "WEB",
+                        "tokenId": "",
+                        "websiteLanguage": ""
+                    },
+                    "mcc": "",
+                    "order": {
+                        "orderTitle": "shoe"
+                    },
+                    "productCode": "51051000100000000001"
+                },
+                "amount": {
+                    "currency": "IDR",
+                    "value": "21000000.00"
+                },
+                "merchantId": "${MERCHANT_ID}",
+                "partnerReferenceNo": "${partnerReferenceNo}"
+            },
+            "response": {
+                "responseCode": "4035402"
             }
         }
     },
@@ -704,15 +956,15 @@
         },
         "CancelOrderFailOrderNotExist": {
             "request": {
-                "originalPartnerReferenceNo": "${originalPartnerReferenceNo}",
-                "originalReferenceNo": "${originalReferenceNo}",
+                "originalPartnerReferenceNo": "4045701",
+                "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "reason": "Network timeout",
                 "externalStoreId": "",
                 "amount": {
-                    "value": "50000.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "additionalInfo": {}
@@ -786,7 +1038,7 @@
                 "responseMessage": "Insufficient Funds"
             }
         },
-        "CancelOrderFailOrderRefunded": {
+        "CancelOrderFailOrderInvalidStatus": {
             "request": {
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",

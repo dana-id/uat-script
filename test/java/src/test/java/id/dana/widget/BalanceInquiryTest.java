@@ -87,9 +87,9 @@ public class BalanceInquiryTest {
     }
 
     @Test
-    void testBalanceInquiryFailMissingOrInvalidMandatoryField() throws IOException {
+    void testBalanceInquiryFailInvalidMandatoryField() throws IOException {
         Map<String, String> customHeaders = new HashMap<>();
-        String caseName = "BalanceInquiryFailMissingOrInvalidMandatoryField";
+        String caseName = "BalanceInquiryFailInvalidMandatoryField";
         BalanceInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 BalanceInquiryRequest.class);
         BalanceInquiryRequestAdditionalInfo additionalInfo = new BalanceInquiryRequestAdditionalInfo();

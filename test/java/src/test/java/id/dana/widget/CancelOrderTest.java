@@ -137,8 +137,8 @@ public class CancelOrderTest {
     @Test
     @RetryTestUtil.Retry
     @DisabledIfEnvironmentVariable(named = "CI", matches = ".*")
-    void testCancelOrderFailOrderRefunded() throws IOException, InterruptedException {
-        String caseName = "CancelOrderFailOrderRefunded";
+    void testCancelOrderFailOrderInvalidStatus() throws IOException, InterruptedException {
+        String caseName = "CancelOrderFailOrderInvalidStatus";
 
         partnerReferenceNoRefunded = refundOrder(
                 userPhone,

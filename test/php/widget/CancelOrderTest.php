@@ -410,12 +410,12 @@ class CancelOrderTest extends TestCase
     /**
      * Should fail when trying to cancel an already refunded order
      */
-    public function testCancelOrderFailOrderRefunded(): void
+    public function testCancelOrderFailOrderInvalidStatus(): void
     {
         Util::withDelay(function () {
             try {
                 $refundedOrderReference = self::createPaidAndRefundOrder('PaymentSuccess', true);
-                $caseName = 'CancelOrderFailOrderRefunded';
+                $caseName = 'CancelOrderFailOrderInvalidStatus';
                 
                 // Get the cancel order request template
                 $jsonDict = Util::getRequest(
@@ -451,7 +451,7 @@ class CancelOrderTest extends TestCase
                 
             } catch (Exception $e) {
                 echo "Test failed: {$e->getMessage()}\n";
-                $this->fail('testCancelOrderFailOrderRefunded failed: ' . $e->getMessage());
+                $this->fail('testCancelOrderFailOrderInvalidStatus failed: ' . $e->getMessage());
             }
         });
     }

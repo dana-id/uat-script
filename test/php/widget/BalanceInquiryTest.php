@@ -84,11 +84,11 @@ class BalanceInquiryTest extends TestCase
      * @skip
      * Should fail with missing or invalid mandatory field
      */
-    public function testBalanceInquiryFailMissingOrInvalidMandatoryField(): void
+    public function testBalanceInquiryFailInvalidMandatoryField(): void
     {
         $this->markTestSkipped('Widget scenario skipped by automation.');
         Util::withDelay(function() {
-            $caseName = 'BalanceInquiryFailMissingOrInvalidMandatoryField';
+            $caseName = 'BalanceInquiryFailInvalidMandatoryField';
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
                 self::$titleCase,

@@ -151,7 +151,7 @@ describe('CancelOrder Tests', () => {
     });
 
     test.skip('should fail with order refunded', async () => {
-        const caseName = 'CancelOrderFailOrderRefunded';
+        const caseName = 'CancelOrderFailOrderInvalidStatus';
         const requestData: CancelOrderRequest = getRequest(jsonPathFile, titleCase, caseName);
         try {
             fail('CancelOrder test is a placeholder.');
