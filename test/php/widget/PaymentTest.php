@@ -43,7 +43,6 @@ class PaymentTest extends TestCase
     private static $apiInstanceWidget;
     private static $configuration;
     private static $merchantId;
-    private static $sharedOriginalPartnerReference;
 
     public static function setUpBeforeClass(): void
     {
@@ -60,8 +59,6 @@ class PaymentTest extends TestCase
         self::$merchantId = getenv('MERCHANT_ID');
         self::$apiInstanceWidget = new WidgetApi(null, self::$configuration);
 
-        // Create one paid order (runs automation once); cache is reused by QueryOrderTest etc.
-        self::$sharedOriginalPartnerReference = PaymentUtil::createPaymentWidgetPaid("PaymentSuccess");
     }
 
     /**
