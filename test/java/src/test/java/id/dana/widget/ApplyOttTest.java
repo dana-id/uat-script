@@ -22,8 +22,9 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 public class ApplyOttTest {
-    private final static String USER_PIN = "181818";
-    private final static String USER_PHONENUMBER = "083811223355";
+    private static final String USER_PIN = "181818";
+    private static final String USER_PHONE_NUMBER = "083811223355";
+    private static final String DEVICE_ID = "deviceid123";
     private static final String titleCase = "ApplyOtt";
     private static final String jsonPathFile = ApplyToken.class.getResource("/request/components/Widget.json")
             .getPath();
@@ -49,7 +50,7 @@ public class ApplyOttTest {
         widgetApi = Dana.getInstance().getWidgetApi();
 
         accessToken = OauthUtil.getAccessToken(
-                USER_PHONENUMBER,
+                USER_PHONE_NUMBER,
                 USER_PIN
         );
     }

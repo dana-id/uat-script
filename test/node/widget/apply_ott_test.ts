@@ -13,6 +13,9 @@ dotenv.config();
 
 const titleCase = 'ApplyOtt';
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Widget.json');
+const userPhoneNumber = '083811223355';
+const userPin = '181818';
+const deviceId = 'deviceid123';
 
 const dana = new Dana({
     partnerId: process.env.X_PARTNER_ID || '',
@@ -42,7 +45,7 @@ describe('ApplyOtt Tests', () => {
         const caseName = 'ApplyOttSuccess';
         const requestData: ApplyOTTRequest = getRequest<ApplyOTTRequest>(jsonPathFile, titleCase, caseName);
 
-        requestData.additionalInfo.accessToken = await generateApplyToken();
+        requestData.additionalInfo.accessToken = await generateApplyToken(userPhoneNumber, userPin);
         try {
             const response = await dana.widgetApi.applyOTT(requestData);
             await assertResponse(jsonPathFile, titleCase, caseName, response);
@@ -54,7 +57,7 @@ describe('ApplyOtt Tests', () => {
     test('should fail to apply OTT with invalid format', async () => {
         const caseName = 'ApplyOttFailInvalidFormat';
         const requestData: ApplyOTTRequest = getRequest<ApplyOTTRequest>(jsonPathFile, titleCase, caseName);
-        requestData.additionalInfo.accessToken = await generateApplyToken();
+        requestData.additionalInfo.accessToken = await generateApplyToken(userPhoneNumber, userPin);
 
         try {
             await dana.widgetApi.applyOTT(requestData);
@@ -111,7 +114,7 @@ describe('ApplyOtt Tests', () => {
     test('should fail to apply OTT with invalid signature', async () => {
         const caseName = 'ApplyOttFailInvalidSignature';
         const requestData: ApplyOTTRequest = getRequest<ApplyOTTRequest>(jsonPathFile, titleCase, caseName);
-        requestData.additionalInfo.accessToken = await generateApplyToken();
+        requestData.additionalInfo.accessToken = await generateApplyToken(userPhoneNumber, userPin);
         // Custom headers: use invalid signature to trigger authorization error
 
 

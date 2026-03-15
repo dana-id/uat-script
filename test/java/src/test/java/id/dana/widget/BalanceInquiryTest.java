@@ -30,10 +30,11 @@ import java.util.Map;
 public class BalanceInquiryTest {
     private static String jsonPathFile = RefundOrderTest.class.getResource("/request/components/Widget.json")
             .getPath();
-    private final String titleCase = "RefundOrder";
+    private final String titleCase = "BalanceInquiry";
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
-    private static String userPin = "181818";
-    private static String userPhone = "083811223355";
+    private static final String USER_PIN = "181818";
+    private static final String USER_PHONE_NUMBER = "083811223355";
+    private static final String DEVICE_ID = "deviceid123";
     private static WidgetApi widgetApi;
     private static String accessToken, accessTokenExpiry, accessTokenAbnormalAccount;
     private static String partnerReferenceNoInit;
@@ -54,8 +55,8 @@ public class BalanceInquiryTest {
         List<String> dataOrder = PaymentWidgetUtil.createPayment("PaymentSuccess");
         partnerReferenceNoInit = dataOrder.get(0);
 //        accessToken = OauthUtil.getAccessToken(
-//                userPhone,
-//                userPin
+//                USER_PHONE_NUMBER,
+//                USER_PIN
 //        );
 //
 //        accessTokenExpiry = OauthUtil.getAccessToken(

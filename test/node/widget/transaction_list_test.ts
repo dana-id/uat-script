@@ -10,6 +10,9 @@ dotenv.config();
 
 const titleCase = 'TransactionList';
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Widget.json');
+const userPhoneNumber = '083811223355';
+const userPin = '181818';
+const deviceId = 'deviceid123';
 
 const dana = new Dana({
     partnerId: process.env.X_PARTNER_ID || '',

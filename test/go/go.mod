@@ -6,7 +6,7 @@ toolchain go1.22.4
 
 // Direct dependencies (v2 module path for proxy.golang.org)
 require (
-	github.com/dana-id/dana-go/v2 v2.0.0
+	github.com/dana-id/dana-go/v2 v2.1.1
 	github.com/google/uuid v1.6.0
 )
 
@@ -16,7 +16,7 @@ require (
 	gopkg.in/validator.v2 v2.0.1 // indirect
 )
 
-require github.com/playwright-community/playwright-go v0.5200.1
+require github.com/playwright-community/playwright-go v0.5700.1
 
 require (
 	github.com/deckarep/golang-set/v2 v2.8.0 // indirect

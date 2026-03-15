@@ -13,6 +13,9 @@ dotenv.config();
 const titleCase = 'CancelOrder';
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Widget.json');
 const merchantId = process.env.MERCHANT_ID || ''; // Merchant configuration
+const userPhoneNumber = '083811223355';
+const userPin = '181818';
+const deviceId = 'deviceid123';
 
 const dana = new Dana({
     partnerId: process.env.X_PARTNER_ID || '',

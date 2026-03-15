@@ -38,8 +38,9 @@ public class CancelOrderTest {
             .getPath();
     private final String titleCase = "CancelOrder";
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
-    private static String userPin = "181818";
-    private static String userPhone = "083811223355";
+    private static final String USER_PIN = "181818";
+    private static final String USER_PHONE_NUMBER = "083811223355";
+    private static final String DEVICE_ID = "deviceid123";
     private static WidgetApi widgetApi;
     private static String partnerReferenceNoInit,partnerReferenceNoRefunded;
 
@@ -141,8 +142,8 @@ public class CancelOrderTest {
         String caseName = "CancelOrderFailOrderInvalidStatus";
 
         partnerReferenceNoRefunded = refundOrder(
-                userPhone,
-                userPin);
+                USER_PHONE_NUMBER,
+                USER_PIN);
         CancelOrderRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 CancelOrderRequest.class);
         requestData.setOriginalPartnerReferenceNo(partnerReferenceNoRefunded);

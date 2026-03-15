@@ -15,6 +15,9 @@ const jsonPathFile = path.resolve(__dirname, '../../../resource/request/componen
 const baseUrl: string = 'https://api.sandbox.dana.id/';
 const apiPath: string = '/v1.0/debit/status.htm';
 const merchantId = process.env.MERCHANT_ID || ''; // Merchant configuration
+const userPhoneNumber = '083811223355';
+const userPin = '181818';
+const deviceId = 'deviceid123';
 
 const dana = new Dana({
     partnerId: process.env.X_PARTNER_ID || '',
@@ -25,6 +28,17 @@ const dana = new Dana({
 
 function generateReferenceNo(): string {
     return uuidv4();
+}
+
+/**
+ * Generates a validUpTo timestamp that is at most 15 minutes from now (API requirement)
+ * 
+ * @returns {string} A formatted timestamp string in ISO format with UTC+7 timezone
+ */
+function validUpToMax15Minutes(): string {
+    const now = new Date();
+    const validUpTo = new Date(now.getTime() + 15 * 60 * 1000); // Add 15 minutes
+    return validUpTo.toISOString().replace('Z', '+07:00');
 }
 
 // Shared test data for cross-test dependencies

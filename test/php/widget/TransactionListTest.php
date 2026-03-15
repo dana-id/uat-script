@@ -16,7 +16,9 @@ class TransactionListTest extends TestCase
 {
     private static $titleCase = 'TransactionList';
     private static $jsonPathFile = 'resource/request/components/Widget.json';
-    private static $apiInstance;
+    private static $phoneNumber = '083811223355';
+    private static $userPin = '181818';
+    private static $deviceId = 'deviceid123';    private static $apiInstance;
 
     public static function setUpBeforeClass(): void
     {

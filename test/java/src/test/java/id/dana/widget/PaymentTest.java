@@ -52,6 +52,9 @@ public class PaymentTest {
     private static final String jsonPathFile = PaymentTest.class.getResource("/request/components/Widget.json")
             .getPath();
     private final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
+    private static final String USER_PHONE_NUMBER = "083811223355";
+    private static final String USER_PIN = "181818";
+    private static final String DEVICE_ID = "deviceid123";
 
     private WidgetApi widgetApi;
     private PaymentGatewayApi paymentGatewayApi;
@@ -83,7 +86,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
-        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(15)); // 15 minutes max as per API requirement
 
         WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
         TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
@@ -97,7 +100,7 @@ public class PaymentTest {
 
         requestData.setPartnerReferenceNo(partnerReferenceNo);
         requestData.setMerchantId(merchantId);
-        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(15)); // 15 minutes max as per API requirement
 
         widgetApi.widgetPayment(requestData);
         Money amount = new Money();

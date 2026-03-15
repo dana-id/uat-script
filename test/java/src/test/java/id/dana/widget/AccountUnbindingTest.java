@@ -22,7 +22,8 @@ import java.security.spec.InvalidKeySpecException;
 
 public class AccountUnbindingTest {
     private final static String USER_PIN = "181818";
-    private final static String USER_PHONENUMBER = "083811223355";
+    private final static String USER_PHONE_NUMBER = "083811223355";
+    private final static String DEVICE_ID = "deviceid123";
     private static final String titleCase = "AccountUnbinding";
     private static final String jsonPathFile = ApplyToken.class.getResource("/request/components/Widget.json")
             .getPath();
@@ -51,7 +52,7 @@ public class AccountUnbindingTest {
         authCode = OauthUtil.getAuthCode(
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
-                USER_PHONENUMBER,
+                USER_PHONE_NUMBER,
                 USER_PIN);
 
         accessToken = ApplyToken.applyToken(authCode);

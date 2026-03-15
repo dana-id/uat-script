@@ -38,6 +38,9 @@ const jsonPathFile = path.resolve(__dirname, '../../../resource/request/componen
 const merchantId = process.env.MERCHANT_ID || ''; // Merchant configuration
 const apiUrl: string = '/rest/redirection/v1.0/debit/payment-host-to-host'; // Widget payment endpoint
 const baseUrl: string = 'https://api.sandbox.dana.id/'; // DANA API base URL
+const userPhoneNumber = '083811223355';
+const userPin = '181818';
+const deviceId = 'deviceid123';
 
 // Initialize DANA SDK client with environment configuration
 const dana = new Dana({
@@ -55,6 +58,17 @@ const dana = new Dana({
  */
 function generateReferenceNo(): string {
     return uuidv4();
+}
+
+/**
+ * Generates a validUpTo timestamp that is at most 15 minutes from now (API requirement)
+ * 
+ * @returns {string} A formatted timestamp string in ISO format with UTC+7 timezone
+ */
+function validUpToMax15Minutes(): string {
+    const now = new Date();
+    const validUpTo = new Date(now.getTime() + 15 * 60 * 1000); // Add 15 minutes
+    return validUpTo.toISOString().replace('Z', '+07:00');
 }
 
 /**
@@ -82,8 +96,9 @@ describe('Payment Tests', () => {
         // Extract request data from test data file based on case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
 
-        // Configure request with unique reference number and merchant ID
+        // Configure request with unique reference number and validUpTo timestamp
         requestData.partnerReferenceNo = generateReferenceNo();
+        requestData.validUpTo = validUpToMax15Minutes();
 
         try {
             // Execute widget payment API call

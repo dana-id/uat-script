@@ -43,8 +43,8 @@ public class QueryOrderTest {
     private static final String jsonPathFile = QueryOrderTest.class.getResource("/request/components/Widget.json")
             .getPath();
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
-    private static String userPin = "181818";
-    private static String userPhone = "083811223355";
+    private static String USER_PIN = "181818";
+    private static String USER_PHONE_NUMBER = "083811223355";
     private static WidgetApi widgetApi;
     private static String
             partnerReferenceNoPaid,
@@ -97,8 +97,8 @@ public class QueryOrderTest {
         String caseName = "QueryOrderSuccessPaid";
 
         partnerReferenceNoPaid = payOrder(
-                userPhone,
-                userPin);
+                USER_PHONE_NUMBER,
+                USER_PIN);
 
         QueryPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
                 QueryPaymentRequest.class);

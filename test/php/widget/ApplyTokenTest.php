@@ -19,6 +19,7 @@ class ApplyTokenTest extends TestCase
     private static $apiInstance;
     private static $phoneNumber = '083811223355';
     private static $userPin = '181818';
+    private static $deviceId = 'deviceid123';
     private static $authCode;
     private static $partnerId;
 

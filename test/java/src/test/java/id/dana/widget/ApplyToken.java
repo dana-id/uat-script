@@ -33,8 +33,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class ApplyToken {
     private static final Logger log = LoggerFactory.getLogger(CreateOrderTest.class);
-    private final static String USER_PIN = "181818";
-    private final static String USER_PHONENUMBER = "083811223355";
+    private static final String USER_PIN = "181818";
+    private static final String USER_PHONE_NUMBER = "083811223355";
+    private static final String DEVICE_ID = "deviceid123";
     private static final String titleCase = "ApplyToken";
     private static final String jsonPathFile = ApplyToken.class.getResource("/request/components/Widget.json")
             .getPath();
@@ -59,7 +60,7 @@ public class ApplyToken {
         String authCode = OauthUtil.getAuthCode(
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
-                USER_PHONENUMBER,
+                USER_PHONE_NUMBER,
                 USER_PIN);
 
         // Create an order with an initial status
@@ -80,13 +81,13 @@ public class ApplyToken {
         String authCode = OauthUtil.getAuthCode(
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
-                USER_PHONENUMBER,
+                USER_PHONE_NUMBER,
                 USER_PIN);
 
         OauthUtil.getAuthCode(
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
-                USER_PHONENUMBER,
+                USER_PHONE_NUMBER,
                 USER_PIN);
 
         // Create an order with an initial status
@@ -106,7 +107,7 @@ public class ApplyToken {
         String authCode = OauthUtil.getAuthCode(
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
-                USER_PHONENUMBER,
+                USER_PHONE_NUMBER,
                 USER_PIN);
 
         applyToken(authCode);
@@ -129,7 +130,7 @@ public class ApplyToken {
         String authCode = OauthUtil.getAuthCode(
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
                 ConfigUtil.getConfig("X_PARTNER_ID", ""),
-                USER_PHONENUMBER,
+                USER_PHONE_NUMBER,
                 USER_PIN);
 
         Map<String, String> customHeaders = new HashMap<>();

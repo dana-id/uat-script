@@ -41,8 +41,8 @@ public class RefundOrderTest {
 
     private final String titleCase = "RefundOrder";
     private static final String merchantId = ConfigUtil.getConfig("MERCHANT_ID", "216620010016033632482");
-    private static String userPin = "181818";
-    private static String userPhone = "083811223355";
+    private static String USER_PIN = "181818";
+    private static String USER_PHONE_NUMBER = "083811223355";
     private static WidgetApi widgetApi;
     private static String partnerReferenceNoInit, partnerReferenceNoPaid;
 
@@ -62,8 +62,8 @@ public class RefundOrderTest {
         List<String> dataOrder = PaymentWidgetUtil.createPayment("PaymentSuccess");
         partnerReferenceNoInit = dataOrder.get(0);
         partnerReferenceNoPaid = payOrder(
-                userPhone,
-                userPin);
+                USER_PHONE_NUMBER,
+                USER_PIN);
     }
 
     @Test

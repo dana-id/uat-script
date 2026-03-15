@@ -16,6 +16,9 @@ class BalanceInquiryTest extends TestCase
     private static $titleCase = 'BalanceInquiry';
     private static $jsonPathFile = 'resource/request/components/Widget.json';
     private static $apiInstance;
+    private static $phoneNumber = '083811223355';
+    private static $userPin = '181818';
+    private static $deviceId = 'deviceid123';
 
     public static function setUpBeforeClass(): void
     {

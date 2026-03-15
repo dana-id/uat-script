@@ -19,6 +19,9 @@ const jsonPathFile = path.resolve(__dirname, '../../../resource/request/componen
 const baseUrl: string = 'https://api.sandbox.dana.id/';
 const apiPath: string = '/v1.0/debit/refund.htm';
 const merchantId: string = process.env.MERCHANT_ID || '';
+const userPhoneNumber = '083811223355';
+const userPin = '181818';
+const deviceId = 'deviceid123';
 
 // Initialize DANA API client with credentials from environment variables
 const dana = new Dana({

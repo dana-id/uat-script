@@ -43,6 +43,9 @@ class PaymentTest extends TestCase
     private static $apiInstanceWidget;
     private static $configuration;
     private static $merchantId;
+    private static $userPhoneNumber = '083811223355';
+    private static $userPin = '181818';
+    private static $deviceId = 'deviceid123';
 
     public static function setUpBeforeClass(): void
     {
@@ -121,7 +124,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -168,7 +171,7 @@ class PaymentTest extends TestCase
             $jsonDict['merchantId'] = self::$merchantId;
             $fixedPartnerRef = PaymentUtil::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $fixedPartnerRef;
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -223,7 +226,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -268,7 +271,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
 
             // Create headers without timestamp to test validation
             $headers = Util::getHeadersWithSignature(
@@ -327,7 +330,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
 
             // Create headers without timestamp to test validation
             $headers = Util::getHeadersWithSignature(
@@ -389,7 +392,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -435,7 +438,7 @@ class PaymentTest extends TestCase
             $jsonDict['merchantId'] = self::$merchantId;
             $fixedPartnerRef = 'IDEMPOTENT_TEST_' . time() . '_' . substr(md5(rand()), 0, 8);
             $jsonDict['partnerReferenceNo'] = $fixedPartnerRef;
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -543,7 +546,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(600, 7);
+            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
