@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/dana-id/dana-go/v2/config"
 	"github.com/dana-id/dana-go/v2/utils"
@@ -55,7 +54,11 @@ func ExecuteAPIRequestWithCustomHeaders(
 
 	// Add timestamp if not explicitly provided in custom headers
 	if _, found := customHeaders["X-TIMESTAMP"]; !found {
-		headers["X-TIMESTAMP"] = time.Now().Format("2006-01-02T15:04:05-07:00")
+		// IMPORTANT: X-SIGNATURE is computed inside utils.SetSnapHeaders using its own
+		// X-TIMESTAMP value. Using a different timestamp here will invalidate the signature.
+		if ts, ok := headerParams["X-TIMESTAMP"]; ok && ts != "" {
+			headers["X-TIMESTAMP"] = ts
+		}
 	}
 
 	if _, found := customHeaders["X-SIGNATURE"]; !found {
