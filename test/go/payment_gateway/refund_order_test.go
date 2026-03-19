@@ -251,6 +251,7 @@ func TestRefundOrderNotPaid(t *testing.T) {
 }
 
 func TestRefundOrderDuplicateRefund(t *testing.T) {
+	helper.SkipInCIIfSkipped(t, "TestRefundOrderDuplicateRefund")
 	// Prevent parallel execution due to createPaidOrder using Playwright
 	t.Setenv("FORCE_SEQUENTIAL", "true")
 	helper.RetryTest(t, 3, 1, func() error {

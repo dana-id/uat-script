@@ -21,13 +21,13 @@ func TestApplyTokenSuccess(t *testing.T) {
 		caseName := "ApplyTokenSuccess"
 
 		redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-			userPhoneNumber,
-			userPin,
+			helper.TestConfig.PhoneNumber,
+			helper.TestConfig.PIN,
 		)
 
 		authCode, _ := widget_helper.GetAuthCode(
-			userPhoneNumber,
-			userPin,
+			helper.TestConfig.PhoneNumber,
+			helper.TestConfig.PIN,
 			redirectUrlAuthCode)
 
 		// Get the request data from JSON

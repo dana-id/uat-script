@@ -386,52 +386,40 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 	}
 }
 
-// TestCreateOrderInvalidFieldFormat tests failing when field format is invalid (ex: amount without decimal)
+// TestCreateOrderInvalidFieldFormat tests failing when field format is invalid (ex: amount without decimal).
+// Uses custom client so the invalid payload is sent over HTTP; SDK validation would reject before sending and give no response.
 func TestCreateOrderInvalidFieldFormat(t *testing.T) {
 	caseName := "CreateOrderInvalidFieldFormat"
 
-	// Get the request data from the JSON file
+	// Get the request data from the JSON file (invalid format e.g. amount without decimal)
 	jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, caseName)
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 
-	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
-
-	// Create the CreateOrderRequest object and populate it with JSON data
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-
-	// Unmarshal directly into CreateOrderByApiRequest
-	createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
-	err = json.Unmarshal(jsonBytes, createOrderByApiRequest)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
-
-	// Create the final request object
-	createOrderReq := pg.CreateOrderRequest{
-		CreateOrderByApiRequest: createOrderByApiRequest,
-	}
-
-	// Make the API call
 	ctx := context.Background()
-	_, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
+	endpoint := "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm"
+	resourcePath := "/payment-gateway/v1.0/debit/payment-host-to-host.htm"
+	variableDict := map[string]interface{}{"partnerReferenceNo": partnerReferenceNo}
+
+	err = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		jsonDict,
+		"POST",
+		endpoint,
+		resourcePath,
+		createOrderJsonPath,
+		createOrderTitleCase,
+		caseName,
+		nil,
+		variableDict,
+	)
 	if err != nil {
-		// Assert the API error response with the partner reference number as a variable
-		err = helper.AssertFailResponse(createOrderJsonPath, createOrderTitleCase, caseName, httpResponse, map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
-		if err != nil {
-			t.Fatal(err)
-		}
-	} else {
-		httpResponse.Body.Close()
-		t.Fatal("Expected error but got successful response")
+		t.Fatal(err)
 	}
 }
 

@@ -6,6 +6,7 @@ import "os"
 var TestConfig = struct {
 	PhoneNumber                string
 	PIN                        string
+	DeviceID                   string
 	MerchantID                 string
 	JsonWidgetPath             string
 	JsonPgPath                 string
@@ -13,6 +14,7 @@ var TestConfig = struct {
 }{
 	PhoneNumber:                "083811223355",
 	PIN:                        "181818",
+	DeviceID:                   "deviceid123",
 	MerchantID:                 os.Getenv("MERCHANT_ID"),
 	JsonWidgetPath:             "../../../resource/request/components/Widget.json",
 	JsonPgPath:                 "../../../resource/request/components/PaymentGateway.json",

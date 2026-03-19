@@ -15,26 +15,19 @@ const (
 	widgetApplyOttCase = "ApplyOtt"
 )
 
-// Shared by all widget_test files (single declaration to avoid redeclaration when building the package).
-var (
-	userPhoneNumber = "083811223355"
-	userPin         = "181818"
-	deviceId        = "deviceid123"
-)
-
 // ApplyOtt
 func TestApplyOttSuccess(t *testing.T) {
 	helper.RetryTest(t, 3, 1, func() error {
 		caseName := "ApplyOttSuccess"
 		// Get OAuth redirect URL
 		redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
-			userPhoneNumber,
-			userPin,
+			helper.TestConfig.PhoneNumber,
+			helper.TestConfig.PIN,
 		)
 		// Get auth code
 		authCode, err := widget_helper.GetAuthCode(
-			userPhoneNumber,
-			userPin,
+			helper.TestConfig.PhoneNumber,
+			helper.TestConfig.PIN,
 			redirectUrlAuthCode,
 		)
 		// Get access token
@@ -49,7 +42,7 @@ func TestApplyOttSuccess(t *testing.T) {
 
 		jsonDict["additionalInfo"] = map[string]interface{}{
 			"accessToken": accessToken,
-			"deviceId":    deviceId,
+			"deviceId":    helper.TestConfig.DeviceID,
 		}
 
 		jsonBytes, err := json.Marshal(jsonDict)

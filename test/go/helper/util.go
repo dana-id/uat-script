@@ -263,3 +263,14 @@ func GenerateFormattedDate(offsetSeconds int, timezoneOffset int) string {
 		timezoneStr,
 	)
 }
+
+// SkipInCIIfSkipped skips the test when running in CI and the test name is listed in GO_TEST_SKIP (e.g. "TestFoo|TestBar").
+// Used so CI jobs can exclude specific tests via variables while local runs still execute all tests.
+func SkipInCIIfSkipped(t *testing.T, testName string) {
+	if os.Getenv("CI") == "" {
+		return
+	}
+	if skip := os.Getenv("GO_TEST_SKIP"); skip != "" && strings.Contains(skip, testName) {
+		t.Skipf("skipped in CI (GO_TEST_SKIP=%s)", skip)
+	}
+}

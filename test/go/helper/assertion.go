@@ -122,6 +122,9 @@ func AssertFailResponse(jsonPathFile, title, data string, errorInfo interface{},
 		bodyContent = []byte(tempError)
 
 	case *http.Response:
+		if v == nil || v.Body == nil {
+			return fmt.Errorf("cannot assert error response: HTTP response or body is nil (API may have failed before returning a response)")
+		}
 		// Read the response body
 		var readErr error
 		bodyContent, readErr = io.ReadAll(v.Body)

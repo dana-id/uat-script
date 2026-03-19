@@ -2,6 +2,7 @@ package helper
 
 import (
 	"bufio"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -79,6 +80,20 @@ func init() {
 	once.Do(func() {
 		// Load .env file if environment variables are not set
 		loadEnvFile()
+
+		if os.Getenv("DANA_SDK_DEBUG") != "" {
+			privateKey := os.Getenv("PRIVATE_KEY")
+			origin := os.Getenv("ORIGIN")
+			xPartnerID := os.Getenv("X_PARTNER_ID")
+			clientSecret := os.Getenv("CLIENT_SECRET")
+			// Avoid printing full secrets; just show presence/shape.
+			log.Printf("[dana-self-integration-test] DANA_SDK_DEBUG enabled: ORIGIN=%q X_PARTNER_ID_len=%d CLIENT_SECRET_len=%d PRIVATE_KEY_has_BEGIN=%v",
+				origin,
+				len(xPartnerID),
+				len(clientSecret),
+				strings.Contains(privateKey, "BEGIN"),
+			)
+		}
 
 		// Initialize the SDK client once for all tests
 		configuration := config.NewConfiguration()

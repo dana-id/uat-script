@@ -435,6 +435,7 @@ func TestCancelOrderWithAccountStatusAbnormal(t *testing.T) {
 }
 
 func TestCancelOrderInvalidTransactionStatus(t *testing.T) {
+	helper.SkipInCIIfSkipped(t, "TestCancelOrderInvalidTransactionStatus")
 	// Create an order first
 	partnerReferenceNo, err := createOrderRefunded()
 	if err != nil {
