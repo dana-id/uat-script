@@ -35,8 +35,23 @@ run_node_runner(){
     npm install --save dana-node dotenv
     npm install --save-dev jest ts-jest
 
-    # Install Playwright only when running Widget tests which require browser automation
-    if [ "$folderName" = "widget" ] || [ -z "$folderName" ]; then
+    # Install Playwright only when running tests that likely need browser automation.
+    needsPlaywrightInstall=false
+    case "$folderName" in
+        ""|"widget")
+            if [ -z "$caseName" ] && [ -z "$runPattern" ]; then
+                needsPlaywrightInstall=true
+            else
+                caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
+                runPatternLower=$(echo "$runPattern" | tr '[:upper:]' '[:lower:]')
+                if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|playwright"; then
+                    needsPlaywrightInstall=true
+                fi
+            fi
+            ;;
+    esac
+
+    if [ "$needsPlaywrightInstall" = true ]; then
         echo "Widget tests detected or all tests running. Installing Playwright..."
         npm install --save-dev @playwright/test playwright
         
@@ -59,6 +74,8 @@ run_node_runner(){
             # On non-Alpine environments, just install Playwright browsers normally
             npx playwright install chromium
         fi
+    else
+        echo "Skipping Playwright install for targeted non-automation run."
     fi
     
     # Install TypeScript
@@ -104,7 +121,19 @@ EOF
                 echo "\033[31mERROR: Folder not found: $folderName\033[0m" >&2
                 exit 1
             fi
-            runPatternOut=$(npx jest "$folderName" -t "$runPattern" 2>&1); jestCode=$?
+            if [ -n "$caseName" ]; then
+                echo "Scoping to test file pattern '$caseName' before applying test title pattern..."
+                testPathPattern="${folderName}/.*${caseName}"
+                set +e
+                runPatternOut=$(npx jest --testPathPattern="$testPathPattern" -t "$runPattern" 2>&1)
+                jestCode=$?
+                set -e
+            else
+                set +e
+                runPatternOut=$(npx jest "$folderName" -t "$runPattern" 2>&1)
+                jestCode=$?
+                set -e
+            fi
             echo "$runPatternOut"
             # Jest reports "Test Suites: 5 skipped, 0 of 5 total" when -t matches nothing
             if echo "$runPatternOut" | grep -q "0 of [0-9]* total"; then

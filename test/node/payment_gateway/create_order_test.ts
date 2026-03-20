@@ -251,7 +251,7 @@ describe('Payment Gateway - Create Order Tests', () => {
    */
   test('CreateOrderInvalidFieldFormat - should fail when field format is invalid (ex: amount without decimal)', async () => {
     const caseName = "CreateOrderInvalidFieldFormat";
-    const requestData: CreateOrderByRedirectRequest = getRequest<CreateOrderByRedirectRequest>(jsonPathFile, titleCase, caseName);
+    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
@@ -259,13 +259,21 @@ describe('Payment Gateway - Create Order Tests', () => {
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
 
     try {
-      // This API call should fail due to invalid field format
-      await dana.paymentGatewayApi.createOrder(requestData);
+      // Use manual API execution (customized client) so invalid payload reaches API.
+      const baseUrl: string = 'https://api.sandbox.dana.id';
+      const apiPath: string = '/payment-gateway/v1.0/debit/payment-host-to-host.htm';
+      await executeManualApiRequest(
+        caseName,
+        "POST",
+        baseUrl + apiPath,
+        apiPath,
+        requestData
+      );
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
       // Expecting a 400 Bad Request error for invalid format
-      if (e instanceof ResponseError && Number(e.status) === 400) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { partnerReferenceNo });
+      if (Number(e.status) === 400) {
+        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 400) {
         fail("Expected bad request failed but got status code " + e.status);
       } else {

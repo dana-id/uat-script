@@ -24,7 +24,7 @@ import * as dotenv from 'dotenv';
 
 // Import helper functions and assertion utilities for comprehensive testing
 import { fail } from 'assert';
-import { getRequest } from '../helper/util';
+import { getRequest, generateFormattedDate } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { WidgetPaymentRequest } from 'dana-node/widget/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
@@ -61,17 +61,6 @@ function generateReferenceNo(): string {
 }
 
 /**
- * Generates a validUpTo timestamp that is at most 15 minutes from now (API requirement)
- * 
- * @returns {string} A formatted timestamp string in ISO format with UTC+7 timezone
- */
-function validUpToMax15Minutes(): string {
-    const now = new Date();
-    const validUpTo = new Date(now.getTime() + 15 * 60 * 1000); // Add 15 minutes
-    return validUpTo.toISOString().replace('Z', '+07:00');
-}
-
-/**
  * Widget Payment Test Suite
  * 
  * This comprehensive test suite validates all aspects of the DANA Widget Payment API,
@@ -98,7 +87,7 @@ describe('Payment Tests', () => {
 
         // Configure request with unique reference number and validUpTo timestamp
         requestData.partnerReferenceNo = generateReferenceNo();
-        requestData.validUpTo = validUpToMax15Minutes();
+        requestData.validUpTo = generateFormattedDate(15 * 60, 7);
 
         try {
             // Execute widget payment API call
