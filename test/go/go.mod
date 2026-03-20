@@ -6,7 +6,7 @@ toolchain go1.22.4
 
 // Direct dependencies (v2 module path for proxy.golang.org)
 require (
-	github.com/dana-id/dana-go/v2 v2.1.1
+	github.com/dana-id/dana-go/v2 v2.1.2
 	github.com/google/uuid v1.6.0
 )
 

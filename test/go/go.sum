@@ -1,5 +1,5 @@
-github.com/dana-id/dana-go/v2 v2.1.1 h1:qRn5aMwuma7sB/DEO2IfsCmVKQASDPC9zWjwHoyo9g0=
-github.com/dana-id/dana-go/v2 v2.1.1/go.mod h1:Cua7+RlFiU4liW5tZN5VX/7CjmhqaVFMJDJm9ShHpqk=
+github.com/dana-id/dana-go/v2 v2.1.2 h1:Y9QBbKBL0FLGcFfAqUX79IG9MTbzEBtalY3mlQ9qjYk=
+github.com/dana-id/dana-go/v2 v2.1.2/go.mod h1:EuoW4mit2AmgANzCL8no9ajZ/zn+XiECEBemAREJjQY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
