@@ -316,18 +316,23 @@ class CreateOrderTest extends TestCase
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
                 $requestData['partnerReferenceNo'] = $partnerReferenceNo;
                 $requestData['validUpTo'] = Util::generateFormattedDate(25600, 7);
-                
-                // Create a CreateOrderByApiRequest object from the JSON request data
-                $createOrderRequestObj = ObjectSerializer::deserialize(
+
+                // Use customized HTTP client call (like Go test) so invalid payload reaches API.
+                // SDK-level validation may reject invalid format before request is sent.
+                $headers = Util::getHeadersWithSignature(
+                    'POST',
+                    '/payment-gateway/v1.0/debit/payment-host-to-host.htm',
                     $requestData,
-                    'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
+                    true
                 );
 
-                $createOrderRequestObj->setPartnerReferenceNo($partnerReferenceNo);
-                
                 try {
-                    // Make the API call
-                    self::$apiInstance->createOrder($createOrderRequestObj);
+                    Util::executeApiRequest(
+                        'POST',
+                        'https://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm',
+                        $headers,
+                        $requestData
+                    );
                     
                     $this->fail('Expected ApiException for invalid field format but the API call succeeded');
                 } catch (ApiException $e) {
