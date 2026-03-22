@@ -6,6 +6,28 @@ import pytest
 
 from helper.assertion import assert_fail_response
 
+
+def snap_request_body_string(request_obj) -> str:
+    """
+    Canonical JSON for SNAP body hash and wire format, aligned with Go test helper:
+    json.Marshal + json.Compact — sorted object keys, no spaces after ':' or ','.
+
+    Default json.dumps() uses separators (', ', ': ') and insertion order, so the SHA256
+    in X-SIGNATURE would not match the bytes actually sent by rest.py (also json.dumps).
+    Using one canonical form for both signing and sending keeps them consistent and matches Go.
+    """
+    if request_obj is None:
+        return ""
+    if isinstance(request_obj, bytes):
+        return request_obj.decode("utf-8")
+    if isinstance(request_obj, str):
+        return request_obj
+    data = request_obj
+    if hasattr(request_obj, "to_dict"):
+        data = request_obj.to_dict()
+    return json.dumps(data, separators=(",", ":"), sort_keys=True, ensure_ascii=False)
+
+
 def execute_api_request_directly(api_client, method, endpoint, request_obj, headers):
     """
     Executes a direct API call with the provided headers and request object.
@@ -18,14 +40,14 @@ def execute_api_request_directly(api_client, method, endpoint, request_obj, head
     :param headers: The exact headers to use
     :return: The API response
     """
-    # Convert request object to dictionary if needed
+    # Same byte sequence as signed in get_headers_with_signature (see snap_request_body_string).
     request_data = request_obj
-    if hasattr(request_obj, "to_dict"):
-        request_data = request_obj.to_dict()
-    
+    if not isinstance(request_obj, (str, bytes)):
+        request_data = snap_request_body_string(request_obj)
+
     # HTTP requires header values to be strings; env-based headers (e.g. CLIENT_SECRET) may be None
     headers = {k: (v if v is not None else "") for k, v in headers.items()}
-    
+
     # Execute the API call with exactly the provided headers
     return api_client.call_api(method, endpoint, headers, request_data)
 
@@ -67,12 +89,13 @@ def get_headers_with_signature(method=None, resource_path=None, request_obj=None
     :return: Dict of headers including the signature
     """
     from dana.utils.snap_header import SnapHeader
-    import json
-    import os
-    
+
     # Get the standard headers first
     headers = get_standard_headers(with_timestamp=False)  # We'll handle timestamp specially
-    
+
+    # Timestamp used inside get_snap_generated_auth for X-SIGNATURE; outgoing X-TIMESTAMP must match.
+    timestamp_signed = None
+
     # Add the signature
     if invalid_signature:
         headers["X-SIGNATURE"] = "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5"  # Invalid signature
@@ -83,20 +106,23 @@ def get_headers_with_signature(method=None, resource_path=None, request_obj=None
         if method is None or resource_path is None or request_obj is None:
             raise ValueError("Method, resource_path, and request_obj are required unless invalid_signature=True")
             
-        # Convert request object to dict if needed
+        # Convert request object to dict if needed (for snap_request_body_string)
         request_dict = request_obj
         if hasattr(request_obj, "to_dict"):
             request_dict = request_obj.to_dict()
-            
+
+        body_for_sign = snap_request_body_string(request_dict)
+
         # Generate snap headers
         snap_generated_headers = SnapHeader.get_snap_generated_auth(
             method=method,
             resource_path=resource_path,
-            body=json.dumps(request_dict),
+            body=body_for_sign,
             private_key=os.getenv("PRIVATE_KEY")
         )
         
         headers["X-SIGNATURE"] = snap_generated_headers["X-SIGNATURE"]["value"]
+        timestamp_signed = snap_generated_headers["X-TIMESTAMP"]["value"]
     
     # Add timestamp if needed
     if with_timestamp:
@@ -104,10 +130,12 @@ def get_headers_with_signature(method=None, resource_path=None, request_obj=None
             headers["X-TIMESTAMP"] = datetime.now().astimezone(
                 timezone(timedelta(hours=7))
             ).strftime('%Y-%m-%d %H:%M:%S+07:00')  # Invalid format (space instead of T)
+        elif timestamp_signed is not None:
+            headers["X-TIMESTAMP"] = timestamp_signed
         else:
             headers["X-TIMESTAMP"] = datetime.now().astimezone(
                 timezone(timedelta(hours=7))
-            ).strftime('%Y-%m-%dT%H:%M:%S+07:00')  # Valid format
+            ).strftime('%Y-%m-%dT%H:%M:%S+07:00')  # Valid format (e.g. invalid_signature test paths)
     
     return headers
 

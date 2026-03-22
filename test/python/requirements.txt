@@ -1,4 +1,4 @@
-dana-python>=1.0.0
+dana-python>=2.1.0
 pytest>=7.2.1
 pytest-cov>=2.8.1
 playwright>=1.54.0

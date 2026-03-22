@@ -184,28 +184,37 @@ def test_create_order_network_pay_pg_other_va_bank():
 
 @with_delay()
 def test_create_order_invalid_field_format():
-    """Should fail when field format is invalid (ex: amount without decimal)"""
+    """Should fail when field format is invalid (ex: amount without decimal).
+    Uses direct HTTP with the raw JSON dict so invalid payload is sent; SDK validation would
+    normalize before sending (same as Go TestCreateOrderInvalidFieldFormat + ExecuteAndAssertErrorResponse)."""
     case_name = "CreateOrderInvalidFieldFormat"
-    
-    # Get the request data from the JSON file
+
     json_dict = get_request(json_path_file, title_case, case_name)
-    
-    # Set a unique partner reference number
+
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
-    # Convert the request data to a CreateOrderRequest object
-    create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
-    
-    # Make the API call and expect an exception
-    try:
-        api_instance.create_order(create_order_request_obj)
-        pytest.fail("Expected BadRequestException but the API call succeeded")
 
-    except BadRequestException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
-    except:
-        pytest.fail("Expected BadRequestException but the API call give another exception")
+    endpoint = "https://api.sandbox.dana.id/payment-gateway/v1.0/debit/payment-host-to-host.htm"
+    resource_path = "/payment-gateway/v1.0/debit/payment-host-to-host.htm"
+
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path=resource_path,
+        request_obj=json_dict,
+    )
+
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        endpoint,
+        json_dict,
+        headers,
+        400,
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": partner_reference_no},
+    )
 
 @with_delay()
 def test_create_order_inconsistent_request():

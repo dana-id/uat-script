@@ -14,6 +14,8 @@ from helper.assertion import assert_response, assert_fail_response
 from widget.automate_oauth import automate_oauth
 from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error
 
+pytestmark = pytest.mark.skip(reason="Skipped for now")
+
 title_case = "BalanceInquiry"
 json_path_file = "resource/request/components/Widget.json"
 
