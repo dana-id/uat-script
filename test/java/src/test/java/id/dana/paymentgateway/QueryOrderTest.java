@@ -7,6 +7,7 @@ import id.dana.invoker.model.DanaConfig;
 import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
+import id.dana.invoker.model.exception.DanaException;
 import id.dana.paymentgateway.v1.api.PaymentGatewayApi;
 import id.dana.paymentgateway.v1.model.*;
 import id.dana.util.ConfigUtil;
@@ -17,6 +18,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -25,6 +29,8 @@ import org.slf4j.LoggerFactory;
 
 class QueryOrderTest {
     private static final Logger log = LoggerFactory.getLogger(QueryOrderTest.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String DANA_API_ERROR_PREFIX = "API Error: ";
     private static final String jsonPathFile = QueryOrderTest.class.getResource("/request/components/PaymentGateway.json")
             .getPath();
     private static final String titleCase = "QueryPayment";
@@ -192,8 +198,18 @@ class QueryOrderTest {
 
         requestData.setMerchantId(merchantId);
 
-        QueryPaymentResponse response = api.queryPayment(requestData);
-        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        try {
+            QueryPaymentResponse response = api.queryPayment(requestData);
+            TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+        } catch (DanaException e) {
+            // Non-2xx body may not deserialize to QueryPaymentResponse; SDK wraps raw JSON in DanaException
+            String msg = e.getMessage();
+            if (msg == null || !msg.startsWith(DANA_API_ERROR_PREFIX)) {
+                throw e;
+            }
+            JsonNode errorBody = objectMapper.readTree(msg.substring(DANA_API_ERROR_PREFIX.length()));
+            TestUtil.assertResponse(jsonPathFile, titleCase, caseName, errorBody, null);
+        }
     }
 
     @Test

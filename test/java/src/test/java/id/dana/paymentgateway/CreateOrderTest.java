@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import id.dana.interceptor.CustomHeaderInterceptor;
+import id.dana.interceptor.ReplaceRequestBodyInterceptor;
 import id.dana.invoker.Dana;
 import id.dana.invoker.auth.DanaAuth;
 import id.dana.invoker.model.DanaConfig;
@@ -29,10 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -203,21 +207,36 @@ public class CreateOrderTest {
   }
 
   @Test
-  void testCreateOrderInvalidFieldFormat() {
+  void testCreateOrderInvalidFieldFormat() throws Exception {
     String caseName = "CreateOrderInvalidFieldFormat";
-    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference and merchant ID
+    JsonNode bodyNode = PaymentPGUtil.getCreateOrderRawRequest(jsonPathFile, titleCase, caseName);
     String partnerReferenceNo = UUID.randomUUID().toString();
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
-    requestData.setMerchantId(merchantId);
-    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffsetSeconds(600));
+    ((ObjectNode) bodyNode).put("partnerReferenceNo", partnerReferenceNo);
+    ((ObjectNode) bodyNode).put("merchantId", merchantId);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
+    ((ObjectNode) bodyNode).remove("@type");
+    ((ObjectNode) bodyNode).remove("subMerchantId");
+
+    String invalidPayload = PaymentPGUtil.compactJsonForSnap(bodyNode);
+
+    // Same client pattern as testCreateOrderInvalidMandatoryField: DanaAuth only (no CustomHeaderInterceptor).
+    // ReplaceRequestBodyInterceptor swaps only the wire body; SNAP signs that invalid JSON (same as Python body + signature).
+    CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, "CreateOrderApi");
+    requestData.setPartnerReferenceNo(partnerReferenceNo);
+    requestData.setMerchantId(merchantId);
+    requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffsetSeconds(600));
+
+    OkHttpClient client = new OkHttpClient.Builder()
+        .addInterceptor(new ReplaceRequestBodyInterceptor(invalidPayload, MediaType.parse("application/json; charset=utf-8")))
+        .addInterceptor(new DanaAuth())
+        .build();
+    PaymentGatewayApi apiWithReplacedBody = new PaymentGatewayApi(client);
+
     try {
-      CreateOrderResponse response = api.createOrder(requestData);
+      CreateOrderResponse response = apiWithReplacedBody.createOrder(requestData);
       String status = response.getResponseCode().substring(0, 3).trim();
 
       if (TestUtil.isSuccessful(status)) {

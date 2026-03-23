@@ -596,7 +596,7 @@
                 "payOptionDetails": [
                     {
                         "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BNI",
+                        "payOption": "VIRTUAL_ACCOUNT_BRI",
                         "transAmount": {
                             "value": "15000.00",
                             "currency": "IDR"
@@ -646,7 +646,7 @@
                 "payOptionDetails": [
                     {
                         "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BNI",
+                        "payOption": "VIRTUAL_ACCOUNT_BRI",
                         "transAmount": {
                             "value": "15000.00",
                             "currency": "IDR"

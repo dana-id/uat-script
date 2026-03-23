@@ -284,6 +284,10 @@ run_specific_test() {
     print_info "Executing: $test_arg"
     echo
     
+    if ! mvn -q -DskipTests clean test-compile; then
+        print_warning "Fresh test compilation failed"
+    fi
+
     # Run Maven test with proper error handling
     if mvn test -Dtest="$test_arg" -q; then
         print_success "Test execution completed successfully!"

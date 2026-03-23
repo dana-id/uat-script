@@ -1,7 +1,9 @@
 package id.dana.paymentgateway;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.microsoft.playwright.*;
 import id.dana.invoker.Dana;
@@ -212,5 +214,26 @@ public class PaymentPGUtil {
         e.setTerminalType(EnvInfo.TerminalTypeEnum.SYSTEM);
         e.setOrderTerminalType(EnvInfo.OrderTerminalTypeEnum.WEB);
         return e;
+    }
+
+    /**
+     * Raw JSON request for cases that must not be deserialized to {@link CreateOrderByApiRequest}
+     * (SDK validation would reject invalid payloads before HTTP, e.g. CreateOrderInvalidFieldFormat).
+     */
+    public static JsonNode getCreateOrderRawRequest(String jsonPathFile, String title, String caseName)
+            throws IOException {
+        JsonNode requestNode = objectMapper.readTree(new File(jsonPathFile)).path(title).path(caseName).path("request");
+        // Same as Python get_request for this case: template replace only (no validUpTo refresh).
+        return TestUtil.replaceTemplateValues(requestNode);
+    }
+
+    /**
+     * Canonical JSON string for SNAP body hash (sorted keys at each object), aligned with Go/Python direct calls.
+     */
+    public static String compactJsonForSnap(JsonNode node) throws JsonProcessingException {
+        ObjectMapper sorted = new ObjectMapper()
+                .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
+        Object tree = objectMapper.treeToValue(node, Object.class);
+        return sorted.writeValueAsString(tree);
     }
 }
