@@ -59,8 +59,61 @@ class WebAutomation
      *     '/tmp/payment_success.txt'
      * );
      */
+    public static function topUpUserSaldo(): void
+    {
+        $partnerReferenceNo = sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+
+        $payload = json_encode([
+            'urlEndpoint' => '/v1.0/emoney/topup.htm',
+            'requestBody' => [
+                'partnerReferenceNo' => $partnerReferenceNo,
+                'customerNumber'     => '0' . self::DEFAULT_PHONE_NUMBER,
+                'amount'             => ['value' => '1000000.00', 'currency' => 'IDR'],
+                'feeAmount'          => ['value' => '0.00',       'currency' => 'IDR'],
+                'additionalInfo'     => ['fundType' => 'AGENT_TOPUP_FOR_USER_SETTLE'],
+            ],
+        ]);
+
+        $ch = curl_init('https://dashboard-sandbox.dana.id/merchant-portal-app/api/sandbox-tools/execute');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => [
+                'accept: application/json',
+                'accept-language: en,id-ID;q=0.9,id;q=0.8,en-US;q=0.7',
+                'content-type: application/json',
+                'origin: https://dashboard.dana.id',
+                'priority: u=1, i',
+                'referer: https://dashboard.dana.id/',
+                'sec-ch-ua: "Chromium";v="146", "Not-A.Brand";v="24", "Google Chrome";v="146"',
+                'sec-ch-ua-mobile: ?0',
+                'sec-ch-ua-platform: "macOS"',
+                'sec-fetch-dest: empty',
+                'sec-fetch-mode: cors',
+                'sec-fetch-site: same-site',
+                'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36',
+            ],
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode  = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        echo "Top-up saldo response [{$httpCode}]: {$response}" . PHP_EOL;
+    }
+
     public static function automatePayment($paymentUrl, $headless = true, $outputFile = null)
     {
+        self::topUpUserSaldo();
+
         if (empty($paymentUrl)) {
             echo "Error: Payment URL is empty" . PHP_EOL;
             return false;

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 
 	"uat-script/helper"
@@ -74,6 +75,17 @@ func TestApplyTokenSuccess(t *testing.T) {
 			t.Fatalf("Failed to convert response to JSON: %v", err)
 		}
 
+		// Print actual response for debugging
+		fmt.Printf("=== ACTUAL RESPONSE ===\n%s\n", string(responseJSON))
+
+		// Get expected response for comparison
+		expectedData, err := helper.GetResponse(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
+		if err != nil {
+			t.Fatalf("Failed to get expected response: %v", err)
+		}
+		expectedJSON, _ := json.Marshal(expectedData)
+		fmt.Printf("=== EXPECTED RESPONSE ===\n%s\n", string(expectedJSON))
+
 		err = helper.AssertResponse(
 			helper.TestConfig.JsonWidgetPath,
 			widgetApplyTokenCase,
@@ -89,7 +101,15 @@ func TestApplyTokenSuccess(t *testing.T) {
 }
 func TestApplyTokenFailInvalidSignature(t *testing.T) {
 	caseName := "ApplyTokenFailInvalidSignature"
-	authCode := "VALID_AUTH_CODE"
+	redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
+		helper.TestConfig.PhoneNumber,
+		helper.TestConfig.PIN,
+	)
+
+	authCode, _ := widget_helper.GetAuthCode(
+		helper.TestConfig.PhoneNumber,
+		helper.TestConfig.PIN,
+		redirectUrlAuthCode)
 
 	// Get the request data from JSON
 	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
@@ -205,6 +225,25 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 		// Make the API call using the Widget SDK
 		_, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(*applyTokenRequest).Execute()
 		if err != nil {
+			fmt.Printf("=== API ERROR OCCURRED ===\n")
+			fmt.Printf("Error: %v\n", err)
+
+			if httpResponse != nil && httpResponse.Body != nil {
+				bodyBytes, readErr := io.ReadAll(httpResponse.Body)
+				if readErr == nil {
+					fmt.Printf("=== ACTUAL ERROR RESPONSE ===\n%s\n", string(bodyBytes))
+
+					// Get expected error response for comparison
+					expectedData, getErr := helper.GetResponse(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
+					if getErr == nil {
+						expectedJSON, _ := json.Marshal(expectedData)
+						fmt.Printf("=== EXPECTED ERROR RESPONSE ===\n%s\n", string(expectedJSON))
+					}
+				}
+				// Close and reset body for further processing
+				httpResponse.Body.Close()
+			}
+
 			// Assert the API error response
 			err = helper.AssertFailResponse(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName, httpResponse, map[string]interface{}{
 				"partnerReferenceNo": "4035703",
