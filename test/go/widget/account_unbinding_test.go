@@ -18,6 +18,8 @@ const (
 // AccountUnbinding
 func TestAccountUnbindSuccess(t *testing.T) {
 	caseName := "AccountUnbindSuccess"
+
+	// Get auth code via OAuth flow
 	redirectUrlAuthCode, _ := widget_helper.GetRedirectOauthUrl(
 		helper.TestConfig.PhoneNumber,
 		helper.TestConfig.PIN,
@@ -26,9 +28,17 @@ func TestAccountUnbindSuccess(t *testing.T) {
 		helper.TestConfig.PhoneNumber,
 		helper.TestConfig.PIN,
 		redirectUrlAuthCode)
-	// Get access token
-	accessToken := widget_helper.GetAccessToken(authCode)
-	fmt.Printf("Access Token: %s\n", accessToken)
+
+	// Exchange auth code for a real access token via ApplyToken API (matching PHP setUpBeforeClass)
+	ctx := context.Background()
+	applyTokenReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
+	applyTokenReqValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(applyTokenReq)
+	applyTokenResp, _, err := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(applyTokenReqValue).Execute()
+	if err != nil {
+		t.Fatalf("Failed to obtain access token: %v", err)
+	}
+	accessToken := applyTokenResp.GetAccessToken()
+	fmt.Printf("Obtained access token: %s\n", accessToken)
 
 	// Get the request data from JSON
 	jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetAccountUnbindingCase, caseName)
@@ -38,8 +48,9 @@ func TestAccountUnbindSuccess(t *testing.T) {
 
 	jsonDict["additionalInfo"] = map[string]interface{}{
 		"accessToken": accessToken,
-		"deviceId":    "1234567890",
+		"deviceId":    helper.TestConfig.DeviceID,
 	}
+	jsonDict["merchantId"] = helper.TestConfig.MerchantID
 
 	jsonBytes, err := json.Marshal(jsonDict)
 	if err != nil {
@@ -52,9 +63,6 @@ func TestAccountUnbindSuccess(t *testing.T) {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	// Execute the SDK API call with success expectation
-	ctx := context.Background()
-
 	// Make the API call using the Widget SDK
 	apiResponse, httpResponse, err := helper.ApiClient.WidgetAPI.AccountUnbinding(ctx).AccountUnbindingRequest(accountUnbindingRequest).Execute()
 	if err != nil {
@@ -62,7 +70,6 @@ func TestAccountUnbindSuccess(t *testing.T) {
 	}
 	defer httpResponse.Body.Close()
 
-	// Convert the response to JSON for assertion
 	responseJSON, err := apiResponse.MarshalJSON()
 	if err != nil {
 		t.Fatalf("Failed to convert response to JSON: %v", err)
