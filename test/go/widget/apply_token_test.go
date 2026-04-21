@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"testing"
 
 	"uat-script/helper"
@@ -168,8 +167,6 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 	helper.RetryTest(t, 3, 1, func() error {
 		caseName := "ApplyTokenFailAuthcodeUsed"
 
-		// Get a fresh authCode for this test (don't reuse the global one as it might be consumed)
-		var authCode string
 		redirectUrlAuthCode, err := widget_helper.GetRedirectOauthUrl(
 			helper.TestConfig.PhoneNumber,
 			helper.TestConfig.PIN,
@@ -178,7 +175,7 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 			t.Fatalf("Failed to get redirect OAuth URL: %v", err)
 		}
 
-		authCode, err = widget_helper.GetAuthCode(
+		authCode, err := widget_helper.GetAuthCode(
 			helper.TestConfig.PhoneNumber,
 			helper.TestConfig.PIN,
 			redirectUrlAuthCode)
@@ -186,74 +183,25 @@ func TestApplyTokenFailAuthcodeUsed(t *testing.T) {
 			t.Fatalf("Failed to get auth code: %v", err)
 		}
 
-		// Use the authCode to get access token (this should consume the authCode)
-		widget_helper.GetAccessToken(authCode)
+		ctx := context.Background()
 
-		// Get the request data from JSON
-		jsonDict, err := helper.GetRequest(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-		jsonDict["authCode"] = authCode
+		// Consume the authCode by actually calling ApplyToken once
+		authCodeReqConsume := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
+		applyTokenRequestValueConsume := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReqConsume)
+		helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(applyTokenRequestValueConsume).Execute()
 
-		// Marshal to JSON and unmarshal to widget SDK struct for type safety
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		applyTokenAuthorizationCodeRequest := &widget.ApplyTokenAuthorizationCodeRequest{}
-		err = json.Unmarshal(jsonBytes, applyTokenAuthorizationCodeRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Create Apply Token request with Authorization Code
+		// Now try the same authCode again — should fail with "Auth Code Used"
 		authCodeReq := widget.NewApplyTokenAuthorizationCodeRequest("AUTHORIZATION_CODE", authCode)
 		applyTokenRequestValue := widget.ApplyTokenAuthorizationCodeRequestAsApplyTokenRequest(authCodeReq)
 		applyTokenRequest := &applyTokenRequestValue
 
-		fmt.Printf("ApplyTokenRequest: %+v\n", applyTokenRequest)
+		_, httpResponse, _ := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(*applyTokenRequest).Execute()
 
+		err = helper.AssertFailResponse(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName, httpResponse, map[string]interface{}{
+			"partnerReferenceNo": "4035703",
+		})
 		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Execute the SDK API call with success expectation
-		ctx := context.Background()
-
-		// Make the API call using the Widget SDK
-		_, httpResponse, err := helper.ApiClient.WidgetAPI.ApplyToken(ctx).ApplyTokenRequest(*applyTokenRequest).Execute()
-		if err != nil {
-			fmt.Printf("=== API ERROR OCCURRED ===\n")
-			fmt.Printf("Error: %v\n", err)
-
-			if httpResponse != nil && httpResponse.Body != nil {
-				bodyBytes, readErr := io.ReadAll(httpResponse.Body)
-				if readErr == nil {
-					fmt.Printf("=== ACTUAL ERROR RESPONSE ===\n%s\n", string(bodyBytes))
-
-					// Get expected error response for comparison
-					expectedData, getErr := helper.GetResponse(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName)
-					if getErr == nil {
-						expectedJSON, _ := json.Marshal(expectedData)
-						fmt.Printf("=== EXPECTED ERROR RESPONSE ===\n%s\n", string(expectedJSON))
-					}
-				}
-				// Close and reset body for further processing
-				httpResponse.Body.Close()
-			}
-
-			// Assert the API error response
-			err = helper.AssertFailResponse(helper.TestConfig.JsonWidgetPath, widgetApplyTokenCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": "4035703",
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
+			t.Fatal(err)
 		}
 		return nil
 	})

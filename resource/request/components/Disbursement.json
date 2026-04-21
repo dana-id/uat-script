@@ -616,7 +616,7 @@
         "customerNumber": "62811742234",
         "beneficiaryAccountNumber": "2460888509",
         "amount": {
-          "value": "1000000000000.00",
+          "value": "50000000000.00",
           "currency": "IDR"
         },
         "additionalInfo": {

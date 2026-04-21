@@ -105,14 +105,20 @@ func GetRedirectOauthUrl(phoneNumber, pin string) (string, error) {
 		SkipRegisterConsult: &[]bool{true}[0], // Pointer to true
 	}
 
-	// Build OAuth URL configuration
+	// Default to https://google.com when REDIRECT_URL_OAUTH is unset.
+	// Without a redirect URL DANA has nowhere to send the auth code and loops back to phone input.
+	redirectUrl := os.Getenv("REDIRECT_URL_OAUTH")
+	if redirectUrl == "" {
+		redirectUrl = "https://google.com"
+	}
+
 	oauth2UrlData := &widget.Oauth2UrlData{
 		ExternalId:    externalId,
 		MerchantId:    os.Getenv("MERCHANT_ID"),
 		SubMerchantId: nil,
 		SeamlessData:  seamlessData,
 		Scopes:        []string{scopes},
-		RedirectUrl:   os.Getenv("REDIRECT_URL_OAUTH"),
+		RedirectUrl:   redirectUrl,
 	}
 
 	redirectOauthUrl, err := widget.GenerateOauthUrl(oauth2UrlData)
