@@ -277,17 +277,15 @@ async function automateOAuth(oauthUrl, phoneNumber, pinCode, options = {}) {
             if (resolved) return;
             if (frame === page.mainFrame()) {
               const url = frame.url();
-              if (url.includes('google.com')) {
-                try {
-                  const urlObj = new URL(url);
-                  const params = urlObj.searchParams;
-                  if (params.has('authCode')) {
-                    resolved = true;
-                    cleanup();
-                    resolve(params.get('authCode'));
-                  }
-                } catch (e) { /* ignore */ }
-              }
+              try {
+                const urlObj = new URL(url);
+                const params = urlObj.searchParams;
+                if (params.has('authCode')) {
+                  resolved = true;
+                  cleanup();
+                  resolve(params.get('authCode'));
+                }
+              } catch (e) { /* ignore */ }
             }
           };
           if (page) {
@@ -298,7 +296,7 @@ async function automateOAuth(oauthUrl, phoneNumber, pinCode, options = {}) {
           timeoutId = setTimeout(() => {
             cleanup();
             resolve(null);
-          }, 4000);
+          }, 25000);
           if (timeoutId.unref) {
             timeoutId.unref();
           }
