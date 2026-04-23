@@ -95,14 +95,12 @@ func GetRedirectOauthUrl(phoneNumber, pin string) (string, error) {
 	externalId := widget.GenerateExternalId("")
 	scopes := widget.GenerateScopes()
 
-	// Configure seamless data for OAuth flow
+	// Only include MobileNumber to pre-fill the phone field.
+	// Extra fields like SkipRegisterConsult/VerifiedTime cause DANA to treat
+	// the flow as an internal app login and redirect to /app/ instead of
+	// back to the merchant redirectUrl with an authCode.
 	seamlessData := &widget.Oauth2UrlDataSeamlessData{
-		BizScenario:         StringPtr("PAYMENT"),
-		MobileNumber:        StringPtr(phoneNumber),
-		VerifiedTime:        StringPtr(generateTime()),
-		ExternalUid:         StringPtr(externalId),
-		DeviceId:            StringPtr(defaultDeviceId),
-		SkipRegisterConsult: &[]bool{true}[0], // Pointer to true
+		MobileNumber: StringPtr(phoneNumber),
 	}
 
 	// Default to https://google.com when REDIRECT_URL_OAUTH is unset.
