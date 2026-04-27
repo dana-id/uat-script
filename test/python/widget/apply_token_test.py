@@ -217,7 +217,7 @@ def test_apply_token_fail_invalid_signature(test_apply_token_auth_code):
     )
     
     headers["X-CLIENT-KEY"] = os.getenv("X_PARTNER_ID")
-    headers["X-SIGNATURE"] = "xyzu"
+    headers["X-SIGNATURE"] = "85be817c55b2c1k35157c7e89f52bknijnjinfs499bfqfds0c25ad6eeebe04a986e8c862561b19a5d6eeebe04a986e8c862561b19a585be817c55b2c135157c7e89f52499bf0c25ad6eef52499bf0c25ad6eeeb2561b19a585be817c7c55b2c13515c7e89f52499bf0c25aeeebe04a986e8c862561b19a585be817c55b2c135157c7e89f5ebe04a9acemokmdakmdamdaodmamaeeebe04a986e8c862561b19a585be817c55b2c135157c7e8"
 
     # Manually call the API with the request object and headers
     execute_and_assert_api_error(
