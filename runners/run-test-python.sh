@@ -3,100 +3,208 @@
 # Fail on error
 set -e
 
-run_python_runner(){
-    folderName=$1
-    caseName=$2
-    runPattern=$3   # optional: pytest -k pattern for specific test function(s)
-    # Check for python3 or python command
-    if command -v python3 &> /dev/null; then
-        PYTHON_CMD="python3"
-    elif command -v python &> /dev/null; then
-        PYTHON_CMD="python"
+resolve_python_cmd() {
+    if command -v python3 > /dev/null 2>&1; then
+        echo "python3"
+    elif command -v python > /dev/null 2>&1; then
+        echo "python"
     else
-        echo "Python not available in this system. Please install Python 3."
+        echo ""
+    fi
+}
+
+resolve_mandatory_only() {
+    if [ -n "${PYTHON_MANDATORY_ONLY:-}" ]; then
+        echo "$PYTHON_MANDATORY_ONLY"
+    elif [ -z "${CI:-}" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+pattern_for_pytest_k() {
+    echo "$1" | sed 's/|/ or /g'
+}
+
+get_mandatory_pattern_for_folder() {
+    folder_name="$1"
+    case "$folder_name" in
+        "payment_gateway")
+            echo "test_create_order_redirect_scenario|test_create_order_invalid_field_format|test_create_order_inconsistent_request|test_create_order_invalid_mandatory_field|test_create_order_unauthorized|test_query_payment_created_order|test_query_payment_paid_order|test_query_payment_canceled_order|test_query_payment_transaction_not_found|test_query_payment_invalid_mandatory_field|test_query_payment_general_error|test_query_payment_unauthorized"
+            ;;
+        "widget")
+            echo "test_payment_success|test_payment_fail_missing_or_invalid_mandatory_field|test_payment_fail_general_error|test_payment_fail_not_permitted|test_payment_fail_merchant_not_exist_or_status_abnormal|test_payment_fail_inconsistent_request|test_payment_fail_internal_server_error|test_payment_fail_invalid_format|test_payment_fail_invalid_signature|test_payment_fail_exceed_amount_limit"
+            ;;
+        "disbursement")
+            echo "test_topup_customer_valid|test_topup_customer_insufficient_fund|test_topup_customer_frozen_account|test_topup_customer_missing_mandatory_field|test_topup_customer_inconsistent_request|test_topup_customer_internal_server_error|test_topup_customer_internal_general_error|test_disbursement_to_bank_valid|test_disbursement_to_bank_valid_account_in_progress|test_disbursement_to_bank_inconsistent_request|test_disbursement_to_bank_insufficient_fund|test_disbursement_to_bank_inactive_account|test_disbursement_to_bank_invalid_field_format|test_disbursement_to_bank_missing_mandatory_field"
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
+}
+
+run_pytest_checked() {
+    k_pattern="$1"
+    shift
+    set +e
+    if [ -n "$k_pattern" ]; then
+        $PYTHON_CMD -m pytest -v -s "$@" -k "$k_pattern"
+    else
+        $PYTHON_CMD -m pytest -v -s "$@"
+    fi
+    exit_code=$?
+    set -e
+    if [ "$exit_code" -eq 5 ]; then
+        echo "\033[31mERROR: No tests were collected\033[0m" >&2
         exit 1
     fi
-    
+    return "$exit_code"
+}
+
+setup_python_env() {
     $PYTHON_CMD --version
     $PYTHON_CMD -m venv venv
     . venv/bin/activate
 
-    # Install packages from requirements.txt
     $PYTHON_CMD -m pip install --upgrade pip
-    
     $PYTHON_CMD -m pip install --upgrade -r test/python/requirements.txt
-    
-    # Install Playwright browsers
+    # Ensure the required SDK version is used.
+    $PYTHON_CMD -m pip install --upgrade dana-python==2.1.5
+
     $PYTHON_CMD -m playwright install --with-deps chromium
-    
     export PYTHONPATH=$PYTHONPATH:$(pwd)/test/python:$(pwd)/runner/python
-    
-    # Support running by folder, scenario name, and/or specific test run pattern
-    # Multiple tests: use | (e.g. test_one|test_two) → converted to pytest "or" expression
-    if [ -n "$runPattern" ]; then
-        runPatternForPytest=$(echo "$runPattern" | sed 's/|/ or /g')
-        # Run specific test function(s) by -k pattern (e.g. test_create_order_redirect or TestCreateOrder)
-        if [ -n "$folderName" ]; then
-            test_path="test/python/$folderName"
-            if [ ! -d "$test_path" ]; then
-                echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
-                exit 1
-            fi
-            set +e
-            $PYTHON_CMD -m pytest -v -s "$test_path" -k "$runPatternForPytest"
-            exit_code=$?
-            set -e
-        else
-            set +e
-            $PYTHON_CMD -m pytest -v -s -k "$runPatternForPytest"
-            exit_code=$?
-            set -e
-        fi
-        if [ $exit_code -eq 5 ]; then
-            echo "\033[31mERROR: No tests were collected for run pattern: $runPattern\033[0m" >&2
-            exit 1
-        fi
-        exit $exit_code
+}
+
+run_single_folder() {
+    folder_name="$1"
+    case_name="$2"
+    run_pattern="$3"
+    mandatory_only="$4"
+
+    test_path="test/python/$folder_name"
+    if [ ! -d "$test_path" ]; then
+        echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
+        exit 1
     fi
 
-    if [ -n "$folderName" ] && [ -n "$caseName" ]; then
-        # Run specific scenario in a specific folder
-        test_path="test/python/$folderName"
-        if [ ! -d "$test_path" ]; then
-            echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
-            exit 1
-        fi
-        set +e
-        $PYTHON_CMD -m pytest -v -s "$test_path" -k "$caseName"
-        exit_code=$?
-        set -e
-        if [ $exit_code -eq 5 ]; then
-            echo "\033[31mERROR: No tests were collected for case name: $caseName in folder: $folderName\033[0m" >&2
-            exit 1
-        fi
-        exit $exit_code
-    elif [ -n "$folderName" ]; then
-        # Run all tests in the specified folder
-        test_path="test/python/$folderName"
-        if [ ! -d "$test_path" ]; then
-            echo "\033[31mERROR: Folder not found: $test_path\033[0m" >&2
-            exit 1
-        fi
-        pytest -v -s "$test_path"
-    elif [ -n "$caseName" ]; then
-        # Fallback: run by scenario name in all tests
-        set +e
-        $PYTHON_CMD -m pytest -v -s -k "$caseName"
-        exit_code=$?
-        set -e
-        if [ $exit_code -eq 5 ]; then
-            echo "\033[31mERROR: No tests were collected for case name: $caseName\033[0m" >&2
-            exit 1
-        fi
-        exit $exit_code
-    else
-        $PYTHON_CMD -m pytest -v -s
+    if [ -n "$run_pattern" ]; then
+        run_pytest_checked "$(pattern_for_pytest_k "$run_pattern")" "$test_path"
+        exit $?
     fi
+
+    if [ -n "$case_name" ]; then
+        run_pytest_checked "$case_name" "$test_path"
+        exit $?
+    fi
+
+    mandatory_pattern=$(get_mandatory_pattern_for_folder "$folder_name")
+    if [ "$mandatory_only" = "true" ] && [ -n "$mandatory_pattern" ]; then
+        echo "Non-CI mode: running mandatory $folder_name tests only"
+        run_pytest_checked "$(pattern_for_pytest_k "$mandatory_pattern")" "$test_path"
+        exit $?
+    fi
+
+    run_pytest_checked "" "$test_path"
+    exit $?
+}
+
+run_all_folders() {
+    mandatory_only="$1"
+    test_root="test/python"
+
+    folders=$(ls -d "$test_root"/*/ 2>/dev/null || true)
+    if [ -z "$folders" ]; then
+        echo "\033[31mERROR: No Python test folders found\033[0m" >&2
+        exit 1
+    fi
+
+    total_passed=0
+    total_failed=0
+    total_folders=0
+    failed_folders=""
+
+    for folder in $folders; do
+        folder_name=$(basename "$folder")
+        mandatory_pattern=$(get_mandatory_pattern_for_folder "$folder_name")
+        echo "=== Running tests in $folder_name ==="
+
+        if [ "$mandatory_only" = "true" ] && [ -n "$mandatory_pattern" ]; then
+            echo "Non-CI mode: running mandatory $folder_name tests only"
+            if run_pytest_checked "$(pattern_for_pytest_k "$mandatory_pattern")" "$folder"; then
+                echo "✅ $folder_name tests PASSED"
+                total_passed=$((total_passed + 1))
+            else
+                echo "❌ $folder_name tests FAILED"
+                total_failed=$((total_failed + 1))
+                failed_folders="$failed_folders $folder_name"
+            fi
+        else
+            if run_pytest_checked "" "$folder"; then
+                echo "✅ $folder_name tests PASSED"
+                total_passed=$((total_passed + 1))
+            else
+                echo "❌ $folder_name tests FAILED"
+                total_failed=$((total_failed + 1))
+                failed_folders="$failed_folders $folder_name"
+            fi
+        fi
+
+        total_folders=$((total_folders + 1))
+        echo ""
+    done
+
+    echo "=== Overall Python Test Results Summary ==="
+    echo "Total folders: $total_folders"
+    echo "Passed: $total_passed"
+    echo "Failed: $total_failed"
+
+    if [ "$total_failed" -gt 0 ]; then
+        echo ""
+        echo "Failed folders:"
+        for folder in $failed_folders; do
+            echo "  - $folder"
+        done
+        echo ""
+        echo "❌ Some tests failed"
+        exit 1
+    fi
+
+    echo ""
+    echo "✅ All tests passed!"
+}
+
+run_python_runner() {
+    folderName="$1"
+    caseName="$2"
+    runPattern="$3"
+
+    PYTHON_CMD=$(resolve_python_cmd)
+    if [ -z "$PYTHON_CMD" ]; then
+        echo "Python not available in this system. Please install Python 3."
+        exit 1
+    fi
+
+    mandatory_only=$(resolve_mandatory_only)
+    setup_python_env
+
+    if [ -n "$folderName" ]; then
+        run_single_folder "$folderName" "$caseName" "$runPattern" "$mandatory_only"
+        exit $?
+    fi
+
+    # Fallbacks when folder is not provided.
+    if [ -n "$runPattern" ]; then
+        run_pytest_checked "$(pattern_for_pytest_k "$runPattern")"
+        exit $?
+    fi
+    if [ -n "$caseName" ]; then
+        run_pytest_checked "$caseName"
+        exit $?
+    fi
+
+    run_all_folders "$mandatory_only"
 }
 
 # Always execute the runner
