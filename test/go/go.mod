@@ -6,7 +6,7 @@ toolchain go1.22.4
 
 // Direct dependencies (v2 module path for proxy.golang.org)
 require (
-	github.com/dana-id/dana-go/v2 v2.1.3
+	github.com/dana-id/dana-go/v2 v2.1.7
 	github.com/google/uuid v1.6.0
 )
 
@@ -19,7 +19,8 @@ require (
 require github.com/playwright-community/playwright-go v0.5700.1
 
 require (
-	github.com/deckarep/golang-set/v2 v2.8.0 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.4 // indirect
+	github.com/deckarep/golang-set/v2 v2.9.0 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.5 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
+	go.mongodb.org/mongo-driver v1.17.9 // indirect
 )
