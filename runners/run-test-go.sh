@@ -31,6 +31,22 @@ resolve_mandatory_only() {
     fi
 }
 
+get_mandatory_pattern_for_module() {
+    module_name="$1"
+    case "$module_name" in
+        "payment_gateway")
+            echo 'TestCreateOrderRedirectScenario|TestCreateOrderInvalidFieldFormat|TestCreateOrderInconsistentRequest|TestCreateOrderInvalidMandatoryField|TestCreateOrderUnauthorized|TestQueryPaymentCreatedOrder|TestQueryPaymentPaidOrder|TestQueryPaymentCanceledOrder|TestQueryPaymentTransactionNotFound|TestQueryPaymentInvalidMandatoryField|TestQueryPaymentGeneralError|TestQueryPaymentUnauthorized'
+            ;;
+        "widget")
+            # Mandatory widget payment-host-to-host scenarios from devsite checklist.
+            echo 'TestPaymentSuccess|TestPaymentFailMissingOrInvalidMandatoryField|TestPaymentFailGeneralError|TestPaymentFailTransactionNotPermitted|TestPaymentFailMerchantNotExistOrStatusAbnormal|TestPaymentFailInconsistentRequest|TestPaymentFailInternalServerError|TestPaymentFailInvalidFormat|TestPaymentFailInvalidSignature|TestPaymentFailExceedsTransactionAmountLimit'
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
+}
+
 load_env_if_exists() {
     if [ -f "../.env" ]; then
         set -a
@@ -124,7 +140,7 @@ run_single_module() {
     sub_case="$2"
     run_pattern="$3"
     mandatory_only="$4"
-    mandatory_payment_gateway_pattern="$5"
+    mandatory_pattern="$5"
 
     echo "Running Go test file(s) for module: $module ${sub_case:-} ${run_pattern:-}"
     test_dir="./$module"
@@ -143,9 +159,9 @@ run_single_module() {
         exit 1
     fi
 
-    if [ "$mandatory_only" = "true" ] && [ "$module" = "payment_gateway" ] && [ -z "$sub_case" ]; then
-        echo "Non-CI mode: running mandatory payment_gateway tests only"
-        if run_go_test_package "$test_dir" "600s" "$mandatory_payment_gateway_pattern"; then
+    if [ "$mandatory_only" = "true" ] && [ -z "$sub_case" ] && [ -n "$mandatory_pattern" ]; then
+        echo "Non-CI mode: running mandatory $module tests only"
+        if run_go_test_package "$test_dir" "600s" "$mandatory_pattern"; then
             echo "✅ Tests passed"
             exit 0
         fi
@@ -158,7 +174,8 @@ run_single_module() {
 
 run_all_modules() {
     mandatory_only="$1"
-    mandatory_payment_gateway_pattern="$2"
+    payment_gateway_mandatory_pattern="$2"
+    widget_mandatory_pattern="$3"
 
     test_dirs=""
     for dir in */; do
@@ -187,7 +204,17 @@ run_all_modules() {
 
         if [ "$mandatory_only" = "true" ] && [ "$dir_name" = "payment_gateway" ]; then
             echo "Non-CI mode: running mandatory payment_gateway tests only"
-            if run_go_test_package "$test_dir" "60s" "$mandatory_payment_gateway_pattern"; then
+            if run_go_test_package "$test_dir" "60s" "$payment_gateway_mandatory_pattern"; then
+                echo "✅ $dir_name tests PASSED"
+                total_passed=$((total_passed + 1))
+            else
+                echo "❌ $dir_name tests FAILED"
+                total_failed=$((total_failed + 1))
+                failed_dirs="$failed_dirs $dir_name"
+            fi
+        elif [ "$mandatory_only" = "true" ] && [ "$dir_name" = "widget" ]; then
+            echo "Non-CI mode: running mandatory widget tests only"
+            if run_go_test_package "$test_dir" "60s" "$widget_mandatory_pattern"; then
                 echo "✅ $dir_name tests PASSED"
                 total_passed=$((total_passed + 1))
             else
@@ -235,7 +262,8 @@ run_go_runner() {
     runPattern="$3"
 
     mandatory_only=$(resolve_mandatory_only)
-    mandatory_payment_gateway_pattern='TestCreateOrderRedirectScenario|TestCreateOrderInvalidFieldFormat|TestCreateOrderInconsistentRequest|TestCreateOrderInvalidMandatoryField|TestCreateOrderUnauthorized|TestQueryPaymentCreatedOrder|TestQueryPaymentPaidOrder|TestQueryPaymentCanceledOrder|TestQueryPaymentTransactionNotFound|TestQueryPaymentInvalidMandatoryField|TestQueryPaymentGeneralError|TestQueryPaymentUnauthorized'
+    mandatory_payment_gateway_pattern=$(get_mandatory_pattern_for_module "payment_gateway")
+    mandatory_widget_pattern=$(get_mandatory_pattern_for_module "widget")
 
     if ! command -v go > /dev/null 2>&1; then
         echo "ERROR: Go not available in this system. Please install Go."
@@ -256,9 +284,10 @@ run_go_runner() {
     prepare_go_deps
 
     if [ -n "$module" ]; then
-        run_single_module "$module" "$subCase" "$runPattern" "$mandatory_only" "$mandatory_payment_gateway_pattern"
+        mandatory_pattern=$(get_mandatory_pattern_for_module "$module")
+        run_single_module "$module" "$subCase" "$runPattern" "$mandatory_only" "$mandatory_pattern"
     else
-        run_all_modules "$mandatory_only" "$mandatory_payment_gateway_pattern"
+        run_all_modules "$mandatory_only" "$mandatory_payment_gateway_pattern" "$mandatory_widget_pattern"
     fi
 }
 
