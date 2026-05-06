@@ -41,6 +41,10 @@ get_mandatory_pattern_for_module() {
             # Mandatory widget payment-host-to-host scenarios from devsite checklist.
             echo 'TestPaymentSuccess|TestPaymentFailMissingOrInvalidMandatoryField|TestPaymentFailGeneralError|TestPaymentFailTransactionNotPermitted|TestPaymentFailMerchantNotExistOrStatusAbnormal|TestPaymentFailInconsistentRequest|TestPaymentFailInternalServerError|TestPaymentFailInvalidFormat|TestPaymentFailInvalidSignature|TestPaymentFailExceedsTransactionAmountLimit'
             ;;
+        "disbursement")
+            # Mandatory disbursement scenarios (topup + transfer-bank) from devsite checklist.
+            echo 'TestTopUpCustomerValid|TestTopUpCustomerInsufficientFund|TestTopUpCustomerFrozenAccount|TestTopUpCustomerMissingMandatoryField|TestTopUpCustomerInconsistentRequest|TestTopUpCustomerInternalServerError|TestTopUpCustomerInternalGeneralError|TestDisbursementBankValidAccount|TestDisbursementBankValidAccountInProgress|TestDisbursementBankInconsistentRequest|TestDisbursementBankInsufficientFund|TestDisbursementBankInactiveAccount|TestDisbursementBankInvalidFieldFormat|TestDisbursementBankMissingMandatoryField'
+            ;;
         *)
             echo ""
             ;;
@@ -174,8 +178,6 @@ run_single_module() {
 
 run_all_modules() {
     mandatory_only="$1"
-    payment_gateway_mandatory_pattern="$2"
-    widget_mandatory_pattern="$3"
 
     test_dirs=""
     for dir in */; do
@@ -201,20 +203,11 @@ run_all_modules() {
     for test_dir in $test_dirs; do
         dir_name=$(basename "$test_dir")
         echo "=== Running tests in $dir_name ==="
+        module_mandatory_pattern=$(get_mandatory_pattern_for_module "$dir_name")
 
-        if [ "$mandatory_only" = "true" ] && [ "$dir_name" = "payment_gateway" ]; then
-            echo "Non-CI mode: running mandatory payment_gateway tests only"
-            if run_go_test_package "$test_dir" "60s" "$payment_gateway_mandatory_pattern"; then
-                echo "✅ $dir_name tests PASSED"
-                total_passed=$((total_passed + 1))
-            else
-                echo "❌ $dir_name tests FAILED"
-                total_failed=$((total_failed + 1))
-                failed_dirs="$failed_dirs $dir_name"
-            fi
-        elif [ "$mandatory_only" = "true" ] && [ "$dir_name" = "widget" ]; then
-            echo "Non-CI mode: running mandatory widget tests only"
-            if run_go_test_package "$test_dir" "60s" "$widget_mandatory_pattern"; then
+        if [ "$mandatory_only" = "true" ] && [ -n "$module_mandatory_pattern" ]; then
+            echo "Non-CI mode: running mandatory $dir_name tests only"
+            if run_go_test_package "$test_dir" "60s" "$module_mandatory_pattern"; then
                 echo "✅ $dir_name tests PASSED"
                 total_passed=$((total_passed + 1))
             else
@@ -262,8 +255,6 @@ run_go_runner() {
     runPattern="$3"
 
     mandatory_only=$(resolve_mandatory_only)
-    mandatory_payment_gateway_pattern=$(get_mandatory_pattern_for_module "payment_gateway")
-    mandatory_widget_pattern=$(get_mandatory_pattern_for_module "widget")
 
     if ! command -v go > /dev/null 2>&1; then
         echo "ERROR: Go not available in this system. Please install Go."
@@ -287,7 +278,7 @@ run_go_runner() {
         mandatory_pattern=$(get_mandatory_pattern_for_module "$module")
         run_single_module "$module" "$subCase" "$runPattern" "$mandatory_only" "$mandatory_pattern"
     else
-        run_all_modules "$mandatory_only" "$mandatory_payment_gateway_pattern" "$mandatory_widget_pattern"
+        run_all_modules "$mandatory_only"
     fi
 }
 
