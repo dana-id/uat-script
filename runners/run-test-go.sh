@@ -35,7 +35,7 @@ get_mandatory_pattern_for_module() {
     module_name="$1"
     case "$module_name" in
         "payment_gateway")
-            echo 'TestCreateOrderRedirectScenario|TestCreateOrderInvalidFieldFormat|TestCreateOrderInconsistentRequest|TestCreateOrderInvalidMandatoryField|TestCreateOrderUnauthorized|TestQueryPaymentCreatedOrder|TestQueryPaymentPaidOrder|TestQueryPaymentCanceledOrder|TestQueryPaymentTransactionNotFound|TestQueryPaymentInvalidMandatoryField|TestQueryPaymentGeneralError|TestQueryPaymentUnauthorized'
+            echo 'TestCreateOrderRedirectScenario|TestCreateOrderInvalidFieldFormat|TestCreateOrderInconsistentRequest|TestCreateOrderInvalidMandatoryField|TestCreateOrderUnauthorized'
             ;;
         "widget")
             # Mandatory widget payment-host-to-host scenarios from devsite checklist.

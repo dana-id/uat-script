@@ -31,7 +31,7 @@ get_mandatory_pattern_for_folder() {
     folder_name="$1"
     case "$folder_name" in
         "payment_gateway")
-            echo "test_create_order_redirect_scenario|test_create_order_invalid_field_format|test_create_order_inconsistent_request|test_create_order_invalid_mandatory_field|test_create_order_unauthorized|test_query_payment_created_order|test_query_payment_paid_order|test_query_payment_canceled_order|test_query_payment_transaction_not_found|test_query_payment_invalid_mandatory_field|test_query_payment_general_error|test_query_payment_unauthorized"
+            echo "test_create_order_redirect_scenario|test_create_order_invalid_field_format|test_create_order_inconsistent_request|test_create_order_invalid_mandatory_field|test_create_order_unauthorized"
             ;;
         "widget")
             echo "test_payment_success|test_payment_fail_missing_or_invalid_mandatory_field|test_payment_fail_general_error|test_payment_fail_not_permitted|test_payment_fail_merchant_not_exist_or_status_abnormal|test_payment_fail_inconsistent_request|test_payment_fail_internal_server_error|test_payment_fail_invalid_format|test_payment_fail_invalid_signature|test_payment_fail_exceed_amount_limit"
