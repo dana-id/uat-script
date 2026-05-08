@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"regexp"
 	"os"
 	"strings"
 	"time"
@@ -85,6 +86,49 @@ func extractAuthCodeFromURL(urlString string) (string, error) {
 		strings.Join(authCodeParams, ", "))
 }
 
+// extractMobileFromURL extracts mobile number from seamlessData query parameter.
+// Falls back to a known sandbox number when unavailable.
+func extractMobileFromURL(oauthURL string) string {
+	parsedURL, err := url.Parse(oauthURL)
+	if err != nil {
+		return "083811223355"
+	}
+
+	seamlessData := parsedURL.Query().Get("seamlessData")
+	if seamlessData == "" {
+		return "083811223355"
+	}
+
+	unquoted, err := url.QueryUnescape(seamlessData)
+	if err != nil {
+		return "083811223355"
+	}
+
+	var seamlessDataObj map[string]interface{}
+	if err := json.Unmarshal([]byte(unquoted), &seamlessDataObj); err != nil {
+		return "083811223355"
+	}
+
+	if mobile, ok := seamlessDataObj["mobile"].(string); ok && mobile != "" {
+		return mobile
+	}
+
+	return "083811223355"
+}
+
+// normalizeMobileNumber strips non-digits and keeps local leading 0.
+func normalizeMobileNumber(mobile string) string {
+	re := regexp.MustCompile(`\D+`)
+	m := re.ReplaceAllString(mobile, "")
+	if m == "" {
+		return "083811223355"
+	}
+	if strings.HasPrefix(m, "62") {
+		m = "0" + strings.TrimPrefix(m, "62")
+	}
+	return m
+}
+
 // ==========================================
 // OAUTH URL GENERATION
 // ==========================================
@@ -142,10 +186,11 @@ func GetAuthCode(phoneNumber, pin, redirectUrl string) (string, error) {
 		return "", fmt.Errorf("error: no redirect URL provided")
 	}
 	if phoneNumber == "" {
-		return "", fmt.Errorf("error: no phone number provided")
+		phoneNumber = extractMobileFromURL(redirectUrl)
 	}
+	phoneNumber = normalizeMobileNumber(phoneNumber)
 	if pin == "" {
-		return "", fmt.Errorf("error: no PIN provided")
+		pin = "181818"
 	}
 
 	log.Printf("OAuth URL: %s", redirectUrl)
@@ -198,35 +243,240 @@ func automateOAuthWithRetry(pw *playwright.Playwright, phoneNumber, pin, redirec
 // automateOAuthFlow handles the complete OAuth flow automation
 // Steps: Navigate → Fill Phone → Click Continue → Fill PIN → Wait for Auth Code
 func automateOAuthFlow(pw *playwright.Playwright, phoneNumber, pin, redirectUrl string) (string, error) {
-	log.Println("Launching Chrome browser for OAuth automation...")
+	if phoneNumber == "" {
+		phoneNumber = extractMobileFromURL(redirectUrl)
+	}
+	phoneNumber = normalizeMobileNumber(phoneNumber)
+	if pin == "" {
+		pin = "181818"
+	}
 
-	// Launch browser with DANA-optimized settings
+	log.Printf("Starting OAuth automation with phone: %s", phoneNumber)
+
 	browser, err := pw.Chromium.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(true), // Headless mode for automation
-		Args:     getChromeArguments(),
+		Headless: playwright.Bool(true),
+		Args: []string{
+			"--disable-web-security",
+			"--disable-features=IsolateOrigins",
+			"--disable-site-isolation-trials",
+			"--disable-blink-features=AutomationControlled",
+			"--no-sandbox",
+			"--disable-dev-shm-usage",
+		},
 	})
 	if err != nil {
 		return "", fmt.Errorf("could not launch browser: %w", err)
 	}
 	defer browser.Close()
 
-	// Create browser context with proper viewport and user agent
+	deviceName := "iPhone 13"
+	device := pw.Devices[deviceName]
+	if device == nil {
+		return "", fmt.Errorf("device %s not found", deviceName)
+	}
+
 	context, err := browser.NewContext(playwright.BrowserNewContextOptions{
-		Viewport:  &playwright.Size{Width: browserWidth, Height: browserHeight},
-		UserAgent: playwright.String("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"),
+		UserAgent:         playwright.String(device.UserAgent),
+		Viewport:          &playwright.Size{Width: device.Viewport.Width, Height: device.Viewport.Height},
+		DeviceScaleFactor: playwright.Float(device.DeviceScaleFactor),
+		IsMobile:          playwright.Bool(device.IsMobile),
+		HasTouch:          playwright.Bool(device.HasTouch),
+		Locale:            playwright.String("id-ID"),
+		Geolocation:       &playwright.Geolocation{Longitude: 106.8456, Latitude: -6.2088},
+		Permissions:       []string{"geolocation"},
 	})
 	if err != nil {
 		return "", fmt.Errorf("could not create browser context: %w", err)
 	}
 	defer context.Close()
 
+	context.SetDefaultTimeout(60 * 1000)
+
 	page, err := context.NewPage()
 	if err != nil {
 		return "", fmt.Errorf("could not create page: %w", err)
 	}
 
-	// Execute OAuth flow steps
-	return executeOAuthSteps(page, phoneNumber, pin, redirectUrl)
+	page.On("framenavigated", func(frame playwright.Frame) {
+		if strings.HasPrefix(frame.URL(), "chrome-error://") {
+			log.Println("Detected chrome-error (link.dana.id deep-link failure) — going back to restore DANA page")
+			go func() {
+				time.Sleep(300 * time.Millisecond)
+				if _, err := page.GoBack(playwright.PageGoBackOptions{
+					WaitUntil: playwright.WaitUntilStateDomcontentloaded,
+					Timeout:   playwright.Float(8000),
+				}); err != nil {
+					log.Printf("GoBack from chrome-error failed: %v", err)
+				} else {
+					log.Println("Successfully restored page after chrome-error")
+				}
+			}()
+		}
+	})
+
+	_, err = page.Goto(redirectUrl, playwright.PageGotoOptions{
+		WaitUntil: playwright.WaitUntilStateDomcontentloaded,
+		Timeout:   playwright.Float(60000),
+	})
+	if err != nil {
+		return "", fmt.Errorf("could not navigate to OAuth URL: %w", err)
+	}
+
+	time.Sleep(2 * time.Second)
+
+	pinSelector := `.txt-input-pin-field, input[maxlength="6"][inputmode="numeric"], input[type="password"]`
+	isPinEntryVisible, _ := page.Locator(pinSelector).First().IsVisible()
+
+	if !isPinEntryVisible {
+		phoneSelectors := []string{
+			"input.txt-input-phone-number-field",
+			"input[type='tel']",
+			"input[placeholder='12312345678']",
+			"input[maxlength='13']",
+			"input[maxlength='15']",
+		}
+		phoneFilled := false
+		for _, sel := range phoneSelectors {
+			loc := page.Locator(sel).First()
+			if visible, _ := loc.IsVisible(); visible {
+				currentVal, _ := loc.InputValue()
+				if currentVal != "" {
+					log.Printf("Phone field already pre-filled by DANA: %s (skipping fill)", currentVal)
+					phoneFilled = true
+				} else {
+					if err2 := loc.Fill(phoneNumber); err2 == nil {
+						log.Printf("Phone filled using selector: %s with value: %s", sel, phoneNumber)
+						phoneFilled = true
+					}
+				}
+				break
+			}
+		}
+
+		if !phoneFilled {
+			label := page.Locator("label.new-clearable-input.form-ipg-phonenumber").First()
+			if visible, _ := label.IsVisible(); visible {
+				if err2 := label.Click(); err2 == nil {
+					if err2 = page.Keyboard().Type(phoneNumber); err2 == nil {
+						log.Println("Phone filled via label click + keyboard type")
+						phoneFilled = true
+					}
+				}
+			}
+		}
+		if !phoneFilled {
+			log.Println("Warning: could not determine phone field state")
+		}
+
+		time.Sleep(1 * time.Second)
+
+		submitted := false
+		for _, text := range []string{"LANJUTKAN", "Lanjutkan", "Next", "Continue"} {
+			loc := page.GetByRole("button", playwright.PageGetByRoleOptions{Name: text, Exact: playwright.Bool(true)}).First()
+			if visible, _ := loc.IsVisible(); visible {
+				if err2 := loc.Click(); err2 == nil {
+					log.Printf("Submit clicked via role+name: %s", text)
+					submitted = true
+					break
+				}
+			}
+		}
+
+		if !submitted {
+			for _, sel := range []string{
+				"button[type='submit']",
+				"button.btn-primary",
+				"button.next-button",
+				".btn-continue",
+				".btn-submit",
+			} {
+				loc := page.Locator(sel).First()
+				if visible, _ := loc.IsVisible(); visible {
+					if err2 := loc.Click(); err2 == nil {
+						log.Printf("Submit clicked via selector: %s", sel)
+						submitted = true
+						break
+					}
+				}
+			}
+		}
+		if !submitted {
+			log.Println("Warning: could not click LANJUTKAN button")
+		}
+
+		time.Sleep(3 * time.Second)
+
+		continueLoc := page.Locator("button.btn-continue.fs-unmask.btn.btn-primary").First()
+		if visible, _ := continueLoc.IsVisible(); visible {
+			_ = continueLoc.Click()
+			time.Sleep(1 * time.Second)
+		}
+
+		if _, err2 := page.WaitForSelector(pinSelector, playwright.PageWaitForSelectorOptions{
+			State:   playwright.WaitForSelectorStateAttached,
+			Timeout: playwright.Float(15000),
+		}); err2 != nil {
+			log.Println("Timeout waiting for PIN field after phone submit")
+		}
+	}
+
+	pinFilled := false
+	pinLoc := page.Locator(pinSelector).First()
+	if visible, _ := pinLoc.IsVisible(); visible {
+		if err2 := pinLoc.Click(); err2 == nil {
+			if err2 = page.Keyboard().Type(pin); err2 == nil {
+				log.Println("PIN entered via keyboard type")
+				pinFilled = true
+			}
+		}
+	}
+	if !pinFilled {
+		if el, err2 := page.WaitForSelector(pinSelector, playwright.PageWaitForSelectorOptions{
+			State:   playwright.WaitForSelectorStateVisible,
+			Timeout: playwright.Float(10000),
+		}); err2 == nil {
+			_ = el.Click()
+			_ = page.Keyboard().Type(pin)
+			log.Println("PIN entered via WaitForSelector + keyboard type")
+			pinFilled = true
+		}
+	}
+	if !pinFilled {
+		return "", fmt.Errorf("could not enter PIN: PIN field not visible")
+	}
+
+	ctx, cancel := gocontext.WithTimeout(gocontext.Background(), 30*time.Second)
+	defer cancel()
+
+	var authCode string
+	page.On("framenavigated", func(frame playwright.Frame) {
+		currentURL := frame.URL()
+		if parsedURL, err := url.Parse(currentURL); err == nil {
+			if parsedURL.Host == "google.com" || parsedURL.Query().Has("authCode") {
+				code := parsedURL.Query().Get("authCode")
+				if code != "" {
+					authCode = code
+					cancel()
+				}
+			}
+		}
+	})
+
+	<-ctx.Done()
+
+	if authCode == "" {
+		currentURL := page.URL()
+		if parsedURL, err := url.Parse(currentURL); err == nil {
+			authCode = parsedURL.Query().Get("authCode")
+		}
+	}
+
+	if authCode == "" {
+		return "", fmt.Errorf("could not capture authorization code")
+	}
+
+	log.Printf("OAuth flow completed successfully, auth code: %s", authCode)
+	return authCode, nil
 }
 
 // executeOAuthSteps performs the individual steps of OAuth automation
