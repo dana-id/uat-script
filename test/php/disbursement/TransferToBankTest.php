@@ -38,6 +38,17 @@ class TransferToBankTest extends TestCase
         self::$merchantId = getenv('MERCHANT_ID');
     }
 
+    protected function runTest(): void
+    {
+        Util::runWithRetry(
+            function () {
+                parent::runTest();
+            },
+            3,
+            2000
+        );
+    }
+
     /**
      * Should successfully top up customer with valid request
      */

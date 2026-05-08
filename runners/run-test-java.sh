@@ -30,6 +30,34 @@ readonly SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 readonly PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 readonly JAVA_TEST_DIR="$PROJECT_ROOT/test/java"
 
+resolve_mandatory_only() {
+    if [ -n "${JAVA_MANDATORY_ONLY:-}" ]; then
+        echo "$JAVA_MANDATORY_ONLY"
+    elif [ -z "${CI:-}" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+get_mandatory_pattern_for_module() {
+    module_name="$1"
+    case "$module_name" in
+        "paymentgateway")
+            echo "id.dana.paymentgateway.CreateOrderTest"
+            ;;
+        "widget")
+            echo "id.dana.widget.PaymentTest"
+            ;;
+        "disbursement")
+            echo "id.dana.disbursement.TransferToDanaTest,id.dana.disbursement.TransferToBankTest"
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
+}
+
 # Dynamic business module discovery
 discover_business_modules() {
     local dana_path="$JAVA_TEST_DIR/src/test/java/id/dana"
@@ -305,6 +333,7 @@ run_specific_test() {
 run_module_tests() {
     local module="$1"
     local run_pattern="${2:-}"
+    local mandatory_only="$3"
     
     # Find the actual module (handles aliases)
     local actual_module=$(find_module "$module")
@@ -325,7 +354,11 @@ run_module_tests() {
     cd "$JAVA_TEST_DIR"
     
     local test_arg
-    if [ -n "$run_pattern" ]; then
+    module_mandatory_pattern=$(get_mandatory_pattern_for_module "$actual_module")
+    if [ -z "$run_pattern" ] && [ "$mandatory_only" = "true" ] && [ -n "$module_mandatory_pattern" ]; then
+        test_arg="$module_mandatory_pattern"
+        print_info "Non-CI mode: running mandatory $module_display tests only"
+    elif [ -n "$run_pattern" ]; then
         local class_list
         class_list=$(echo "$run_pattern" | tr '|' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$')
         test_arg=$(echo "$class_list" | sed "s|^|id.dana.$actual_module.|" | tr '\n' ',' | sed 's/,$//')
@@ -357,6 +390,7 @@ run_module_tests() {
 
 # Run all tests across all modules
 run_all_tests() {
+    local mandatory_only="$1"
     print_header "Running All Tests Across All Modules"
     
     cd "$JAVA_TEST_DIR"
@@ -379,8 +413,26 @@ run_all_tests() {
     print_info "Executing all tests..."
     echo
     
+    if [ "$mandatory_only" = "true" ]; then
+        print_info "Non-CI mode: running mandatory tests per module only"
+        local mandatory_classes=""
+        for module in $business_modules; do
+            module_pattern=$(get_mandatory_pattern_for_module "$module")
+            if [ -n "$module_pattern" ]; then
+                if [ -n "$mandatory_classes" ]; then
+                    mandatory_classes="$mandatory_classes,$module_pattern"
+                else
+                    mandatory_classes="$module_pattern"
+                fi
+            fi
+        done
+        if [ -n "$mandatory_classes" ] && mvn test -Dtest="$mandatory_classes" -q; then
+            print_success "Mandatory tests execution completed successfully!"
+        else
+            print_warning "Mandatory tests execution completed with issues"
+        fi
     # Run all tests
-    if mvn test -q; then
+    elif mvn test -q; then
         print_success "All tests execution completed successfully!"
     else
         print_warning "All tests execution completed with issues"
@@ -556,6 +608,9 @@ show_failure_details() {
 
 # Main Java test runner function
 run_java_runner() {
+    local mandatory_only
+    mandatory_only=$(resolve_mandatory_only)
+
     local folder_name="$1"
     local case_name="$2"
     local run_pattern="$3"   # optional: single test method name (e.g. createOrderRedirectScenario)
@@ -570,10 +625,10 @@ run_java_runner() {
         run_specific_test "$folder_name" "$case_name" "$run_pattern"
     elif [ -n "$folder_name" ]; then
         # Run tests in a specific folder (optionally only classes matching run_pattern, e.g. CreateOrderTest|CancelOrderTest)
-        run_module_tests "$folder_name" "$run_pattern"
+        run_module_tests "$folder_name" "$run_pattern" "$mandatory_only"
     else
         # Run all tests
-        run_all_tests
+        run_all_tests "$mandatory_only"
     fi
 }
 

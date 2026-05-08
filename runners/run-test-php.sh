@@ -3,6 +3,34 @@
 # Fail on error
 set -e
 
+resolve_mandatory_only() {
+    if [ -n "${PHP_MANDATORY_ONLY:-}" ]; then
+        echo "$PHP_MANDATORY_ONLY"
+    elif [ -z "${CI:-}" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+get_mandatory_pattern_for_folder() {
+    folder_name="$1"
+    case "$folder_name" in
+        "payment_gateway")
+            echo "testCreateOrderRedirectScenario|testCreateOrderInvalidFieldFormat|testCreateOrderInconsistentRequest|testCreateOrderInvalidMandatoryField|testCreateOrderUnauthorized"
+            ;;
+        "widget")
+            echo "testPaymentSuccess|testPaymentFailMissingOrInvalidMandatoryField|testPaymentFailGeneralError|testPaymentFailTransactionNotPermitted|testPaymentFailMerchantNotExistOrStatusAbnormal|testPaymentFailInconsistentRequest|testPaymentFailInternalServerError|testPaymentFailInvalidFormat|testPaymentFailInvalidSignature|testPaymentFailExceedsTransactionAmountLimit"
+            ;;
+        "disbursement")
+            echo "testTopUpCustomerValid|testTopUpCustomerInsufficientFund|testTopUpCustomerFrozenAccount|testTopUpCustomerMissingMandatoryField|testTopUpCustomerInconsistentRequest|testTopUpCustomerInternalServerError|testTopUpCustomerInternalGeneralError|testDisbursementBankValidAccount|testDisbursementBankValidAccountInProgress|testDisbursementBankInconsistentRequest|testDisbursementBankInsufficientFund|testDisbursementBankInactiveAccount|testDisbursementBankInvalidFieldFormat|testDisbursementBankMissingMandatoryField"
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
+}
+
 run_php_runner(){
     # Check and install Selenium WebDriver dependencies if needed
     echo "Checking Selenium WebDriver dependencies..."
@@ -161,6 +189,7 @@ run_php_runner(){
     folderName=$1
     caseName=$2
     runPattern=$3   # optional: PHPUnit --filter for specific test method name(s)
+    mandatory_only=$(resolve_mandatory_only)
     # Use script location so ROOT_DIR is always the integration-test root (where test/php lives), not cwd (CI may run from parent repo)
     RUNNERS_DIR="$(cd "$(dirname "$0")" && pwd)"
     ROOT_DIR="$(cd "$RUNNERS_DIR/.." && pwd)"
@@ -417,7 +446,13 @@ EOF
     elif [ -n "$folderName" ]; then
         # Run all tests in a specific folder
         echo "Running all tests in folder 'test/php/$folderName'..."
-        "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$PHP_TEST_DIR/$folderName"
+        mandatory_pattern=$(get_mandatory_pattern_for_folder "$folderName")
+        if [ "$mandatory_only" = "true" ] && [ -n "$mandatory_pattern" ]; then
+            echo "Non-CI mode: running mandatory $folderName tests only"
+            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="$mandatory_pattern" "$PHP_TEST_DIR/$folderName"
+        else
+            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$PHP_TEST_DIR/$folderName"
+        fi
     elif [ -n "$caseName" ]; then
         # Find all test directories (excluding helper)
         TEST_DIRS=$(find "$PHP_TEST_DIR" -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
@@ -449,7 +484,18 @@ EOF
         # Run tests in all directories
         for dir in $TEST_DIRS; do
             echo "\033[36mRunning tests in $dir...\033[0m"
-            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$dir"
+            if [ "$mandatory_only" = "true" ]; then
+                folder_name=$(basename "$dir")
+                mandatory_pattern=$(get_mandatory_pattern_for_folder "$folder_name")
+                if [ -n "$mandatory_pattern" ]; then
+                    echo "Non-CI mode: running mandatory $folder_name tests only"
+                    "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="$mandatory_pattern" "$dir"
+                else
+                    "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$dir"
+                fi
+            else
+                "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$dir"
+            fi
             # Add a 3-second gap between test runs
             sleep 3
         done

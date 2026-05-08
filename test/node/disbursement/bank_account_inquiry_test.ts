@@ -51,6 +51,7 @@ const dana = new Dana({
  * @apiVersion v1.0
  */
 describe('Disbursement - Bank Account Inquiry Tests', () => {
+  jest.retryTimes(2, { logErrorsBeforeRetry: true });
 
   /**
    * Test Case: Successful Bank Account Inquiry

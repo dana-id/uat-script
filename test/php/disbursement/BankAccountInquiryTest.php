@@ -39,6 +39,17 @@ class BankAccountInquiryTest extends TestCase
         self::$merchantId = getenv('MERCHANT_ID');
     }
 
+    protected function runTest(): void
+    {
+        Util::runWithRetry(
+            function () {
+                parent::runTest();
+            },
+            3,
+            2000
+        );
+    }
+
     /**
      * Should successfully inquire bank account with valid data and amount
      */

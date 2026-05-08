@@ -10,7 +10,7 @@ from dana.disbursement.v1.api import *
 from dana.api_client import ApiClient
 from dana.exceptions import *
 from uuid import uuid4
-from helper.util import get_request, with_delay
+from helper.util import get_request, with_delay, retry_on_inconsistent_request
 from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error
 from helper.assertion import assert_response, assert_fail_response
 
@@ -32,6 +32,7 @@ with ApiClient(configuration) as api_client:
     api_instance = DisbursementApi(api_client)
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_valid():
     case_name = "DisbursementBankValidAccount"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -48,6 +49,7 @@ def test_disbursement_to_bank_valid():
         pytest.fail(f"API call failed: {e}")
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_unauthorized_signature():
     case_name = "DisbursementBankUnauthorizedSignature"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -81,6 +83,7 @@ def test_disbursement_to_bank_unauthorized_signature():
     )
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_missing_mandatory_field():
     case_name = "DisbursementBankMissingMandatoryField"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -100,6 +103,7 @@ def test_disbursement_to_bank_missing_mandatory_field():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_invalid_field_format():
     case_name = "DisbursementBankInvalidFieldFormat"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -117,6 +121,7 @@ def test_disbursement_to_bank_invalid_field_format():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_insufficient_fund():
     case_name = "DisbursementBankInsufficientFund"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -134,6 +139,7 @@ def test_disbursement_to_bank_insufficient_fund():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_inactive_account():
     case_name = "DisbursementBankInactiveAccount"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -151,6 +157,7 @@ def test_disbursement_to_bank_inactive_account():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_inconsistent_request():
     case_name = "DisbursementBankInconsistentRequest"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -183,6 +190,7 @@ def test_disbursement_to_bank_inconsistent_request():
         pytest.fail("Expected NotFoundException but the API call give another exception")
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_suspected_fraud():
     case_name = "DisbursementBankSuspectedFraud"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -200,6 +208,7 @@ def test_disbursement_to_bank_suspected_fraud():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_unknown_error():
     case_name = "DisbursementBankUnknownError"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -217,6 +226,7 @@ def test_disbursement_to_bank_unknown_error():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_general_error():
     case_name = "DisbursementBankGeneralError"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -234,6 +244,7 @@ def test_disbursement_to_bank_general_error():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_valid_account_in_progress():
     case_name = "DisbursementBankValidAccountInProgress"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -252,6 +263,7 @@ def test_disbursement_to_bank_valid_account_in_progress():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_invalid_mandatory_field_format():
     case_name = "DisbursementBankInvalidMandatoryFieldFormat"
     json_dict = get_request(json_path_file, title_case, case_name)

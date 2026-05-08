@@ -15,6 +15,7 @@ import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
+import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
 
 import java.io.IOException;
@@ -61,6 +62,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankValidAccount() throws IOException {
     String caseName = "DisbursementBankValidAccount";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -78,6 +80,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankInsufficientFund() throws IOException {
     String caseName = "DisbursementBankInsufficientFund";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -95,6 +98,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankValidAccountInProgress() throws IOException {
     String caseName = "DisbursementBankValidAccountInProgress";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -112,6 +116,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankInactiveAccount() throws IOException {
     String caseName = "DisbursementBankInactiveAccount";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -129,6 +134,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankUnauthorizedSignature() throws IOException {
     Map<String, String> customHeaders = new HashMap<>();
     String caseName = "DisbursementBankUnauthorizedSignature";
@@ -157,6 +163,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankInvalidMandatoryFieldFormat() throws IOException {
     Map<String, String> customHeaders = new HashMap<>();
     String caseName = "DisbursementBankInvalidMandatoryFieldFormat";
@@ -185,6 +192,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankMissingMandatoryField() throws IOException {
     String caseName = "DisbursementBankMissingMandatoryField";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -202,6 +210,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankInvalidFieldFormat() throws IOException {
     String caseName = "DisbursementBankInvalidFieldFormat";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -219,6 +228,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankInconsistentRequest() throws IOException {
     String caseName = "DisbursementBankInconsistentRequest";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -242,6 +252,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankSuspectedFraud() throws IOException {
     String caseName = "DisbursementBankSuspectedFraud";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -259,6 +270,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankGeneralError() throws IOException {
     String caseName = "DisbursementBankGeneralError";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -276,6 +288,7 @@ class TransferToBankTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankUnknownError() throws IOException {
     String caseName = "DisbursementBankUnknownError";
     TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,

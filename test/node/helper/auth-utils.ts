@@ -88,7 +88,7 @@ export async function generateAuthCode(phoneNumber?: string, pinCode?: string): 
 
             // Execute OAuth automation with timeout protection
             const authCodeResult = await Promise.race([
-                automateOAuth(oauthUrl, phoneNumber, pinCode, { log: false }),
+                automateOAuth(oauthUrl, { phoneNumber, pinCode }),
                 new Promise<null>((_, reject) => {
                     const timeout = setTimeout(() => {
                         clearTimeout(timeout); // Prevent memory leaks

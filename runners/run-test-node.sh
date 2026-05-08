@@ -3,6 +3,34 @@
 # Fail on error
 set -e
 
+resolve_mandatory_only() {
+    if [ -n "${NODE_MANDATORY_ONLY:-}" ]; then
+        echo "$NODE_MANDATORY_ONLY"
+    elif [ -z "${CI:-}" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+get_mandatory_pattern_for_folder() {
+    folder_name="$1"
+    case "$folder_name" in
+        "payment_gateway")
+            echo "CreateOrderRedirectScenario|CreateOrderInvalidFieldFormat|CreateOrderInconsistentRequest|CreateOrderInvalidMandatoryField|CreateOrderUnauthorized"
+            ;;
+        "widget")
+            echo "PaymentSuccess|PaymentFailMissingOrInvalidMandatoryField|PaymentFailGeneralError|PaymentFailTransactionNotPermitted|PaymentFailMerchantNotExistOrStatusAbnormal|PaymentFailInconsistentRequest|PaymentFailInternalServerError|PaymentFailInvalidFormat|PaymentFailInvalidSignature|PaymentFailExceedsTransactionAmountLimit"
+            ;;
+        "disbursement")
+            echo "TopUpCustomerValid|TopUpCustomerInsufficientFund|TopUpCustomerFrozenAccount|TopUpCustomerMissingMandatoryField|TopUpCustomerInconsistentRequest|TopUpCustomerInternalServerError|TopUpCustomerInternalGeneralError|DisbursementBankValidAccount|DisbursementBankValidAccountInProgress|DisbursementBankInconsistentRequest|DisbursementBankInsufficientFund|DisbursementBankInactiveAccount|DisbursementBankInvalidFieldFormat|DisbursementBankMissingMandatoryField"
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
+}
+
 run_node_runner(){
     folderName=$1
     caseName=$2
@@ -110,6 +138,8 @@ module.exports = {
 EOF
     fi
     
+    mandatory_only=$(resolve_mandatory_only)
+
     # Support running by folder, scenario name, and/or specific test run pattern
     # Multiple tests: use | in pattern (e.g. CreateOrderRedirect|query payment) – Jest -t accepts regex
     # Note: Use substrings of the actual test() titles
@@ -183,15 +213,36 @@ EOF
             echo "\033[31mERROR: Folder not found: $folderName\033[0m" >&2
             exit 1
         fi
-        npx jest "$folderName"
+        mandatory_pattern=$(get_mandatory_pattern_for_folder "$folderName")
+        if [ "$mandatory_only" = "true" ] && [ -n "$mandatory_pattern" ]; then
+            echo "Non-CI mode: running mandatory $folderName tests only"
+            npx jest "$folderName" -t "$mandatory_pattern"
+        else
+            npx jest "$folderName"
+        fi
     elif [ -n "$caseName" ]; then
         # Run a specific test case across all folders
         echo "Running Node.js test with pattern '$caseName' in all folders..."
         npx jest -t "$caseName"
     else
         # Run all tests
-        echo "Running all Node.js tests..."
-        npx jest
+        if [ "$mandatory_only" = "true" ]; then
+            echo "Non-CI mode: running mandatory tests per module only..."
+            for folder in payment_gateway widget disbursement; do
+                if [ -d "$folder" ]; then
+                    mandatory_pattern=$(get_mandatory_pattern_for_folder "$folder")
+                    if [ -n "$mandatory_pattern" ]; then
+                        echo "Running mandatory tests in $folder..."
+                        npx jest "$folder" -t "$mandatory_pattern"
+                    else
+                        npx jest "$folder"
+                    fi
+                fi
+            done
+        else
+            echo "Running all Node.js tests..."
+            npx jest
+        fi
     fi
     
     # Change back to project root
@@ -199,4 +250,5 @@ EOF
 }
 
 # Always execute the runner
-run_node_runner "$@" 
+run_node_runner "$@"
+ 

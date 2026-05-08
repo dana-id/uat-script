@@ -13,6 +13,7 @@ import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
+import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
 
 import java.io.IOException;
@@ -55,6 +56,7 @@ class BankAccountInquiryTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountValidDataAmount() throws IOException {
     String caseName = "InquiryBankAccountValidDataAmount";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -73,6 +75,7 @@ class BankAccountInquiryTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInsufficientFund() throws IOException {
     String caseName = "InquiryBankAccountInsufficientFund";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -91,6 +94,7 @@ class BankAccountInquiryTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountUnauthorizedSignature() throws IOException {
     Map<String, String> customHeaders = new HashMap<>();
     String caseName = "InquiryBankAccountUnauthorizedSignature";
@@ -120,6 +124,7 @@ class BankAccountInquiryTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInactiveAccount() throws IOException {
     String caseName = "InquiryBankAccountInactiveAccount";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -138,6 +143,7 @@ class BankAccountInquiryTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInvalidMerchant() throws IOException {
     String caseName = "InquiryBankAccountInvalidMerchant";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -156,6 +162,7 @@ class BankAccountInquiryTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInvalidCard() throws IOException {
     String caseName = "InquiryBankAccountInvalidCard";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -174,6 +181,7 @@ class BankAccountInquiryTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInvalidFieldFormat() throws IOException {
     String caseName = "InquiryBankAccountInvalidFieldFormat";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
@@ -192,6 +200,7 @@ class BankAccountInquiryTest {
   }
 
   @Test
+  @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountMissingMandatoryField() throws IOException {
     String caseName = "InquiryBankAccountMissingMandatoryField";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,

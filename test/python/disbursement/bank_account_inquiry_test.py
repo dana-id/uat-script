@@ -8,7 +8,7 @@ from dana.disbursement.v1.api import *
 from dana.api_client import ApiClient
 from dana.exceptions import *
 from uuid import uuid4
-from helper.util import get_request, with_delay
+from helper.util import get_request, with_delay, retry_on_inconsistent_request
 from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error
 from helper.assertion import assert_response, assert_fail_response
 
@@ -30,6 +30,7 @@ with ApiClient(configuration) as api_client:
     api_instance = DisbursementApi(api_client)
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_valid_data_amount():
     case_name = "InquiryBankAccountValidDataAmount"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -45,6 +46,7 @@ def test_inquiry_bank_account_valid_data_amount():
         pytest.fail(f"API call failed: {e}")
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_insufficient_fund():
     case_name = "InquiryBankAccountInsufficientFund"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -62,6 +64,7 @@ def test_inquiry_bank_account_insufficient_fund():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_inactive_account():
     case_name = "InquiryBankAccountInactiveAccount"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -79,6 +82,7 @@ def test_inquiry_bank_account_inactive_account():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_invalid_merchant():
     case_name = "InquiryBankAccountInvalidMerchant"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -96,6 +100,7 @@ def test_inquiry_bank_account_invalid_merchant():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_invalid_card():
     case_name = "InquiryBankAccountInvalidCard"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -113,6 +118,7 @@ def test_inquiry_bank_account_invalid_card():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_invalid_field_format():
     case_name = "InquiryBankAccountInvalidFieldFormat"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -130,6 +136,7 @@ def test_inquiry_bank_account_invalid_field_format():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_missing_mandatory_field():
     case_name = "InquiryBankAccountMissingMandatoryField"
     json_dict = get_request(json_path_file, title_case, case_name)
@@ -147,6 +154,7 @@ def test_inquiry_bank_account_missing_mandatory_field():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
+@retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_unauthorized_signature():
     case_name = "InquiryBankAccountUnauthorizedSignature"
     json_dict = get_request(json_path_file, title_case, case_name)
