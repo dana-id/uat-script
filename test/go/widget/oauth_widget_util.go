@@ -1,6 +1,7 @@
 package widget
 
 import (
+	"context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -445,7 +446,7 @@ func automateOAuthFlow(pw *playwright.Playwright, phoneNumber, pin, redirectUrl 
 		return "", fmt.Errorf("could not enter PIN: PIN field not visible")
 	}
 
-	ctx, cancel := gocontext.WithTimeout(gocontext.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	var authCode string
