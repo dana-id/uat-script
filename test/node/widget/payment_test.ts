@@ -78,7 +78,7 @@ describe('Payment Tests', () => {
      * @scenario Positive test case for successful payment processing
      * @paymentMethod Widget-based payment integration
      */
-    test('should successfully perform payment', async () => {
+    test('PaymentSuccess - should successfully perform payment', async () => {
         // Define the test case name for data extraction
         const caseName = 'PaymentSuccess';
 
@@ -102,7 +102,7 @@ describe('Payment Tests', () => {
     });
 
     // Test: Payment Fail - Invalid Format
-    test('should fail with invalid format', async () => {
+    test('PaymentFailInvalidFormat - should fail with invalid format', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailInvalidFormat';
         // Get the request data from the JSON file based on the case name
@@ -126,7 +126,7 @@ describe('Payment Tests', () => {
     });
 
     // Test: Payment Fail - Missing or Invalid Mandatory Field
-    test('should fail with missing or invalid mandatory field', async () => {
+    test('PaymentFailMissingOrInvalidMandatoryField - should fail with missing or invalid mandatory field', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailMissingOrInvalidMandatoryField';
         // Get the request data from the JSON file based on the case name
@@ -159,7 +159,7 @@ describe('Payment Tests', () => {
     });
 
     // Test: Payment Fail - Invalid Signature
-    test('should fail with invalid signature', async () => {
+    test('PaymentFailInvalidSignature - should fail with invalid signature', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailInvalidSignature';
         // Get the request data from the JSON file based on the case name
@@ -191,8 +191,8 @@ describe('Payment Tests', () => {
         }
     });
 
-    // Test: Payment Fail - General Error
-    test.skip('should fail with general error', async () => {
+    // Test: Payment Fail - General Error (5005400)
+    test('PaymentFailGeneralError - should fail with general error', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailGeneralError';
         // Get the request data from the JSON file based on the case name
@@ -215,10 +215,9 @@ describe('Payment Tests', () => {
         }
     });
 
-    // Test: Payment Fail - Transaction Not Permitted
-    test('should fail with transaction not permitted', async () => {
-        // Define the case name for the test
-        const caseName = 'PaymentFailTransactionNotPermitted';
+    // Test: Payment Fail - Not Permitted (4035415) — Widget.json key is PaymentFailNotPermitted
+    test('PaymentFailNotPermitted - should fail when transaction is not permitted', async () => {
+        const caseName = 'PaymentFailNotPermitted';
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
@@ -240,7 +239,7 @@ describe('Payment Tests', () => {
     });
 
     // Test: Payment Fail - Merchant Not Exist or Status Abnormal
-    test('should fail with merchant not exist or status abnormal', async () => {
+    test('PaymentFailMerchantNotExistOrStatusAbnormal - should fail with merchant not exist or status abnormal', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailMerchantNotExistOrStatusAbnormal';
         // Get the request data from the JSON file based on the case name
@@ -264,7 +263,7 @@ describe('Payment Tests', () => {
     });
 
     // Test: Payment Fail - Inconsistent Request
-    test('should fail with inconsistent request', async () => {
+    test('PaymentFailInconsistentRequest - should fail with inconsistent request', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailInconsistentRequest';
 
@@ -295,7 +294,7 @@ describe('Payment Tests', () => {
     });
 
     // Test: Payment Fail - Internal Server Error
-    test('should fail with internal server error', async () => {
+    test('PaymentFailInternalServerError - should fail with internal server error', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailInternalServerError';
         // Get the request data from the JSON file based on the case name
@@ -318,10 +317,9 @@ describe('Payment Tests', () => {
         }
     });
 
-    // Test: Payment Fail - Exceeds Transaction Amount Limit
-    test.skip('should fail with exceeds transaction amount limit', async () => {
-        // Define the case name for the test
-        const caseName = 'PaymentFailExceedsTransactionAmountLimit';
+    // Test: Payment Fail - Exceed Amount Limit (4035402) — Widget.json key is PaymentFailExceedAmountLimit
+    test('PaymentFailExceedAmountLimit - should fail when amount exceeds limit', async () => {
+        const caseName = 'PaymentFailExceedAmountLimit';
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
@@ -342,8 +340,8 @@ describe('Payment Tests', () => {
         }
     });
 
-    // Test: Payment Fail - Timeout
-    test.skip('should fail with timeout', async () => {
+    // Not in the 10-code payment matrix: no PaymentFailTimeout fixture in Widget.json
+    test.skip('PaymentFailTimeout - should fail with timeout', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailTimeout';
         // Get the request data from the JSON file based on the case name
@@ -353,7 +351,6 @@ describe('Payment Tests', () => {
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
-            console.log('AMSDASDS');
             // Assert the response against the expected data
             await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
             // If the API call succeeds, fail the test
@@ -369,8 +366,8 @@ describe('Payment Tests', () => {
         }
     });
 
-    // Test: Payment Fail - Idempotent (Skipped)
-    test.skip('should fail with idempotent', async () => {
+    // Not in the 10-code payment matrix: placeholder only (no Widget.json fixture)
+    test.skip('PaymentFailIdempotent - should fail with idempotent', async () => {
         // Define the case name for the test
         const caseName = 'PaymentFailIdempotent';
         // Get the request data from the JSON file based on the case name

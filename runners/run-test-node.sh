@@ -17,10 +17,10 @@ get_mandatory_pattern_for_folder() {
     folder_name="$1"
     case "$folder_name" in
         "payment_gateway")
-            echo "CreateOrderRedirectScenario|CreateOrderInvalidFieldFormat|CreateOrderInconsistentRequest|CreateOrderInvalidMandatoryField|CreateOrderUnauthorized"
+            echo "CreateOrderRedirect|CreateOrderInvalidFieldFormat|CreateOrderInconsistentRequest|CreateOrderInvalidMandatoryField|CreateOrderUnauthorized"
             ;;
         "widget")
-            echo "PaymentSuccess|PaymentFailMissingOrInvalidMandatoryField|PaymentFailGeneralError|PaymentFailTransactionNotPermitted|PaymentFailMerchantNotExistOrStatusAbnormal|PaymentFailInconsistentRequest|PaymentFailInternalServerError|PaymentFailInvalidFormat|PaymentFailInvalidSignature|PaymentFailExceedsTransactionAmountLimit"
+            echo "PaymentSuccess|PaymentFailInvalidFormat|PaymentFailMissingOrInvalidMandatoryField|PaymentFailInvalidSignature|PaymentFailNotPermitted|PaymentFailMerchantNotExistOrStatusAbnormal|PaymentFailInconsistentRequest|PaymentFailInternalServerError|PaymentFailGeneralError|PaymentFailExceedAmountLimit"
             ;;
         "disbursement")
             echo "TopUpCustomerValid|TopUpCustomerInsufficientFund|TopUpCustomerFrozenAccount|TopUpCustomerMissingMandatoryField|TopUpCustomerInconsistentRequest|TopUpCustomerInternalServerError|TopUpCustomerInternalGeneralError|DisbursementBankValidAccount|DisbursementBankValidAccountInProgress|DisbursementBankInconsistentRequest|DisbursementBankInsufficientFund|DisbursementBankInactiveAccount|DisbursementBankInvalidFieldFormat|DisbursementBankMissingMandatoryField"
@@ -35,9 +35,10 @@ run_node_runner(){
     folderName=$1
     caseName=$2
     runPattern=$3   # optional: jest -t pattern for specific test name(s)
-    
+
     if [ -f .env ]; then set -a; . ./.env; set +a; fi
-    
+    mandatory_only=$(resolve_mandatory_only)
+
     if ! command -v node >/dev/null 2>&1; then
         echo "Node.js not available in this system. Please install Node.js."
         exit 0 
@@ -64,10 +65,14 @@ run_node_runner(){
     npm install --save-dev jest ts-jest
 
     # Install Playwright only when running tests that likely need browser automation.
+    # Local mandatory-only runs for widget (or the per-folder mandatory sweep) use API-only
+    # payment-host-to-host tests; skip browser deps unless the user scoped to automation-related names.
     needsPlaywrightInstall=false
     case "$folderName" in
         ""|"widget")
-            if [ -z "$caseName" ] && [ -z "$runPattern" ]; then
+            if [ "$mandatory_only" = "true" ] && [ -z "$caseName" ] && [ -z "$runPattern" ]; then
+                :
+            elif [ -z "$caseName" ] && [ -z "$runPattern" ]; then
                 needsPlaywrightInstall=true
             else
                 caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
@@ -138,8 +143,6 @@ module.exports = {
 EOF
     fi
     
-    mandatory_only=$(resolve_mandatory_only)
-
     # Support running by folder, scenario name, and/or specific test run pattern
     # Multiple tests: use | in pattern (e.g. CreateOrderRedirect|query payment) – Jest -t accepts regex
     # Note: Use substrings of the actual test() titles
@@ -251,4 +254,3 @@ EOF
 
 # Always execute the runner
 run_node_runner "$@"
- 
