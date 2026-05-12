@@ -32,6 +32,40 @@ get_mandatory_pattern_for_folder() {
 }
 
 run_php_runner(){
+    folderName=$1
+    caseName=$2
+    runPattern=$3
+    mandatory_only=$(resolve_mandatory_only)
+
+    # Mandatory-only runs use API-style PHPUnit scenarios (no browser). Match Node runner: skip browser stack unless
+    # the user scoped to automation-related tests or is running a full (non-mandatory) suite.
+    needs_selenium=true
+    case "$folderName" in
+        ""|"widget")
+            if [ "$mandatory_only" = "true" ] && [ -z "$caseName" ] && [ -z "$runPattern" ]; then
+                needs_selenium=false
+            elif [ -z "$caseName" ] && [ -z "$runPattern" ]; then
+                needs_selenium=true
+            else
+                caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
+                runPatternLower=$(echo "$runPattern" | tr '[:upper:]' '[:lower:]')
+                if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|selenium|webdriver"; then
+                    needs_selenium=true
+                else
+                    needs_selenium=false
+                fi
+            fi
+            ;;
+        "payment_gateway"|"disbursement")
+            if [ "$mandatory_only" = "true" ] && [ -z "$caseName" ] && [ -z "$runPattern" ]; then
+                needs_selenium=false
+            fi
+            ;;
+    esac
+
+    if [ "$needs_selenium" != "true" ]; then
+        echo "Skipping Selenium / ChromeDriver setup (mandatory-only or non-browser-scoped run)."
+    else
     # Check and install Selenium WebDriver dependencies if needed
     echo "Checking Selenium WebDriver dependencies..."
     
@@ -186,10 +220,8 @@ run_php_runner(){
         start_selenium
         check_selenium_ready
     fi
-    folderName=$1
-    caseName=$2
-    runPattern=$3   # optional: PHPUnit --filter for specific test method name(s)
-    mandatory_only=$(resolve_mandatory_only)
+    fi
+
     # Use script location so ROOT_DIR is always the integration-test root (where test/php lives), not cwd (CI may run from parent repo)
     RUNNERS_DIR="$(cd "$(dirname "$0")" && pwd)"
     ROOT_DIR="$(cd "$RUNNERS_DIR/.." && pwd)"

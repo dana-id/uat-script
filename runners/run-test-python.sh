@@ -64,16 +64,27 @@ run_pytest_checked() {
 }
 
 setup_python_env() {
+    needs_playwright="$1"
+
     $PYTHON_CMD --version
     $PYTHON_CMD -m venv venv
     . venv/bin/activate
 
     $PYTHON_CMD -m pip install --upgrade pip
-    $PYTHON_CMD -m pip install --upgrade -r test/python/requirements.txt
+    if [ "$needs_playwright" = "true" ]; then
+        $PYTHON_CMD -m pip install --upgrade -r test/python/requirements.txt
+    else
+        echo "Using test/python/requirements-core.txt (no Playwright) for local mandatory-only run."
+        $PYTHON_CMD -m pip install --upgrade -r test/python/requirements-core.txt
+    fi
     # Ensure at least the required SDK version is used.
     $PYTHON_CMD -m pip install --upgrade "dana-python>=2.1.5"
 
-    $PYTHON_CMD -m playwright install --with-deps chromium
+    if [ "$needs_playwright" = "true" ]; then
+        $PYTHON_CMD -m playwright install --with-deps chromium
+    else
+        echo "Skipping Playwright browser install for local mandatory-only run."
+    fi
     export PYTHONPATH=$PYTHONPATH:$(pwd)/test/python:$(pwd)/runner/python
 }
 
@@ -187,7 +198,36 @@ run_python_runner() {
     fi
 
     mandatory_only=$(resolve_mandatory_only)
-    setup_python_env
+
+    # CI unchanged: always install Playwright. Local + mandatory-only: mirror Node (skip unless scoped to browser tests).
+    needs_playwright=true
+    if [ -z "${CI:-}" ] && [ "$mandatory_only" = "true" ]; then
+        needs_playwright=false
+        case "$folderName" in
+            ""|"widget")
+                if [ -z "$caseName" ] && [ -z "$runPattern" ]; then
+                    needs_playwright=false
+                else
+                    caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
+                    runPatternLower=$(echo "$runPattern" | tr '[:upper:]' '[:lower:]')
+                    if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|playwright"; then
+                        needs_playwright=true
+                    fi
+                fi
+                ;;
+            "payment_gateway"|"disbursement")
+                if [ -n "$caseName" ] || [ -n "$runPattern" ]; then
+                    caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
+                    runPatternLower=$(echo "$runPattern" | tr '[:upper:]' '[:lower:]')
+                    if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|playwright"; then
+                        needs_playwright=true
+                    fi
+                fi
+                ;;
+        esac
+    fi
+
+    setup_python_env "$needs_playwright"
 
     if [ -n "$folderName" ]; then
         run_single_folder "$folderName" "$caseName" "$runPattern" "$mandatory_only"

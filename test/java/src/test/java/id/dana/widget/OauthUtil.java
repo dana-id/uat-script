@@ -1,6 +1,6 @@
 package id.dana.widget;
 
-import com.microsoft.playwright.*;
+import id.dana.util.BrowserTestSupport;
 import id.dana.util.ConfigUtil;
 import id.dana.util.TestUtil;
 import org.slf4j.Logger;
@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -160,41 +159,7 @@ public class OauthUtil {
     }
 
     public static String getOauthViaView(String urlRedirectLinkAuthCode, String phoneNumber, String pin) {
-        try (Playwright playwright = Playwright.create()) {
-            Browser browser = playwright.webkit().launch();
-            playwright.firefox().launch(new BrowserType.LaunchOptions());
-            Page page = browser.newPage();
-//            Redirect to page login user with phone number
-            page.navigate(urlRedirectLinkAuthCode);
-
-            Thread.sleep(5000); // Wait for the page to load
-
-            String inputPhoneNumber = ".desktop-input>.txt-input-phone-number-field";
-            String buttonSubmitPhoneNumber = ".agreement__button>.btn-continue";
-            String inputPin = ".txt-input-pin-field";
-
-//            Do action input phone number
-            if (page.locator(inputPhoneNumber).isVisible())
-                page.locator(inputPhoneNumber).fill(phoneNumber);
-                page.locator(buttonSubmitPhoneNumber).click();
-
-//            Input pin user
-            page.locator(inputPin).fill(pin);
-
-//            wait until page authcode visible
-            page.waitForURL("**/**authCode**", new Page.WaitForURLOptions().setTimeout(15000));
-
-            String currentUrl = page.url();
-            String tempCurrentUrl = currentUrl
-                    .replace(redirecrUrl + "/?","");
-
-            authCode = tempCurrentUrl.split("authCode=")[1].split("&")[0];
-
-            log.info("Auth Code: {}", authCode);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        return authCode;
+        return BrowserTestSupport.oauthGetOauthViaView(urlRedirectLinkAuthCode, phoneNumber, pin);
     }
 
     public static String getAccessToken(String phoneNumberUser, String pinUser) throws

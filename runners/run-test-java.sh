@@ -40,17 +40,75 @@ resolve_mandatory_only() {
     fi
 }
 
+MAVEN_DISABLE_PLAYWRIGHT_PROFILE=""
+
+run_mvn() {
+    if [ -n "$MAVEN_DISABLE_PLAYWRIGHT_PROFILE" ]; then
+        mvn -P "$MAVEN_DISABLE_PLAYWRIGHT_PROFILE" "$@"
+    else
+        mvn "$@"
+    fi
+}
+
+compute_maven_playwright_profile_args() {
+    MAVEN_DISABLE_PLAYWRIGHT_PROFILE=""
+    if [ -n "${CI:-}" ] || [ "$mandatory_only" != "true" ]; then
+        return 0
+    fi
+
+    local effective_module=""
+    if [ -n "$folder_name" ]; then
+        effective_module=$(find_module "$folder_name" 2>/dev/null) || true
+    fi
+    local use_case
+    use_case="$effective_module"
+    if [ -z "$use_case" ]; then
+        use_case="$folder_name"
+    fi
+    use_case=$(echo "$use_case" | tr '[:upper:]' '[:lower:]')
+
+    local needs_playwright=false
+    case "$use_case" in
+        ""|widget)
+            if [ -n "$case_name" ] || [ -n "$run_pattern" ]; then
+                local caseNameLower runPatternLower
+                caseNameLower=$(echo "$case_name" | tr '[:upper:]' '[:lower:]')
+                runPatternLower=$(echo "$run_pattern" | tr '[:upper:]' '[:lower:]')
+                if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|playwright"; then
+                    needs_playwright=true
+                fi
+            fi
+            ;;
+        paymentgateway|disbursement)
+            if [ -n "$case_name" ] || [ -n "$run_pattern" ]; then
+                local caseNameLower runPatternLower
+                caseNameLower=$(echo "$case_name" | tr '[:upper:]' '[:lower:]')
+                runPatternLower=$(echo "$run_pattern" | tr '[:upper:]' '[:lower:]')
+                if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|playwright"; then
+                    needs_playwright=true
+                fi
+            fi
+            ;;
+    esac
+
+    if [ "$needs_playwright" = "false" ]; then
+        MAVEN_DISABLE_PLAYWRIGHT_PROFILE="!with-playwright"
+        print_info "Local mandatory-only: omitting Playwright profile (-P '!with-playwright')"
+    fi
+}
+
+# Devsite mandatory scenarios (same checklist as Python/PHP/Go). Uses Surefire Class#m1+m2; multiple classes comma-separated.
 get_mandatory_pattern_for_module() {
     module_name="$1"
     case "$module_name" in
         "paymentgateway")
-            echo "id.dana.paymentgateway.CreateOrderTest"
+            echo 'id.dana.paymentgateway.CreateOrderTest#testCreateOrderRedirect+testCreateOrderInvalidFieldFormat+testCreateOrderInconsistentRequest+testCreateOrderInvalidMandatoryField+testCreateOrderUnauthorized'
             ;;
         "widget")
-            echo "id.dana.widget.PaymentTest"
+            echo 'id.dana.widget.PaymentTest#testPaymentOrderSuccess+testPaymentFailMissingOrInvalidMandatoryField+testPaymentOrderMerchantDoesNotExist+testPaymentOrderInconsistent+testPaymentFailInternalServerError+testPaymentFailInvalidFormat+testPaymentFailInvalidSignature'
             ;;
         "disbursement")
-            echo "id.dana.disbursement.TransferToDanaTest,id.dana.disbursement.TransferToBankTest"
+            echo 'id.dana.disbursement.TransferToDanaTest#testTopUpCustomerValid+testTopUpCustomerInsufficientFund+testTopUpCustomerFrozenAccount+testTopUpCustomerMissingMandatoryField+testTopUpCustomerInconsistentRequest+testTopUpCustomerInternalServerError+testTopUpCustomerInternalGeneralError,id.dana.disbursement.TransferToBankTest#testDisbursementBankValidAccount+testDisbursementBankInsufficientFund+testDisbursementBankValidAccountInProgress+testDisbursementBankInactiveAccount+testDisbursementBankInvalidMandatoryFieldFormat+testDisbursementBankMissingMandatoryField+testDisbursementBankInvalidFieldFormat'
             ;;
         *)
             echo ""
@@ -208,7 +266,7 @@ get_module_display_name() {
         paymentgateway) echo "Payment Gateway" ;;
         disbursement) echo "Disbursement" ;;
         widget) echo "Widget" ;;
-        *) echo "${module^}" ;;  # Capitalize first letter
+        *) echo "$module" ;;
     esac
 }
 
@@ -312,12 +370,12 @@ run_specific_test() {
     print_info "Executing: $test_arg"
     echo
     
-    if ! mvn -q -DskipTests clean test-compile; then
+    if ! run_mvn -q -DskipTests clean test-compile; then
         print_warning "Fresh test compilation failed"
     fi
 
     # Run Maven test with proper error handling
-    if mvn test -Dtest="$test_arg" -q; then
+    if run_mvn test -Dtest="$test_arg" -q; then
         print_success "Test execution completed successfully!"
     else
         print_warning "Test execution completed with issues"
@@ -352,6 +410,11 @@ run_module_tests() {
     fi
     
     cd "$JAVA_TEST_DIR"
+
+    # Drop prior Surefire XML so the summary reflects only this run (avoids showing e.g. CancelOrderTest after mandatory-only CreateOrderTest).
+    if [ -d "target/surefire-reports" ]; then
+        rm -f target/surefire-reports/TEST-*.xml 2>/dev/null || true
+    fi
     
     local test_arg
     module_mandatory_pattern=$(get_mandatory_pattern_for_module "$actual_module")
@@ -376,7 +439,7 @@ run_module_tests() {
     echo
     
     # Use Maven test pattern for the module (or filtered classes)
-    if mvn test -Dtest="$test_arg" -q; then
+    if run_mvn test -Dtest="$test_arg" -q; then
         print_success "Module test execution completed successfully!"
     else
         print_warning "Module test execution completed with issues"
@@ -394,6 +457,10 @@ run_all_tests() {
     print_header "Running All Tests Across All Modules"
     
     cd "$JAVA_TEST_DIR"
+
+    if [ -d "target/surefire-reports" ]; then
+        rm -f target/surefire-reports/TEST-*.xml 2>/dev/null || true
+    fi
     
     # Count total tests for better feedback
     local business_modules=$(discover_business_modules)
@@ -426,13 +493,13 @@ run_all_tests() {
                 fi
             fi
         done
-        if [ -n "$mandatory_classes" ] && mvn test -Dtest="$mandatory_classes" -q; then
+        if [ -n "$mandatory_classes" ] && run_mvn test -Dtest="$mandatory_classes" -q; then
             print_success "Mandatory tests execution completed successfully!"
         else
             print_warning "Mandatory tests execution completed with issues"
         fi
     # Run all tests
-    elif mvn test -q; then
+    elif run_mvn test -q; then
         print_success "All tests execution completed successfully!"
     else
         print_warning "All tests execution completed with issues"
@@ -579,8 +646,10 @@ show_failure_details() {
                 continue
             fi
             
-            # Check if this class has failures or errors
-            local has_failures=$(grep -c '<failure\|<error' "$xml_file" 2>/dev/null || echo "0")
+            # grep -c prints 0 but exits 1 when there are no matches; avoid "|| echo 0" (duplicates "0" and breaks integer compare).
+            local has_failures
+            has_failures=$(grep -E -c '<failure|<error' "$xml_file" 2>/dev/null) || true
+            case "$has_failures" in ''|*[!0-9]*) has_failures=0 ;; esac
             
             if [ "$has_failures" -gt 0 ]; then
                 printf "📝 %s\n" "$(color_text "$class_name" $BOLD)"
@@ -614,6 +683,8 @@ run_java_runner() {
     local folder_name="$1"
     local case_name="$2"
     local run_pattern="$3"   # optional: single test method name (e.g. createOrderRedirectScenario)
+
+    compute_maven_playwright_profile_args
     
     # Validate environment first
     validate_environment
