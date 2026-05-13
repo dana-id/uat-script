@@ -124,7 +124,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -159,7 +159,6 @@ class PaymentTest extends TestCase
      */
     public function testPaymentFailInconsistentRequest(): void
     {
-        $this->markTestSkipped('Inconsistent request scenario skipped');
         Util::withDelay(function () {
             $caseName = 'PaymentFailInconsistentRequest';
             $jsonDict = Util::getRequest(
@@ -170,8 +169,9 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $fixedPartnerRef = PaymentUtil::generatePartnerReferenceNo();
+            $jsonDict['originalPartnerReferenceNo'] = $fixedPartnerRef;
             $jsonDict['partnerReferenceNo'] = $fixedPartnerRef;
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -182,9 +182,9 @@ class PaymentTest extends TestCase
                 // First request with original data
                 self::$apiInstanceWidget->widgetPayment($requestObj);
 
-                // Second request with modified amount but same partnerReferenceNo
+                // Second request: same partner ref, different amount (same as Python/Node matrix)
                 $jsonDict['amount']['currency'] = 'IDR';
-                $jsonDict['amount']['value'] = '2000.00';
+                $jsonDict['amount']['value'] = '10000.00';
                 $modifiedRequestObj = ObjectSerializer::deserialize(
                     $jsonDict,
                     'Dana\Widget\v1\Model\WidgetPaymentRequest'
@@ -214,7 +214,7 @@ class PaymentTest extends TestCase
      * @author Integration Test Team
      * @since 1.0.0
      */
-    public function testPaymentInvalidFieldFormat(): void
+    public function testPaymentFailInvalidFormat(): void
     {
         Util::withDelay(function () {
             $caseName = 'PaymentFailInvalidFormat';
@@ -226,7 +226,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -271,7 +271,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
             // Create headers without timestamp to test validation
             $headers = Util::getHeadersWithSignature(
@@ -318,7 +318,7 @@ class PaymentTest extends TestCase
      * @author Integration Test Team
      * @since 1.0.0
      */
-    public function testPaymentInvalidSignature(): void
+    public function testPaymentFailInvalidSignature(): void
     {
         Util::withDelay(function () {
             $caseName = 'PaymentFailInvalidSignature';
@@ -330,7 +330,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
             // Create headers without timestamp to test validation
             $headers = Util::getHeadersWithSignature(
@@ -392,7 +392,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -438,7 +438,7 @@ class PaymentTest extends TestCase
             $jsonDict['merchantId'] = self::$merchantId;
             $fixedPartnerRef = 'IDEMPOTENT_TEST_' . time() . '_' . substr(md5(rand()), 0, 8);
             $jsonDict['partnerReferenceNo'] = $fixedPartnerRef;
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,
@@ -525,6 +525,120 @@ class PaymentTest extends TestCase
     }
 
     /**
+     * @testdox Should give fail response for general error scenario (5005400)
+     */
+    public function testPaymentFailGeneralError(): void
+    {
+        Util::withDelay(function () {
+            $caseName = 'PaymentFailGeneralError';
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFileWidget,
+                self::$titleCase,
+                $caseName
+            );
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
+
+            $requestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\Widget\v1\Model\WidgetPaymentRequest'
+            );
+
+            try {
+                self::$apiInstanceWidget->widgetPayment($requestObj);
+                $this->fail('Expected ApiException for general error but the API call succeeded');
+            } catch (ApiException $e) {
+                Assertion::assertApiException(
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
+                    $e,
+                    [],
+                    $jsonDict
+                );
+            }
+        });
+    }
+
+    /**
+     * @testdox Should give fail response when transaction is not permitted (4035415)
+     */
+    public function testPaymentFailNotPermitted(): void
+    {
+        Util::withDelay(function () {
+            $caseName = 'PaymentFailNotPermitted';
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFileWidget,
+                self::$titleCase,
+                $caseName
+            );
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
+
+            $requestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\Widget\v1\Model\WidgetPaymentRequest'
+            );
+
+            try {
+                self::$apiInstanceWidget->widgetPayment($requestObj);
+                $this->fail('Expected ApiException for not permitted but the API call succeeded');
+            } catch (ApiException $e) {
+                Assertion::assertApiException(
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
+                    $e,
+                    [],
+                    $jsonDict
+                );
+            }
+        });
+    }
+
+    /**
+     * @testdox Should give fail response when amount exceeds transaction limit (4035402)
+     */
+    public function testPaymentFailExceedAmountLimit(): void
+    {
+        Util::withDelay(function () {
+            $caseName = 'PaymentFailExceedAmountLimit';
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFileWidget,
+                self::$titleCase,
+                $caseName
+            );
+
+            $jsonDict['merchantId'] = self::$merchantId;
+            $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
+
+            $requestObj = ObjectSerializer::deserialize(
+                $jsonDict,
+                'Dana\Widget\v1\Model\WidgetPaymentRequest'
+            );
+
+            try {
+                self::$apiInstanceWidget->widgetPayment($requestObj);
+                $this->fail('Expected ApiException for exceed amount limit but the API call succeeded');
+            } catch (ApiException $e) {
+                Assertion::assertApiException(
+                    self::$jsonPathFileWidget,
+                    self::$titleCase,
+                    $caseName,
+                    $e,
+                    [],
+                    $jsonDict
+                );
+            }
+        });
+    }
+
+    /**
      * @testdox Should give fail response for internal server error scenario
      * @description Validates error handling when server encounters internal processing errors
      * @test Verifies that server-side errors return appropriate HTTP 500 Internal Server Error
@@ -546,7 +660,7 @@ class PaymentTest extends TestCase
 
             $jsonDict['merchantId'] = self::$merchantId;
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(900, 7);
+            $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
             $requestObj = ObjectSerializer::deserialize(
                 $jsonDict,

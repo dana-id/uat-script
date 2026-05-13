@@ -105,7 +105,7 @@ get_mandatory_pattern_for_module() {
             echo 'id.dana.paymentgateway.CreateOrderTest#testCreateOrderRedirect+testCreateOrderInvalidFieldFormat+testCreateOrderInconsistentRequest+testCreateOrderInvalidMandatoryField+testCreateOrderUnauthorized'
             ;;
         "widget")
-            echo 'id.dana.widget.PaymentTest#testPaymentOrderSuccess+testPaymentFailMissingOrInvalidMandatoryField+testPaymentOrderMerchantDoesNotExist+testPaymentOrderInconsistent+testPaymentFailInternalServerError+testPaymentFailInvalidFormat+testPaymentFailInvalidSignature'
+            echo 'id.dana.widget.PaymentTest#testPaymentOrderSuccess+testPaymentFailMissingOrInvalidMandatoryField+testPaymentOrderMerchantDoesNotExist+testPaymentOrderInconsistent+testPaymentFailInternalServerError+testPaymentFailInvalidFormat+testPaymentFailInvalidSignature+testPaymentFailNotPermitted+testPaymentFailGeneralError+testPaymentFailExceedAmountLimit'
             ;;
         "disbursement")
             echo 'id.dana.disbursement.TransferToDanaTest#testTopUpCustomerValid+testTopUpCustomerInsufficientFund+testTopUpCustomerFrozenAccount+testTopUpCustomerMissingMandatoryField+testTopUpCustomerInconsistentRequest+testTopUpCustomerInternalServerError+testTopUpCustomerInternalGeneralError,id.dana.disbursement.TransferToBankTest#testDisbursementBankValidAccount+testDisbursementBankInsufficientFund+testDisbursementBankValidAccountInProgress+testDisbursementBankInactiveAccount+testDisbursementBankInvalidMandatoryFieldFormat+testDisbursementBankMissingMandatoryField+testDisbursementBankInvalidFieldFormat'

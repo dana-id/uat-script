@@ -208,6 +208,48 @@ public class PaymentTest {
     }
 
     @Test
+    void testPaymentFailNotPermitted() throws IOException {
+        String caseName = "PaymentFailNotPermitted";
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                WidgetPaymentRequest.class);
+
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
+
+        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+    }
+
+    @Test
+    void testPaymentFailGeneralError() throws IOException {
+        String caseName = "PaymentFailGeneralError";
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                WidgetPaymentRequest.class);
+
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
+
+        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+    }
+
+    @Test
+    void testPaymentFailExceedAmountLimit() throws IOException {
+        String caseName = "PaymentFailExceedAmountLimit";
+        WidgetPaymentRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
+                WidgetPaymentRequest.class);
+
+        requestData.setPartnerReferenceNo(partnerReferenceNo);
+        requestData.setMerchantId(merchantId);
+        requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffset(30));
+
+        WidgetPaymentResponse response = widgetApi.widgetPayment(requestData);
+        TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, null);
+    }
+
+    @Test
     @Disabled
     void testPaymentFailTimeout() throws IOException {
         String caseName = "PaymentFailTimeout";

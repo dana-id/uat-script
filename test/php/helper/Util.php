@@ -427,6 +427,19 @@ class Util
         );
     }
 
+    /**
+     * validUpTo for widget payment-host-to-host (SANDBOX): wall clock in Asia/Jakarta, within API max horizon.
+     * Mirrors Python test_python/widget/payment_test._valid_up_to_max_15_minutes().
+     */
+    public static function widgetPaymentValidUpTo(int $minutesFromNow = 15): string
+    {
+        $tz = new \DateTimeZone('Asia/Jakarta');
+        $dt = new \DateTime('now', $tz);
+        $dt->modify('+' . $minutesFromNow . ' minutes');
+
+        return $dt->format('Y-m-d\TH:i:s') . '+07:00';
+    }
+
     public static function runWithRetry(
         callable $testCallback, 
         int $maxRetries = 3, 

@@ -70,8 +70,8 @@ def assert_response(json_path_file: str, title: str, data: str, api_response_jso
             error_msg += f"    Actual: {actual_val}\n"
         raise AssertionError(error_msg)
 
-    # Print success message
-    pprint(f"Assertion passed: API response matches the expected data {actual_response}")
+    logged = replace_variables(actual_response, variable_dict) if variable_dict else actual_response
+    pprint(f"Assertion passed: API response matches the expected data {logged}")
 
 
 def assert_fail_response(json_path_file: str, title: str, data: str, error_body: str, variable_dict: dict = None) -> None:
@@ -114,8 +114,8 @@ def assert_fail_response(json_path_file: str, title: str, data: str, error_body:
                 error_msg += f"    Actual: {actual_val}\n"
             raise AssertionError(error_msg)
 
-        # Print success message
-        pprint(f"Assertion passed: API error response matches the expected data {actual_response}")
+        logged = replace_variables(actual_response, variable_dict) if variable_dict else actual_response
+        pprint(f"Assertion passed: API error response matches the expected data {logged}")
     except json.JSONDecodeError as e:
         
         raise ValueError(f"Failed to parse JSON error response: {e}")

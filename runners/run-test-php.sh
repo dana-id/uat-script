@@ -20,7 +20,7 @@ get_mandatory_pattern_for_folder() {
             echo "testCreateOrderRedirectScenario|testCreateOrderInvalidFieldFormat|testCreateOrderInconsistentRequest|testCreateOrderInvalidMandatoryField|testCreateOrderUnauthorized"
             ;;
         "widget")
-            echo "testPaymentSuccess|testPaymentFailMissingOrInvalidMandatoryField|testPaymentFailGeneralError|testPaymentFailTransactionNotPermitted|testPaymentFailMerchantNotExistOrStatusAbnormal|testPaymentFailInconsistentRequest|testPaymentFailInternalServerError|testPaymentFailInvalidFormat|testPaymentFailInvalidSignature|testPaymentFailExceedsTransactionAmountLimit"
+            echo "testPaymentSuccess|testPaymentFailInvalidFormat|testPaymentFailMissingOrInvalidMandatoryField|testPaymentFailInvalidSignature|testPaymentFailNotPermitted|testPaymentFailMerchantNotExistOrStatusAbnormal|testPaymentFailInconsistentRequest|testPaymentFailInternalServerError|testPaymentFailGeneralError|testPaymentFailExceedAmountLimit"
             ;;
         "disbursement")
             echo "testTopUpCustomerValid|testTopUpCustomerInsufficientFund|testTopUpCustomerFrozenAccount|testTopUpCustomerMissingMandatoryField|testTopUpCustomerInconsistentRequest|testTopUpCustomerInternalServerError|testTopUpCustomerInternalGeneralError|testDisbursementBankValidAccount|testDisbursementBankValidAccountInProgress|testDisbursementBankInconsistentRequest|testDisbursementBankInsufficientFund|testDisbursementBankInactiveAccount|testDisbursementBankInvalidFieldFormat|testDisbursementBankMissingMandatoryField"

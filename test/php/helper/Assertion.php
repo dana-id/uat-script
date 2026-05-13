@@ -418,12 +418,29 @@ class Assertion
      * @param string $jsonPathFile Path to the JSON file
      * @param string $titleCase The title case for the request
      * @param string $caseName The case name for the request
-     * @param ApiException $exception The API exception to validate
+     * @param ApiException|Exception $exception The API exception (or generic Exception) to validate
      * @param array $variableDict Optional dictionary of variables to replace in expected response
+     * @param array|null $requestForVariables Optional request array; partnerReferenceNo / originalPartnerReferenceNo are merged into variableDict when missing
      * @throws \Exception If assertion fails
      */
-    public static function assertApiException(string $jsonPathFile, string $titleCase, string $caseName, ApiException $exception, array $variableDict = []): void
-    {
+    public static function assertApiException(
+        string $jsonPathFile,
+        string $titleCase,
+        string $caseName,
+        $exception,
+        array $variableDict = [],
+        ?array $requestForVariables = null
+    ): void {
+        if ($requestForVariables !== null) {
+            if (!isset($variableDict['partnerReferenceNo'])) {
+                if (isset($requestForVariables['partnerReferenceNo'])) {
+                    $variableDict['partnerReferenceNo'] = $requestForVariables['partnerReferenceNo'];
+                } elseif (isset($requestForVariables['originalPartnerReferenceNo'])) {
+                    $variableDict['partnerReferenceNo'] = $requestForVariables['originalPartnerReferenceNo'];
+                }
+            }
+        }
+
         // Register with PHPUnit that we're performing an assertion
         if (class_exists('PHPUnit\Framework\Assert')) {
             \PHPUnit\Framework\Assert::assertTrue(true, "API Exception validation for {$titleCase}.{$caseName}");

@@ -263,10 +263,10 @@ func TestPaymentFailGeneralError(t *testing.T) {
 }
 
 func TestPaymentFailTransactionNotPermitted(t *testing.T) {
-	caseName := "PaymentFailTransactionNotPermitted"
+	caseName := "PaymentFailNotPermitted"
 	jsonDict, err := helper.GetRequest(widgetPaymentJsonPath, widgetPaymentTitleCase, caseName)
 	if err != nil {
-		t.Skipf("Fixture not in Widget.json: %v", err)
+		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
@@ -443,8 +443,7 @@ func TestPaymentFailInternalServerError(t *testing.T) {
 }
 
 func TestPaymentFailExceedsTransactionAmountLimit(t *testing.T) {
-	t.Skip("Skip: API returns Internal Server Error instead of expected limit error - responseCode: 5005401, responseMessage: Internal Server Error (expected: 4035402, Exceeds Transaction Amount Limit)")
-	caseName := "PaymentFailExceedsTransactionAmountLimit"
+	caseName := "PaymentFailExceedAmountLimit"
 	jsonDict, err := helper.GetRequest(widgetPaymentJsonPath, widgetPaymentTitleCase, caseName)
 	if err != nil {
 		t.Fatalf("Failed to get request data: %v", err)
