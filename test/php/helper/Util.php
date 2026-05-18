@@ -7,7 +7,10 @@ use Dana\ApiException;
 use DanaUat\Helper\Exception;
 
 class Util
-{   
+{
+    /** Sandbox PG create-order: validUpTo must be within 30 minutes (use 6 minutes). */
+    public const SANDBOX_DEFAULT_VALID_UP_TO_OFFSET_SECONDS = 360;
+
     /**
      * Replace template values in a string, array, or object
      * Replaces ${VARIABLE_NAME} patterns with corresponding environment variable values
@@ -403,10 +406,17 @@ class Util
      * - generateFormattedDate(-1800, 7) // 30 minutes ago: "2025-09-10T14:00:15+07:00"
      * - generateFormattedDate(0, -5)    // Current time with EST timezone: "2025-09-10T14:30:15-05:00"
      */
+    public static function paymentGatewaySandboxValidUpTo(?int $offsetSeconds = null): string
+    {
+        return self::generateFormattedDate(
+            $offsetSeconds ?? self::SANDBOX_DEFAULT_VALID_UP_TO_OFFSET_SECONDS,
+            7
+        );
+    }
+
     public static function generateFormattedDate(int $offsetSeconds = 0, int $timezoneOffset = 7): string
     {
-        // Create DateTime object with offset seconds applied
-        $targetDateTime = new \DateTime();
+        $targetDateTime = new \DateTime('now', new \DateTimeZone('Asia/Jakarta'));
         $targetDateTime->modify(sprintf('%+d seconds', $offsetSeconds));
         
         // Format timezone offset
@@ -484,4 +494,46 @@ class Util
         
         throw $lastException;
     }
+
+  public static function paymentCodeFromCreateOrderResponse(string $responseBody): string
+  {
+    $decoded = json_decode($responseBody, true);
+    if (!is_array($decoded)
+      || !isset($decoded['additionalInfo']['paymentCode'])
+      || $decoded['additionalInfo']['paymentCode'] === '') {
+      throw new \RuntimeException('paymentCode missing in create order response');
+    }
+    return $decoded['additionalInfo']['paymentCode'];
+  }
+
+  public static function payVirtualAccountSandbox(string $virtualAccountNo): void
+  {
+    $payload = json_encode([
+      'urlEndpoint' => '/v1.0/transfer-va/payment.htm',
+      'requestBody' => ['virtualAccountNo' => $virtualAccountNo],
+    ]);
+
+    $ch = curl_init('https://dashboard-sandbox.dana.id/merchant-portal-app/api/sandbox-tools/execute');
+    curl_setopt_array($ch, [
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_POST => true,
+      CURLOPT_POSTFIELDS => $payload,
+      CURLOPT_HTTPHEADER => [
+        'accept: application/json',
+        'accept-language: en,id-ID;q=0.9,id;q=0.8,en-US;q=0.7',
+        'content-type: application/json',
+        'origin: https://dashboard.dana.id',
+        'referer: https://dashboard.dana.id/',
+      ],
+      CURLOPT_TIMEOUT => 30,
+    ]);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
+    if ($httpCode < 200 || $httpCode >= 300) {
+      throw new \RuntimeException("sandbox VA payment failed: HTTP {$httpCode} body={$response}");
+    }
+  }
 }

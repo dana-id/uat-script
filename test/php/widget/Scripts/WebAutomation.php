@@ -2,6 +2,8 @@
 
 namespace DanaUat\Widget\Scripts;
 
+use DanaUat\Helper\SeleniumUtil;
+
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
 use Facebook\WebDriver\Remote\RemoteWebDriver;
@@ -45,43 +47,6 @@ class WebAutomation
      * 
      * @return bool True if Selenium was started or was already running, false if failed
      */
-    private static function attemptToStartSelenium()
-    {
-        $seleniumJar = getenv('HOME') . '/.selenium/selenium-server.jar';
-        
-        // Check if jar exists
-        if (!file_exists($seleniumJar)) {
-            echo "Selenium JAR not found at {$seleniumJar}. Cannot auto-start." . PHP_EOL;
-            echo "Run the test through the runner script to download and configure Selenium." . PHP_EOL;
-            return false;
-        }
-        
-        // Check if Java is available
-        exec('which java', $output, $returnVar);
-        if ($returnVar !== 0) {
-            echo "Java not found. Cannot start Selenium server." . PHP_EOL;
-            return false;
-        }
-        
-        // Check if Selenium is already running
-        exec('pgrep -f "selenium-server"', $output, $returnVar);
-        if ($returnVar === 0) {
-            // Process is running, no need to start
-            echo "Selenium process already running." . PHP_EOL;
-            return true;
-        }
-        
-        echo "Attempting to start Selenium server..." . PHP_EOL;
-        
-        // Start Selenium in the background
-        $cmd = "java -jar \"$seleniumJar\" standalone > /dev/null 2>&1 &";
-        exec($cmd);
-        
-        // Give it time to start
-        sleep(5);
-        return true;
-    }
-    
     /**
      * Check if Selenium server is available and ready
      * 
@@ -90,29 +55,13 @@ class WebAutomation
      */
     public static function isSeleniumAvailable($seleniumUrl)
     {
-        // First, let's try to auto-start Selenium if it's configured
-        self::attemptToStartSelenium();
-        
-        // Check status endpoint to verify Selenium is actually ready
-        $statusUrl = rtrim($seleniumUrl, '/') . '/status';
-        $ch = curl_init($statusUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($httpCode >= 200 && $httpCode < 300 && !empty($response)) {
-            $json = json_decode($response, true);
-            if (isset($json['value']['ready']) && $json['value']['ready'] === true) {
-                echo "Selenium server is ready and accepting commands." . PHP_EOL;
-                return true;
-            }
-            echo "Selenium server is running but not ready. Status response: " . $response . PHP_EOL;
+        if (SeleniumUtil::isReady($seleniumUrl)) {
+            echo "Selenium server is ready and accepting commands." . PHP_EOL;
+            return true;
         }
-        
-        echo "Selenium server not available or not responding correctly. HTTP code: {$httpCode}" . PHP_EOL;
+
+        echo "Selenium server not available at {$seleniumUrl}" . PHP_EOL;
+        echo "Run tests via ./runners/run-test-php.sh or ensure Java is installed." . PHP_EOL;
         return false;
     }
     

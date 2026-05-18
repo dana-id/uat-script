@@ -86,7 +86,6 @@ class QueryPaymentTest extends TestCase
         // Set the original partner reference number
         $jsonDict['originalPartnerReferenceNo'] = $dataOrder['partnerReferenceNo'];
         $jsonDict['merchantId'] = getenv('MERCHANT_ID');
-        $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
         
         // Create a CancelOrderRequest object from the JSON request data
         $cancelOrderRequestObj = ObjectSerializer::deserialize(
@@ -123,7 +122,6 @@ class QueryPaymentTest extends TestCase
             // Set the correct partner reference number
             $jsonDict['originalPartnerReferenceNo'] = $partnerReferenceNo;
             $jsonDict['merchantId'] = getenv('MERCHANT_ID');
-            $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
             
             // Create a QueryPaymentRequest object from the JSON request data
             $queryPaymentRequestObj = ObjectSerializer::deserialize(
@@ -564,7 +562,7 @@ class QueryPaymentTest extends TestCase
         // Set a unique partner reference number
         $partnerReferenceNo = Util::generatePartnerReferenceNo();
         $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
-        $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
+        $jsonDict['validUpTo'] = Util::paymentGatewaySandboxValidUpTo();
 
         // Create a CreateOrderByRedirectRequest object from the JSON request data
         $createOrderRequestObj = ObjectSerializer::deserialize(

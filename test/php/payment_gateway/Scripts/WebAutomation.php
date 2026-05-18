@@ -12,6 +12,8 @@
 
 namespace DanaUat\PaymentGateway\Scripts;
 
+use DanaUat\Helper\SeleniumUtil;
+
 // Import Facebook WebDriver classes if available
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
@@ -626,13 +628,9 @@ class WebAutomation
      */
     public static function isSeleniumAvailable()
     {
-        // Try to open a socket connection to Selenium server
-        $fp = @fsockopen('localhost', 4444, $errno, $errstr, 1);
-        if ($fp) {
-            fclose($fp);
-            return true;
-        }
-        return false;
+        $seleniumUrl = getenv('SELENIUM_SERVER_URL') ?: self::DEFAULT_SELENIUM_URL;
+
+        return SeleniumUtil::isReady($seleniumUrl);
     }
 
     /**

@@ -285,8 +285,8 @@ public class CreateOrderTest {
     TestUtil.delay(2000);
 
     try {
-      requestData.getAmount().setValue("100000.00");
-      requestData.getPayOptionDetails().get(0).getTransAmount().setValue("100000.00");
+      requestData.getAmount().setValue("10000.00");
+      requestData.getPayOptionDetails().get(0).getTransAmount().setValue("10000.00");
 
       CreateOrderResponse response = api.createOrder(requestData);
       String status = response.getResponseCode().substring(0, 3).trim();

@@ -1,4 +1,4 @@
-package widget_test
+package payment_gateway_test
 
 import (
 	"context"
@@ -15,13 +15,13 @@ import (
 )
 
 const (
-	createOrderTitleCaseFinishNotify             = "CreateOrder"
-	createOrderJsonPathFinishNotify              = "../../../resource/request/components/PaymentGateway.json"
-	createOrderRequestCaseFinishNotify           = "CreateOrderApi"
-	createOrderAssertCaseFinishNotify            = "CreateOrderApi"
-	notificationN8nURL                           = "https://n8n.automation.dana.id/webhook/3676a08f-b06e-416c-b6cd-bea04f71c4d5"
-	finishNotifyDefaultValidUpToOffsetSeconds    = 360
-	finishNotifyValidUpToOffsetExpiredSeconds    = 2*60 + 15
+	createOrderRequestCaseFinishNotify = "CreateOrderApi"
+	createOrderAssertCaseFinishNotify  = "CreateOrderApi"
+	notificationN8nURL                 = "https://n8n.automation.dana.id/webhook/3676a08f-b06e-416c-b6cd-bea04f71c4d5"
+	// Default validUpTo for success/error notify (matches TestCreateOrderNetworkPayPgOtherVaBank).
+	finishNotifyDefaultValidUpToOffsetSeconds = 360
+	// validUpTo for Expired Notify: now + 2m15s (same timezone as helper.GenerateFormattedDate).
+	finishNotifyValidUpToOffsetExpiredSeconds = 2*60 + 15
 )
 
 func patchCreateOrderAPIForFinishNotify(jsonDict map[string]interface{}, amount string) {
@@ -72,9 +72,10 @@ func payVAFromCreateOrderResponse(t *testing.T, body string) {
 	}
 }
 
+// createOrderAPIFinishNotifyOnce sends CreateOrder (API flow) with VA CIMB. If validUpTo is empty, validUpTo defaults to now+360s.
 func createOrderAPIFinishNotifyOnce(amount, validUpTo string) (partnerRef string, responseJSON string, err error) {
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
-		jsonDict, err := helper.GetRequest(createOrderJsonPathFinishNotify, createOrderTitleCaseFinishNotify, createOrderRequestCaseFinishNotify)
+		jsonDict, err := helper.GetRequest(createOrderJsonPath, createOrderTitleCase, createOrderRequestCaseFinishNotify)
 		if err != nil {
 			return nil, err
 		}
@@ -127,6 +128,7 @@ func createOrderAPIFinishNotifyOnce(amount, validUpTo string) (partnerRef string
 	return m["partnerRef"].(string), m["body"].(string), nil
 }
 
+// TestTransactionSuccessNotify creates a PG API order with NOTIFICATION url (n8n) and amount 11011.00.
 func TestTransactionSuccessNotify(t *testing.T) {
 	partnerRef, body, err := createOrderAPIFinishNotifyOnce("11011.00", "")
 	if err != nil {
@@ -135,7 +137,7 @@ func TestTransactionSuccessNotify(t *testing.T) {
 	if partnerRef == "" || body == "" {
 		t.Fatal("empty partner reference or response")
 	}
-	if err := helper.AssertResponse(createOrderJsonPathFinishNotify, createOrderTitleCaseFinishNotify, createOrderAssertCaseFinishNotify, body, map[string]interface{}{
+	if err := helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, createOrderAssertCaseFinishNotify, body, map[string]interface{}{
 		"partnerReferenceNo": partnerRef,
 	}); err != nil {
 		t.Fatal(err)
@@ -143,6 +145,7 @@ func TestTransactionSuccessNotify(t *testing.T) {
 	payVAFromCreateOrderResponse(t, body)
 }
 
+// TestInternalServerErrorNotify creates a PG API order with NOTIFICATION url (n8n) and amount 11012.00.
 func TestInternalServerErrorNotify(t *testing.T) {
 	partnerRef, body, err := createOrderAPIFinishNotifyOnce("11012.00", "")
 	if err != nil {
@@ -151,7 +154,7 @@ func TestInternalServerErrorNotify(t *testing.T) {
 	if partnerRef == "" || body == "" {
 		t.Fatal("empty partner reference or response")
 	}
-	if err := helper.AssertResponse(createOrderJsonPathFinishNotify, createOrderTitleCaseFinishNotify, createOrderAssertCaseFinishNotify, body, map[string]interface{}{
+	if err := helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, createOrderAssertCaseFinishNotify, body, map[string]interface{}{
 		"partnerReferenceNo": partnerRef,
 	}); err != nil {
 		t.Fatal(err)
@@ -159,6 +162,7 @@ func TestInternalServerErrorNotify(t *testing.T) {
 	payVAFromCreateOrderResponse(t, body)
 }
 
+// TestExpiredNotify (Expired Notify) creates a PG API order with NOTIFICATION url (n8n), amount 11013.00, and validUpTo set to now + 2m15s.
 func TestExpiredNotify(t *testing.T) {
 	validUpTo := helper.GenerateFormattedDate(finishNotifyValidUpToOffsetExpiredSeconds, 7)
 	partnerRef, body, err := createOrderAPIFinishNotifyOnce("11013.00", validUpTo)
@@ -168,7 +172,7 @@ func TestExpiredNotify(t *testing.T) {
 	if partnerRef == "" || body == "" {
 		t.Fatal("empty partner reference or response")
 	}
-	if err := helper.AssertResponse(createOrderJsonPathFinishNotify, createOrderTitleCaseFinishNotify, createOrderAssertCaseFinishNotify, body, map[string]interface{}{
+	if err := helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, createOrderAssertCaseFinishNotify, body, map[string]interface{}{
 		"partnerReferenceNo": partnerRef,
 	}); err != nil {
 		t.Fatal(err)

@@ -13,8 +13,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,6 +28,10 @@ import java.util.Map;
 
 public class PaymentPGUtil {
     private static final Logger log = LoggerFactory.getLogger(CreateOrderTest.class);
+
+    private static final String SANDBOX_TOOLS_EXECUTE_URL =
+            "https://dashboard-sandbox.dana.id/merchant-portal-app/api/sandbox-tools/execute";
+    private static final String TRANSFER_VA_PAYMENT_ENDPOINT = "/v1.0/transfer-va/payment.htm";
 
     public static void payOrder(String phoneNumber, String pin, String redirectUrlPay) {
         BrowserTestSupport.paymentGatewayPayOrder(phoneNumber, pin, redirectUrlPay);
@@ -182,5 +190,44 @@ public class PaymentPGUtil {
                 .configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
         Object tree = objectMapper.treeToValue(node, Object.class);
         return sorted.writeValueAsString(tree);
+    }
+
+    public static String paymentCodeFromCreateOrderResponse(CreateOrderResponse response) {
+        if (response == null
+                || response.getAdditionalInfo() == null
+                || response.getAdditionalInfo().getPaymentCode() == null
+                || response.getAdditionalInfo().getPaymentCode().isEmpty()) {
+            throw new IllegalStateException("paymentCode missing in create order response");
+        }
+        return response.getAdditionalInfo().getPaymentCode();
+    }
+
+    public static void payVirtualAccountSandbox(String virtualAccountNo) throws IOException {
+        String payload = String.format(
+                "{\"urlEndpoint\":\"%s\",\"requestBody\":{\"virtualAccountNo\":\"%s\"}}",
+                TRANSFER_VA_PAYMENT_ENDPOINT,
+                virtualAccountNo);
+
+        URL url = new URL(SANDBOX_TOOLS_EXECUTE_URL);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(30000);
+        conn.setReadTimeout(30000);
+        conn.setRequestProperty("accept", "application/json");
+        conn.setRequestProperty("accept-language", "en,id-ID;q=0.9,id;q=0.8,en-US;q=0.7");
+        conn.setRequestProperty("content-type", "application/json");
+        conn.setRequestProperty("origin", "https://dashboard.dana.id");
+        conn.setRequestProperty("referer", "https://dashboard.dana.id/");
+
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(payload.getBytes(StandardCharsets.UTF_8));
+        }
+
+        int responseCode = conn.getResponseCode();
+        if (responseCode < 200 || responseCode >= 300) {
+            throw new IOException("sandbox VA payment failed: HTTP " + responseCode);
+        }
+        conn.disconnect();
     }
 }

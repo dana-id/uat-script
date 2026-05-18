@@ -57,7 +57,7 @@ async function createOrderAPIFinishNotifyOnce(amount: string, validUpTo: string 
   }, 3, 2000);
 }
 
-describe('Widget - Finish Notify Tests', () => {
+describe('Disbursement - Finish Notify Tests', () => {
   test('TransactionSuccessNotify - create order API with NOTIFICATION url and amount 11011.00', async () => {
     const { partnerReferenceNo, response } = await createOrderAPIFinishNotifyOnce('11011.00', '');
     await assertResponse(jsonPathFile, titleCase, createOrderAssertCaseFinishNotify, response, { partnerReferenceNo });

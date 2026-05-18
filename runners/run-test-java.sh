@@ -102,13 +102,13 @@ get_mandatory_pattern_for_module() {
     module_name="$1"
     case "$module_name" in
         "paymentgateway")
-            echo 'id.dana.paymentgateway.CreateOrderTest#testCreateOrderRedirect+testCreateOrderInvalidFieldFormat+testCreateOrderInconsistentRequest+testCreateOrderInvalidMandatoryField+testCreateOrderUnauthorized'
+            echo 'id.dana.paymentgateway.CreateOrderTest#testCreateOrderRedirect+testCreateOrderInvalidFieldFormat+testCreateOrderInconsistentRequest+testCreateOrderInvalidMandatoryField+testCreateOrderUnauthorized,id.dana.paymentgateway.FinishNotifyTest#testTransactionSuccessNotify+testInternalServerErrorNotify+testExpiredNotify'
             ;;
         "widget")
-            echo 'id.dana.widget.PaymentTest#testPaymentOrderSuccess+testPaymentFailMissingOrInvalidMandatoryField+testPaymentOrderMerchantDoesNotExist+testPaymentOrderInconsistent+testPaymentFailInternalServerError+testPaymentFailInvalidFormat+testPaymentFailInvalidSignature+testPaymentFailNotPermitted+testPaymentFailGeneralError+testPaymentFailExceedAmountLimit'
+            echo 'id.dana.widget.PaymentTest#testPaymentOrderSuccess+testPaymentFailMissingOrInvalidMandatoryField+testPaymentOrderMerchantDoesNotExist+testPaymentOrderInconsistent+testPaymentFailInternalServerError+testPaymentFailInvalidFormat+testPaymentFailInvalidSignature+testPaymentFailNotPermitted+testPaymentFailGeneralError+testPaymentFailExceedAmountLimit,id.dana.widget.FinishNotifyTest#testTransactionSuccessNotify+testInternalServerErrorNotify+testExpiredNotify'
             ;;
         "disbursement")
-            echo 'id.dana.disbursement.TransferToDanaTest#testTopUpCustomerValid+testTopUpCustomerInsufficientFund+testTopUpCustomerFrozenAccount+testTopUpCustomerMissingMandatoryField+testTopUpCustomerInconsistentRequest+testTopUpCustomerInternalServerError+testTopUpCustomerInternalGeneralError,id.dana.disbursement.TransferToBankTest#testDisbursementBankValidAccount+testDisbursementBankInsufficientFund+testDisbursementBankValidAccountInProgress+testDisbursementBankInactiveAccount+testDisbursementBankInvalidMandatoryFieldFormat+testDisbursementBankMissingMandatoryField+testDisbursementBankInvalidFieldFormat'
+            echo 'id.dana.disbursement.TransferToDanaTest#testTopUpCustomerValid+testTopUpCustomerInsufficientFund+testTopUpCustomerFrozenAccount+testTopUpCustomerMissingMandatoryField+testTopUpCustomerInconsistentRequest+testTopUpCustomerInternalServerError+testTopUpCustomerInternalGeneralError,id.dana.disbursement.TransferToBankTest#testDisbursementBankValidAccount+testDisbursementBankInsufficientFund+testDisbursementBankValidAccountInProgress+testDisbursementBankInactiveAccount+testDisbursementBankInvalidMandatoryFieldFormat+testDisbursementBankMissingMandatoryField+testDisbursementBankInvalidFieldFormat,id.dana.disbursement.FinishNotifyTest#testTransactionSuccessNotify+testInternalServerErrorNotify+testExpiredNotify'
             ;;
         *)
             echo ""

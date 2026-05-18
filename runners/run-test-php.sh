@@ -17,13 +17,13 @@ get_mandatory_pattern_for_folder() {
     folder_name="$1"
     case "$folder_name" in
         "payment_gateway")
-            echo "testCreateOrderRedirectScenario|testCreateOrderInvalidFieldFormat|testCreateOrderInconsistentRequest|testCreateOrderInvalidMandatoryField|testCreateOrderUnauthorized"
+            echo "testCreateOrderRedirectScenario|testCreateOrderInvalidFieldFormat|testCreateOrderInconsistentRequest|testCreateOrderInvalidMandatoryField|testCreateOrderUnauthorized|testTransactionSuccessNotify|testInternalServerErrorNotify|testExpiredNotify"
             ;;
         "widget")
-            echo "testPaymentSuccess|testPaymentFailInvalidFormat|testPaymentFailMissingOrInvalidMandatoryField|testPaymentFailInvalidSignature|testPaymentFailNotPermitted|testPaymentFailMerchantNotExistOrStatusAbnormal|testPaymentFailInconsistentRequest|testPaymentFailInternalServerError|testPaymentFailGeneralError|testPaymentFailExceedAmountLimit"
+            echo "testPaymentSuccess|testPaymentFailInvalidFormat|testPaymentFailMissingOrInvalidMandatoryField|testPaymentFailInvalidSignature|testPaymentFailNotPermitted|testPaymentFailMerchantNotExistOrStatusAbnormal|testPaymentFailInconsistentRequest|testPaymentFailInternalServerError|testPaymentFailGeneralError|testPaymentFailExceedAmountLimit|testTransactionSuccessNotify|testInternalServerErrorNotify|testExpiredNotify"
             ;;
         "disbursement")
-            echo "testTopUpCustomerValid|testTopUpCustomerInsufficientFund|testTopUpCustomerFrozenAccount|testTopUpCustomerMissingMandatoryField|testTopUpCustomerInconsistentRequest|testTopUpCustomerInternalServerError|testTopUpCustomerInternalGeneralError|testDisbursementBankValidAccount|testDisbursementBankValidAccountInProgress|testDisbursementBankInconsistentRequest|testDisbursementBankInsufficientFund|testDisbursementBankInactiveAccount|testDisbursementBankInvalidFieldFormat|testDisbursementBankMissingMandatoryField"
+            echo "testTopUpCustomerValid|testTopUpCustomerInsufficientFund|testTopUpCustomerFrozenAccount|testTopUpCustomerMissingMandatoryField|testTopUpCustomerInconsistentRequest|testTopUpCustomerInternalServerError|testTopUpCustomerInternalGeneralError|testDisbursementBankValidAccount|testDisbursementBankValidAccountInProgress|testDisbursementBankInconsistentRequest|testDisbursementBankInsufficientFund|testDisbursementBankInactiveAccount|testDisbursementBankInvalidFieldFormat|testDisbursementBankMissingMandatoryField|testTransactionSuccessNotify|testInternalServerErrorNotify|testExpiredNotify"
             ;;
         *)
             echo ""

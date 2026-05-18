@@ -1,6 +1,6 @@
 <?php
 
-namespace DanaUat\Widget;
+namespace DanaUat\PaymentGateway;
 
 use PHPUnit\Framework\TestCase;
 use Dana\PaymentGateway\v1\Api\PaymentGatewayApi;

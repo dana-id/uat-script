@@ -765,7 +765,7 @@ class CancelOrderTest extends TestCase
         // Set a unique partner reference number
         $partnerReferenceNo = Util::generatePartnerReferenceNo();
         $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
-        $jsonDict['validUpTo'] = Util::generateFormattedDate(25600, 7);
+        $jsonDict['validUpTo'] = Util::paymentGatewaySandboxValidUpTo();
 
         // Create a CreateOrderByRedirectRequest object from the JSON request data
         $createOrderRequestObj = ObjectSerializer::deserialize(

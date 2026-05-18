@@ -227,7 +227,7 @@ def test_create_order_inconsistent_request():
     # Set a unique partner reference number
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
-    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=100)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
+    json_dict["validUpTo"] = (datetime.now().astimezone(timezone(timedelta(hours=7))) + timedelta(seconds=600)).strftime('%Y-%m-%dT%H:%M:%S+07:00')
     
     # Convert the request data to a CreateOrderRequest object
     create_order_request_obj = CreateOrderByApiRequest.from_dict(json_dict)
@@ -238,12 +238,11 @@ def test_create_order_inconsistent_request():
     except:
         pytest.fail("Fail to call first API")
 
-    time.sleep(1)
+    time.sleep(2)
     
     try:
-        # Preparing request with the same partner reference number but different amount
-        json_dict["amount"]["value"] = "100000.00"
-        json_dict["payOptionDetails"][0]["transAmount"]["value"] = "100000.00"
+        json_dict["amount"]["value"] = "10000.00"
+        json_dict["payOptionDetails"][0]["transAmount"]["value"] = "10000.00"
 
         create_order_request_obj_second = CreateOrderByApiRequest.from_dict(json_dict)
 

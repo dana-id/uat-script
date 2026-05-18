@@ -1,4 +1,4 @@
-package widget_test
+package disbursement_test
 
 import (
 	"context"

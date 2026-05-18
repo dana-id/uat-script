@@ -299,25 +299,17 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 30 seconds from now
+    requestData.validUpTo = generateFormattedDate(600, 7);
+
+    await dana.paymentGatewayApi.createOrder(requestData);
+
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     try {
-      // First request with original data - establish the baseline transaction
-      const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 2000);
-    } catch (e) {
-      console.error('Failed to execute first API call for inconsistency test:', e);
-    }
+      requestData.amount.value = "10000.00";
+      requestData.payOptionDetails[0].transAmount.value = "10000.00";
 
-    // Wait briefly to ensure first request is processed
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    try {
-      // Modify amount to create inconsistency with same partnerReferenceNo
-      requestData.amount.value = "100000.00";
-      requestData.payOptionDetails[0].transAmount.value = "100000.00";
-
-      // This request should fail due to conflicting data with same reference
-      const response = await retryOnInconsistentRequest(() => dana.paymentGatewayApi.createOrder(requestData), 3, 2000);
+      await dana.paymentGatewayApi.createOrder(requestData);
 
       fail("Expected NotFoundException but the API call succeeded");
     } catch (e) {

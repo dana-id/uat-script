@@ -35,15 +35,15 @@ get_mandatory_pattern_for_module() {
     module_name="$1"
     case "$module_name" in
         "payment_gateway")
-            echo 'TestCreateOrderRedirectScenario|TestCreateOrderInvalidFieldFormat|TestCreateOrderInconsistentRequest|TestCreateOrderInvalidMandatoryField|TestCreateOrderUnauthorized'
+            echo 'TestCreateOrderRedirectScenario|TestCreateOrderInvalidFieldFormat|TestCreateOrderInconsistentRequest|TestCreateOrderInvalidMandatoryField|TestCreateOrderUnauthorized|TestTransactionSuccessNotify|TestInternalServerErrorNotify|TestExpiredNotify'
             ;;
         "widget")
             # Mandatory widget payment-host-to-host scenarios from devsite checklist.
-            echo 'TestPaymentSuccess|TestPaymentFailMissingOrInvalidMandatoryField|TestPaymentFailGeneralError|TestPaymentFailTransactionNotPermitted|TestPaymentFailMerchantNotExistOrStatusAbnormal|TestPaymentFailInconsistentRequest|TestPaymentFailInternalServerError|TestPaymentFailInvalidFormat|TestPaymentFailInvalidSignature|TestPaymentFailExceedsTransactionAmountLimit'
+            echo 'TestPaymentSuccess|TestPaymentFailMissingOrInvalidMandatoryField|TestPaymentFailGeneralError|TestPaymentFailTransactionNotPermitted|TestPaymentFailMerchantNotExistOrStatusAbnormal|TestPaymentFailInconsistentRequest|TestPaymentFailInternalServerError|TestPaymentFailInvalidFormat|TestPaymentFailInvalidSignature|TestPaymentFailExceedsTransactionAmountLimit|TestTransactionSuccessNotify|TestInternalServerErrorNotify|TestExpiredNotify'
             ;;
         "disbursement")
             # Mandatory disbursement scenarios (topup + transfer-bank) from devsite checklist.
-            echo 'TestTopUpCustomerValid|TestTopUpCustomerInsufficientFund|TestTopUpCustomerFrozenAccount|TestTopUpCustomerMissingMandatoryField|TestTopUpCustomerInconsistentRequest|TestTopUpCustomerInternalServerError|TestTopUpCustomerInternalGeneralError|TestDisbursementBankValidAccount|TestDisbursementBankValidAccountInProgress|TestDisbursementBankInconsistentRequest|TestDisbursementBankInsufficientFund|TestDisbursementBankInactiveAccount|TestDisbursementBankInvalidFieldFormat|TestDisbursementBankMissingMandatoryField'
+            echo 'TestTopUpCustomerValid|TestTopUpCustomerInsufficientFund|TestTopUpCustomerFrozenAccount|TestTopUpCustomerMissingMandatoryField|TestTopUpCustomerInconsistentRequest|TestTopUpCustomerInternalServerError|TestTopUpCustomerInternalGeneralError|TestDisbursementBankValidAccount|TestDisbursementBankValidAccountInProgress|TestDisbursementBankInconsistentRequest|TestDisbursementBankInsufficientFund|TestDisbursementBankInactiveAccount|TestDisbursementBankInvalidFieldFormat|TestDisbursementBankMissingMandatoryField|TestTransactionSuccessNotify|TestInternalServerErrorNotify|TestExpiredNotify'
             ;;
         *)
             echo ""

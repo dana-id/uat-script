@@ -13,10 +13,14 @@
             "DanaUat\\": "./"
         },
         "classmap": [
+            "helper/Util.php",
+            "helper/Assertion.php",
+            "helper/SeleniumUtil.php",
             "widget/OauthUtil.php",
             "widget/PaymentUtil.php",
             "widget/Scripts/WebAutomation.php",
-            "payment_gateway/PaymentUtil.php"
+            "payment_gateway/PaymentUtil.php",
+            "payment_gateway/Scripts/WebAutomation.php"
         ]
     }
 }
