@@ -58,7 +58,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
 
   @Test
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
-  void testInquiryBankAccountValidDataAmount() throws IOException {
+  void testInquiryBankAccountValidDataAmount() throws Exception {
     String caseName = "InquiryBankAccountValidDataAmount";
     String partnerReferenceNo = UUID.randomUUID().toString();
 

@@ -13,6 +13,12 @@ resolve_mandatory_only() {
     fi
 }
 
+# PHPUnit class or --filter pattern that needs Selenium (payment UI, OAuth, PG redirect).
+case_needs_browser_automation() {
+    scope=$(echo "$1 $2" | tr '[:upper:]' '[:lower:]')
+    echo "$scope" | grep -Eq 'automation|oauth|browser|selenium|webdriver|payment|queryorder|refund|cancelorder|applytoken|applyott|accountunbinding|unbinding|createorder|redirect'
+}
+
 get_mandatory_pattern_for_folder() {
     folder_name="$1"
     case "$folder_name" in
@@ -47,18 +53,25 @@ run_php_runner(){
             elif [ -z "$caseName" ] && [ -z "$runPattern" ]; then
                 needs_selenium=true
             else
-                caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
-                runPatternLower=$(echo "$runPattern" | tr '[:upper:]' '[:lower:]')
-                if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|selenium|webdriver"; then
+                if case_needs_browser_automation "$caseName" "$runPattern"; then
                     needs_selenium=true
                 else
                     needs_selenium=false
                 fi
             fi
             ;;
-        "payment_gateway"|"disbursement")
+        "disbursement")
+            needs_selenium=false
+            ;;
+        "payment_gateway")
             if [ "$mandatory_only" = "true" ] && [ -z "$caseName" ] && [ -z "$runPattern" ]; then
                 needs_selenium=false
+            elif [ -n "$caseName" ] || [ -n "$runPattern" ]; then
+                if case_needs_browser_automation "$caseName" "$runPattern"; then
+                    needs_selenium=true
+                else
+                    needs_selenium=false
+                fi
             fi
             ;;
     esac
@@ -164,8 +177,12 @@ run_php_runner(){
         fi
     fi
     
-    # Download Selenium server if not present
-    SELENIUM_JAR="$HOME/.selenium/selenium-server.jar"
+    # Download Selenium server if not present (CI image ships /opt/selenium/selenium-server.jar)
+    if [ -f "/opt/selenium/selenium-server.jar" ]; then
+        SELENIUM_JAR="/opt/selenium/selenium-server.jar"
+    else
+        SELENIUM_JAR="$HOME/.selenium/selenium-server.jar"
+    fi
     SELENIUM_DIR=$(dirname "$SELENIUM_JAR")
     
     if [ ! -f "$SELENIUM_JAR" ]; then
@@ -177,8 +194,8 @@ run_php_runner(){
     
     # Function to check if Selenium is ready
     check_selenium_ready() {
-        for i in {1..3}; do
-            RESPONSE=$(curl -s http://localhost:4444/wd/hub/status 2>/dev/null)
+        for i in {1..6}; do
+            RESPONSE=$(curl -s http://localhost:4444/status 2>/dev/null)
             if echo "$RESPONSE" | grep -q "\"ready\":\s*true"; then
                 echo "Selenium server is ready"
                 return 0

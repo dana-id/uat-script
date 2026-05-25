@@ -1,5 +1,7 @@
 <?php
 
+namespace DanaUat\Helper;
+
 use Dana\ApiException;
 
 class DisbursementCustomerRetry

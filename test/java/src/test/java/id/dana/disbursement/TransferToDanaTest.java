@@ -62,7 +62,7 @@ class TransferToDanaTest extends AbstractDisbursementTest {
   }
 
   @Test
-  void testTopUpCustomerValid() throws IOException {
+  void testTopUpCustomerValid() throws Exception {
     String caseName = "TopUpCustomerValid";
     String partnerReferenceNo = UUID.randomUUID().toString();
 

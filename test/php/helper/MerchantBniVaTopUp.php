@@ -106,12 +106,14 @@ final class MerchantBniVaTopUp
      */
     private static function parseAccountMappedTotalAmount($account): int
     {
-        $accountData = method_exists($account, 'jsonSerialize')
-            ? $account->jsonSerialize()
-            : json_decode(json_encode($account), true);
+        $accountData = json_decode(json_encode($account), true);
+        if (!is_array($accountData)) {
+            throw new Exception('deposit account: invalid account payload');
+        }
 
-        if (isset($accountData['mappedTotalAmount']['amount'])) {
-            return self::parseAmountValue($accountData['mappedTotalAmount']['amount']);
+        $mappedTotalAmount = $accountData['mappedTotalAmount'] ?? null;
+        if (is_array($mappedTotalAmount) && array_key_exists('amount', $mappedTotalAmount)) {
+            return self::parseAmountValue($mappedTotalAmount['amount']);
         }
 
         $totalAmount = $accountData['totalAmount'] ?? '';

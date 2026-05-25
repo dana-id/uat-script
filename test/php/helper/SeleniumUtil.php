@@ -17,12 +17,29 @@ class SeleniumUtil
             return $fromEnv;
         }
 
+        if (file_exists('/opt/selenium/selenium-server.jar')) {
+            return '/opt/selenium/selenium-server.jar';
+        }
+
         $home = getenv('HOME');
         if ($home === false || $home === '') {
             $home = '/root';
         }
 
         return $home . '/.selenium/selenium-server.jar';
+    }
+
+    /**
+     * Selenium 4 standalone exposes GET /status (not /wd/hub/status).
+     */
+    public static function statusUrl(string $seleniumUrl): string
+    {
+        $trimmed = rtrim($seleniumUrl, '/');
+        if (preg_match('#/wd/hub$#i', $trimmed)) {
+            return preg_replace('#/wd/hub$#i', '', $trimmed) . '/status';
+        }
+
+        return $trimmed . '/status';
     }
 
     public static function ensureJar(): bool
@@ -73,7 +90,7 @@ class SeleniumUtil
 
         $jar = self::jarPath();
         echo "Starting Selenium server from {$jar}..." . PHP_EOL;
-        exec('java -jar ' . escapeshellarg($jar) . ' standalone > /dev/null 2>&1 &');
+        exec('java -jar ' . escapeshellarg($jar) . ' standalone --port 4444 > /dev/null 2>&1 &');
         sleep(5);
 
         return true;
@@ -83,23 +100,31 @@ class SeleniumUtil
     {
         self::attemptStart();
 
-        $statusUrl = rtrim($seleniumUrl, '/') . '/status';
-        $ch = curl_init($statusUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        $statusUrl = self::statusUrl($seleniumUrl);
+        $httpCode = 0;
+        for ($attempt = 1; $attempt <= 6; $attempt++) {
+            $ch = curl_init($statusUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
 
-        if ($httpCode >= 200 && $httpCode < 300 && !empty($response)) {
-            $json = json_decode($response, true);
-            if (isset($json['value']['ready']) && $json['value']['ready'] === true) {
-                return true;
+            if ($httpCode >= 200 && $httpCode < 300 && !empty($response)) {
+                $json = json_decode($response, true);
+                if (isset($json['value']['ready']) && $json['value']['ready'] === true) {
+                    return true;
+                }
+            }
+
+            if ($attempt < 6) {
+                sleep(5);
             }
         }
 
         echo "Selenium server not available or not responding correctly. HTTP code: {$httpCode}" . PHP_EOL;
+        echo "Checked status URL: {$statusUrl}" . PHP_EOL;
         return false;
     }
 }

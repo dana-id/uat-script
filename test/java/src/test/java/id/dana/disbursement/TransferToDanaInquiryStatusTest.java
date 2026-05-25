@@ -84,7 +84,7 @@ class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest {
   }
 
   @Test
-  void testInquiryTopUpStatusValidPaid() throws IOException {
+  void testInquiryTopUpStatusValidPaid() throws Exception {
     partnerReferencePaid = prepareTransferSuccessPaid();
     String caseName = "InquiryTopUpStatusValidPaid";
 

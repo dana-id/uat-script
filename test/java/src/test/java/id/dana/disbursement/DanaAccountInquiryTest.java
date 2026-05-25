@@ -56,7 +56,7 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest {
   }
 
   @Test
-  void testDanaAccountInquiryCustomerValidData() throws IOException {
+  void testDanaAccountInquiryCustomerValidData() throws Exception {
     String caseName = "InquiryCustomerValidData";
     String partnerReferenceNo = UUID.randomUUID().toString();
 
