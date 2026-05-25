@@ -25,7 +25,7 @@ import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { DisbursementApi, TransferToDanaInquiryStatusRequest, TransferToDanaRequest } from 'dana-node/disbursement/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
-import { withCustomerNumberRetry, responseCodeFromPayload } from '../helper/disbursementCustomerRetry';
+import { withCustomerNumberRetry, responseCodeFromPayload, errorResponseCode } from '../helper/disbursementCustomerRetry';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -73,14 +73,6 @@ describe('Disbursement - Transfer To DANA Inquiry Status Tests', () => {
    */
 
   async function createDisbursementPaid() {
-
-  /**
-   * Creates a failed disbursement transaction for testing status inquiry
-   * 
-   * @description Helper function to create a failed disbursement for status testing
-   * @returns Promise<void>
-   * @throws Error if disbursement creation fails
-   */
     originalPartnerReferencePaid = generatePartnerReferenceNo();
     await withCustomerNumberRetry(
       async (customerNumber) => {
@@ -97,11 +89,23 @@ describe('Disbursement - Transfer To DANA Inquiry Status Tests', () => {
     );
   }
 
+  /** TopUpCustomerExceedAmountLimit returns 4033802 — expected, not a customer-number retry case. */
   async function createDisbursementFailed() {
-    const disbursementRequest: TransferToDanaRequest = getRequest<TransferToDanaRequest>(jsonPathFile, "TransferToDana", "TopUpCustomerExceedAmountLimit");
+    const disbursementRequest: TransferToDanaRequest = getRequest<TransferToDanaRequest>(
+      jsonPathFile,
+      'TransferToDana',
+      'TopUpCustomerExceedAmountLimit',
+    );
     originalPartnerReferenceFailed = generatePartnerReferenceNo();
     disbursementRequest.partnerReferenceNo = originalPartnerReferenceFailed;
-    await dana.disbursementApi.transferToDana(disbursementRequest);
+    try {
+      await dana.disbursementApi.transferToDana(disbursementRequest);
+    } catch (e) {
+      if (errorResponseCode(e) === '4033802') {
+        return;
+      }
+      throw e;
+    }
   }
 
   /**
