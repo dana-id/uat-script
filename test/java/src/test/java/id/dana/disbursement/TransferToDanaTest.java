@@ -14,6 +14,7 @@ import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
+import id.dana.util.DisbursementCustomerRetry;
 import id.dana.util.TestUtil;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * @author Kevin Veros Hamonangan <kevin.veros@dana.id>
  * @version $Id: TransferToDanaTest.java, v 0.1 2025‐08‐13 10.06 kevin.veros Exp $$
  */
-class TransferToDanaTest {
+class TransferToDanaTest extends AbstractDisbursementTest {
 
   private static final Logger log = LoggerFactory.getLogger(TransferToDanaTest.class);
 
@@ -63,19 +64,25 @@ class TransferToDanaTest {
   @Test
   void testTopUpCustomerValid() throws IOException {
     String caseName = "TopUpCustomerValid";
-    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        TransferToDanaRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    TransferToDanaResponse response = api.transferToDana(requestData);
-    variableDict.put("referenceNo", response.getReferenceNo());
-    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    DisbursementCustomerRetry.RetryResult<TransferToDanaResponse> retryResult =
+        DisbursementCustomerRetry.withCustomerNumberRetry(
+            customerNumber -> {
+              TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
+                  caseName, TransferToDanaRequest.class);
+              requestData.setPartnerReferenceNo(partnerReferenceNo);
+              requestData.setCustomerNumber(customerNumber);
+              TransferToDanaResponse response = api.transferToDana(requestData);
+              variableDict.put("referenceNo", response.getReferenceNo());
+              return response;
+            },
+            TransferToDanaResponse::getResponseCode);
+
+    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, retryResult.result(), variableDict);
   }
 
   @Test

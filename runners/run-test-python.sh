@@ -78,7 +78,7 @@ setup_python_env() {
         $PYTHON_CMD -m pip install --upgrade -r test/python/requirements-core.txt
     fi
     # Ensure at least the required SDK version is used.
-    $PYTHON_CMD -m pip install --upgrade "dana-python>=2.1.5"
+    $PYTHON_CMD -m pip install --upgrade "dana-python>=2.1.7"
 
     if [ "$needs_playwright" = "true" ]; then
         $PYTHON_CMD -m playwright install --with-deps chromium

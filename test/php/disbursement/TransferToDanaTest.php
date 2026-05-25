@@ -2,7 +2,6 @@
 
 namespace DanaUat\Disbursement;
 
-use PHPUnit\Framework\TestCase;
 use Dana\Disbursement\v1\Api\v1\Api\DisbursementApi;
 use Dana\ObjectSerializer;
 use Dana\Configuration;
@@ -13,7 +12,7 @@ use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 use Exception;
 
-class TransferToDanaTest extends TestCase
+class TransferToDanaTest extends AbstractDisbursementTest
 {
     private static $titleCase = 'TransferToDana';
     private static $jsonPathFile = 'resource/request/components/Disbursement.json';
@@ -21,6 +20,7 @@ class TransferToDanaTest extends TestCase
     private static $merchantId;
     public static function setUpBeforeClass(): void
     {
+        parent::setUpBeforeClass();
         // Set up configuration with authentication settings
         $configuration = new Configuration();
 
@@ -47,25 +47,26 @@ class TransferToDanaTest extends TestCase
             $caseName = 'TopUpCustomerValid';
 
             try {
-                // Get and prepare the request
-                $jsonDict = Util::getRequest(
-                    self::$jsonPathFile,
-                    self::$titleCase,
-                    $caseName
-                );
-
-                // Set a unique partner reference number
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
-                $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
-                $transferToDanaRequestObj = ObjectSerializer::deserialize(
-                    $jsonDict,
-                    'Dana\Disbursement\v1\Model\TransferToDanaRequest'
+                [$apiResponse] = DisbursementCustomerRetry::withCustomerNumberRetry(
+                    function (string $customerNumber) use ($caseName, $partnerReferenceNo) {
+                        $jsonDict = Util::getRequest(
+                            self::$jsonPathFile,
+                            self::$titleCase,
+                            $caseName
+                        );
+                        $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+                        $jsonDict['customerNumber'] = $customerNumber;
+
+                        $transferToDanaRequestObj = ObjectSerializer::deserialize(
+                            $jsonDict,
+                            'Dana\Disbursement\v1\Model\TransferToDanaRequest'
+                        );
+
+                        return self::$apiInstance->transferToDana($transferToDanaRequestObj);
+                    }
                 );
-
-                // Make the API call
-                $apiResponse = self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
                 // Assert the response matches the expected data
                 Assertion::assertResponse(

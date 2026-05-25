@@ -13,6 +13,7 @@ import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
+import id.dana.util.DisbursementCustomerRetry;
 import id.dana.util.TestUtil;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @author Kevin Veros Hamonangan <kevin.veros@dana.id>
  * @version $Id: DanaAccountInquiryTest.java, v 0.1 2025‐08‐13 10.06 kevin.veros Exp $$
  */
-class DanaAccountInquiryTest {
+class DanaAccountInquiryTest extends AbstractDisbursementTest {
 
   private static final Logger log = LoggerFactory.getLogger(DanaAccountInquiryTest.class);
 
@@ -57,18 +58,23 @@ class DanaAccountInquiryTest {
   @Test
   void testDanaAccountInquiryCustomerValidData() throws IOException {
     String caseName = "InquiryCustomerValidData";
-    DanaAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        DanaAccountInquiryRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
-    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    DisbursementCustomerRetry.RetryResult<DanaAccountInquiryResponse> retryResult =
+        DisbursementCustomerRetry.withCustomerNumberRetry(
+            customerNumber -> {
+              DanaAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
+                  caseName, DanaAccountInquiryRequest.class);
+              requestData.setPartnerReferenceNo(partnerReferenceNo);
+              requestData.setCustomerNumber(customerNumber);
+              return api.danaAccountInquiry(requestData);
+            },
+            DanaAccountInquiryResponse::getResponseCode);
+
+    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, retryResult.result(), variableDict);
   }
 
   @Test

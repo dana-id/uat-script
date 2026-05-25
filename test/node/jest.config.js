@@ -43,7 +43,7 @@ module.exports = {
   setupFiles: [],
 
   // Setup files that will be executed after the environment is set up but before each test
-  setupFilesAfterEnv: [],
+  setupFilesAfterEnv: ['<rootDir>/disbursement/jest.setup.ts'],
 
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,

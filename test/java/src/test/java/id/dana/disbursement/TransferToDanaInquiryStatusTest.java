@@ -12,6 +12,7 @@ import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
+import id.dana.util.DisbursementCustomerRetry;
 import id.dana.util.TestUtil;
 
 import java.io.IOException;
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @version $Id: TransferToDanaInquiryStatusTest.java, v 0.1 2025‐08‐13 10.06 kevin.veros Exp
  * $$
  */
-class TransferToDanaInquiryStatusTest {
+class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest {
 
   private static final Logger log = LoggerFactory.getLogger(
       TransferToDanaInquiryStatusTest.class);
@@ -58,13 +59,17 @@ class TransferToDanaInquiryStatusTest {
     api = Dana.getInstance().getDisbursementApi();
   }
 
-  private String prepareTransferSuccessPaid() {
-    TransferToDanaRequest transferToDanaRequest = TestUtil.getRequest(
-            jsonPathFile, "TransferToDana", "TopUpCustomerValid", TransferToDanaRequest.class);
-
+  private String prepareTransferSuccessPaid() throws Exception {
     String originalPartnerReferenceNo = UUID.randomUUID().toString();
-    transferToDanaRequest.setPartnerReferenceNo(originalPartnerReferenceNo);
-    TransferToDanaResponse transferToDana = api.transferToDana(transferToDanaRequest);
+    DisbursementCustomerRetry.withCustomerNumberRetry(
+        customerNumber -> {
+          TransferToDanaRequest transferToDanaRequest = TestUtil.getRequest(
+              jsonPathFile, "TransferToDana", "TopUpCustomerValid", TransferToDanaRequest.class);
+          transferToDanaRequest.setPartnerReferenceNo(originalPartnerReferenceNo);
+          transferToDanaRequest.setCustomerNumber(customerNumber);
+          return api.transferToDana(transferToDanaRequest);
+        },
+        TransferToDanaResponse::getResponseCode);
     return originalPartnerReferenceNo;
   }
 

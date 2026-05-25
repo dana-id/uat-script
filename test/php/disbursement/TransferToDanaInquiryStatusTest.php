@@ -2,7 +2,6 @@
 
 namespace DanaUat\Disbursement;
 
-use PHPUnit\Framework\TestCase;
 use Dana\Disbursement\v1\Api\v1\Api\DisbursementApi;
 use Dana\ObjectSerializer;
 use Dana\Configuration;
@@ -13,7 +12,7 @@ use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 use Exception;
 
-class TransferToDanaInquiryStatusTest extends TestCase
+class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest
 {
     private static $titleCase = 'TransferToDanaInquiryStatus';
     private static $jsonPathFile = 'resource/request/components/Disbursement.json';
@@ -24,6 +23,7 @@ class TransferToDanaInquiryStatusTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
+        parent::setUpBeforeClass();
         // Set up configuration with authentication settings
         $configuration = new Configuration();
 
@@ -58,18 +58,22 @@ class TransferToDanaInquiryStatusTest extends TestCase
                 'TopUpCustomerValid'
             );
 
-            // Generate unique partner reference number
             self::$originalPartnerReferencePaid = Util::generatePartnerReferenceNo();
-            $jsonDict['partnerReferenceNo'] = self::$originalPartnerReferencePaid;
 
-            // Create request object
-            $transferToDanaRequestObj = ObjectSerializer::deserialize(
-                $jsonDict,
-                'Dana\Disbursement\v1\Model\TransferToDanaRequest'
+            DisbursementCustomerRetry::withCustomerNumberRetry(
+                function (string $customerNumber) use ($jsonDict) {
+                    $requestDict = $jsonDict;
+                    $requestDict['partnerReferenceNo'] = self::$originalPartnerReferencePaid;
+                    $requestDict['customerNumber'] = $customerNumber;
+
+                    $transferToDanaRequestObj = ObjectSerializer::deserialize(
+                        $requestDict,
+                        'Dana\Disbursement\v1\Model\TransferToDanaRequest'
+                    );
+
+                    return self::$apiInstance->transferToDana($transferToDanaRequestObj);
+                }
             );
-
-            // Make the API call to create a successful transaction
-            self::$apiInstance->transferToDana($transferToDanaRequestObj);
             
             echo "Shared paid order created with reference: " . self::$originalPartnerReferencePaid . "\n";
         } catch (Exception $e) {

@@ -2,7 +2,6 @@
 
 namespace DanaUat\Disbursement;
 
-use PHPUnit\Framework\TestCase;
 use Dana\Disbursement\v1\Api\v1\Api\DisbursementApi;
 use Dana\ObjectSerializer;
 use Dana\Configuration;
@@ -13,7 +12,7 @@ use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 use Exception;
 
-class BankAccountInquiryTest extends TestCase
+class BankAccountInquiryTest extends AbstractDisbursementTest
 {
     private static $titleCase = 'BankAccountInquiry';
     private static $jsonPathFile = 'resource/request/components/Disbursement.json';
@@ -22,6 +21,7 @@ class BankAccountInquiryTest extends TestCase
     
     public static function setUpBeforeClass(): void
     {
+        parent::setUpBeforeClass();
         // Set up configuration with authentication settings
         $configuration = new Configuration();
 
@@ -59,25 +59,26 @@ class BankAccountInquiryTest extends TestCase
             $caseName = 'InquiryBankAccountValidDataAmount';
 
             try {
-                // Get and prepare the request
-                $jsonDict = Util::getRequest(
-                    self::$jsonPathFile,
-                    self::$titleCase,
-                    $caseName
-                );
-
-                // Set a unique partner reference number
                 $partnerReferenceNo = Util::generatePartnerReferenceNo();
-                $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-                // Create a BankAccountInquiryRequest object from the JSON request data
-                $bankAccountInquiryRequestObj = ObjectSerializer::deserialize(
-                    $jsonDict,
-                    'Dana\Disbursement\v1\Model\BankAccountInquiryRequest'
+                [$apiResponse] = DisbursementCustomerRetry::withCustomerNumberRetry(
+                    function (string $customerNumber) use ($caseName, $partnerReferenceNo) {
+                        $jsonDict = Util::getRequest(
+                            self::$jsonPathFile,
+                            self::$titleCase,
+                            $caseName
+                        );
+                        $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+                        $jsonDict['customerNumber'] = $customerNumber;
+
+                        $bankAccountInquiryRequestObj = ObjectSerializer::deserialize(
+                            $jsonDict,
+                            'Dana\Disbursement\v1\Model\BankAccountInquiryRequest'
+                        );
+
+                        return self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
+                    }
                 );
-
-                // Make the API call
-                $apiResponse = self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
 
                 // Assert the response matches the expected data
                 Assertion::assertResponse(

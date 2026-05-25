@@ -13,6 +13,7 @@ import id.dana.invoker.model.constant.DanaHeader;
 import id.dana.invoker.model.constant.EnvKey;
 import id.dana.invoker.model.enumeration.DanaEnvironment;
 import id.dana.util.ConfigUtil;
+import id.dana.util.DisbursementCustomerRetry;
 import id.dana.util.RetryTestUtil;
 import id.dana.util.TestUtil;
 
@@ -32,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author Kevin Veros Hamonangan <kevin.veros@dana.id>
  * @version $Id: BankAccountInquiryTest.java, v 0.1 2025‐08‐13 10.06 kevin.veros Exp $$
  */
-class BankAccountInquiryTest {
+class BankAccountInquiryTest extends AbstractDisbursementTest {
 
   private static final Logger log = LoggerFactory.getLogger(BankAccountInquiryTest.class);
 
@@ -59,19 +60,25 @@ class BankAccountInquiryTest {
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountValidDataAmount() throws IOException {
     String caseName = "InquiryBankAccountValidDataAmount";
-    BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        BankAccountInquiryRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    BankAccountInquiryResponse response = api.bankAccountInquiry(requestData);
-    variableDict.put("referenceNo", response.getReferenceNo());
-    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    DisbursementCustomerRetry.RetryResult<BankAccountInquiryResponse> retryResult =
+        DisbursementCustomerRetry.withCustomerNumberRetry(
+            customerNumber -> {
+              BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase,
+                  caseName, BankAccountInquiryRequest.class);
+              requestData.setPartnerReferenceNo(partnerReferenceNo);
+              requestData.setCustomerNumber(customerNumber);
+              BankAccountInquiryResponse response = api.bankAccountInquiry(requestData);
+              variableDict.put("referenceNo", response.getReferenceNo());
+              return response;
+            },
+            BankAccountInquiryResponse::getResponseCode);
+
+    TestUtil.assertResponse(jsonPathFile, titleCase, caseName, retryResult.result(), variableDict);
   }
 
   @Test

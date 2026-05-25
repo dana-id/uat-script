@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * @author Kevin Veros Hamonangan <kevin.veros@dana.id>
  * @version $Id: TransferToBankTest.java, v 0.1 2025‐08‐13 10.06 kevin.veros Exp $$
  */
-class TransferToBankTest {
+class TransferToBankTest extends AbstractDisbursementTest {
 
   private static final Logger log = LoggerFactory.getLogger(TransferToBankTest.class);
 

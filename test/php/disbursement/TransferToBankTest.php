@@ -2,7 +2,6 @@
 
 namespace DanaUat\Disbursement;
 
-use PHPUnit\Framework\TestCase;
 use Dana\Disbursement\v1\Api\v1\Api\DisbursementApi;
 use Dana\ObjectSerializer;
 use Dana\Configuration;
@@ -13,7 +12,7 @@ use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 use Exception;
 
-class TransferToBankTest extends TestCase
+class TransferToBankTest extends AbstractDisbursementTest
 {
     private static $titleCase = 'TransferToBank';
     private static $jsonPathFile = 'resource/request/components/Disbursement.json';
@@ -21,6 +20,7 @@ class TransferToBankTest extends TestCase
     private static $merchantId;
     public static function setUpBeforeClass(): void
     {
+        parent::setUpBeforeClass();
         // Set up configuration with authentication settings
         $configuration = new Configuration();
 

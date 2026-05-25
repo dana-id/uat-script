@@ -2,7 +2,6 @@
 
 namespace DanaUat\Disbursement;
 
-use PHPUnit\Framework\TestCase;
 use Dana\PaymentGateway\v1\Api\PaymentGatewayApi;
 use Dana\Configuration;
 use Dana\ObjectSerializer;
@@ -10,7 +9,7 @@ use Dana\Env;
 use DanaUat\Helper\Assertion;
 use DanaUat\Helper\Util;
 
-class FinishNotifyTest extends TestCase
+class FinishNotifyTest extends AbstractDisbursementTest
 {
     private static $titleCase = 'CreateOrder';
     private static $jsonPathFile = 'resource/request/components/PaymentGateway.json';
@@ -23,6 +22,7 @@ class FinishNotifyTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
+        parent::setUpBeforeClass();
         $configuration = new Configuration();
         $configuration->setApiKey('PRIVATE_KEY', getenv('PRIVATE_KEY'));
         $configuration->setApiKey('ORIGIN', getenv('ORIGIN'));
