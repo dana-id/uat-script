@@ -24,6 +24,7 @@ import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
+import { withCustomerNumberRetry, responseCodeFromPayload } from '../helper/disbursementCustomerRetry';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -66,20 +67,19 @@ describe('Disbursement - Dana Account Inquiry Tests', () => {
    */
   test('InquiryCustomerValidData - should successfully inquire DANA account', async () => {
     const caseName = "InquiryCustomerValidData";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
     const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
 
-    try {
-      // Execute DANA account inquiry API call
-      const response = await dana.disbursementApi.danaAccountInquiry(requestData);
-      await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
-    } catch (e) {
-      console.error('DANA account inquiry test failed:', e);
-      throw e;
-    }
+    const { result: response } = await withCustomerNumberRetry(
+      async (customerNumber) => {
+        const payload: any = getRequest(jsonPathFile, titleCase, caseName);
+        payload.partnerReferenceNo = partnerReferenceNo;
+        payload.customerNumber = customerNumber;
+        return dana.disbursementApi.danaAccountInquiry(payload);
+      },
+      (res) => responseCodeFromPayload(res),
+    );
+
+    await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
   });
 
   /**

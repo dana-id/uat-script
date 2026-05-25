@@ -24,6 +24,7 @@ import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { AssertionError, fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
+import { withCustomerNumberRetry, responseCodeFromPayload } from '../helper/disbursementCustomerRetry';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -66,26 +67,22 @@ describe('Disbursement - Transfer To DANA Tests', () => {
    */
   test('TopUpCustomerValid - should successfully transfer to DANA', async () => {
     const caseName = "TopUpCustomerValid";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
     const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
 
-    try {
-      // Execute transfer to DANA API call
-      const response = await dana.disbursementApi.transferToDana(requestData);
+    const { result: response } = await withCustomerNumberRetry(
+      async (customerNumber) => {
+        const payload: any = getRequest(jsonPathFile, titleCase, caseName);
+        payload.partnerReferenceNo = partnerReferenceNo;
+        payload.customerNumber = customerNumber;
+        return dana.disbursementApi.transferToDana(payload);
+      },
+      (res) => responseCodeFromPayload(res),
+    );
 
-      const variableDict: Record<string, any> = {
-        partnerReferenceNo,
-        referenceNo: response.referenceNo
-      };
-
-      await assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
-    } catch (e) {
-      console.error('Transfer to DANA test failed:', e);
-      throw e;
-    }
+    await assertResponse(jsonPathFile, titleCase, caseName, response, {
+      partnerReferenceNo,
+      referenceNo: response.referenceNo,
+    });
   });
 
   /**

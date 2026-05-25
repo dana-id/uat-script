@@ -25,6 +25,7 @@ import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { DisbursementApi, TransferToDanaInquiryStatusRequest, TransferToDanaRequest } from 'dana-node/disbursement/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
+import { withCustomerNumberRetry, responseCodeFromPayload } from '../helper/disbursementCustomerRetry';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -80,10 +81,20 @@ describe('Disbursement - Transfer To DANA Inquiry Status Tests', () => {
    * @returns Promise<void>
    * @throws Error if disbursement creation fails
    */
-    const disbursementRequest: TransferToDanaRequest = getRequest<TransferToDanaRequest>(jsonPathFile, "TransferToDana", "TopUpCustomerValid");
     originalPartnerReferencePaid = generatePartnerReferenceNo();
-    disbursementRequest.partnerReferenceNo = originalPartnerReferencePaid;
-    await dana.disbursementApi.transferToDana(disbursementRequest);
+    await withCustomerNumberRetry(
+      async (customerNumber) => {
+        const disbursementRequest: TransferToDanaRequest = getRequest<TransferToDanaRequest>(
+          jsonPathFile,
+          'TransferToDana',
+          'TopUpCustomerValid',
+        );
+        disbursementRequest.partnerReferenceNo = originalPartnerReferencePaid;
+        disbursementRequest.customerNumber = customerNumber;
+        return dana.disbursementApi.transferToDana(disbursementRequest);
+      },
+      (res) => responseCodeFromPayload(res),
+    );
   }
 
   async function createDisbursementFailed() {

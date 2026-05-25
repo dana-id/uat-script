@@ -24,6 +24,7 @@ import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
+import { withCustomerNumberRetry, responseCodeFromPayload } from '../helper/disbursementCustomerRetry';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -67,22 +68,21 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    */
   test('InquiryBankAccountValidDataAmount - should successfully inquire bank account', async () => {
     const caseName = "InquiryBankAccountValidDataAmount";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
     const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
 
-    try {
-      // Execute bank account inquiry API call
-      const response = await dana.disbursementApi.bankAccountInquiry(requestData);
-      await assertResponse(jsonPathFile, titleCase, caseName, response, {
-              'partnerReferenceNo': partnerReferenceNo
-            });
-    } catch (e) {
-      console.error('Bank account inquiry test failed:', e);
-      throw e;
-    }
+    const { result: response } = await withCustomerNumberRetry(
+      async (customerNumber) => {
+        const payload: any = getRequest(jsonPathFile, titleCase, caseName);
+        payload.partnerReferenceNo = partnerReferenceNo;
+        payload.customerNumber = customerNumber;
+        return dana.disbursementApi.bankAccountInquiry(payload);
+      },
+      (res) => responseCodeFromPayload(res),
+    );
+
+    await assertResponse(jsonPathFile, titleCase, caseName, response, {
+      partnerReferenceNo,
+    });
   });
 
   /**
