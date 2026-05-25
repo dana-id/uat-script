@@ -7,12 +7,12 @@ module.exports = {
 
   // The glob patterns Jest uses to detect test files
   testMatch: [
-    '**/payment_gateway/**/*.ts',
-    '**/payment_gateway/**/*.js',
-    '**/widget/**/*.ts',
-    '**/widget/**/*.js',
-    '**/disbursement/**/*.ts',
-    '**/disbursement/**/*.js'
+    '**/payment_gateway/**/*_test.ts',
+    '**/payment_gateway/**/*_test.js',
+    '**/widget/**/*_test.ts',
+    '**/widget/**/*_test.js',
+    '**/disbursement/**/*_test.ts',
+    '**/disbursement/**/*_test.js',
   ],
 
   // An array of regexp pattern strings that are matched against all test paths
