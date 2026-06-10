@@ -125,7 +125,7 @@ func TestInquiryTopUpStatusValidPaid(t *testing.T) {
 	ctx := context.Background()
 	apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToDanaInquiryStatus(ctx).TransferToDanaInquiryStatusRequest(*transferToDanaInquiryStatus).Execute()
 	if err != nil {
-		fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
+		fmt.Printf("[REF] case=%s originalPartnerReferenceNo=%s\n", caseName, originalPartnerReferenceNo)
 		t.Fatalf("API call failed: %v", err)
 	}
 	defer httpResponse.Body.Close()
@@ -180,7 +180,7 @@ func TestInquiryTopUpStatusValidFail(t *testing.T) {
 	ctx := context.Background()
 	apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToDanaInquiryStatus(ctx).TransferToDanaInquiryStatusRequest(*transferToDanaInquiryStatus).Execute()
 	if err != nil {
-		fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
+		fmt.Printf("[REF] case=%s originalPartnerReferenceNo=%s\n", caseName, originalPartnerReferenceNo)
 		t.Fatalf("API call failed: %v", err)
 	}
 	defer httpResponse.Body.Close()
