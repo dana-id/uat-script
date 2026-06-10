@@ -294,6 +294,7 @@ class PaymentTest extends TestCase
                     $jsonDict
                 );
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
             } catch (ApiException $e) {
                 Assertion::assertApiException(
@@ -355,6 +356,7 @@ class PaymentTest extends TestCase
                     $jsonDict
                 );
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
             } catch (Exception $e) {
                 Assertion::assertApiException(
@@ -475,6 +477,7 @@ class PaymentTest extends TestCase
                             );
                         }
                     } else {
+                        echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                         $this->fail('Both requests succeeded but returned different reference numbers - NOT truly idempotent');
                     }
                 } catch (ApiException $duplicateError) {
@@ -500,6 +503,7 @@ class PaymentTest extends TestCase
                             $jsonDict
                         );
                     } else {
+                        echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                         $this->fail('Expected duplicate error, but got unexpected error: ' . $duplicateError->getMessage());
                     }
                 }
@@ -548,6 +552,7 @@ class PaymentTest extends TestCase
 
             try {
                 self::$apiInstanceWidget->widgetPayment($requestObj);
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for general error but the API call succeeded');
             } catch (ApiException $e) {
                 Assertion::assertApiException(
@@ -586,6 +591,7 @@ class PaymentTest extends TestCase
 
             try {
                 self::$apiInstanceWidget->widgetPayment($requestObj);
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for not permitted but the API call succeeded');
             } catch (ApiException $e) {
                 Assertion::assertApiException(
@@ -624,6 +630,7 @@ class PaymentTest extends TestCase
 
             try {
                 self::$apiInstanceWidget->widgetPayment($requestObj);
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for exceed amount limit but the API call succeeded');
             } catch (ApiException $e) {
                 Assertion::assertApiException(
@@ -669,6 +676,7 @@ class PaymentTest extends TestCase
 
             try {
                 self::$apiInstanceWidget->widgetPayment($requestObj);
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for internal server error but the API call succeeded');
             } catch (ApiException $e) {
                 // Verify it's a 500 Internal Server Error
@@ -684,6 +692,7 @@ class PaymentTest extends TestCase
                     $jsonDict
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });

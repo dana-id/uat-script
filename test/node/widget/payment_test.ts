@@ -86,7 +86,8 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
 
         // Configure request with unique reference number and validUpTo timestamp
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
         requestData.validUpTo = generateFormattedDate(15 * 60, 7);
 
         try {
@@ -97,6 +98,7 @@ describe('Payment Tests', () => {
             await assertResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
         } catch (e: any) {
             // If an error occurs, fail the test with the error message
+            console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
             fail('Payment test failed: ' + (e.message || e));
         }
     });
@@ -108,7 +110,8 @@ describe('Payment Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -120,6 +123,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -146,6 +150,7 @@ describe('Payment Tests', () => {
                 customHeaders
             );
             // If no error is thrown, fail the test
+            console.error('[REF] case=' + caseName + ' partnerReferenceNo:', (requestData as any)?.partnerReferenceNo);
             fail('Expected an error but the API call succeeded');
         } catch (e: any) {
             // If a ResponseError occurs, assert the failure response
@@ -153,6 +158,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', (requestData as any)?.partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -179,6 +185,7 @@ describe('Payment Tests', () => {
                 customHeaders
             );
             // If no error is thrown, fail the test
+            console.error('[REF] case=' + caseName + ' partnerReferenceNo:', (requestData as any)?.partnerReferenceNo);
             fail('Expected an error but the API call succeeded');
         } catch (e: any) {
             if (e instanceof ResponseError) {
@@ -186,6 +193,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', (requestData as any)?.partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -198,7 +206,8 @@ describe('Payment Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -210,6 +219,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -221,7 +231,8 @@ describe('Payment Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -233,6 +244,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -245,7 +257,8 @@ describe('Payment Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID (use a non-existent merchant ID for testing)
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -257,6 +270,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -271,7 +285,8 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
 
         // Configure request with unique reference number and merchant ID
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
 
         try {
             await dana.widgetApi.widgetPayment(requestData);
@@ -288,6 +303,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -300,7 +316,8 @@ describe('Payment Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -312,6 +329,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -323,7 +341,8 @@ describe('Payment Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -335,6 +354,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If another error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -347,13 +367,15 @@ describe('Payment Tests', () => {
         // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
-        requestData.partnerReferenceNo = generateReferenceNo();
+        const partnerReferenceNo = generateReferenceNo();
+        requestData.partnerReferenceNo = partnerReferenceNo;
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
             // Assert the response against the expected data
             await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
             // If the API call succeeds, fail the test
+            console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
             fail('Expected an error but the API call succeeded');
         } catch (e: any) {
             if (e instanceof ResponseError) {
@@ -361,6 +383,7 @@ describe('Payment Tests', () => {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
                 // If an unexpected error occurs, fail the test with the error message
+                console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
         }
@@ -374,6 +397,7 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         try {
             // Placeholder for idempotent test
+            console.error('[REF] case=' + caseName + ' partnerReferenceNo:', (requestData as any)?.partnerReferenceNo);
             fail('Payment test is a placeholder.');
         } catch (e: any) { }
     });

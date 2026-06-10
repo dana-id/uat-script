@@ -92,8 +92,10 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
 
                 $this->assertTrue(true);
             } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to inquire bank account: ' . $e->getMessage());
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
@@ -128,6 +130,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for insufficient fund but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for insufficient fund (responseCode: 4034214)
@@ -145,6 +148,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
@@ -189,6 +193,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                         $requestData
                     );
                     
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature
@@ -206,10 +211,12 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
             });
         } catch (Exception $e) {            
+            echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
             $this->fail("Unexpected exception: " . $e->getMessage());
         }
     }
@@ -243,6 +250,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for inactive account but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for inactive account (responseCode: 4034218)
@@ -260,6 +268,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
@@ -294,6 +303,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for invalid merchant but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 404 Not Found for invalid merchant (responseCode: 4044208)
@@ -311,6 +321,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
@@ -345,6 +356,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for invalid card but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 404 Not Found for invalid card (responseCode: 4044211)
@@ -362,6 +374,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
@@ -396,6 +409,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for invalid field format but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 400 Bad Request for invalid field format (responseCode: 4004201)
@@ -413,6 +427,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
@@ -447,6 +462,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004202)
@@ -464,6 +480,7 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });

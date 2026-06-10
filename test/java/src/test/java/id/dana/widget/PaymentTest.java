@@ -73,6 +73,7 @@ public class PaymentTest {
 
         // Generate a unique partner reference number for each test run
         partnerReferenceNo = UUID.randomUUID().toString();
+        log.info("[REF] partnerReferenceNo={}", partnerReferenceNo);
 
         widgetApi = Dana.getInstance().getWidgetApi();
         paymentGatewayApi = Dana.getInstance().getPaymentGatewayApi();
@@ -279,6 +280,7 @@ public class PaymentTest {
                 CreateOrderByRedirectRequest.class);
 
         partnerReferenceNo = UUID.randomUUID().toString();
+        log.info("[REF] partnerReferenceNo={}", partnerReferenceNo);
         requestDataInit.setPartnerReferenceNo(partnerReferenceNo);
         requestDataInit.setMerchantId(merchantId);
 

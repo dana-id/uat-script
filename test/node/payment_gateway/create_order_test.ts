@@ -103,6 +103,7 @@ describe('Payment Gateway - Create Order Tests', () => {
       // Validate API response against expected result with dynamic partner reference
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e) {
+      console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
       console.error('Create order redirect test failed:', e);
       throw e;
     }
@@ -135,6 +136,7 @@ describe('Payment Gateway - Create Order Tests', () => {
       // Validate API response against expected result
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e) {
+      console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
       console.error('Create order API test failed:', e);
       throw e;
     }
@@ -166,6 +168,7 @@ describe('Payment Gateway - Create Order Tests', () => {
       // Validate API response includes proper VA bank details
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e) {
+      console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
       console.error('Create order VA bank test failed:', e);
       throw e;
     }
@@ -275,8 +278,10 @@ describe('Payment Gateway - Create Order Tests', () => {
       if (Number(e.status) === 400) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 400) {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail("Expected bad request failed but got status code " + e.status);
       } else {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         throw e;
       }
     }
@@ -317,8 +322,10 @@ describe('Payment Gateway - Create Order Tests', () => {
       if (e instanceof ResponseError && Number(e.status) === 404) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, e.rawResponse, { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 404) {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail(`Expected not found error but got status code ${e.status}. Response:\n${JSON.stringify(e.rawResponse, null, 2)}`);
       } else {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         throw e;
       }
     }
@@ -370,8 +377,10 @@ describe('Payment Gateway - Create Order Tests', () => {
       if (Number(e.status) === 400) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 400) {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail("Expected bad request failed but got status code " + e.status);
       } else {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         throw e;
       }
     }
@@ -420,8 +429,10 @@ describe('Payment Gateway - Create Order Tests', () => {
       if (Number(e.status) === 401) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else if (e instanceof ResponseError && Number(e.status) !== 401) {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail("Expected unauthorized failed but got status code " + e.status);
       } else {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         throw e;
       }
     }

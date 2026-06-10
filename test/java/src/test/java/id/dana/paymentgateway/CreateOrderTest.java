@@ -90,6 +90,7 @@ public class CreateOrderTest {
       CreateOrderResponse response = api.createOrder(requestData);
       TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }
@@ -114,6 +115,7 @@ public class CreateOrderTest {
       CreateOrderResponse response = api.createOrder(requestData);
       TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }
@@ -138,6 +140,7 @@ public class CreateOrderTest {
       CreateOrderResponse response = api.createOrder(requestData);
       TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }
@@ -163,6 +166,7 @@ public class CreateOrderTest {
       CreateOrderResponse response = api.createOrder(requestData);
       TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }
@@ -200,6 +204,7 @@ public class CreateOrderTest {
         log.warn("⚠️ Wallet test failed but marked as passing:", e);
       }
     } catch (Exception e) {
+      log.error("[REF] case=CreateOrderNetworkPayPgOtherWallet");
       log.error("⚠️ Wallet test setup failed but marked as passing:", e);
     }
 
@@ -222,8 +227,6 @@ public class CreateOrderTest {
 
     String invalidPayload = PaymentPGUtil.compactJsonForSnap(bodyNode);
 
-    // Same client pattern as testCreateOrderInvalidMandatoryField: DanaAuth only (no CustomHeaderInterceptor).
-    // ReplaceRequestBodyInterceptor swaps only the wire body; SNAP signs that invalid JSON (same as Python body + signature).
     CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, "CreateOrderApi");
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
@@ -240,15 +243,18 @@ public class CreateOrderTest {
       String status = response.getResponseCode().substring(0, 3).trim();
 
       if (TestUtil.isSuccessful(status)) {
+        log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
         fail("Expected an error but the API call succeeded");
       } else {
         if (StringUtils.equals(status, "400")) {
           TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
         } else {
+          log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
           fail("Expected bad request failed but got status code: " + status);
         }
       }
     } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }
@@ -275,10 +281,12 @@ public class CreateOrderTest {
       if (TestUtil.isUnsuccessful(status)) {
         log.error("Fail to call first API");
         log.error("Response: {}", response);
+        log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
         fail("Fail to call first API");
       }
     } catch (Exception e) {
       log.error("Fail to call first API:", e);
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       fail("Fail to call first API: " + e.getMessage());
     }
 
@@ -292,11 +300,13 @@ public class CreateOrderTest {
       String status = response.getResponseCode().substring(0, 3).trim();
 
       if (TestUtil.isSuccessful(status)) {
+        log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
         fail("Expected an error but the API call succeeded");
       } else {
         if (StringUtils.equals(status, "404")) {
           TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
         } else {
+          log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
           fail("Expected not found failed but got status code: " + status);
           log.error("Response: {}", response);
         }
@@ -307,6 +317,7 @@ public class CreateOrderTest {
       assertTrue(msg != null && msg.contains("4045418"),
           "Expected 4045418 Inconsistent Request, got: " + msg);
     } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }
@@ -339,15 +350,18 @@ public class CreateOrderTest {
       String status = response.getResponseCode().substring(0, 3).trim();
 
       if (TestUtil.isSuccessful(status)) {
+        log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
         fail("Expected an error but the API call succeeded");
       } else {
         if (StringUtils.equals(status, "400")) {
           TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
         } else {
+          log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
           fail("Expected bad request failed but got status code: " + status);
         }
       }
     } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }
@@ -380,15 +394,18 @@ public class CreateOrderTest {
       String status = response.getResponseCode().substring(0, 3).trim();
 
       if (TestUtil.isSuccessful(status)) {
+        log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
         fail("Expected an error but the API call succeeded");
       } else {
         if (StringUtils.equals(status, "401")) {
           TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
         } else {
+          log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
           fail("Expected unauthorized failed but got status code: " + status);
         }
       }
     } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);
       fail("Create order test failed: " + e.getMessage());
     }

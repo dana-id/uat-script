@@ -37,7 +37,8 @@ def test_disbursement_to_bank_valid():
     case_name = "DisbursementBankValidAccount"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
@@ -46,6 +47,7 @@ def test_disbursement_to_bank_valid():
 
     except ApiException as e:
         # If the API call fails, log the error and fail the test
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail(f"API call failed: {e}")
 
 @with_delay()
@@ -54,7 +56,10 @@ def test_disbursement_to_bank_unauthorized_signature():
     case_name = "DisbursementBankUnauthorizedSignature"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     # Intentionally remove a mandatory field to trigger the error
@@ -90,17 +95,19 @@ def test_disbursement_to_bank_missing_mandatory_field():
     
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
         api_instance.transfer_to_bank(request_obj)
         
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected ApiException for invalid field format but the API call succeeded")
     except ApiException as e:
         # Expected failure case - assert the error response
         assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+                           {'partnerReferenceNo': partner_reference_no})
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
@@ -108,11 +115,15 @@ def test_disbursement_to_bank_invalid_field_format():
     case_name = "DisbursementBankInvalidFieldFormat"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
         api_instance.transfer_to_bank(request_obj)
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected ApiException for invalid field format but the API call succeeded")
 
     except ApiException as e:
@@ -126,11 +137,15 @@ def test_disbursement_to_bank_insufficient_fund():
     case_name = "DisbursementBankInsufficientFund"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
         api_instance.transfer_to_bank(request_obj)
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected ApiException for insufficient fund but the API call succeeded")
 
     except ApiException as e:
@@ -144,11 +159,15 @@ def test_disbursement_to_bank_inactive_account():
     case_name = "DisbursementBankInactiveAccount"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
         api_instance.transfer_to_bank(request_obj)
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected ApiException for inactive account but the API call succeeded")
 
     except ApiException as e:
@@ -169,6 +188,7 @@ def test_disbursement_to_bank_inconsistent_request():
     try:
         api_instance.transfer_to_bank(request_obj)
     except:
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Fail to call first API")
 
     time.sleep(1)  # Adding a short delay to ensure the first request is processed
@@ -182,11 +202,13 @@ def test_disbursement_to_bank_inconsistent_request():
 
         api_instance.transfer_to_bank(request_obj_second)
 
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected NotFoundException but the API call succeeded")
 
     except NotFoundException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
     except:
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected NotFoundException but the API call give another exception")
 
 @with_delay()
@@ -195,11 +217,15 @@ def test_disbursement_to_bank_suspected_fraud():
     case_name = "DisbursementBankSuspectedFraud"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
         api_instance.transfer_to_bank(request_obj)
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected ApiException for suspected fraud but the API call succeeded")
 
     except ApiException as e:
@@ -213,11 +239,15 @@ def test_disbursement_to_bank_unknown_error():
     case_name = "DisbursementBankUnknownError"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
         api_instance.transfer_to_bank(request_obj)
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected ApiException for unknown error but the API call succeeded")
 
     except ApiException as e:
@@ -231,11 +261,15 @@ def test_disbursement_to_bank_general_error():
     case_name = "DisbursementBankGeneralError"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
         api_instance.transfer_to_bank(request_obj)
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected ApiException for general error but the API call succeeded")
 
     except ApiException as e:
@@ -249,7 +283,10 @@ def test_disbursement_to_bank_valid_account_in_progress():
     case_name = "DisbursementBankValidAccountInProgress"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     try:
@@ -268,7 +305,10 @@ def test_disbursement_to_bank_invalid_mandatory_field_format():
     case_name = "DisbursementBankInvalidMandatoryFieldFormat"
     json_dict = get_request(json_path_file, title_case, case_name)
     
-    json_dict["partnerReferenceNo"] = str(uuid4())
+    partner_reference_no = str(uuid4())
+
+    
+    json_dict["partnerReferenceNo"] = partner_reference_no
     request_obj = TransferToBankRequest.from_dict(json_dict)
 
     # Intentionally remove a mandatory field to trigger the error

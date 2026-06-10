@@ -81,8 +81,10 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
 
                 $this->assertTrue(true);
             } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to inquire DANA account: ' . $e->getMessage());
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
@@ -127,6 +129,7 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                         $requestData
                     );
                     
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature
@@ -144,10 +147,12 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
             });
         } catch (Exception $e) {            
+            echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
             $this->fail("Unexpected exception: " . $e->getMessage());
         }
     }
@@ -181,6 +186,7 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->danaAccountInquiry($danaAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for frozen account but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for frozen account
@@ -198,6 +204,7 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
@@ -232,6 +239,7 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->danaAccountInquiry($danaAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for unregistered account but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for unregistered account
@@ -249,6 +257,7 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });
@@ -283,6 +292,7 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                 // Make the API call
                 self::$apiInstance->danaAccountInquiry($danaAccountInquiryRequestObj);
 
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for exceeded limit but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for exceeded limit
@@ -300,6 +310,7 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
             }
         });

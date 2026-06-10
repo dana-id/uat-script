@@ -65,6 +65,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
   void testTopUpCustomerValid() throws Exception {
     String caseName = "TopUpCustomerValid";
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -93,6 +95,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -111,6 +115,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -135,6 +141,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -167,6 +175,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -184,6 +194,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -201,6 +213,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -219,6 +233,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -246,6 +262,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -263,6 +281,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -286,6 +306,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -303,6 +325,8 @@ class TransferToDanaTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();

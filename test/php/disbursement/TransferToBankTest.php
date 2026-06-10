@@ -89,8 +89,10 @@ class TransferToBankTest extends AbstractDisbursementTest
 
                 $this->assertTrue(true);
             } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to inquire bank account: ' . $e->getMessage());
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
@@ -125,6 +127,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for insufficient fund but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 403 Forbidden for insufficient fund (responseCode: 4034314)
@@ -142,6 +145,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -176,6 +180,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004302)
@@ -193,6 +198,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -237,6 +243,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         $requestData
                     );
                     
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature
@@ -254,10 +261,12 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
             });
         } catch (Exception $e) {            
+            echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
             $this->fail("Unexpected exception: " . $e->getMessage());
         }
     }
@@ -291,6 +300,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for transaction not found
@@ -308,6 +318,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -342,6 +353,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the first API call
                     self::$apiInstance->transferToBank($transferToBankRequestObj);
                 } catch (\Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Failed to call first transfer to Bank API: " . $e->getMessage());
                 }
 
@@ -365,6 +377,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the second API call with the same reference number but different amount
                     self::$apiInstance->transferToBank($transferToBankRequestObjSecond);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for inconsistent request but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 404 Not Found for inconsistent request
@@ -382,6 +395,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (\Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -416,6 +430,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 500 Internal Server Error for transaction not found
@@ -433,6 +448,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -467,6 +483,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 500 Internal Server Error for transaction not found
@@ -484,6 +501,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -518,6 +536,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 403 Forbidden for transaction not found
@@ -535,6 +554,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -569,6 +589,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToBank($TransferToBankRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 403 Forbidden for transaction not found
@@ -586,6 +607,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -628,8 +650,10 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to inquire bank account: ' . $e->getMessage());
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
@@ -676,6 +700,7 @@ class TransferToBankTest extends AbstractDisbursementTest
                         $requestData
                     );
                     
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for invalid signature
@@ -693,10 +718,12 @@ class TransferToBankTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
             });
         } catch (Exception $e) {            
+            echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
             $this->fail("Unexpected exception: " . $e->getMessage());
         }
     }

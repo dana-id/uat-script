@@ -142,6 +142,7 @@ public class FinishNotifyTest extends AbstractDisbursementTest {
             PaymentPGUtil.paymentCodeFromCreateOrderResponse(response));
       }
     } catch (Exception e) {
+      log.error("[REF] case={}", createOrderAssertCaseFinishNotify);
       log.error("Finish notify create order test failed:", e);
       fail("Finish notify create order test failed: " + e.getMessage());
     }

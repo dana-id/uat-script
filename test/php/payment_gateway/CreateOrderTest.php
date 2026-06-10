@@ -76,8 +76,10 @@ class CreateOrderTest extends TestCase
                 
                 $this->assertTrue(true);
             } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
             } catch (\Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
             }
         });
@@ -125,8 +127,10 @@ class CreateOrderTest extends TestCase
                 
                 $this->assertTrue(true);
             } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
             } catch (\Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
             }
         });
@@ -178,8 +182,10 @@ class CreateOrderTest extends TestCase
                 
                 $this->assertTrue(true);
             } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
             } catch (\Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
             }
         });
@@ -289,8 +295,10 @@ class CreateOrderTest extends TestCase
                 
                 $this->assertTrue(true);
             } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
             } catch (\Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
             }
         });
@@ -334,6 +342,7 @@ class CreateOrderTest extends TestCase
                         $requestData
                     );
                     
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for invalid field format but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for invalid field format
@@ -351,10 +360,12 @@ class CreateOrderTest extends TestCase
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (\Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
             });
         } catch (\Exception $e) {            
+            echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
             $this->fail("Unexpected exception: " . $e->getMessage());
         }
     }
@@ -387,6 +398,7 @@ class CreateOrderTest extends TestCase
                 self::$apiInstance->createOrder($createOrderRequestObj);
             } catch (ApiException $e) {
                 $body = (string) $e->getResponseBody();
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('First API call failed: [' . $e->getCode() . '] ' . ($body !== '' ? $body : $e->getMessage()));
             }
 
@@ -403,6 +415,7 @@ class CreateOrderTest extends TestCase
 
             try {
                 self::$apiInstance->createOrder($createOrderRequestObjSecond);
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for inconsistent request but the API call succeeded');
             } catch (ApiException $e) {
                 $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 for inconsistent request, got {$e->getCode()}");
@@ -466,6 +479,7 @@ class CreateOrderTest extends TestCase
                         $createOrderRequestObj
                     );
                     
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for missing X-TIMESTAMP but the API call succeeded');
                 } catch (ApiException $e) {
 
@@ -488,6 +502,7 @@ class CreateOrderTest extends TestCase
                 }
             });
         } catch (\Exception $e) {            
+            echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
             $this->fail("Unexpected exception: " . $e->getMessage());
         }
     }
@@ -531,6 +546,7 @@ class CreateOrderTest extends TestCase
                         $requestData
                     );
                     
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature
@@ -552,6 +568,7 @@ class CreateOrderTest extends TestCase
                 }
             });
         } catch (\Exception $e) {            
+            echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
             $this->fail("Unexpected exception: " . $e->getMessage());
         }
     }

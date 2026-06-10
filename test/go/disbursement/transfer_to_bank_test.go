@@ -46,6 +46,7 @@ func TestDisbursementBankValidAccount(t *testing.T) {
 		ctx := context.Background()
 		apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
 		if err != nil {
+			fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 			t.Fatalf("API call failed: %v", err)
 		}
 		defer httpResponse.Body.Close()
@@ -521,6 +522,7 @@ func TestDisbursementBankValidAccountInProgress(t *testing.T) {
 		ctx := context.Background()
 		apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
 		if err != nil {
+			fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 			t.Fatalf("API call failed: %v", err)
 		}
 		defer httpResponse.Body.Close()

@@ -61,6 +61,8 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
   void testInquiryBankAccountValidDataAmount() throws Exception {
     String caseName = "InquiryBankAccountValidDataAmount";
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -90,6 +92,8 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -110,6 +114,8 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -139,6 +145,8 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -158,6 +166,8 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -177,6 +187,8 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -196,6 +208,8 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -215,6 +229,8 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();

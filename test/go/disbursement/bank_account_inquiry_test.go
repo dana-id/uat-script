@@ -46,6 +46,7 @@ func TestInquiryBankAccountValidDataAmount(t *testing.T) {
 		ctx := context.Background()
 		apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.BankAccountInquiry(ctx).BankAccountInquiryRequest(*bankAccountInquiryRequest).Execute()
 		if err != nil {
+			fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 			t.Fatalf("API call failed: %v", err)
 		}
 		defer httpResponse.Body.Close()

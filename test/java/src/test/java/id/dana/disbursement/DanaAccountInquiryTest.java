@@ -59,6 +59,8 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest {
   void testDanaAccountInquiryCustomerValidData() throws Exception {
     String caseName = "InquiryCustomerValidData";
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
@@ -85,6 +87,8 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
@@ -99,6 +103,8 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
@@ -113,6 +119,8 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
@@ -128,6 +136,8 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest {
 
     // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
+ log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     customHeaders.put(

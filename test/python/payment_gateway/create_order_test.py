@@ -72,8 +72,10 @@ def test_create_order_redirect_scenario():
             # Assert the API response
             assert_response(json_path_file, title_case, case_name, CreateOrderResponse.to_json(api_response), {"partnerReferenceNo": partner_reference_no})
         except Exception as e:
+            print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
             pytest.fail(f"Fail to call create order API {e}")
     except Exception as e:
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail(f"Fail to call create order API {e}")
 
 @with_delay()
@@ -236,6 +238,7 @@ def test_create_order_inconsistent_request():
     try:
         api_instance.create_order(create_order_request_obj)
     except:
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Fail to call first API")
 
     time.sleep(2)
@@ -248,11 +251,13 @@ def test_create_order_inconsistent_request():
 
         api_instance.create_order(create_order_request_obj_second)
 
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected NotFoundException but the API call succeeded")
 
     except NotFoundException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
     except:
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected NotFoundException but the API call give another exception")
 
 @with_delay()

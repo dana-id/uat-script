@@ -3,6 +3,7 @@ package widget_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"uat-script/helper"
@@ -24,6 +25,7 @@ func TestPaymentSuccess(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -65,6 +67,7 @@ func TestPaymentFailInvalidFormat(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -112,6 +115,7 @@ func TestPaymentFailMissingOrInvalidMandatoryField(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -156,6 +160,7 @@ func TestPaymentFailInvalidSignature(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -201,6 +206,7 @@ func TestPaymentFailGeneralError(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -269,6 +275,7 @@ func TestPaymentFailTransactionNotPermitted(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -316,6 +323,7 @@ func TestPaymentFailMerchantNotExistOrStatusAbnormal(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -364,6 +372,7 @@ func TestPaymentFailInconsistentRequest(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -402,6 +411,7 @@ func TestPaymentFailInternalServerError(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -449,6 +459,7 @@ func TestPaymentFailExceedsTransactionAmountLimit(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -497,6 +508,7 @@ func TestPaymentFailTimeout(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 
@@ -545,6 +557,7 @@ func TestPaymentFailIdempotent(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 	partnerReferenceNo := uuid.New().String()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(900, 7)
 

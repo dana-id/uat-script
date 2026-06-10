@@ -69,10 +69,12 @@ def test_payment_fail_invalid_format():
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
     try:
         api_response = api_instance.widget_payment(create_payment_request_obj)
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected BadRequestException but the API call succeeded")
     except BadRequestException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
     except:
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected BadRequestException but the API call give another exception")
 
 @with_delay()
@@ -157,10 +159,12 @@ def test_payment_fail_merchant_not_exist_or_status_abnormal():
     create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
     try:
         api_response = api_instance.widget_payment(create_payment_request_obj)
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected NotFoundException but the API call succeeded")
     except NotFoundException as e:
         assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
     except:
+        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
         pytest.fail("Expected NotFoundException but the API call give another exception")
 
 @with_delay()

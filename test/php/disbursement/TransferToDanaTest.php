@@ -80,8 +80,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
 
                 $this->assertTrue(true);
             } catch (ApiException $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to inquire bank account: ' . $e->getMessage());
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Unexpected exception: ' . $e->getMessage());
             }
         });
@@ -116,6 +118,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for insufficient fund but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 403 Forbidden for insufficient fund (responseCode: 4033814)
@@ -133,6 +136,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -168,6 +172,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 404 Not Found for transaction not found
@@ -185,6 +190,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -245,6 +251,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                             );
                         }
                     } else {
+                        echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                         $this->fail('Both requests succeeded but returned different reference numbers - NOT truly idempotent');
                     }
                 } catch (ApiException $duplicateError) {
@@ -269,6 +276,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                             ['partnerReferenceNo' => $fixedPartnerRef]
                         );
                     } else {
+                        echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                         $this->fail('Expected duplicate error, but got unexpected error: ' . $duplicateError->getMessage());
                     }
                 }
@@ -290,6 +298,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
             } catch (ApiException $firstError) {
                 $this->markTestSkipped('First request failed - cannot test idempotency: ' . $firstError->getMessage());
             } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail("Unexpected exception: " . $e->getMessage());
             }
         });
@@ -324,6 +333,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for frozen account but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 403 Forbidden for frozen account (responseCode: 4033805)
@@ -341,6 +351,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -375,6 +386,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for exceed amount limit but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 403 Forbidden for exceed amount limit (responseCode: 4033813)
@@ -392,6 +404,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -426,6 +439,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004003)
@@ -443,6 +457,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -487,6 +502,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         $requestData
                     );
                     
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature (responseCode: 4034001)
@@ -504,10 +520,12 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
             });
         } catch (Exception $e) {            
+            echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
             $this->fail("Unexpected exception: " . $e->getMessage());
         }
     }
@@ -541,6 +559,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for invalid field format but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for invalid field format (responseCode: 4003003)
@@ -558,6 +577,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -592,6 +612,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the first API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
                 } catch (\Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Failed to call first transfer to Dana API: " . $e->getMessage());
                 }
                 
@@ -615,6 +636,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the second API call with the same reference number but different amount
                     self::$apiInstance->transferToDana($transferToDanaRequestObjSecond);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for inconsistent request but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 404 Not Found for inconsistent request (responseCode: 4043009)
@@ -632,6 +654,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (\Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -666,6 +689,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for internal server error but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 500 Internal Server Error for internal server error (responseCode: 5003001)
@@ -683,6 +707,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });
@@ -717,6 +742,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     // Make the API call
                     self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail('Expected ApiException for internal general error but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 500 Internal Server Error for internal general error (responseCode: 5004000)
@@ -734,6 +760,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         ['partnerReferenceNo' => $partnerReferenceNo]
                     );
                 } catch (Exception $e) {
+                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                     $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
                 }
         });

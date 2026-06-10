@@ -80,6 +80,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
         'partnerReferenceNo': partnerReferenceNo
       });
     } catch (e) {
+      console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
       console.error('Transfer to bank test failed:', e);
       throw e;
     }
@@ -117,6 +118,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -154,6 +156,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -203,6 +206,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -240,6 +244,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -278,6 +283,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -315,6 +321,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -352,6 +359,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -389,6 +397,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -426,6 +435,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -458,6 +468,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
         'partnerReferenceNo': partnerReferenceNo
       });
     } catch (e) {
+      console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
       console.error('Transfer to bank test failed:', e);
       throw e;
     }
@@ -507,6 +518,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), { partnerReferenceNo });
       } else {
         // If another error occurs, fail the test with the error message
+        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
     }

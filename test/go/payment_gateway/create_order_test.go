@@ -49,6 +49,7 @@ func TestCreateOrderRedirectScenario(t *testing.T) {
 
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
@@ -86,6 +87,7 @@ func TestCreateOrderRedirectScenario(t *testing.T) {
 		return string(responseJSON), nil
 	}, 3, 2*time.Second)
 	if err != nil {
+		fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 		t.Fatalf("API call failed: %v", err)
 	}
 
@@ -108,6 +110,7 @@ func TestCreateOrderApiScenario(t *testing.T) {
 
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
@@ -130,7 +133,7 @@ func TestCreateOrderApiScenario(t *testing.T) {
 		CreateOrderByApiRequest: createOrderByApiRequest,
 	}
 
-	print("Creating order with partner reference number: ", partnerReferenceNo)
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	// Print the request for debugging
 	fmt.Printf("Request JSON: %s\n", string(jsonBytes))
 
@@ -149,6 +152,7 @@ func TestCreateOrderApiScenario(t *testing.T) {
 		return string(responseJSON), nil
 	}, 3, 2*time.Second)
 	if err != nil {
+		fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 		t.Fatalf("API call failed: %v", err)
 	}
 
@@ -171,6 +175,7 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	jsonDict["externalStoreId"] = os.Getenv("EXTERNAL_SHOP_ID")
@@ -200,7 +205,7 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 	// Make the API call with retry on inconsistent request
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
 		ctx := context.Background()
-		fmt.Printf("Creating order with partner reference number: %s\n", partnerReferenceNo)
+		fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
 		if err != nil {
 			return nil, err
@@ -216,6 +221,7 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 		return string(responseJSON), nil
 	}, 3, 2*time.Second)
 	if err != nil {
+		fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 		t.Fatalf("API call failed: %v", err)
 	}
 
@@ -258,6 +264,7 @@ func TestCreateOrderNetworkPayPgOtherWallet(t *testing.T) {
 
 		// Set a unique partner reference number
 		partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 		jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
@@ -338,6 +345,7 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(360, 7)
@@ -376,6 +384,7 @@ func TestCreateOrderNetworkPayPgOtherVaBank(t *testing.T) {
 		return string(responseJSON), nil
 	}, 3, 2*time.Second)
 	if err != nil {
+		fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 		t.Fatalf("API call failed: %v", err)
 	}
 
@@ -398,6 +407,7 @@ func TestCreateOrderInvalidFieldFormat(t *testing.T) {
 	}
 
 	partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	ctx := context.Background()
@@ -435,6 +445,7 @@ func TestCreateOrderInconsistentRequest(t *testing.T) {
 
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
@@ -498,6 +509,7 @@ func TestCreateOrderInvalidMandatoryField(t *testing.T) {
 
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
@@ -562,6 +574,7 @@ func TestCreateOrderUnauthorized(t *testing.T) {
 
 	// Set a unique partner reference number
 	partnerReferenceNo := generatePartnerReferenceNo()
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	jsonDict["validUpTo"] = helper.GenerateFormattedDate(600, 7)
