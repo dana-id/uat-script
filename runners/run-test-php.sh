@@ -37,6 +37,170 @@ get_mandatory_pattern_for_folder() {
     esac
 }
 
+resolve_php_retry_failed_only() {
+    if [ "${PHP_RETRY_FAILED_ONLY:-}" = "false" ]; then
+        echo "false"
+    elif [ "${PHP_RETRY_FAILED_ONLY:-}" = "true" ]; then
+        echo "true"
+    elif [ -n "${CI:-}" ] || [ -n "${GITLAB_CI:-}" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+php_retry_sleep_seconds() {
+    failed_attempt="$1"
+    initial_delay="${RETRY_INITIAL_DELAY_SECONDS:-10}"
+    delay_before_attempt_4="${RETRY_DELAY_BEFORE_ATTEMPT_4_SECONDS:-120}"
+    delay_before_attempt_5="${RETRY_DELAY_BEFORE_ATTEMPT_5_SECONDS:-300}"
+
+    case "$failed_attempt" in
+        1) echo "$initial_delay" ;;
+        2) echo "$((initial_delay * 2))" ;;
+        3) echo "$delay_before_attempt_4" ;;
+        4) echo "$delay_before_attempt_5" ;;
+        *) echo "$delay_before_attempt_5" ;;
+    esac
+}
+
+switch_disbursement_credentials_if_needed() {
+    attempt="$1"
+    if [ -z "${USE_DISBURSEMENT_CREDENTIALS:-}" ] || [ "$attempt" -lt 3 ] || [ "$attempt" -gt 5 ]; then
+        return 0
+    fi
+
+    echo "Attempt $attempt: switching to disbursement credentials (retries 3-5)..."
+    export MERCHANT_ID="${DISBURSEMENT_MERCHANT_ID}"
+    export X_PARTNER_ID="${DISBURSEMENT_X_PARTNER_ID}"
+    export PRIVATE_KEY="${DISBURSEMENT_PRIVATE_KEY}"
+    export CLIENT_SECRET="${DISBURSEMENT_CLIENT_SECRET}"
+
+    if [ -f ".env" ]; then
+        printf 'MERCHANT_ID=%s\n' "${DISBURSEMENT_MERCHANT_ID}" > .env
+        printf 'X_PARTNER_ID=%s\n' "${DISBURSEMENT_X_PARTNER_ID}" >> .env
+        printf 'CHANNEL_ID=%s\n' "${CHANNEL_ID}" >> .env
+        printf "PRIVATE_KEY='%s'\n" "${DISBURSEMENT_PRIVATE_KEY}" >> .env
+        printf 'ORIGIN=%s\n' "${ORIGIN}" >> .env
+        printf "CLIENT_SECRET='%s'\n" "${DISBURSEMENT_CLIENT_SECRET}" >> .env
+        printf "REDIRECT_URL_OAUTH='%s'\n" "${REDIRECT_URL_OAUTH}" >> .env
+        printf "EXTERNAL_SHOP_ID='%s'\n" "${EXTERNAL_SHOP_ID}" >> .env
+    fi
+}
+
+extract_failed_phpunit_tests_from_junit() {
+    junit_file="$1"
+    php -r '
+$path = $argv[1] ?? "";
+if ($path === "" || !is_readable($path)) {
+    exit(2);
+}
+$xml = @simplexml_load_file($path);
+if ($xml === false) {
+    exit(2);
+}
+$names = [];
+foreach ($xml->xpath("//testcase[failure or error]") as $testcase) {
+    $name = trim((string) $testcase["name"]);
+    if ($name !== "") {
+        $names[$name] = true;
+    }
+}
+if ($names === []) {
+    exit(2);
+}
+echo implode("|", array_keys($names));
+' "$junit_file" 2>/dev/null
+}
+
+run_phpunit_once() {
+    phpunit_bin="$1"
+    phpunit_config="$2"
+    test_path="$3"
+    filter="$4"
+    junit_file="$5"
+
+    if [ -n "$filter" ]; then
+        "$phpunit_bin" --configuration="$phpunit_config" --testdox --debug --colors=always --log-junit="$junit_file" --filter="$filter" "$test_path"
+    else
+        "$phpunit_bin" --configuration="$phpunit_config" --testdox --debug --colors=always --log-junit="$junit_file" "$test_path"
+    fi
+}
+
+# CI: attempt 1 runs the full scoped suite; attempts 2-5 retry only failed/error tests.
+run_phpunit_cmd() {
+    test_path="$1"
+    initial_filter="${2:-}"
+    phpunit_bin="$3"
+    phpunit_config="$4"
+
+    if [ "$(resolve_php_retry_failed_only)" != "true" ]; then
+        set +e
+        if [ -n "$initial_filter" ]; then
+            "$phpunit_bin" --configuration="$phpunit_config" --testdox --debug --colors=always --filter="$initial_filter" "$test_path"
+        else
+            "$phpunit_bin" --configuration="$phpunit_config" --testdox --debug --colors=always "$test_path"
+        fi
+        exit_code=$?
+        set -e
+        return "$exit_code"
+    fi
+
+    max_attempts="${RETRY_MAX_ATTEMPTS:-5}"
+    attempt=1
+    current_filter="$initial_filter"
+    last_exit_code=1
+    junit_file=""
+
+    while [ "$attempt" -le "$max_attempts" ]; do
+        switch_disbursement_credentials_if_needed "$attempt"
+
+        junit_file=$(mktemp "${TMPDIR:-/tmp}/phpunit-results.XXXXXX.xml")
+        if [ "$attempt" -eq 1 ]; then
+            echo "PHPUnit attempt 1/$max_attempts (full suite) for $test_path"
+        else
+            echo "PHPUnit attempt $attempt/$max_attempts (failed tests only) for $test_path"
+        fi
+        if [ -n "$current_filter" ]; then
+            echo "Filter: $current_filter"
+        fi
+
+        set +e
+        run_phpunit_once "$phpunit_bin" "$phpunit_config" "$test_path" "$current_filter" "$junit_file"
+        last_exit_code=$?
+        set -e
+
+        if [ "$last_exit_code" -eq 0 ]; then
+            rm -f "$junit_file"
+            return 0
+        fi
+
+        if [ "$attempt" -eq "$max_attempts" ]; then
+            rm -f "$junit_file"
+            return "$last_exit_code"
+        fi
+
+        failed_filter=""
+        failed_filter=$(extract_failed_phpunit_tests_from_junit "$junit_file") || failed_filter=""
+        rm -f "$junit_file"
+
+        if [ -z "$failed_filter" ]; then
+            echo "Could not determine failed tests for retry; stopping."
+            return "$last_exit_code"
+        fi
+
+        echo "Retrying failed/error tests only: $failed_filter"
+        current_filter="$failed_filter"
+
+        sleep_delay=$(php_retry_sleep_seconds "$attempt")
+        echo "Attempt $attempt failed; sleeping ${sleep_delay}s before retry..."
+        sleep "$sleep_delay"
+        attempt=$((attempt + 1))
+    done
+
+    return "$last_exit_code"
+}
+
 run_php_runner(){
     folderName=$1
     caseName=$2
@@ -478,29 +642,29 @@ EOF
         # Run specific test method(s) by --filter pattern (| = regex OR)
         if [ -n "$folderName" ]; then
             echo "Running PHP tests matching '$runPattern' in folder 'test/php/$folderName'..."
-            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="$runPattern" "$PHP_TEST_DIR/$folderName"
+            run_phpunit_cmd "$PHP_TEST_DIR/$folderName" "$runPattern" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
         else
             echo "Running PHP tests matching '$runPattern' in all folders..."
             TEST_DIRS=$(find "$PHP_TEST_DIR" -type d -mindepth 1 -maxdepth 1 -not -path "*/helper" -not -path "*/vendor")
             for dir in $TEST_DIRS; do
                 echo "\033[36mRunning tests matching '$runPattern' in $dir...\033[0m"
-                "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="$runPattern" "$dir"
+                run_phpunit_cmd "$dir" "$runPattern" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
                 sleep 3
             done
         fi
     elif [ -n "$folderName" ] && [ -n "$caseName" ]; then
         # Run specific test in a specific folder
         echo "Running test '$caseName' in folder 'test/php/$folderName'..."
-        "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "$PHP_TEST_DIR/$folderName"
+        run_phpunit_cmd "$PHP_TEST_DIR/$folderName" "^.*\\\\$caseName.*$" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
     elif [ -n "$folderName" ]; then
         # Run all tests in a specific folder
         echo "Running all tests in folder 'test/php/$folderName'..."
         mandatory_pattern=$(get_mandatory_pattern_for_folder "$folderName")
         if [ "$mandatory_only" = "true" ] && [ -n "$mandatory_pattern" ]; then
             echo "Non-CI mode: running mandatory $folderName tests only"
-            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="$mandatory_pattern" "$PHP_TEST_DIR/$folderName"
+            run_phpunit_cmd "$PHP_TEST_DIR/$folderName" "$mandatory_pattern" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
         else
-            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$PHP_TEST_DIR/$folderName"
+            run_phpunit_cmd "$PHP_TEST_DIR/$folderName" "" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
         fi
     elif [ -n "$caseName" ]; then
         # Find all test directories (excluding helper)
@@ -514,7 +678,7 @@ EOF
         # Run test in all directories
         for dir in $TEST_DIRS; do
             echo "\033[36mRunning test '$caseName' in $dir...\033[0m"
-            "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="^.*\\\\$caseName.*$" "$dir"
+            run_phpunit_cmd "$dir" "^.*\\\\$caseName.*$" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
             # Add a 3-second gap between test runs
             sleep 3
         done
@@ -538,12 +702,12 @@ EOF
                 mandatory_pattern=$(get_mandatory_pattern_for_folder "$folder_name")
                 if [ -n "$mandatory_pattern" ]; then
                     echo "Non-CI mode: running mandatory $folder_name tests only"
-                    "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always --filter="$mandatory_pattern" "$dir"
+                    run_phpunit_cmd "$dir" "$mandatory_pattern" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
                 else
-                    "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$dir"
+                    run_phpunit_cmd "$dir" "" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
                 fi
             else
-                "$PHPUNIT_BIN" --configuration="$PHPUNIT_CONFIG" --testdox --debug --colors=always "$dir"
+                run_phpunit_cmd "$dir" "" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
             fi
             # Add a 3-second gap between test runs
             sleep 3
