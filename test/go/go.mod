@@ -16,7 +16,7 @@ require (
 	gopkg.in/validator.v2 v2.0.1 // indirect
 )
 
-require github.com/playwright-community/playwright-go v0.5700.1
+require github.com/mxschmitt/playwright-go v0.6100.0
 
 require (
 	github.com/deckarep/golang-set/v2 v2.9.0 // indirect

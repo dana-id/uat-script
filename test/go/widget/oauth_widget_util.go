@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"github.com/dana-id/dana-go/v2/widget/v1"
-	"github.com/playwright-community/playwright-go"
+	"github.com/mxschmitt/playwright-go"
 )
 
 // ==========================================

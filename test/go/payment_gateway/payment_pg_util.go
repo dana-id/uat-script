@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/playwright-community/playwright-go"
+	"github.com/mxschmitt/playwright-go"
 )
 
 func PayOrder(phoneNumber, pin, redirectUrl string) error {

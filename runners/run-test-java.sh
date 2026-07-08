@@ -40,6 +40,313 @@ resolve_mandatory_only() {
     fi
 }
 
+resolve_java_retry_failed_only() {
+    if [ "${JAVA_RETRY_FAILED_ONLY:-}" = "false" ]; then
+        echo "false"
+    elif [ "${JAVA_RETRY_FAILED_ONLY:-}" = "true" ]; then
+        echo "true"
+    elif [ -n "${CI:-}" ] || [ -n "${GITLAB_CI:-}" ]; then
+        echo "true"
+    else
+        echo "false"
+    fi
+}
+
+java_retry_sleep_seconds() {
+    local failed_attempt="$1"
+    local initial_delay="${RETRY_INITIAL_DELAY_SECONDS:-10}"
+    local delay_before_attempt_4="${RETRY_DELAY_BEFORE_ATTEMPT_4_SECONDS:-120}"
+    local delay_before_attempt_5="${RETRY_DELAY_BEFORE_ATTEMPT_5_SECONDS:-300}"
+
+    case "$failed_attempt" in
+        1) echo "$initial_delay" ;;
+        2) echo "$((initial_delay * 2))" ;;
+        3) echo "$delay_before_attempt_4" ;;
+        4) echo "$delay_before_attempt_5" ;;
+        *) echo "$delay_before_attempt_5" ;;
+    esac
+}
+
+switch_disbursement_credentials_if_needed() {
+    local attempt="$1"
+    if [ -z "${USE_DISBURSEMENT_CREDENTIALS:-}" ] || [ "$attempt" -lt 3 ] || [ "$attempt" -gt 5 ]; then
+        return 0
+    fi
+
+    print_info "Attempt $attempt: switching to disbursement credentials (retries 3-5)..."
+    export MERCHANT_ID="${DISBURSEMENT_MERCHANT_ID}"
+    export X_PARTNER_ID="${DISBURSEMENT_X_PARTNER_ID}"
+    export PRIVATE_KEY="${DISBURSEMENT_PRIVATE_KEY}"
+    export CLIENT_SECRET="${DISBURSEMENT_CLIENT_SECRET}"
+
+    if [ -f "$PROJECT_ROOT/.env" ]; then
+        printf 'MERCHANT_ID=%s\n' "${DISBURSEMENT_MERCHANT_ID}" > "$PROJECT_ROOT/.env"
+        printf 'X_PARTNER_ID=%s\n' "${DISBURSEMENT_X_PARTNER_ID}" >> "$PROJECT_ROOT/.env"
+        printf 'CHANNEL_ID=%s\n' "${CHANNEL_ID}" >> "$PROJECT_ROOT/.env"
+        printf "PRIVATE_KEY='%s'\n" "${DISBURSEMENT_PRIVATE_KEY}" >> "$PROJECT_ROOT/.env"
+        printf 'ORIGIN=%s\n' "${ORIGIN}" >> "$PROJECT_ROOT/.env"
+        printf "CLIENT_SECRET='%s'\n" "${DISBURSEMENT_CLIENT_SECRET}" >> "$PROJECT_ROOT/.env"
+        printf "REDIRECT_URL_OAUTH='%s'\n" "${REDIRECT_URL_OAUTH}" >> "$PROJECT_ROOT/.env"
+        printf "EXTERNAL_SHOP_ID='%s'\n" "${EXTERNAL_SHOP_ID}" >> "$PROJECT_ROOT/.env"
+    fi
+}
+
+clear_surefire_reports() {
+    local surefire_reports="$JAVA_TEST_DIR/target/surefire-reports"
+    if [ -d "$surefire_reports" ]; then
+        rm -f "$surefire_reports"/TEST-*.xml 2>/dev/null || true
+    fi
+}
+
+extract_failed_maven_tests_from_surefire() {
+    local reports_dir="$1"
+    local result=""
+    local report_args=""
+    local xml_file
+
+    if [ ! -d "$reports_dir" ]; then
+        return 2
+    fi
+
+    for xml_file in "$reports_dir"/TEST-*.xml; do
+        if [ -f "$xml_file" ]; then
+            if [ -n "$report_args" ]; then
+                report_args="$report_args $xml_file"
+            else
+                report_args="$xml_file"
+            fi
+        fi
+    done
+
+    if [ -z "$report_args" ]; then
+        return 2
+    fi
+
+    # shellcheck disable=SC2086
+    result=$(awk '
+        function add_class_only(class) {
+            if (class == "") {
+                return
+            }
+            if (!(class in methods)) {
+                methods[class] = ""
+                order[++order_count] = class
+            }
+        }
+        function add_method(class, method, parts, n, i, found) {
+            if (class == "") {
+                return
+            }
+            if (method == "" || method == class || method ~ /^\[engine:/) {
+                add_class_only(class)
+                return
+            }
+            if (!(class in methods)) {
+                methods[class] = method
+                order[++order_count] = class
+                return
+            }
+            if (methods[class] == "") {
+                return
+            }
+            n = split(methods[class], parts, "+")
+            found = 0
+            for (i = 1; i <= n; i++) {
+                if (parts[i] == method) {
+                    found = 1
+                    break
+                }
+            }
+            if (!found) {
+                methods[class] = methods[class] "+" method
+            }
+        }
+        function class_from_filename(path,    base) {
+            base = path
+            sub(/^.*\//, "", base)
+            sub(/^TEST-/, "", base)
+            sub(/\.xml$/, "", base)
+            return base
+        }
+        function record_failed_testcase() {
+            if (!failed) {
+                return
+            }
+            if (classname == "") {
+                classname = class_from_filename(FILENAME)
+            }
+            add_method(classname, name)
+        }
+        FNR == 1 {
+            classname = ""
+            name = ""
+            failed = 0
+            suite_failures = 0
+            suite_errors = 0
+            suite_class = class_from_filename(FILENAME)
+        }
+        /<testsuite / {
+            if (match($0, / failures="[0-9]+"/)) {
+                suite_failures = substr($0, RSTART + 11, RLENGTH - 12) + 0
+            }
+            if (match($0, / errors="[0-9]+"/)) {
+                suite_errors = substr($0, RSTART + 9, RLENGTH - 10) + 0
+            }
+        }
+        /<testcase / {
+            classname = ""
+            name = ""
+            if (match($0, / classname="[^"]*"/)) {
+                classname = substr($0, RSTART + 12, RLENGTH - 13)
+            }
+            if (match($0, / name="[^"]*"/)) {
+                name = substr($0, RSTART + 7, RLENGTH - 8)
+            }
+            failed = ($0 ~ /<failure|<error/) ? 1 : 0
+            if ($0 ~ /\/>[[:space:]]*$/) {
+                record_failed_testcase()
+                classname = ""
+                name = ""
+                failed = 0
+            }
+        }
+        /<failure|<error/ {
+            failed = 1
+        }
+        /<\/testcase>/ {
+            record_failed_testcase()
+            classname = ""
+            name = ""
+            failed = 0
+        }
+        ENDFILE {
+            if (order_count == 0 && (suite_failures + suite_errors) > 0 && suite_class != "") {
+                add_class_only(suite_class)
+            }
+        }
+        END {
+            if (order_count == 0) {
+                exit 2
+            }
+            out = ""
+            for (i = 1; i <= order_count; i++) {
+                c = order[i]
+                if (out != "") {
+                    out = out ","
+                }
+                if (methods[c] == "") {
+                    out = out c
+                } else {
+                    out = out c "#" methods[c]
+                }
+            }
+            print out
+        }
+    ' $report_args 2>/dev/null) || result=""
+
+    if [ -z "$result" ]; then
+        for xml_file in $report_args; do
+            if [ ! -f "$xml_file" ]; then
+                continue
+            fi
+            failures=$(grep -o 'failures="[0-9]*"' "$xml_file" 2>/dev/null | head -1 | cut -d'"' -f2)
+            errors=$(grep -o 'errors="[0-9]*"' "$xml_file" 2>/dev/null | head -1 | cut -d'"' -f2)
+            failures=${failures:-0}
+            errors=${errors:-0}
+            case "$failures" in ''|*[!0-9]*) failures=0 ;; esac
+            case "$errors" in ''|*[!0-9]*) errors=0 ;; esac
+            if [ $((failures + errors)) -le 0 ]; then
+                continue
+            fi
+            class_name=$(basename "$xml_file" .xml | sed 's/^TEST-//')
+            if [ -n "$class_name" ]; then
+                if [ -n "$result" ]; then
+                    result="$result,$class_name"
+                else
+                    result="$class_name"
+                fi
+            fi
+        done
+    fi
+
+    if [ -z "$result" ]; then
+        return 2
+    fi
+
+    printf '%s\n' "$result"
+}
+
+run_mvn_test_once() {
+    local test_arg="$1"
+    if [ -n "$test_arg" ]; then
+        run_mvn test -Dtest="$test_arg" -q
+    else
+        run_mvn test -q
+    fi
+}
+
+# CI: attempt 1 runs the full scoped suite; attempts 2-5 retry only failed/error tests.
+run_mvn_test_cmd() {
+    local initial_test_arg="${1:-}"
+    local surefire_reports="$JAVA_TEST_DIR/target/surefire-reports"
+
+    if [ "$(resolve_java_retry_failed_only)" != "true" ]; then
+        clear_surefire_reports
+        run_mvn_test_once "$initial_test_arg"
+        return $?
+    fi
+
+    local max_attempts="${RETRY_MAX_ATTEMPTS:-5}"
+    local attempt=1
+    local current_test_arg="$initial_test_arg"
+    local last_exit_code=1
+
+    while [ "$attempt" -le "$max_attempts" ]; do
+        switch_disbursement_credentials_if_needed "$attempt"
+        clear_surefire_reports
+
+        if [ "$attempt" -eq 1 ]; then
+            print_info "Maven attempt 1/$max_attempts (full suite)"
+        else
+            print_info "Maven attempt $attempt/$max_attempts (failed tests only)"
+        fi
+        if [ -n "$current_test_arg" ]; then
+            print_info "Test filter: $current_test_arg"
+        fi
+
+        set +e
+        run_mvn_test_once "$current_test_arg"
+        last_exit_code=$?
+        set -e
+
+        if [ "$last_exit_code" -eq 0 ]; then
+            return 0
+        fi
+
+        if [ "$attempt" -eq "$max_attempts" ]; then
+            return "$last_exit_code"
+        fi
+
+        local failed_test_arg=""
+        failed_test_arg=$(extract_failed_maven_tests_from_surefire "$surefire_reports") || failed_test_arg=""
+        if [ -z "$failed_test_arg" ]; then
+            print_warning "Could not determine failed tests for retry; stopping."
+            return "$last_exit_code"
+        fi
+
+        print_info "Retrying failed/error tests only: $failed_test_arg"
+        current_test_arg="$failed_test_arg"
+
+        local sleep_delay
+        sleep_delay=$(java_retry_sleep_seconds "$attempt")
+        print_info "Attempt $attempt failed; sleeping ${sleep_delay}s before retry..."
+        sleep "$sleep_delay"
+        attempt=$((attempt + 1))
+    done
+
+    return "$last_exit_code"
+}
+
 MAVEN_DISABLE_PLAYWRIGHT_PROFILE=""
 
 run_mvn() {
@@ -375,7 +682,7 @@ run_specific_test() {
     fi
 
     # Run Maven test with proper error handling
-    if run_mvn test -Dtest="$test_arg" -q; then
+    if run_mvn_test_cmd "$test_arg"; then
         print_success "Test execution completed successfully!"
     else
         print_warning "Test execution completed with issues"
@@ -439,7 +746,7 @@ run_module_tests() {
     echo
     
     # Use Maven test pattern for the module (or filtered classes)
-    if run_mvn test -Dtest="$test_arg" -q; then
+    if run_mvn_test_cmd "$test_arg"; then
         print_success "Module test execution completed successfully!"
     else
         print_warning "Module test execution completed with issues"
@@ -493,13 +800,13 @@ run_all_tests() {
                 fi
             fi
         done
-        if [ -n "$mandatory_classes" ] && run_mvn test -Dtest="$mandatory_classes" -q; then
+        if [ -n "$mandatory_classes" ] && run_mvn_test_cmd "$mandatory_classes"; then
             print_success "Mandatory tests execution completed successfully!"
         else
             print_warning "Mandatory tests execution completed with issues"
         fi
     # Run all tests
-    elif run_mvn test -q; then
+    elif run_mvn_test_cmd ""; then
         print_success "All tests execution completed successfully!"
     else
         print_warning "All tests execution completed with issues"
