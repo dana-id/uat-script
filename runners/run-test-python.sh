@@ -9,17 +9,10 @@ PYTHON_RUNNERS_DIR="$SCRIPT_DIR"
 PYTHON_MANDATORY_ONLY=true
 
 . "$SCRIPT_DIR/python/common.sh"
-. "$SCRIPT_DIR/python/retry.sh"
 
 python_run_pytest() {
     k_pattern="$1"
-    retry_on_failure="${2:-false}"
-    shift 2
-
-    if [ "$retry_on_failure" = "true" ]; then
-        run_pytest_cmd "$k_pattern" "$@"
-        return $?
-    fi
+    shift
 
     set +e
     if [ -n "$k_pattern" ]; then

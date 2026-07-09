@@ -1,8 +1,12 @@
+# Python test orchestration. Requires:
+#   - runners/python/common.sh sourced first
+#   - python_run_pytest(k_pattern, ...pytest paths) defined by caller
+#   - PYTHON_MANDATORY_ONLY=true|false
+
 run_pytest_checked() {
     k_pattern="$1"
-    retry_on_failure="${2:-false}"
-    shift 2
-    python_run_pytest "$k_pattern" "$retry_on_failure" "$@"
+    shift
+    python_run_pytest "$k_pattern" "$@"
     return $?
 }
 
@@ -18,23 +22,23 @@ run_single_folder() {
     fi
 
     if [ -n "$run_pattern" ]; then
-        run_pytest_checked "$(pattern_for_pytest_k "$run_pattern")" "false" "$test_path"
+        run_pytest_checked "$(pattern_for_pytest_k "$run_pattern")" "$test_path"
         exit $?
     fi
 
     if [ -n "$case_name" ]; then
-        run_pytest_checked "$case_name" "false" "$test_path"
+        run_pytest_checked "$case_name" "$test_path"
         exit $?
     fi
 
     mandatory_pattern=$(get_mandatory_pattern_for_folder "$folder_name")
     if [ "$PYTHON_MANDATORY_ONLY" = "true" ] && [ -n "$mandatory_pattern" ]; then
         echo "Running mandatory $folder_name tests only"
-        run_pytest_checked "$(pattern_for_pytest_k "$mandatory_pattern")" "true" "$test_path"
+        run_pytest_checked "$(pattern_for_pytest_k "$mandatory_pattern")" "$test_path"
         exit $?
     fi
 
-    run_pytest_checked "" "false" "$test_path"
+    run_pytest_checked "" "$test_path"
     exit $?
 }
 
@@ -59,7 +63,7 @@ run_all_folders() {
 
         if [ "$PYTHON_MANDATORY_ONLY" = "true" ] && [ -n "$mandatory_pattern" ]; then
             echo "Running mandatory $folder_name tests only"
-            if run_pytest_checked "$(pattern_for_pytest_k "$mandatory_pattern")" "true" "$folder"; then
+            if run_pytest_checked "$(pattern_for_pytest_k "$mandatory_pattern")" "$folder"; then
                 echo "✅ $folder_name tests PASSED"
                 total_passed=$((total_passed + 1))
             else
@@ -67,7 +71,7 @@ run_all_folders() {
                 total_failed=$((total_failed + 1))
                 failed_folders="$failed_folders $folder_name"
             fi
-        elif run_pytest_checked "" "false" "$folder"; then
+        elif run_pytest_checked "" "$folder"; then
             echo "✅ $folder_name tests PASSED"
             total_passed=$((total_passed + 1))
         else
@@ -120,11 +124,11 @@ run_python_runner_main() {
     fi
 
     if [ -n "$runPattern" ]; then
-        run_pytest_checked "$(pattern_for_pytest_k "$runPattern")" "false"
+        run_pytest_checked "$(pattern_for_pytest_k "$runPattern")"
         exit $?
     fi
     if [ -n "$caseName" ]; then
-        run_pytest_checked "$caseName" "false"
+        run_pytest_checked "$caseName"
         exit $?
     fi
 
