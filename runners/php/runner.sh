@@ -1,7 +1,8 @@
 run_php_tests_in_path() {
     test_path="$1"
     filter="$2"
-    php_run_phpunit "$test_path" "$filter" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG"
+    retry_on_failure="${3:-false}"
+    php_run_phpunit "$test_path" "$filter" "$PHPUNIT_BIN" "$PHPUNIT_CONFIG" "$retry_on_failure"
 }
 
 run_php_runner_main() {
@@ -32,7 +33,7 @@ run_php_runner_main() {
         mandatory_pattern=$(get_mandatory_pattern_for_folder "$folderName")
         if [ "$PHP_MANDATORY_ONLY" = "true" ] && [ -n "$mandatory_pattern" ]; then
             echo "Running mandatory $folderName tests only"
-            run_php_tests_in_path "$PHP_TEST_DIR/$folderName" "$mandatory_pattern"
+            run_php_tests_in_path "$PHP_TEST_DIR/$folderName" "$mandatory_pattern" "true"
         else
             run_php_tests_in_path "$PHP_TEST_DIR/$folderName" ""
         fi
@@ -61,7 +62,7 @@ run_php_runner_main() {
                 mandatory_pattern=$(get_mandatory_pattern_for_folder "$folder_name")
                 if [ -n "$mandatory_pattern" ]; then
                     echo "Running mandatory $folder_name tests only"
-                    run_php_tests_in_path "$dir" "$mandatory_pattern"
+                    run_php_tests_in_path "$dir" "$mandatory_pattern" "true"
                 else
                     run_php_tests_in_path "$dir" ""
                 fi

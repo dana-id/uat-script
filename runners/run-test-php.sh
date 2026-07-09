@@ -9,12 +9,19 @@ PHP_RUNNERS_DIR="$SCRIPT_DIR"
 PHP_MANDATORY_ONLY=true
 
 . "$SCRIPT_DIR/php/common.sh"
+. "$SCRIPT_DIR/php/retry.sh"
 
 php_run_phpunit() {
     test_path="$1"
     filter="$2"
     phpunit_bin="$3"
     phpunit_config="$4"
+    retry_on_failure="${5:-false}"
+
+    if [ "$retry_on_failure" = "true" ]; then
+        run_phpunit_cmd "$test_path" "$filter" "$phpunit_bin" "$phpunit_config"
+        return $?
+    fi
 
     set +e
     if [ -n "$filter" ]; then
