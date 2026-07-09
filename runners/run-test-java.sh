@@ -9,9 +9,17 @@ JAVA_RUNNERS_DIR="$SCRIPT_DIR"
 JAVA_MANDATORY_ONLY=true
 
 . "$SCRIPT_DIR/java/common.sh"
+. "$SCRIPT_DIR/java/retry.sh"
 
 java_run_mvn_test_cmd() {
     local test_arg="${1:-}"
+    local retry_on_failure="${2:-false}"
+
+    if [ "$retry_on_failure" = "true" ]; then
+        run_mvn_test_cmd "$test_arg"
+        return $?
+    fi
+
     clear_surefire_reports
     run_mvn_test_once "$test_arg"
 }

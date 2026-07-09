@@ -1,8 +1,3 @@
-# Java test orchestration. Requires:
-#   - runners/java/common.sh sourced first
-#   - java_run_mvn_test_cmd(test_arg) defined by caller
-#   - JAVA_MANDATORY_ONLY=true|false
-
 run_specific_test() {
     local module="$1"
     local test_name="$2"
@@ -91,10 +86,11 @@ run_module_tests() {
     cd "$JAVA_TEST_DIR"
     clear_surefire_reports
 
-    local test_arg module_mandatory_pattern class_list count test_count
+    local test_arg module_mandatory_pattern class_list count test_count retry_on_failure="false"
     module_mandatory_pattern=$(get_mandatory_pattern_for_module "$actual_module")
     if [ -z "$run_pattern" ] && [ "$JAVA_MANDATORY_ONLY" = "true" ] && [ -n "$module_mandatory_pattern" ]; then
         test_arg="$module_mandatory_pattern"
+        retry_on_failure="true"
         print_info "Running mandatory $module_display tests only"
     elif [ -n "$run_pattern" ]; then
         class_list=$(echo "$run_pattern" | tr '|' '\n' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | grep -v '^$')
@@ -111,7 +107,7 @@ run_module_tests() {
     print_info "Executing tests..."
     echo
 
-    if java_run_mvn_test_cmd "$test_arg"; then
+    if java_run_mvn_test_cmd "$test_arg" "$retry_on_failure"; then
         print_success "Module test execution completed successfully!"
     else
         print_warning "Module test execution completed with issues"
@@ -157,12 +153,12 @@ run_all_tests() {
                 fi
             fi
         done
-        if [ -n "$mandatory_classes" ] && java_run_mvn_test_cmd "$mandatory_classes"; then
+        if [ -n "$mandatory_classes" ] && java_run_mvn_test_cmd "$mandatory_classes" "true"; then
             print_success "Mandatory tests execution completed successfully!"
         else
             print_warning "Mandatory tests execution completed with issues"
         fi
-    elif java_run_mvn_test_cmd ""; then
+    elif java_run_mvn_test_cmd "" "false"; then
         print_success "All tests execution completed successfully!"
     else
         print_warning "All tests execution completed with issues"
