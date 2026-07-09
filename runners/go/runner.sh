@@ -2,7 +2,8 @@ run_go_test_package() {
     package_path="$1"
     timeout="$2"
     run_pattern="$3"
-    go_run_tests "$package_path" "$timeout" "$run_pattern"
+    retry_on_failure="${4:-false}"
+    go_run_tests "$package_path" "$timeout" "$run_pattern" "$retry_on_failure"
 }
 
 run_module_files_individually() {
@@ -136,7 +137,7 @@ run_all_modules() {
 
         if [ "$GO_MANDATORY_ONLY" = "true" ] && [ -n "$module_mandatory_pattern" ]; then
             echo "Running mandatory $dir_name tests only"
-            if run_go_test_package "$test_dir" "60s" "$module_mandatory_pattern"; then
+            if run_go_test_package "$test_dir" "60s" "$module_mandatory_pattern" "true"; then
                 echo "✅ $dir_name tests PASSED"
                 total_passed=$((total_passed + 1))
             else
