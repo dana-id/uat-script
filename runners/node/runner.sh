@@ -1,6 +1,6 @@
 # Node test orchestration. Requires:
 #   - runners/node/common.sh sourced first
-#   - node_run_jest(title_pattern, ...jest args) defined by caller
+#   - node_run_jest(title_pattern, retry_on_failure, ...jest args) defined by caller
 #   - NODE_MANDATORY_ONLY=true|false
 
 run_node_runner_main() {
@@ -23,19 +23,19 @@ run_node_runner_main() {
                 echo "Scoping to test file pattern '$caseName' before applying test title pattern..."
                 testPathPattern="${folderName}/.*${caseName}"
                 set +e
-                node_run_jest "$runPattern" --testPathPattern="$testPathPattern"
+                node_run_jest "$runPattern" "false" --testPathPattern="$testPathPattern"
                 exit_code=$?
                 set -e
             else
                 set +e
-                node_run_jest "$runPattern" "$folderName"
+                node_run_jest "$runPattern" "false" "$folderName"
                 exit_code=$?
                 set -e
             fi
         else
             echo "Running Node.js tests matching '$runPattern' in all folders..."
             set +e
-            node_run_jest "$runPattern"
+            node_run_jest "$runPattern" "false"
             exit_code=$?
             set -e
         fi
@@ -58,7 +58,7 @@ run_node_runner_main() {
 
         set +e
         # shellcheck disable=SC2086
-        node_run_jest "" $TEST_FILES
+        node_run_jest "" "false" $TEST_FILES
         exit_code=$?
         set -e
     elif [ -n "$folderName" ]; then
@@ -71,19 +71,19 @@ run_node_runner_main() {
         if [ "$NODE_MANDATORY_ONLY" = "true" ] && [ -n "$mandatory_pattern" ]; then
             echo "Running mandatory $folderName tests only"
             set +e
-            node_run_jest "$mandatory_pattern" "$folderName"
+            node_run_jest "$mandatory_pattern" "true" "$folderName"
             exit_code=$?
             set -e
         else
             set +e
-            node_run_jest "" "$folderName"
+            node_run_jest "" "false" "$folderName"
             exit_code=$?
             set -e
         fi
     elif [ -n "$caseName" ]; then
         echo "Running Node.js test with pattern '$caseName' in all folders..."
         set +e
-        node_run_jest "$caseName"
+        node_run_jest "$caseName" "false"
         exit_code=$?
         set -e
     elif [ "$NODE_MANDATORY_ONLY" = "true" ]; then
@@ -95,9 +95,9 @@ run_node_runner_main() {
                 set +e
                 if [ -n "$mandatory_pattern" ]; then
                     echo "Running mandatory tests in $folder..."
-                    node_run_jest "$mandatory_pattern" "$folder"
+                    node_run_jest "$mandatory_pattern" "true" "$folder"
                 else
-                    node_run_jest "" "$folder"
+                    node_run_jest "" "false" "$folder"
                 fi
                 folder_code=$?
                 set -e
@@ -109,7 +109,7 @@ run_node_runner_main() {
     else
         echo "Running all Node.js tests..."
         set +e
-        node_run_jest ""
+        node_run_jest "" "false"
         exit_code=$?
         set -e
     fi

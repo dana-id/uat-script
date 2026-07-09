@@ -9,10 +9,17 @@ NODE_RUNNERS_DIR="$SCRIPT_DIR"
 NODE_MANDATORY_ONLY=true
 
 . "$SCRIPT_DIR/node/common.sh"
+. "$SCRIPT_DIR/node/retry.sh"
 
 node_run_jest() {
     title_pattern="$1"
-    shift
+    retry_on_failure="${2:-false}"
+    shift 2
+
+    if [ "$retry_on_failure" = "true" ]; then
+        run_jest_cmd "$title_pattern" "$@"
+        return $?
+    fi
 
     set +e
     if [ -n "$title_pattern" ]; then
