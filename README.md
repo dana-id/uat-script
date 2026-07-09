@@ -1,109 +1,187 @@
 # DANA Self Testing Scenario
 
-## Description
+Automated UAT scripts for the DANA Sandbox. Run them with your testing credentials, then check progress in **Merchant Portal → Mandatory API Testing**.
 
-This repository contains scenarios that can be run for UAT in Sandbox and E2E scenarios using DANA Client library with your choice of programming language (Python, Golang, PHP, Node). You can use it to:
+Supported languages: **Python**, **Go**, **Node**, **PHP**, **Java**
 
-- **Automate running UAT** scenarios in Sandbox with your credentials and the result can be downloaded in your Merchant Portal dashboard
-- **Find examples of E2E** scenarios for each business solution
+Client library docs: [Python](https://github.com/dana-id/dana-python) · [Go](https://github.com/dana-id/dana-go) · [Node](https://github.com/dana-id/dana-node) · [PHP](https://github.com/dana-id/dana-php) · [Java](https://github.com/dana-id/dana-java)
 
-For documentation of each DANA Client library visit:
-- Python: https://github.com/dana-id/dana-python
-- Golang: https://github.com/dana-id/dana-go
-- Node: https://github.com/dana-id/dana-node
-- PHP: https://github.com/dana-id/dana-php
-- Java: https://github.com/dana-id/dana-java
+---
 
-## How to Use
+## Quick start
 
-1. **Set up your environment:**
-   
-   Clone this repo to your specific folder
-   ```bash
-   git clone git@github.com:dana-id/uat-script.git
-   cd uat-script
-   ```
+**1. Clone and configure**
 
-2. **Configure your credentials:**
+```bash
+git clone git@github.com:dana-id/self_testing_scenario.git
+cd self_testing_scenario
+cp .env-example .env
+# Edit .env with your Sandbox credentials from Merchant Portal
+```
 
-   Change the `.env-example` file name to `.env` and fill the data with your credentials
-   ```bash
-   cp .env-example .env
-   ```
-   Edit the `.env` file with your credential information.
-   
-   > **Note:** 
-   >   - You can fill `PRIVATE_KEY` and `PRIVATE_KEY_PATH` simultaneously, but if you fill both and the key values are different, we will prioritize the key in `PRIVATE_KEY_PATH`. The same applied to `DANA_PUBLIC_KEY` and `DANA_PUBLIC_KEY_PATH`. The `CLIENT_SECRET` env is for `disbursement` business solution.
-   >   - You can set `REDIRECT_URL_OAUTH` to get auth code via url.
-   >   - You can find your `EXTERNAL_SHOP_ID` in your Merchant Portal account(Submerchant Menu).
+**2. Pick a language** (examples below use `python` — swap for `go`, `node`, `php`, or `java`)
 
-3. **Run the tests:**
-   
-   - Run the command with your preferred programming language.
-      ```bash
-      sh run-test.sh python
-      ```
-   - You can run the command with your specific business solution.
-      ```bash
-      sh run-test.sh python payment_gateway
-      ```
+**3. Run mandatory scenarios** for the product you are integrating (see tables below)
 
-      > **Note:** You can find specific solution that you choose with this command
-      ```bash
-      sh run-test.sh --list python
-      ```
-   - You can run the command with your specific API in business solution.
-      ```bash
-      sh run-test.sh python payment_gateway create_order_test
-      ```
-      > **Note:** You can find specific API solution that you choose with this command. First, get your solution.
-      ```bash
-      sh run-test.sh --list node
-      ```
-      Copy paste solution to this command and delete slash `/` , then continue like this example command.
-      ```bash
-      sh run-test.sh --list python payment_gateway  
-      ```
+```bash
+./run-test.sh python payment_gateway
+```
 
-      View the results in your terminal and in your Merchant Portal dashboard
+Mandatory runs retry failed tests automatically (up to 5 attempts, failed tests only).
 
-## Supported Languages
+---
 
-Currently, the following programming languages are supported:
+## Command format
 
-- Python
-- Golang
-- Node
-- PHP
-- Java
+```bash
+./run-test.sh <language> [module] [test_case]
+```
 
-Additional language support will be added in future updates.
+| Part | Required | Description |
+|------|----------|-------------|
+| `language` | Yes | `python` · `go` · `node` · `php` · `java` |
+| `module` | No | Business module folder (see tables) |
+| `test_case` | No | Single API / test file for **additional** scenarios |
 
-## Structure
+**Examples**
 
-- `test/`: Contains test scenarios for different business solutions
-- `resource/`: Contains request templates and fixtures
+```bash
+./run-test.sh python                          # All modules — mandatory scenarios only
+./run-test.sh python payment_gateway          # Payment Gateway — mandatory only
+./run-test.sh python payment_gateway consult_pay_test   # One additional API
+./run-test.sh list python payment_gateway     # List available test cases
+./run-test.sh help                            # Full command reference
+```
 
-## Note
+> **Java folder names** use no underscore: `paymentgateway`, `widget`, `disbursement`  
+> Example: `./run-test.sh java paymentgateway CreateOrderTest`
 
-The test scenarios in this repository use a JSON-based approach for loading test data, which means the way API requests are made here may differ slightly from how you would use the libraries in your actual implementation (detailed in the [library documentation](#description)):
+---
 
-**Example in Python:**
-- **In this repository:** Requests are loaded from JSON files and converted using `.from_dict()` method
-  ```python
-  # Test scenario approach
-  json_dict = get_request(json_path_file, title_case, case_name)
-  consult_pay_request_obj = ConsultPayRequest.from_dict(json_dict)
-  api_instance.consult_pay(consult_pay_request_obj)
-  ```
+## Merchant Portal → commands
 
-- **In your actual implementation:** You would directly create request objects as shown in the library documentation
-  ```python
-  # Direct implementation approach
-  request = ConsultPayRequest(
-      merchant_id="YOUR_MERCHANT_ID",
-      amount={"value": "10000.00", "currency": "IDR"},
-      additional_info={...}
-  )
-  api_instance.consult_pay(request)
-  ```
+Match the scenario in your portal to the command below. Replace `python` with your language.
+
+### Payment Gateway
+
+#### Mandatory (required for production credentials)
+
+| Portal scenario | Progress | Command |
+|-----------------|----------|---------|
+| Payment Gateway Payment **(mandatory)** | 0 of 5 | `./run-test.sh python payment_gateway` |
+| General Payment finish notify **(mandatory)** | 0 of 3 | *(included in the command above)* |
+
+#### Additional (recommended)
+
+| Portal scenario | Command |
+|-----------------|---------|
+| Payment Gateway Consult Pay | `./run-test.sh python payment_gateway consult_pay_test` |
+| Payment Gateway Debit Status | `./run-test.sh python payment_gateway query_payment_test` |
+| Payment Gateway Refund Order | `./run-test.sh python payment_gateway refund_order_test` |
+| Payment Gateway Cancel Order | `./run-test.sh python payment_gateway cancel_order_test` |
+
+---
+
+### Widget
+
+#### Mandatory
+
+| Portal scenario | Progress | Command |
+|-----------------|----------|---------|
+| Direct Debit Payment – Cashier Pay **(mandatory)** | 0 of 7 | `./run-test.sh python widget` |
+| General Payment finish notify **(mandatory)** | 0 of 3 | *(included in the command above)* |
+
+#### Additional
+
+| Portal scenario | Command |
+|-----------------|---------|
+| Apply OTT | `./run-test.sh python widget apply_ott_test` |
+| Account Unbinding | `./run-test.sh python widget account_unbinding_test` |
+| Query Order Widget | `./run-test.sh python widget query_order_test` |
+| Apply Token B2B2C | `./run-test.sh python widget apply_token_test` |
+| Transaction History List | `./run-test.sh python widget transaction_list_test` |
+| Get OAuth 2.0 | `./run-test.sh python widget get_auth_2_test` |
+| Cancel Order | `./run-test.sh python widget cancel_order_test` |
+| Balance Inquiry | `./run-test.sh python widget balance_inquiry_test` |
+| Refund Order | `./run-test.sh python widget refund_order_test` |
+
+---
+
+### Disbursement (e-money TopUp)
+
+#### Mandatory
+
+| Portal scenario | Progress | Command |
+|-----------------|----------|---------|
+| Dana Disbursement TopUp **(mandatory)** | 0 of 7 | `./run-test.sh python disbursement` |
+| Dana Disbursement Bank Top Up **(mandatory)** | 0 of 7 | *(included in the command above)* |
+| General Payment finish notify **(mandatory)** | 0 of 3 | *(included in the command above)* |
+
+#### Additional
+
+| Portal scenario | Command |
+|-----------------|---------|
+| Dana Disbursement TopUp Inquiry | `./run-test.sh python disbursement dana_account_inquiry_test` |
+| Dana Disbursement TopUp Status Inquiry | `./run-test.sh python disbursement transfer_to_dana_inquiry_status_test` |
+| DANA Disbursement Bank Account Inquiry | `./run-test.sh python disbursement bank_account_inquiry_test` |
+
+---
+
+## Test case names by language
+
+The `test_case` argument maps each Portal API to a test file or class. For **(mandatory)** APIs, run the module command without `test_case` (see tables above). To run a single API on its own, use the names below.
+
+| Portal API | Python · Go · Node | PHP | Java |
+|------------|-------------------|-----|------|
+| Create Order / Payment **(mandatory)** | `create_order_test` | `CreateOrderTest` | `CreateOrderTest` |
+| General Payment finish notify **(mandatory)** | `finish_notify_test` | `FinishNotifyTest` | `FinishNotifyTest` |
+| Consult Pay | `consult_pay_test` | `ConsultPayTest` | `ConsultPayTest` |
+| Query Payment / Debit Status | `query_payment_test` | `QueryPaymentTest` | `QueryOrderTest` |
+| Refund Order | `refund_order_test` | `RefundOrderTest` | `RefundOrderTest` |
+| Cancel Order | `cancel_order_test` | `CancelOrderTest` | `CancelOrderTest` |
+| Widget Cashier Pay **(mandatory)** | `payment_test` | `PaymentTest` | `PaymentTest` |
+| Apply OTT | `apply_ott_test` | `ApplyOttTest` | `ApplyOttTest` |
+| Account Unbinding | `account_unbinding_test` | `AccountUnbindingTest` | `AccountUnbindingTest` |
+| Query Order Widget | `query_order_test` | `QueryOrderTest` | `QueryOrderTest` |
+| Apply Token B2B2C | `apply_token_test` | `ApplyTokenTest` | `ApplyToken` |
+| Transaction History List | `transaction_list_test` | `TransactionListTest` | — |
+| Get OAuth 2.0 | `get_auth_2_test` *(Go: `get_auth_test`)* | `GetAuth2Test` | `GetOauthUrl` |
+| Balance Inquiry | `balance_inquiry_test` | `BalanceInquiryTest` | `BalanceInquiryTest` |
+| TopUp to Dana **(mandatory)** | `transfer_to_dana_test` | `TransferToDanaTest` | `TransferToDanaTest` |
+| TopUp to Bank **(mandatory)** | `disbursement_to_bank_test` *(Go · Node: `transfer_to_bank_test`)* | `TransferToBankTest` | `TransferToBankTest` |
+| Dana Account Inquiry | `dana_account_inquiry_test` | `DanaAccountInquiryTest` | `DanaAccountInquiryTest` |
+| TopUp Status Inquiry | `transfer_to_dana_inquiry_status_test` | `TransferToDanaInquiryStatusTest` | `TransferToDanaInquiryStatusTest` |
+| Bank Account Inquiry | `bank_account_inquiry_test` | `BankAccountInquiryTest` | `BankAccountInquiryTest` |
+
+Use `./run-test.sh list <language> <module>` to see exact names in your checkout.
+
+---
+
+## Requirements
+
+Install the language SDK and tools for the stack you run:
+
+| Language | Prerequisites |
+|----------|---------------|
+| Python | Python 3, `pip` |
+| Go | Go 1.21+, `jq` (for retry) |
+| Node | Node.js, `npm`, `jq` (for retry) |
+| PHP | PHP, Composer; Chrome + Selenium for browser tests |
+| Java | JDK, Maven |
+
+**OS:** macOS and Linux — run `./run-test.sh` directly.  
+Scripts require a Unix shell (`bash` / `sh`).
+
+---
+
+## Repository layout
+
+- `test/` — UAT scenarios per language and module
+- `resource/` — Request templates and fixtures
+- `runners/` — Test runner scripts (local mandatory + retry)
+
+---
+
+## Note on test data
+
+Scenarios load request bodies from JSON fixtures and convert them with the client library (e.g. `ConsultPayRequest.from_dict(...)` in Python). That pattern is for UAT only; in production, build request objects directly as shown in each [client library README](#dana-self-testing-scenario).
