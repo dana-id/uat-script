@@ -131,32 +131,30 @@ func TestDisbursementBankMissingMandatoryField(t *testing.T) {
 		var partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-		// Create the TransferToBankRequest object and populate it with JSON data
-		transferToBankRequest := &disbursement.TransferToBankRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, transferToBankRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
+		// Raw signed HTTP bypasses SDK sandbox beneficiary validation so the API
+		// can return Invalid Mandatory Field for empty beneficiaryAccountNumber.
 		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
+		endpoint := "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm"
+		resourcePath := "/v1.0/emoney/transfer-bank.htm"
+		variableDict := map[string]interface{}{
+			"partnerReferenceNo": partnerReferenceNo,
+		}
+
+		err = helper.ExecuteAndAssertErrorResponse(
+			t,
+			ctx,
+			jsonDict,
+			"POST",
+			endpoint,
+			resourcePath,
+			transferToBankJsonPath,
+			transferToBankTitleCase,
+			caseName,
+			nil,
+			variableDict,
+		)
 		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(transferToBankJsonPath, transferToBankTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
+			t.Fatal(err)
 		}
 		return nil
 	})
