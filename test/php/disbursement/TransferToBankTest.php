@@ -159,48 +159,57 @@ class TransferToBankTest extends AbstractDisbursementTest
         Util::withDelay(function () {
             $caseName = 'DisbursementBankMissingMandatoryField';
 
-                // Get and prepare the request
-                $jsonDict = Util::getRequest(
+            // Get and prepare the request
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName
+            );
+
+            // Set a unique partner reference number
+            $partnerReferenceNo = Util::generatePartnerReferenceNo();
+            $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+
+            // Raw signed HTTP bypasses SDK sandbox beneficiary validation so the API
+            // can return Invalid Mandatory Field for empty beneficiaryAccountNumber.
+            $headers = Util::getHeadersWithSignature(
+                'POST',
+                '/v1.0/emoney/transfer-bank.htm',
+                $jsonDict,
+                true,
+                false,
+                false
+            );
+
+            try {
+                Util::executeApiRequest(
+                    'POST',
+                    'https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm',
+                    $headers,
+                    $jsonDict
+                );
+
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
+                $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
+            } catch (ApiException $e) {
+                // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004302)
+                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for missing mandatory field, got {$e->getCode()}");
+
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
                     self::$jsonPathFile,
                     self::$titleCase,
-                    $caseName
+                    $caseName,
+                    $responseContent,
+                    ['partnerReferenceNo' => $partnerReferenceNo]
                 );
-
-                // Set a unique partner reference number
-                $partnerReferenceNo = Util::generatePartnerReferenceNo();
-                $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
-
-                // Create a TransferToBankRequest object from the JSON request data
-                $TransferToBankRequestObj = ObjectSerializer::deserialize(
-                    $jsonDict,
-                    'Dana\Disbursement\v1\Model\TransferToBankRequest'
-                );
-
-                try {
-                    // Make the API call
-                    self::$apiInstance->transferToBank($TransferToBankRequestObj);
-
-                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
-                    $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
-                } catch (ApiException $e) {
-                    // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004302)
-                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for missing mandatory field, got {$e->getCode()}");
-
-                    // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
-                    
-                    // Use assertFailResponse to validate the error response
-                    Assertion::assertFailResponse(
-                        self::$jsonPathFile, 
-                        self::$titleCase, 
-                        $caseName, 
-                        $responseContent,
-                        ['partnerReferenceNo' => $partnerReferenceNo]
-                    );
-                } catch (Exception $e) {
-                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
-                    $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
-                }
+            } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
+                $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
+            }
         });
     }
 

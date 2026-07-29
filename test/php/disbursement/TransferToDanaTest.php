@@ -365,48 +365,56 @@ class TransferToDanaTest extends AbstractDisbursementTest
         Util::withDelay(function () {
             $caseName = 'TopUpCustomerExceedAmountLimit';
 
-                // Get and prepare the request
-                $jsonDict = Util::getRequest(
+            // Get and prepare the request
+            $jsonDict = Util::getRequest(
+                self::$jsonPathFile,
+                self::$titleCase,
+                $caseName
+            );
+
+            // Set a unique partner reference number
+            $partnerReferenceNo = Util::generatePartnerReferenceNo();
+            $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
+
+            // Raw signed HTTP bypasses SDK sandbox amount validation so the API can return exceed-limit.
+            $headers = Util::getHeadersWithSignature(
+                'POST',
+                '/rest/v1.0/emoney/topup',
+                $jsonDict,
+                true,
+                false,
+                false
+            );
+
+            try {
+                Util::executeApiRequest(
+                    'POST',
+                    'https://api.sandbox.dana.id/rest/v1.0/emoney/topup',
+                    $headers,
+                    $jsonDict
+                );
+
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
+                $this->fail('Expected ApiException for exceed amount limit but the API call succeeded');
+            } catch (ApiException $e) {
+                // We expect a 403 Forbidden for exceed amount limit (responseCode: 4033813)
+                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for exceed amount limit, got {$e->getCode()}");
+
+                // Get the response body from the exception
+                $responseContent = (string)$e->getResponseBody();
+
+                // Use assertFailResponse to validate the error response
+                Assertion::assertFailResponse(
                     self::$jsonPathFile,
                     self::$titleCase,
-                    $caseName
+                    $caseName,
+                    $responseContent,
+                    ['partnerReferenceNo' => $partnerReferenceNo]
                 );
-
-                // Set a unique partner reference number
-                $partnerReferenceNo = Util::generatePartnerReferenceNo();
-                $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
-
-                // Create a TransferToDanaRequest object from the JSON request data
-                $transferToDanaRequestObj = ObjectSerializer::deserialize(
-                    $jsonDict,
-                    'Dana\Disbursement\v1\Model\TransferToDanaRequest'
-                );
-
-                try {
-                    // Make the API call
-                    self::$apiInstance->transferToDana($transferToDanaRequestObj);
-
-                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
-                    $this->fail('Expected ApiException for exceed amount limit but the API call succeeded');
-                } catch (ApiException $e) {
-                    // We expect a 403 Forbidden for exceed amount limit (responseCode: 4033813)
-                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for exceed amount limit, got {$e->getCode()}");
-
-                    // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
-                    
-                    // Use assertFailResponse to validate the error response
-                    Assertion::assertFailResponse(
-                        self::$jsonPathFile, 
-                        self::$titleCase, 
-                        $caseName, 
-                        $responseContent,
-                        ['partnerReferenceNo' => $partnerReferenceNo]
-                    );
-                } catch (Exception $e) {
-                    echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
-                    $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
-                }
+            } catch (Exception $e) {
+                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
+                $this->fail("Expected ApiException but got " . get_class($e) . ": " . $e->getMessage());
+            }
         });
     }
 

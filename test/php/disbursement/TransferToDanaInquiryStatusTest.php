@@ -99,15 +99,23 @@ class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest
             self::$originalPartnerReferenceFailed = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = self::$originalPartnerReferenceFailed;
 
-            // Create request object
-            $transferToDanaRequestObj = ObjectSerializer::deserialize(
+            // Raw signed HTTP bypasses SDK sandbox amount validation.
+            $headers = Util::getHeadersWithSignature(
+                'POST',
+                '/rest/v1.0/emoney/topup',
                 $jsonDict,
-                'Dana\Disbursement\v1\Model\TransferToDanaRequest'
+                true,
+                false,
+                false
             );
 
-            // Make the API call to create a failed transaction
             try {
-                self::$apiInstance->transferToDana($transferToDanaRequestObj);
+                Util::executeApiRequest(
+                    'POST',
+                    'https://api.sandbox.dana.id/rest/v1.0/emoney/topup',
+                    $headers,
+                    $jsonDict
+                );
             } catch (ApiException $e) {
                 // Expected to fail - this creates a failed transaction
                 echo "Shared failed order created with reference: " . self::$originalPartnerReferenceFailed . "\n";
