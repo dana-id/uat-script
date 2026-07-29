@@ -260,31 +260,29 @@ func TestTopUpCustomerExceedAmountLimit(t *testing.T) {
 	var partnerReferenceNo = uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-	transferToDanaRequest := &disbursement.TransferToDanaRequest{}
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-
-	err = json.Unmarshal(jsonBytes, transferToDanaRequest)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
-
-	// Make the API call
+	// Raw signed HTTP bypasses SDK sandbox amount validation so the API can return exceed-limit.
 	ctx := context.Background()
-	_, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToDana(ctx).TransferToDanaRequest(*transferToDanaRequest).Execute()
+	endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
+	resourcePath := "/rest/v1.0/emoney/topup"
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": partnerReferenceNo,
+	}
+
+	err = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		jsonDict,
+		"POST",
+		endpoint,
+		resourcePath,
+		transferToDanaJsonPath,
+		transferToDanaTitleCase,
+		caseName,
+		nil,
+		variableDict,
+	)
 	if err != nil {
-		// Assert the API error response
-		err = helper.AssertFailResponse(transferToDanaJsonPath, transferToDanaTitleCase, caseName, httpResponse, map[string]interface{}{
-			"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-	} else {
-		httpResponse.Body.Close()
-		t.Fatal("Expected error but got successful response")
+		t.Fatal(err)
 	}
 }
 
