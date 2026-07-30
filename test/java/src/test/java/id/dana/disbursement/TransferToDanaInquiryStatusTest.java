@@ -74,12 +74,14 @@ class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest {
   }
 
   private String prepareTransferSuccessFail() {
-    TransferToDanaRequest transferToDanaRequest = TestUtil.getRequest(
-            jsonPathFile, "TransferToDana", "TopUpCustomerExceedAmountLimit", TransferToDanaRequest.class);
-
     String originalPartnerReferenceNo = UUID.randomUUID().toString();
-    transferToDanaRequest.setPartnerReferenceNo(originalPartnerReferenceNo);
-    api.transferToDana(transferToDanaRequest);
+    try {
+      DisbursementHttpUtil.transferToDanaWithFixtureBody(
+          jsonPathFile, "TopUpCustomerExceedAmountLimit", originalPartnerReferenceNo);
+    } catch (Exception e) {
+      // Expected API failure creates a failed transaction for inquiry
+      log.info("Shared failed order created with reference: {}", originalPartnerReferenceNo);
+    }
     return originalPartnerReferenceNo;
   }
 

@@ -90,19 +90,14 @@ class TransferToDanaTest extends AbstractDisbursementTest {
   @Test
   void testTopUpCustomerInsufficientFund() throws IOException {
     String caseName = "TopUpCustomerInsufficientFund";
-    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        TransferToDanaRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    TransferToDanaResponse response = api.transferToDana(requestData);
+    TransferToDanaResponse response =
+        DisbursementHttpUtil.transferToDanaWithFixtureBody(jsonPathFile, caseName, partnerReferenceNo);
     TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
@@ -189,19 +184,14 @@ class TransferToDanaTest extends AbstractDisbursementTest {
   @Test
   void testTopUpCustomerExceedAmountLimit() throws IOException {
     String caseName = "TopUpCustomerExceedAmountLimit";
-    TransferToDanaRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            TransferToDanaRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    TransferToDanaResponse response = api.transferToDana(requestData);
+    TransferToDanaResponse response =
+        DisbursementHttpUtil.transferToDanaWithFixtureBody(jsonPathFile, caseName, partnerReferenceNo);
     TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 

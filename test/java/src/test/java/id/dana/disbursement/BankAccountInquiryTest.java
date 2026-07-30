@@ -87,19 +87,15 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInsufficientFund() throws IOException {
     String caseName = "InquiryBankAccountInsufficientFund";
-    BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        BankAccountInquiryRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    BankAccountInquiryResponse response = api.bankAccountInquiry(requestData);
+    BankAccountInquiryResponse response =
+        DisbursementHttpUtil.bankAccountInquiryWithFixtureBody(
+            jsonPathFile, caseName, partnerReferenceNo);
     variableDict.put("referenceNo", response.getReferenceNo());
     TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }

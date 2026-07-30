@@ -1,8 +1,4 @@
 import asyncio
-from urllib.parse import urlparse, parse_qs, unquote
-from playwright.sync_api import expect
-from playwright.async_api import async_playwright
-from time import sleep
 
 async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=None, show_log=False):
     """
@@ -17,13 +13,22 @@ async def automate_payment_pg(phone_number=None, pin=None, redirectUrlPayment=No
     Returns:
         str or None: The extracted authorization code if found, otherwise None.
     Notes:
-        - Requires Playwright and asyncio.
+        - Requires Playwright and asyncio (imported lazily so mandatory-only runs can collect
+          cancel/query/refund modules without installing Playwright).
         - Simulates an iPhone 12 device with Indonesian locale and Jakarta geolocation.
         - Handles various input field and button selectors to maximize compatibility with different OAuth UIs.
         - Waits for redirects and listens for URL changes to capture the authorization code.
         - Closes the browser context after completion.
     """
-    
+    try:
+        from playwright.async_api import async_playwright
+    except ImportError as e:
+        raise ImportError(
+            "playwright is required for payment UI automation "
+            "(cancel/query/refund setup). Install test/python/requirements.txt "
+            "and run playwright install chromium."
+        ) from e
+
     buttonSubmitPhoneNumber = ".agreement__button>.btn-continue"
     inputPhone = ".desktop-input>.txt-input-phone-number-field"
     inputPin = ".txt-input-pin-field"

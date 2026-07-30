@@ -85,19 +85,14 @@ class TransferToBankTest extends AbstractDisbursementTest {
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankInsufficientFund() throws IOException {
     String caseName = "DisbursementBankInsufficientFund";
-    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-        TransferToBankRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    TransferToBankResponse response = api.transferToBank(requestData);
+    TransferToBankResponse response =
+        DisbursementHttpUtil.transferToBankWithFixtureBody(jsonPathFile, caseName, partnerReferenceNo);
     TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
@@ -207,19 +202,14 @@ class TransferToBankTest extends AbstractDisbursementTest {
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testDisbursementBankMissingMandatoryField() throws IOException {
     String caseName = "DisbursementBankMissingMandatoryField";
-    TransferToBankRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            TransferToBankRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    TransferToBankResponse response = api.transferToBank(requestData);
+    TransferToBankResponse response =
+        DisbursementHttpUtil.transferToBankWithFixtureBody(jsonPathFile, caseName, partnerReferenceNo);
     TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
