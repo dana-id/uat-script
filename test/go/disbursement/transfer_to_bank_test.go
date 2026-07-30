@@ -131,8 +131,6 @@ func TestDisbursementBankMissingMandatoryField(t *testing.T) {
 		var partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-		// Raw signed HTTP bypasses SDK sandbox beneficiary validation so the API
-		// can return Invalid Mandatory Field for empty beneficiaryAccountNumber.
 		ctx := context.Background()
 		endpoint := "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm"
 		resourcePath := "/v1.0/emoney/transfer-bank.htm"

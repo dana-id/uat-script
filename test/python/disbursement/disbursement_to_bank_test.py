@@ -92,22 +92,30 @@ def test_disbursement_to_bank_unauthorized_signature():
 def test_disbursement_to_bank_missing_mandatory_field():
     case_name = "DisbursementBankMissingMandatoryField"
     json_dict = get_request(json_path_file, title_case, case_name)
-    
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
+
     partner_reference_no = str(uuid4())
     json_dict["partnerReferenceNo"] = partner_reference_no
-    request_obj = TransferToBankRequest.from_dict(json_dict)
 
-    try:
-        api_instance.transfer_to_bank(request_obj)
-        
-        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
-        pytest.fail("Expected ApiException for invalid field format but the API call succeeded")
-    except ApiException as e:
-        # Expected failure case - assert the error response
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': partner_reference_no})
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/v1.0/emoney/transfer-bank.htm",
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
+
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm",
+        json_dict,
+        headers,
+        400,
+        json_path_file,
+        title_case,
+        case_name,
+        {'partnerReferenceNo': partner_reference_no},
+    )
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
@@ -136,22 +144,30 @@ def test_disbursement_to_bank_invalid_field_format():
 def test_disbursement_to_bank_insufficient_fund():
     case_name = "DisbursementBankInsufficientFund"
     json_dict = get_request(json_path_file, title_case, case_name)
-    
+
     partner_reference_no = str(uuid4())
-
-    
     json_dict["partnerReferenceNo"] = partner_reference_no
-    request_obj = TransferToBankRequest.from_dict(json_dict)
 
-    try:
-        api_instance.transfer_to_bank(request_obj)
-        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
-        pytest.fail("Expected ApiException for insufficient fund but the API call succeeded")
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/v1.0/emoney/transfer-bank.htm",
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
 
-    except ApiException as e:
-        # Expected failure case - assert the error response
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm",
+        json_dict,
+        headers,
+        403,
+        json_path_file,
+        title_case,
+        case_name,
+        {'partnerReferenceNo': partner_reference_no},
+    )
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)

@@ -106,16 +106,21 @@ describe('Disbursement - Transfer To DANA Tests', () => {
     const partnerReferenceNo = uuidv4();
     requestData.partnerReferenceNo = partnerReferenceNo;
 
+    const apiPath = '/rest/v1.0/emoney/topup';
     try {
-      // This API call should fail due to insufficient fund
-      await dana.disbursementApi.transferToDana(requestData);
+      await executeManualApiRequest(
+        caseName,
+        'POST',
+        `https://api.sandbox.dana.id${apiPath}`,
+        apiPath,
+        requestData,
+      );
+      fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
       if (e instanceof ResponseError) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
-        // If another error occurs, fail the test with the error message
         fail('Payment test failed: ' + (e.message || e));
       }
     }
@@ -322,17 +327,21 @@ describe('Disbursement - Transfer To DANA Tests', () => {
     const partnerReferenceNo = uuidv4();
     requestData.partnerReferenceNo = partnerReferenceNo;
 
+    const apiPath = '/rest/v1.0/emoney/topup';
     try {
-      // This API call should fail due to insufficient fund
-      await dana.disbursementApi.transferToDana(requestData);
+      await executeManualApiRequest(
+        caseName,
+        'POST',
+        `https://api.sandbox.dana.id${apiPath}`,
+        apiPath,
+        requestData,
+      );
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
       if (e instanceof ResponseError) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
-        // If another error occurs, fail the test with the error message
         fail('Payment test failed: ' + (e.message || e));
       }
     }

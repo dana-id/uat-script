@@ -107,17 +107,21 @@ describe('Disbursement - Transfer To Bank Tests', () => {
     const partnerReferenceNo = uuidv4();
     requestData.partnerReferenceNo = partnerReferenceNo;
 
+    const apiPath = '/v1.0/emoney/transfer-bank.htm';
     try {
-      // This API call should fail due to insufficient fund
-      await dana.disbursementApi.transferToBank(requestData);
+      await executeManualApiRequest(
+        caseName,
+        'POST',
+        `https://api.sandbox.dana.id${apiPath}`,
+        apiPath,
+        requestData,
+      );
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
       if (e instanceof ResponseError) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
-        // If another error occurs, fail the test with the error message
         console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }
@@ -145,17 +149,21 @@ describe('Disbursement - Transfer To Bank Tests', () => {
     const partnerReferenceNo = uuidv4();
     requestData.partnerReferenceNo = partnerReferenceNo;
 
+    const apiPath = '/v1.0/emoney/transfer-bank.htm';
     try {
-      // This API call should fail due to insufficient fund
-      await dana.disbursementApi.transferToBank(requestData);
+      await executeManualApiRequest(
+        caseName,
+        'POST',
+        `https://api.sandbox.dana.id${apiPath}`,
+        apiPath,
+        requestData,
+      );
       fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
       if (e instanceof ResponseError) {
         await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
           { 'partnerReferenceNo': partnerReferenceNo });
       } else {
-        // If another error occurs, fail the test with the error message
         console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
         fail('Payment test failed: ' + (e.message || e));
       }

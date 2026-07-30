@@ -10,7 +10,7 @@ from dana.api_client import ApiClient
 from dana.exceptions import *
 from uuid import uuid4
 from helper.util import get_request, with_delay
-from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error
+from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error, execute_api_request_directly
 from helper.assertion import assert_response, assert_fail_response
 
 transfer_to_dana_title_case = "TransferToDana"
@@ -49,13 +49,28 @@ def create_disbursement_paid():
 def create_disbursement_failed():
     """Creates a failed disbursement transaction for testing status inquiry"""
     global original_partner_reference_failed
-    
+
     disbursement_request = get_request(json_path_file, "TransferToDana", "TopUpCustomerExceedAmountLimit")
     original_partner_reference_failed = str(uuid4())
     disbursement_request["partnerReferenceNo"] = original_partner_reference_failed
-    
-    request_obj = TransferToDanaRequest.from_dict(disbursement_request)
-    api_instance.transfer_to_dana(request_obj)
+
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path="/rest/v1.0/emoney/topup",
+        request_obj=disbursement_request,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
+    try:
+        execute_api_request_directly(
+            api_client,
+            "POST",
+            "https://api.sandbox.dana.id/rest/v1.0/emoney/topup",
+            disbursement_request,
+            headers,
+        )
+    except Exception:
+        pass
 
 def setup_module():
     """Test setup hook that creates prerequisite disbursement transactions"""

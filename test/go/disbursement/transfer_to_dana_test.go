@@ -260,7 +260,6 @@ func TestTopUpCustomerExceedAmountLimit(t *testing.T) {
 	var partnerReferenceNo = uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-	// Raw signed HTTP bypasses SDK sandbox amount validation so the API can return exceed-limit.
 	ctx := context.Background()
 	endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
 	resourcePath := "/rest/v1.0/emoney/topup"

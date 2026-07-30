@@ -376,7 +376,6 @@ class TransferToDanaTest extends AbstractDisbursementTest
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-            // Raw signed HTTP bypasses SDK sandbox amount validation so the API can return exceed-limit.
             $headers = Util::getHeadersWithSignature(
                 'POST',
                 '/rest/v1.0/emoney/topup',

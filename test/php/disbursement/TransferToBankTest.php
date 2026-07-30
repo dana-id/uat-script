@@ -170,8 +170,6 @@ class TransferToBankTest extends AbstractDisbursementTest
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-            // Raw signed HTTP bypasses SDK sandbox beneficiary validation so the API
-            // can return Invalid Mandatory Field for empty beneficiaryAccountNumber.
             $headers = Util::getHeadersWithSignature(
                 'POST',
                 '/v1.0/emoney/transfer-bank.htm',

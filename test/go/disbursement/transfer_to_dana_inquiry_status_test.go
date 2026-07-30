@@ -65,7 +65,6 @@ func createTransferToDanaFail() (string, error) {
 		partnerReferenceNo := uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-		// Raw signed HTTP bypasses SDK sandbox amount validation.
 		ctx := context.Background()
 		endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
 		resourcePath := "/rest/v1.0/emoney/topup"

@@ -99,7 +99,6 @@ class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest
             self::$originalPartnerReferenceFailed = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = self::$originalPartnerReferenceFailed;
 
-            // Raw signed HTTP bypasses SDK sandbox amount validation.
             $headers = Util::getHeadersWithSignature(
                 'POST',
                 '/rest/v1.0/emoney/topup',

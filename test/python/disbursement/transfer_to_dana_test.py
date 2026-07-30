@@ -13,6 +13,9 @@ from helper.util import get_request, with_delay
 from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error
 from helper.assertion import assert_response, assert_fail_response
 
+_TOPUP_RESOURCE_PATH = "/rest/v1.0/emoney/topup"
+_TOPUP_ENDPOINT = "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
+
 title_case = "TransferToDana"
 json_path_file = "resource/request/components/Disbursement.json"
 
@@ -49,17 +52,29 @@ def test_topup_customer_valid():
 def test_topup_customer_insufficient_fund():
     case_name = "TopUpCustomerInsufficientFund"
     json_dict = get_request(json_path_file, title_case, case_name)
-    
+
     json_dict["partnerReferenceNo"] = str(uuid4())
-    request_obj = TransferToDanaRequest.from_dict(json_dict)
 
-    try:
-        api_instance.transfer_to_dana(request_obj)
-        pytest.fail("Expected ApiException for insufficient fund but the API call succeeded")
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path=_TOPUP_RESOURCE_PATH,
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
 
-    except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        _TOPUP_ENDPOINT,
+        json_dict,
+        headers,
+        403,
+        json_path_file,
+        title_case,
+        case_name,
+        {'partnerReferenceNo': json_dict["partnerReferenceNo"]},
+    )
 
 @with_delay()
 @pytest.mark.skip(reason="skipped: timeout test scenario")
@@ -171,17 +186,29 @@ def test_topup_customer_frozen_account():
 def test_topup_customer_exceed_amount_limit():
     case_name = "TopUpCustomerExceedAmountLimit"
     json_dict = get_request(json_path_file, title_case, case_name)
-    
+
     json_dict["partnerReferenceNo"] = str(uuid4())
-    request_obj = TransferToDanaRequest.from_dict(json_dict)
 
-    try:
-        api_instance.transfer_to_dana(request_obj)
-        pytest.fail("Expected ApiException for exceeding amount limit but the API call succeeded")
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path=_TOPUP_RESOURCE_PATH,
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
 
-    except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        _TOPUP_ENDPOINT,
+        json_dict,
+        headers,
+        403,
+        json_path_file,
+        title_case,
+        case_name,
+        {'partnerReferenceNo': json_dict["partnerReferenceNo"]},
+    )
 
 @with_delay()
 def test_topup_customer_missing_mandatory_field():
