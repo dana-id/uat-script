@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"testing"
 	"uat-script/helper"
 
@@ -234,10 +233,15 @@ func TestInquiryCustomerExceededLimit(t *testing.T) {
 		defer httpResponse.Body.Close()
 	}
 
-	fmt.Printf("case=%s err=%v apiResponse=%+v\n", caseName, err, apiResponse)
-	if httpResponse != nil && httpResponse.Body != nil {
-		if body, readErr := io.ReadAll(httpResponse.Body); readErr == nil {
-			fmt.Printf("case=%s httpBody=%s\n", caseName, string(body))
-		}
+	if err = helper.AssertSdkErrorResponse(
+		danaAccountInquiryJsonPath,
+		danaAccountInquiryTitleCase,
+		caseName,
+		apiResponse,
+		httpResponse,
+		err,
+		map[string]interface{}{"partnerReferenceNo": partnerReferenceNo},
+	); err != nil {
+		t.Fatal(err)
 	}
 }

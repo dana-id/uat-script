@@ -92,7 +92,10 @@ func TestCreateOrderRedirectScenario(t *testing.T) {
 		t.Fatalf("API call failed: %v", err)
 	}
 
-	fmt.Printf("case=%s response=%s\n", caseName, result.(string))
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 // TestCreateOrderApiScenario tests creating an order using API scenario with BALANCE payment method

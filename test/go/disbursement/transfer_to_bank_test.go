@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"testing"
 	"time"
 	"uat-script/helper"
@@ -20,7 +19,7 @@ const (
 	transferToBankPath      = "/v1.0/emoney/transfer-bank.htm"
 )
 
-// assertTransferToBankErrorViaSDK calls the SDK with the fixture payload and logs the error response.
+// assertTransferToBankErrorViaSDK calls the SDK with the fixture payload and asserts the error response.
 func assertTransferToBankErrorViaSDK(t *testing.T, caseName string) error {
 	t.Helper()
 
@@ -47,13 +46,15 @@ func assertTransferToBankErrorViaSDK(t *testing.T, caseName string) error {
 		defer httpResponse.Body.Close()
 	}
 
-	fmt.Printf("case=%s err=%v apiResponse=%+v\n", caseName, err, apiResponse)
-	if httpResponse != nil && httpResponse.Body != nil {
-		if body, readErr := io.ReadAll(httpResponse.Body); readErr == nil {
-			fmt.Printf("case=%s httpBody=%s\n", caseName, string(body))
-		}
-	}
-	return nil
+	return helper.AssertSdkErrorResponse(
+		transferToBankJsonPath,
+		transferToBankTitleCase,
+		caseName,
+		apiResponse,
+		httpResponse,
+		err,
+		map[string]interface{}{"partnerReferenceNo": partnerReferenceNo},
+	)
 }
 
 func TestDisbursementBankValidAccount(t *testing.T) {

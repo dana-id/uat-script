@@ -93,10 +93,7 @@
       },
       "response": {
         "responseCode": "4033702",
-        "responseMessage": "Exceed maximum limit amount|Nilai transaksi melebihi batas maksimum limit",
-        "additionalInfo": {
-          "resultMsg": "EXCEED_BALANCE_LIMIT"
-        }
+        "responseMessage": "Exceed maximum limit amount|Nilai transaksi melebihi batas maksimum limit. In sandbox, amount.value must not exceed 20000000"
       }
     },
     "InquiryCustomerUnauthorizedSignature": {
@@ -275,7 +272,7 @@
       },
       "response": {
         "responseCode": "4033802",
-        "responseMessage": "Exceed maximum limit amount. Make sure DANA balance not exceeding limit of 21000000 after topup|Nilai transaksi melebihi batas maksimum limit. Make sure DANA balance not exceeding limit of 21000000 after topup"
+        "responseMessage": "Exceed maximum limit amount|Nilai transaksi melebihi batas maksimum limit. Make sure DANA balance not exceeding limit of 21000000 after topup"
       }
     },
     "TopUpCustomerMissingMandatoryField": {
@@ -630,8 +627,8 @@
         }
       },
       "response": {
-        "responseCode": "4034214",
-        "responseMessage": "Insufficient Fund",
+        "responseCode": "4034202",
+        "responseMessage": "Exceed Transaction Amount Limit|Exceed Transaction Amount Limit. In sandbox, amount.value must not exceed 20000000",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -1033,7 +1030,7 @@
       },
       "response": {
         "responseCode": "5004300",
-        "responseMessage": "General Error"
+        "responseMessage": "General Error. For testing positive case in sandbox use beneficiaryAccountNumber 2460888509 and beneficiaryBankCode 014"
       }
     },
     "DisbursementBankUnknownError": {
@@ -1058,7 +1055,7 @@
       },
       "response": {
         "responseCode": "5004301",
-        "responseMessage": "Internal Server Error"
+        "responseMessage": "Internal Server Error. For testing positive case in sandbox use beneficiaryAccountNumber 2460888509 and beneficiaryBankCode 014"
       }
     },
     "DisbursementBankInactiveAccount": {

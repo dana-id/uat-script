@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"testing"
 	"time"
 	"uat-script/helper"
@@ -20,7 +19,36 @@ const (
 	bankAccountInquiryPath      = "/v1.0/emoney/bank-account-inquiry.htm"
 )
 
-// assertBankAccountInquiryErrorViaSDK calls the SDK with the fixture payload and logs the error response.
+// assertBankAccountInquiryErrorBypassSDK sends fixture JSON directly so SDK client validation
+// does not block intentional error payloads (empty fundType, etc.).
+func assertBankAccountInquiryErrorBypassSDK(t *testing.T, caseName string) error {
+	t.Helper()
+
+	jsonDict, err := helper.GetRequest(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName)
+	if err != nil {
+		return fmt.Errorf("Failed to get request data: %v", err)
+	}
+
+	partnerReferenceNo := uuid.New().String()
+	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+	ctx := context.Background()
+	return helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		jsonDict,
+		"POST",
+		bankAccountInquiryEndpoint,
+		bankAccountInquiryPath,
+		bankAccountInquiryJsonPath,
+		bankAccountInquiryTitleCase,
+		caseName,
+		nil,
+		map[string]interface{}{"partnerReferenceNo": partnerReferenceNo},
+	)
+}
+
+// assertBankAccountInquiryErrorViaSDK calls the SDK with the fixture payload and asserts the error response.
 func assertBankAccountInquiryErrorViaSDK(t *testing.T, caseName string) error {
 	t.Helper()
 
@@ -47,13 +75,15 @@ func assertBankAccountInquiryErrorViaSDK(t *testing.T, caseName string) error {
 		defer httpResponse.Body.Close()
 	}
 
-	fmt.Printf("case=%s err=%v apiResponse=%+v\n", caseName, err, apiResponse)
-	if httpResponse != nil && httpResponse.Body != nil {
-		if body, readErr := io.ReadAll(httpResponse.Body); readErr == nil {
-			fmt.Printf("case=%s httpBody=%s\n", caseName, string(body))
-		}
-	}
-	return nil
+	return helper.AssertSdkErrorResponse(
+		bankAccountInquiryJsonPath,
+		bankAccountInquiryTitleCase,
+		caseName,
+		apiResponse,
+		httpResponse,
+		err,
+		map[string]interface{}{"partnerReferenceNo": partnerReferenceNo},
+	)
 }
 
 func TestInquiryBankAccountValidDataAmount(t *testing.T) {
@@ -182,7 +212,7 @@ func TestInquiryBankAccountInvalidFieldFormat(t *testing.T) {
 
 func TestInquiryBankAccountMissingMandatoryField(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		return assertBankAccountInquiryErrorViaSDK(t, "InquiryBankAccountMissingMandatoryField")
+		return assertBankAccountInquiryErrorBypassSDK(t, "InquiryBankAccountMissingMandatoryField")
 	})
 }
 

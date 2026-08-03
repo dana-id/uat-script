@@ -148,7 +148,7 @@
             },
             "response": {
                 "responseCode": "2005400",
-                "responseMessage": "Successful"
+                "responseMessage": "Successful. If you want to use QRIS and it is not showing in payment methods, make sure you already fill externalStoreId. See https://dashboard.dana.id/sandbox/submerchants in the external shop id section. For QRIS, partnerReferenceNo max is 25 chars."
             }
         },
         "CreateOrderApi": {
