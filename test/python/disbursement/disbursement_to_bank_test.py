@@ -16,6 +16,8 @@ from helper.assertion import assert_response, assert_fail_response
 
 title_case = "TransferToBank"
 json_path_file = "resource/request/components/Disbursement.json"
+TRANSFER_TO_BANK_ENDPOINT = "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm"
+TRANSFER_TO_BANK_RESOURCE_PATH = "/v1.0/emoney/transfer-bank.htm"
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -30,6 +32,38 @@ configuration = SnapConfiguration(
 
 with ApiClient(configuration) as api_client:
     api_instance = DisbursementApi(api_client)
+
+
+def _assert_transfer_to_bank_error_bypass_sdk(case_name: str, expected_status: int) -> None:
+    """Hit the API directly so sandbox SDK validation does not block error fixtures."""
+    json_dict = get_request(json_path_file, title_case, case_name)
+    partner_reference_no = str(uuid4())
+    json_dict["partnerReferenceNo"] = partner_reference_no
+    if case_name == "DisbursementBankInsufficientFund":
+        # 1T hits per-txn limit (4034302) before insufficient-fund on funded merchants.
+        json_dict["amount"]["value"] = "50000000000.00"
+
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path=TRANSFER_TO_BANK_RESOURCE_PATH,
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
+
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        TRANSFER_TO_BANK_ENDPOINT,
+        json_dict,
+        headers,
+        expected_status,
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": partner_reference_no},
+    )
+
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
@@ -98,7 +132,7 @@ def test_disbursement_to_bank_missing_mandatory_field():
 
     headers = get_headers_with_signature(
         method="POST",
-        resource_path="/v1.0/emoney/transfer-bank.htm",
+        resource_path=TRANSFER_TO_BANK_RESOURCE_PATH,
         request_obj=json_dict,
         with_timestamp=True,
         invalid_timestamp=False,
@@ -107,7 +141,7 @@ def test_disbursement_to_bank_missing_mandatory_field():
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm",
+        TRANSFER_TO_BANK_ENDPOINT,
         json_dict,
         headers,
         400,
@@ -142,54 +176,12 @@ def test_disbursement_to_bank_invalid_field_format():
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_insufficient_fund():
-    case_name = "DisbursementBankInsufficientFund"
-    json_dict = get_request(json_path_file, title_case, case_name)
-
-    partner_reference_no = str(uuid4())
-    json_dict["partnerReferenceNo"] = partner_reference_no
-
-    headers = get_headers_with_signature(
-        method="POST",
-        resource_path="/v1.0/emoney/transfer-bank.htm",
-        request_obj=json_dict,
-        with_timestamp=True,
-        invalid_timestamp=False,
-    )
-
-    execute_and_assert_api_error(
-        api_client,
-        "POST",
-        "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm",
-        json_dict,
-        headers,
-        403,
-        json_path_file,
-        title_case,
-        case_name,
-        {'partnerReferenceNo': partner_reference_no},
-    )
+    _assert_transfer_to_bank_error_bypass_sdk("DisbursementBankInsufficientFund", 403)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_inactive_account():
-    case_name = "DisbursementBankInactiveAccount"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    partner_reference_no = str(uuid4())
-
-    
-    json_dict["partnerReferenceNo"] = partner_reference_no
-    request_obj = TransferToBankRequest.from_dict(json_dict)
-
-    try:
-        api_instance.transfer_to_bank(request_obj)
-        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
-        pytest.fail("Expected ApiException for inactive account but the API call succeeded")
-
-    except ApiException as e:
-        # Expected failure case - assert the error response
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_transfer_to_bank_error_bypass_sdk("DisbursementBankInactiveAccount", 403)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
@@ -230,68 +222,17 @@ def test_disbursement_to_bank_inconsistent_request():
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_suspected_fraud():
-    case_name = "DisbursementBankSuspectedFraud"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    partner_reference_no = str(uuid4())
-
-    
-    json_dict["partnerReferenceNo"] = partner_reference_no
-    request_obj = TransferToBankRequest.from_dict(json_dict)
-
-    try:
-        api_instance.transfer_to_bank(request_obj)
-        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
-        pytest.fail("Expected ApiException for suspected fraud but the API call succeeded")
-
-    except ApiException as e:
-        # Expected failure case - assert the error response
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_transfer_to_bank_error_bypass_sdk("DisbursementBankSuspectedFraud", 403)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_unknown_error():
-    case_name = "DisbursementBankUnknownError"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    partner_reference_no = str(uuid4())
-
-    
-    json_dict["partnerReferenceNo"] = partner_reference_no
-    request_obj = TransferToBankRequest.from_dict(json_dict)
-
-    try:
-        api_instance.transfer_to_bank(request_obj)
-        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
-        pytest.fail("Expected ApiException for unknown error but the API call succeeded")
-
-    except ApiException as e:
-        # Expected failure case - assert the error response
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_transfer_to_bank_error_bypass_sdk("DisbursementBankUnknownError", 500)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_disbursement_to_bank_general_error():
-    case_name = "DisbursementBankGeneralError"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    partner_reference_no = str(uuid4())
-
-    
-    json_dict["partnerReferenceNo"] = partner_reference_no
-    request_obj = TransferToBankRequest.from_dict(json_dict)
-
-    try:
-        api_instance.transfer_to_bank(request_obj)
-        print(f"[REF] case={case_name} partnerReferenceNo={partner_reference_no}")
-        pytest.fail("Expected ApiException for general error but the API call succeeded")
-
-    except ApiException as e:
-        # Expected failure case - assert the error response
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_transfer_to_bank_error_bypass_sdk("DisbursementBankGeneralError", 500)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)

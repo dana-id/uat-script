@@ -14,6 +14,8 @@ from helper.assertion import assert_response, assert_fail_response
 
 title_case = "DanaAccountInquiry"
 json_path_file = "resource/request/components/Disbursement.json"
+DANA_ACCOUNT_INQUIRY_ENDPOINT = "https://api.sandbox.dana.id/rest/v1.0/emoney/account-inquiry"
+DANA_ACCOUNT_INQUIRY_RESOURCE_PATH = "/rest/v1.0/emoney/account-inquiry"
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -28,6 +30,34 @@ configuration = SnapConfiguration(
 
 with ApiClient(configuration) as api_client:
     api_instance = DisbursementApi(api_client)
+
+
+def _assert_dana_account_inquiry_error_bypass_sdk(case_name: str, expected_status: int) -> None:
+    """Hit the API directly so sandbox SDK validation does not block error fixtures."""
+    json_dict = get_request(json_path_file, title_case, case_name)
+    partner_reference_no = str(uuid4())
+    json_dict["partnerReferenceNo"] = partner_reference_no
+
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path=DANA_ACCOUNT_INQUIRY_RESOURCE_PATH,
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
+
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        DANA_ACCOUNT_INQUIRY_ENDPOINT,
+        json_dict,
+        headers,
+        expected_status,
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": partner_reference_no},
+    )
 
 @with_delay()
 def test_inquiry_customer_valid_data():
@@ -54,7 +84,7 @@ def test_inquiry_customer_unauthorized_signature():
 
     headers = get_headers_with_signature(
         method="POST",
-        resource_path="v1.0/emoney/account-inquiry.htm",
+        resource_path=DANA_ACCOUNT_INQUIRY_RESOURCE_PATH,
         request_obj=json_dict,
         with_timestamp=True,
         invalid_timestamp=False
@@ -65,7 +95,7 @@ def test_inquiry_customer_unauthorized_signature():
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "https://api.sandbox.dana.id/rest/v1.0/emoney/account-inquiry",
+        DANA_ACCOUNT_INQUIRY_ENDPOINT,
         request_obj,
         headers,
         401,
@@ -108,16 +138,4 @@ def test_inquiry_customer_unregistered_account():
 
 @with_delay()
 def test_inquiry_customer_exceeded_limit():
-    case_name = "InquiryCustomerExceededLimit"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    json_dict["partnerReferenceNo"] = str(uuid4())
-    request_obj = DanaAccountInquiryRequest.from_dict(json_dict)
-
-    try:
-        api_instance.dana_account_inquiry(request_obj)
-        pytest.fail("Expected ApiException for exceeded limit but the API call succeeded")
-
-    except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_dana_account_inquiry_error_bypass_sdk("InquiryCustomerExceededLimit", 403)

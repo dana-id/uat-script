@@ -14,6 +14,8 @@ from helper.assertion import assert_response, assert_fail_response
 
 title_case = "BankAccountInquiry"
 json_path_file = "resource/request/components/Disbursement.json"
+BANK_ACCOUNT_INQUIRY_ENDPOINT = "https://api.sandbox.dana.id/v1.0/emoney/bank-account-inquiry.htm"
+BANK_ACCOUNT_INQUIRY_RESOURCE_PATH = "/v1.0/emoney/bank-account-inquiry.htm"
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -28,6 +30,34 @@ configuration = SnapConfiguration(
 
 with ApiClient(configuration) as api_client:
     api_instance = DisbursementApi(api_client)
+
+
+def _assert_bank_account_inquiry_error_bypass_sdk(case_name: str, expected_status: int) -> None:
+    """Hit the API directly so sandbox SDK validation does not block error fixtures."""
+    json_dict = get_request(json_path_file, title_case, case_name)
+    partner_reference_no = str(uuid4())
+    json_dict["partnerReferenceNo"] = partner_reference_no
+
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path=BANK_ACCOUNT_INQUIRY_RESOURCE_PATH,
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
+
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        BANK_ACCOUNT_INQUIRY_ENDPOINT,
+        json_dict,
+        headers,
+        expected_status,
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": partner_reference_no},
+    )
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
@@ -48,74 +78,22 @@ def test_inquiry_bank_account_valid_data_amount():
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_insufficient_fund():
-    case_name = "InquiryBankAccountInsufficientFund"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    json_dict["partnerReferenceNo"] = str(uuid4())
-    request_obj = BankAccountInquiryRequest.from_dict(json_dict)
-
-    try:
-        response = api_instance.bank_account_inquiry(request_obj)
-        assert_fail_response(json_path_file, title_case, case_name, BankAccountInquiryResponse.to_json(response), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
-
-    except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountInsufficientFund", 403)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_inactive_account():
-    case_name = "InquiryBankAccountInactiveAccount"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    json_dict["partnerReferenceNo"] = str(uuid4())
-    request_obj = BankAccountInquiryRequest.from_dict(json_dict)
-
-    try:
-        response = api_instance.bank_account_inquiry(request_obj)
-        assert_fail_response(json_path_file, title_case, case_name, BankAccountInquiryResponse.to_json(response), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
-
-    except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountInactiveAccount", 403)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_invalid_merchant():
-    case_name = "InquiryBankAccountInvalidMerchant"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    json_dict["partnerReferenceNo"] = str(uuid4())
-    request_obj = BankAccountInquiryRequest.from_dict(json_dict)
-
-    try:
-        response = api_instance.bank_account_inquiry(request_obj)
-        assert_fail_response(json_path_file, title_case, case_name, BankAccountInquiryResponse.to_json(response), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
-
-    except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountInvalidMerchant", 404)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_invalid_card():
-    case_name = "InquiryBankAccountInvalidCard"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    json_dict["partnerReferenceNo"] = str(uuid4())
-    request_obj = BankAccountInquiryRequest.from_dict(json_dict)
-
-    try:
-        response = api_instance.bank_account_inquiry(request_obj)
-        assert_fail_response(json_path_file, title_case, case_name, BankAccountInquiryResponse.to_json(response), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
-
-    except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountInvalidCard", 404)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
@@ -138,20 +116,7 @@ def test_inquiry_bank_account_invalid_field_format():
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_missing_mandatory_field():
-    case_name = "InquiryBankAccountMissingMandatoryField"
-    json_dict = get_request(json_path_file, title_case, case_name)
-    
-    json_dict["partnerReferenceNo"] = str(uuid4())
-    request_obj = BankAccountInquiryRequest.from_dict(json_dict)
-
-    try:
-        response = api_instance.bank_account_inquiry(request_obj)
-        assert_fail_response(json_path_file, title_case, case_name, BankAccountInquiryResponse.to_json(response), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
-
-    except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
-                           {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
+    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountMissingMandatoryField", 400)
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
@@ -165,7 +130,7 @@ def test_inquiry_bank_account_unauthorized_signature():
 
     headers = get_headers_with_signature(
         method="POST",
-        resource_path="v1.0/emoney/bank-account-inquiry.htm",
+        resource_path=BANK_ACCOUNT_INQUIRY_RESOURCE_PATH,
         request_obj=json_dict,
         with_timestamp=True,
         invalid_timestamp=False
@@ -176,7 +141,7 @@ def test_inquiry_bank_account_unauthorized_signature():
     execute_and_assert_api_error(
         api_client,
         "POST",
-        "https://api.sandbox.dana.id/v1.0/emoney/bank-account-inquiry.htm",
+        BANK_ACCOUNT_INQUIRY_ENDPOINT,
         request_obj,
         headers,
         401,

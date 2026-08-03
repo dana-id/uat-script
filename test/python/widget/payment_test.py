@@ -18,6 +18,8 @@ from helper.api_helpers import get_headers_with_signature, execute_and_assert_ap
 title_case = "Payment"
 json_path_file = "resource/request/components/Widget.json"
 merchant_id = os.environ.get("MERCHANT_ID", "default_merchant_id")
+WIDGET_PAYMENT_ENDPOINT = "https://api.sandbox.dana.id/rest/redirection/v1.0/debit/payment-host-to-host"
+WIDGET_PAYMENT_RESOURCE_PATH = "/rest/redirection/v1.0/debit/payment-host-to-host"
 
 configuration = SnapConfiguration(
     api_key=AuthSettings(
@@ -300,17 +302,29 @@ def test_payment_fail_not_permitted():
 def test_payment_fail_exceed_amount_limit():
     case_name = "PaymentFailExceedAmountLimit"
     json_dict = get_request(json_path_file, title_case, case_name)
-    
+
     partner_reference_no = generate_partner_reference_no()
     json_dict["partnerReferenceNo"] = partner_reference_no
     json_dict["validUpTo"] = _valid_up_to_max_15_minutes()
-    
-    # Convert the request data to a CreateOrderRequest object
-    create_payment_request_obj = WidgetPaymentRequest.from_dict(json_dict)
-    try:
-        api_response = api_instance.widget_payment(create_payment_request_obj)
-        pytest.fail("Expected ForbiddenException but the API call succeeded")
-    except ForbiddenException as e:
-        assert_fail_response(json_path_file, title_case, case_name, e.body, {"partnerReferenceNo": partner_reference_no})
-    except:
-        pytest.fail("Expected ForbiddenException but the API call give another exception")
+
+    # Bypass SDK sandbox amount validation (21000000 > max 10000000) and hit the API directly.
+    headers = get_headers_with_signature(
+        method="POST",
+        resource_path=WIDGET_PAYMENT_RESOURCE_PATH,
+        request_obj=json_dict,
+        with_timestamp=True,
+        invalid_timestamp=False,
+    )
+
+    execute_and_assert_api_error(
+        api_client,
+        "POST",
+        WIDGET_PAYMENT_ENDPOINT,
+        json_dict,
+        headers,
+        403,
+        json_path_file,
+        title_case,
+        case_name,
+        {"partnerReferenceNo": partner_reference_no},
+    )
