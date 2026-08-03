@@ -187,12 +187,11 @@ describe('Payment Gateway - Create Order Tests', () => {
     const caseName = "CreateOrderNetworkPayPgQris";
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Assign unique reference and merchant ID for test isolation
-    const partnerReferenceNo = generatePartnerReferenceNo();
+    const partnerReferenceNo = generateRandomString(25);
     requestData.partnerReferenceNo = partnerReferenceNo;
     requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 1 hour from now
     requestData.externalStoreId = externalShopId;
-    
+
     const response = await dana.paymentGatewayApi.createOrder(requestData);
     // Validate API response includes proper QRIS payment details
     await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });

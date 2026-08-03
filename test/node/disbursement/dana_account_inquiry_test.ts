@@ -32,6 +32,8 @@ dotenv.config();
 // Test configuration constants
 const titleCase = "DanaAccountInquiry";
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Disbursement.json');
+const DANA_ACCOUNT_INQUIRY_BASE_URL = 'https://api.sandbox.dana.id';
+const DANA_ACCOUNT_INQUIRY_API_PATH = '/rest/v1.0/emoney/account-inquiry';
 
 // Initialize DANA SDK client with environment configuration
 const dana = new Dana({
@@ -40,6 +42,35 @@ const dana = new Dana({
   origin: process.env.ORIGIN || '',
   env: process.env.ENV || 'sandbox'
 });
+
+/**
+ * Hits the DANA account inquiry API directly (skipping SDK sandbox validation) so
+ * error-trigger payloads can reach the server.
+ */
+async function assertDanaAccountInquiryErrorBypassSDK(caseName: string): Promise<void> {
+  const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+  const partnerReferenceNo = uuidv4();
+  requestData.partnerReferenceNo = partnerReferenceNo;
+
+  try {
+    await executeManualApiRequest(
+      caseName,
+      'POST',
+      `${DANA_ACCOUNT_INQUIRY_BASE_URL}${DANA_ACCOUNT_INQUIRY_API_PATH}`,
+      DANA_ACCOUNT_INQUIRY_API_PATH,
+      requestData,
+    );
+    fail('Expected an error but the API call succeeded');
+  } catch (e: any) {
+    if (e instanceof ResponseError) {
+      await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), {
+        partnerReferenceNo,
+      });
+    } else {
+      fail('DANA account inquiry test failed: ' + (e.message || e));
+    }
+  }
+}
 
 /**
  * Dana Account Inquiry Test Suite
@@ -104,9 +135,6 @@ describe('Disbursement - Dana Account Inquiry Tests', () => {
     requestData.partnerReferenceNo = partnerReferenceNo;
 
     try {
-      const baseUrl: string = 'https://api.sandbox.dana.id';
-      const apiPath: string = '/rest/v1.0/emoney/account-inquiry';
-
       const customHeaders: Record<string, string> = {
         'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
       };
@@ -114,8 +142,8 @@ describe('Disbursement - Dana Account Inquiry Tests', () => {
       await executeManualApiRequest(
         caseName,
         "POST",
-        baseUrl + apiPath,
-        apiPath,
+        `${DANA_ACCOUNT_INQUIRY_BASE_URL}${DANA_ACCOUNT_INQUIRY_API_PATH}`,
+        DANA_ACCOUNT_INQUIRY_API_PATH,
         requestData,
         customHeaders
       );
@@ -219,26 +247,6 @@ describe('Disbursement - Dana Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryCustomerExceededLimit - should fail inquiry due to exceeded limit', async () => {
-    const caseName = "InquiryCustomerExceededLimit";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // This API call should fail due to insufficient fund
-      await dana.disbursementApi.danaAccountInquiry(requestData);
-      fail("Expected an error but the API call succeeded");
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-          { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertDanaAccountInquiryErrorBypassSDK('InquiryCustomerExceededLimit');
   });
 });

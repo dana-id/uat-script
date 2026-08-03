@@ -31,6 +31,8 @@ dotenv.config();
 // Test configuration constants
 const titleCase = "TransferToBank";
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Disbursement.json');
+const TRANSFER_TO_BANK_BASE_URL = 'https://api.sandbox.dana.id';
+const TRANSFER_TO_BANK_API_PATH = '/v1.0/emoney/transfer-bank.htm';
 
 // Initialize DANA SDK client with environment configuration
 const dana = new Dana({
@@ -39,6 +41,36 @@ const dana = new Dana({
   origin: process.env.ORIGIN || '',
   env: process.env.ENV || 'sandbox'
 });
+
+/**
+ * Hits the transfer-to-bank API directly (skipping SDK sandbox validation) so
+ * error-trigger payloads can reach the server.
+ */
+async function assertTransferToBankErrorBypassSDK(caseName: string): Promise<void> {
+  const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+  const partnerReferenceNo = uuidv4();
+  requestData.partnerReferenceNo = partnerReferenceNo;
+
+  try {
+    await executeManualApiRequest(
+      caseName,
+      'POST',
+      `${TRANSFER_TO_BANK_BASE_URL}${TRANSFER_TO_BANK_API_PATH}`,
+      TRANSFER_TO_BANK_API_PATH,
+      requestData,
+    );
+    fail('Expected an error but the API call succeeded');
+  } catch (e: any) {
+    if (e instanceof ResponseError) {
+      await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), {
+        partnerReferenceNo,
+      });
+    } else {
+      console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
+      fail('Transfer to bank test failed: ' + (e.message || e));
+    }
+  }
+}
 
 /**
  * Transfer To Bank Test Suite
@@ -311,28 +343,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
    * @since 1.0.0
    */
   test('DisbursementBankUnknownError - should fail transfer due to internal server error', async () => {
-    const caseName = "DisbursementBankUnknownError";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // This API call should fail due to insufficient fund
-      await dana.disbursementApi.transferToBank(requestData);
-      fail("Expected an error but the API call succeeded");
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-          { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertTransferToBankErrorBypassSDK('DisbursementBankUnknownError');
   });
 
   /**
@@ -349,28 +360,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
    * @since 1.0.0
    */
   test('DisbursementBankGeneralError - should fail transfer due to internal general error', async () => {
-    const caseName = "DisbursementBankGeneralError";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // This API call should fail due to insufficient fund
-      await dana.disbursementApi.transferToBank(requestData);
-      fail("Expected an error but the API call succeeded");
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-          { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertTransferToBankErrorBypassSDK('DisbursementBankGeneralError');
   });
 
   /**
@@ -387,28 +377,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
    * @since 1.0.0
    */
   test('DisbursementBankInactiveAccount - should fail transfer due to inactive account', async () => {
-    const caseName = "DisbursementBankInactiveAccount";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // This API call should fail due to insufficient fund
-      await dana.disbursementApi.transferToBank(requestData);
-      fail("Expected an error but the API call succeeded");
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-          { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertTransferToBankErrorBypassSDK('DisbursementBankInactiveAccount');
   });
 
   /**
@@ -425,28 +394,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
    * @since 1.0.0
    */
   test('DisbursementBankSuspectedFraud - should fail transfer due to suspected fraud', async () => {
-    const caseName = "DisbursementBankSuspectedFraud";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // This API call should fail due to suspected fraud
-      await dana.disbursementApi.transferToBank(requestData);
-      fail("Expected an error but the API call succeeded");
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-          { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertTransferToBankErrorBypassSDK('DisbursementBankSuspectedFraud');
   });
 
   /**

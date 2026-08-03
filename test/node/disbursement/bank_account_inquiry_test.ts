@@ -32,6 +32,8 @@ dotenv.config();
 // Test configuration constants
 const titleCase = "BankAccountInquiry";
 const jsonPathFile = path.resolve(__dirname, '../../../resource/request/components/Disbursement.json');
+const BANK_ACCOUNT_INQUIRY_BASE_URL = 'https://api.sandbox.dana.id';
+const BANK_ACCOUNT_INQUIRY_API_PATH = '/v1.0/emoney/bank-account-inquiry.htm';
 
 // Initialize DANA SDK client with environment configuration
 const dana = new Dana({
@@ -40,6 +42,35 @@ const dana = new Dana({
   origin: process.env.ORIGIN || '',
   env: process.env.ENV || 'sandbox'
 });
+
+/**
+ * Hits the bank account inquiry API directly (skipping SDK sandbox validation) so
+ * error-trigger payloads can reach the server.
+ */
+async function assertBankAccountInquiryErrorBypassSDK(caseName: string): Promise<void> {
+  const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+  const partnerReferenceNo = uuidv4();
+  requestData.partnerReferenceNo = partnerReferenceNo;
+
+  try {
+    await executeManualApiRequest(
+      caseName,
+      'POST',
+      `${BANK_ACCOUNT_INQUIRY_BASE_URL}${BANK_ACCOUNT_INQUIRY_API_PATH}`,
+      BANK_ACCOUNT_INQUIRY_API_PATH,
+      requestData,
+    );
+    fail('Expected an error but the API call succeeded');
+  } catch (e: any) {
+    if (e instanceof ResponseError) {
+      await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse), {
+        partnerReferenceNo,
+      });
+    } else {
+      fail('Bank account inquiry test failed: ' + (e.message || e));
+    }
+  }
+}
 
 /**
  * Bank Account Inquiry Test Suite
@@ -99,30 +130,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountInsufficientFund - should fail inquiry due to insufficient fund', async () => {
-    const caseName = "InquiryBankAccountInsufficientFund";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // Call the widget payment API with the request data
-      const response = await dana.disbursementApi.bankAccountInquiry(requestData);
-      // Assert the failure response against the expected result
-      await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response) , {
-        'partnerReferenceNo': partnerReferenceNo
-      });
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-                  { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountInsufficientFund');
   });
 
   /**
@@ -139,30 +147,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountInactiveAccount - should fail inquiry due to inactive account', async () => {
-    const caseName = "InquiryBankAccountInactiveAccount";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // Call the widget payment API with the request data
-      const response = await dana.disbursementApi.bankAccountInquiry(requestData);
-      // Assert the failure response against the expected result
-      await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response) , {
-        'partnerReferenceNo': partnerReferenceNo
-      });
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-                  { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountInactiveAccount');
   });
 
   /**
@@ -179,30 +164,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountInvalidMerchant - should fail inquiry due to invalid merchant', async () => {
-    const caseName = "InquiryBankAccountInvalidMerchant";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // Call the widget payment API with the request data
-      const response = await dana.disbursementApi.bankAccountInquiry(requestData);
-      // Assert the failure response against the expected result
-      await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response) , {
-        'partnerReferenceNo': partnerReferenceNo
-      });
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-                  { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountInvalidMerchant');
   });
 
   /**
@@ -219,30 +181,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountInvalidCard - should fail inquiry due to invalid card', async () => {
-    const caseName = "InquiryBankAccountInvalidCard";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // Call the widget payment API with the request data
-      const response = await dana.disbursementApi.bankAccountInquiry(requestData);
-      // Assert the failure response against the expected result
-      await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response) , {
-        'partnerReferenceNo': partnerReferenceNo
-      });
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-                  { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountInvalidCard');
   });
 
   /**
@@ -299,30 +238,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountMissingMandatoryField - should fail inquiry due to missing mandatory field', async () => {
-    const caseName = "InquiryBankAccountMissingMandatoryField";
-    const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
-
-    // Assign unique reference for test isolation
-    const partnerReferenceNo = uuidv4();
-    requestData.partnerReferenceNo = partnerReferenceNo;
-
-    try {
-      // Call the widget payment API with the request data
-      const response = await dana.disbursementApi.bankAccountInquiry(requestData);
-      // Assert the failure response against the expected result
-      await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response) , {
-        'partnerReferenceNo': partnerReferenceNo
-      });
-    } catch (e: any) {
-      // If a ResponseError occurs, assert the failure response
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-                  { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        // If another error occurs, fail the test with the error message
-        fail('Payment test failed: ' + (e.message || e));
-      }
-    }
+    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountMissingMandatoryField');
   });
 
   /**
@@ -347,9 +263,6 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
     requestData.partnerReferenceNo = partnerReferenceNo;
 
     try {
-      const baseUrl: string = 'https://api.sandbox.dana.id';
-      const apiPath: string = '/v1.0/emoney/bank-account-inquiry.htm';
-
       const customHeaders: Record<string, string> = {
         'X-SIGNATURE': '85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5'
       };
@@ -357,8 +270,8 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
       await executeManualApiRequest(
         caseName,
         "POST",
-        baseUrl + apiPath,
-        apiPath,
+        `${BANK_ACCOUNT_INQUIRY_BASE_URL}${BANK_ACCOUNT_INQUIRY_API_PATH}`,
+        BANK_ACCOUNT_INQUIRY_API_PATH,
         requestData,
         customHeaders
       );
