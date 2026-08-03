@@ -15,7 +15,48 @@ import (
 const (
 	transferToBankTitleCase = "TransferToBank"
 	transferToBankJsonPath  = "../../../resource/request/components/Disbursement.json"
+	transferToBankEndpoint  = "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm"
+	transferToBankPath      = "/v1.0/emoney/transfer-bank.htm"
 )
+
+// assertTransferToBankErrorBypassSDK hits the API directly (skipping SDK CustomValidation)
+// so sandbox error-trigger payloads can reach the server.
+func assertTransferToBankErrorBypassSDK(t *testing.T, caseName string) error {
+	t.Helper()
+
+	jsonDict, err := helper.GetRequest(transferToBankJsonPath, transferToBankTitleCase, caseName)
+	if err != nil {
+		return fmt.Errorf("Failed to get request data: %v", err)
+	}
+
+	partnerReferenceNo := uuid.New().String()
+	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+	transferToBankRequest := &disbursement.TransferToBankRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal JSON: %v", err)
+	}
+	if err = json.Unmarshal(jsonBytes, transferToBankRequest); err != nil {
+		return fmt.Errorf("Failed to unmarshal JSON: %v", err)
+	}
+
+	return helper.ExecuteAndAssertErrorResponse(
+		t,
+		context.Background(),
+		transferToBankRequest,
+		"POST",
+		transferToBankEndpoint,
+		transferToBankPath,
+		transferToBankJsonPath,
+		transferToBankTitleCase,
+		caseName,
+		nil,
+		map[string]interface{}{
+			"partnerReferenceNo": partnerReferenceNo,
+		},
+	)
+}
 
 func TestDisbursementBankValidAccount(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
@@ -74,87 +115,13 @@ func TestDisbursementBankValidAccount(t *testing.T) {
 
 func TestDisbursementBankInsufficientFund(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "DisbursementBankInsufficientFund"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(transferToBankJsonPath, transferToBankTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the TransferToBankRequest object and populate it with JSON data
-		transferToBankRequest := &disbursement.TransferToBankRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, transferToBankRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(transferToBankJsonPath, transferToBankTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankInsufficientFund")
 	})
 }
 
 func TestDisbursementBankMissingMandatoryField(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "DisbursementBankMissingMandatoryField"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(transferToBankJsonPath, transferToBankTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		ctx := context.Background()
-		endpoint := "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm"
-		resourcePath := "/v1.0/emoney/transfer-bank.htm"
-		variableDict := map[string]interface{}{
-			"partnerReferenceNo": partnerReferenceNo,
-		}
-
-		err = helper.ExecuteAndAssertErrorResponse(
-			t,
-			ctx,
-			jsonDict,
-			"POST",
-			endpoint,
-			resourcePath,
-			transferToBankJsonPath,
-			transferToBankTitleCase,
-			caseName,
-			nil,
-			variableDict,
-		)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return nil
+		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankMissingMandatoryField")
 	})
 }
 
@@ -184,17 +151,10 @@ func TestDisbursementBankUnauthorizedSignature(t *testing.T) {
 			t.Fatalf("Failed to unmarshal JSON: %v", err)
 		}
 
-		// Set up the context and endpoint details
 		ctx := context.Background()
-		endpoint := "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm"
-		resourcePath := "/v1.0/emoney/transfer-bank.htm"
-
-		// Set custom headers with invalid authorization to trigger unauthorized error
 		customHeaders := map[string]string{
 			"X-SIGNATURE": "invalid_signature",
 		}
-
-		// Create a variable dictionary to substitute in the response
 		variableDict := map[string]interface{}{
 			"partnerReferenceNo": partnerReferenceNo,
 		}
@@ -204,8 +164,8 @@ func TestDisbursementBankUnauthorizedSignature(t *testing.T) {
 			ctx,
 			transferToBankRequest,
 			"POST",
-			endpoint,
-			resourcePath,
+			transferToBankEndpoint,
+			transferToBankPath,
 			transferToBankJsonPath,
 			transferToBankTitleCase,
 			caseName,
@@ -311,181 +271,25 @@ func TestDisbursementBankInconsistentRequest(t *testing.T) {
 
 func TestDisbursementBankUnknownError(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "DisbursementBankUnknownError"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(transferToBankJsonPath, transferToBankTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the TransferToBankRequest object and populate it with JSON data
-		transferToBankRequest := &disbursement.TransferToBankRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, transferToBankRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(transferToBankJsonPath, transferToBankTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankUnknownError")
 	})
 }
 
 func TestDisbursementBankGeneralError(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "DisbursementBankGeneralError"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(transferToBankJsonPath, transferToBankTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the TransferToBankRequest object and populate it with JSON data
-		transferToBankRequest := &disbursement.TransferToBankRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, transferToBankRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(transferToBankJsonPath, transferToBankTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankGeneralError")
 	})
 }
 
 func TestDisbursementBankInactiveAccount(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "DisbursementBankInactiveAccount"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(transferToBankJsonPath, transferToBankTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the TransferToBankRequest object and populate it with JSON data
-		transferToBankRequest := &disbursement.TransferToBankRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, transferToBankRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(transferToBankJsonPath, transferToBankTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankInactiveAccount")
 	})
 }
 
 func TestDisbursementBankSuspectedFraud(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "DisbursementBankSuspectedFraud"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(transferToBankJsonPath, transferToBankTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the TransferToBankRequest object and populate it with JSON data
-		transferToBankRequest := &disbursement.TransferToBankRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, transferToBankRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(transferToBankJsonPath, transferToBankTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankSuspectedFraud")
 	})
 }
 
@@ -570,17 +374,10 @@ func TestDisbursementBankInvalidMandatoryFieldFormat(t *testing.T) {
 			t.Fatalf("Failed to unmarshal JSON: %v", err)
 		}
 
-		// Set up the context and endpoint details
 		ctx := context.Background()
-		endpoint := "https://api.sandbox.dana.id/v1.0/emoney/transfer-bank.htm"
-		resourcePath := "/v1.0/emoney/transfer-bank.htm"
-
-		// Set custom headers with invalid authorization to trigger unauthorized error
 		customHeaders := map[string]string{
 			"X-SIGNATURE": "",
 		}
-
-		// Create a variable dictionary to substitute in the response
 		variableDict := map[string]interface{}{
 			"partnerReferenceNo": partnerReferenceNo,
 		}
@@ -590,8 +387,8 @@ func TestDisbursementBankInvalidMandatoryFieldFormat(t *testing.T) {
 			ctx,
 			transferToBankRequest,
 			"POST",
-			endpoint,
-			resourcePath,
+			transferToBankEndpoint,
+			transferToBankPath,
 			transferToBankJsonPath,
 			transferToBankTitleCase,
 			caseName,

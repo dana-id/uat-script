@@ -93,7 +93,7 @@ setup_python_env() {
         echo "Using test/python/requirements-core.txt (no Playwright) for local mandatory-only run."
         $PYTHON_CMD -m pip install --upgrade -r test/python/requirements-core.txt
     fi
-    $PYTHON_CMD -m pip install --upgrade "dana-python>=2.1.7"
+    $PYTHON_CMD -m pip install --upgrade "dana-python>=2.2.0"
 
     if [ "$needs_playwright" = "true" ]; then
         $PYTHON_CMD -m playwright install --with-deps chromium

@@ -472,29 +472,27 @@ func TestPaymentFailExceedsTransactionAmountLimit(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
+
+	// Bypass SDK sandbox amount validation (21000000 > max 10000000) and hit the API directly
 	ctx := context.Background()
-	apiResponse, httpResponse, err := helper.ApiClient.WidgetAPI.WidgetPayment(ctx).WidgetPaymentRequest(*request).Execute()
-	if err != nil {
-		// This is expected for error test cases
-		variableDict := map[string]interface{}{
-			"partnerReferenceNo": partnerReferenceNo,
-		}
-		err = helper.AssertFailResponse(widgetPaymentJsonPath, widgetPaymentTitleCase, caseName, httpResponse, variableDict)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return
-	}
-	// If no error occurred, check if it's a successful response that should be treated as error
-	defer httpResponse.Body.Close()
-	responseJSON, err := apiResponse.MarshalJSON()
-	if err != nil {
-		t.Fatalf("Failed to convert response to JSON: %v", err)
-	}
+	endpoint := "https://api.sandbox.dana.id/rest/redirection/v1.0/debit/payment-host-to-host"
+	resourcePath := "/rest/redirection/v1.0/debit/payment-host-to-host"
 	variableDict := map[string]interface{}{
 		"partnerReferenceNo": partnerReferenceNo,
 	}
-	err = helper.AssertFailResponse(widgetPaymentJsonPath, widgetPaymentTitleCase, caseName, string(responseJSON), variableDict)
+	err = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		request,
+		"POST",
+		endpoint,
+		resourcePath,
+		widgetPaymentJsonPath,
+		widgetPaymentTitleCase,
+		caseName,
+		nil,
+		variableDict,
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

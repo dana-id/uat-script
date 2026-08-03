@@ -39,7 +39,7 @@ load_env_if_exists() {
 
 prepare_go_deps() {
     echo "Updating Go dependencies..."
-    go get -u github.com/dana-id/dana-go/v2 > /dev/null 2>&1 || true
+    go get github.com/dana-id/dana-go/v2@v2.2.0 > /dev/null 2>&1 || true
     go get github.com/mxschmitt/playwright-go@v0.6100.0 > /dev/null 2>&1 || true
     go mod tidy > /dev/null 2>&1
     go clean -testcache > /dev/null 2>&1

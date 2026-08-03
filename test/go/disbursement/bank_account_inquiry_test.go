@@ -15,7 +15,48 @@ import (
 const (
 	bankAccountInquiryTitleCase = "BankAccountInquiry"
 	bankAccountInquiryJsonPath  = "../../../resource/request/components/Disbursement.json"
+	bankAccountInquiryEndpoint  = "https://api.sandbox.dana.id/v1.0/emoney/bank-account-inquiry.htm"
+	bankAccountInquiryPath      = "/v1.0/emoney/bank-account-inquiry.htm"
 )
+
+// assertBankAccountInquiryErrorBypassSDK hits the API directly (skipping SDK CustomValidation)
+// so sandbox error-trigger payloads can reach the server.
+func assertBankAccountInquiryErrorBypassSDK(t *testing.T, caseName string) error {
+	t.Helper()
+
+	jsonDict, err := helper.GetRequest(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName)
+	if err != nil {
+		return fmt.Errorf("Failed to get request data: %v", err)
+	}
+
+	partnerReferenceNo := uuid.New().String()
+	jsonDict["partnerReferenceNo"] = partnerReferenceNo
+
+	bankAccountInquiryRequest := &disbursement.BankAccountInquiryRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal JSON: %v", err)
+	}
+	if err = json.Unmarshal(jsonBytes, bankAccountInquiryRequest); err != nil {
+		return fmt.Errorf("Failed to unmarshal JSON: %v", err)
+	}
+
+	return helper.ExecuteAndAssertErrorResponse(
+		t,
+		context.Background(),
+		bankAccountInquiryRequest,
+		"POST",
+		bankAccountInquiryEndpoint,
+		bankAccountInquiryPath,
+		bankAccountInquiryJsonPath,
+		bankAccountInquiryTitleCase,
+		caseName,
+		nil,
+		map[string]interface{}{
+			"partnerReferenceNo": partnerReferenceNo,
+		},
+	)
+}
 
 func TestInquiryBankAccountValidDataAmount(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
@@ -74,181 +115,25 @@ func TestInquiryBankAccountValidDataAmount(t *testing.T) {
 
 func TestInquiryBankAccountInsufficientFund(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "InquiryBankAccountInsufficientFund"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the BankAccountInquiryRequest object and populate it with JSON data
-		bankAccountInquiryRequest := &disbursement.BankAccountInquiryRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, bankAccountInquiryRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.BankAccountInquiry(ctx).BankAccountInquiryRequest(*bankAccountInquiryRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertBankAccountInquiryErrorBypassSDK(t, "InquiryBankAccountInsufficientFund")
 	})
 }
 
 func TestInquiryBankAccountInactiveAccount(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "InquiryBankAccountInactiveAccount"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the BankAccountInquiryRequest object and populate it with JSON data
-		bankAccountInquiryRequest := &disbursement.BankAccountInquiryRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, bankAccountInquiryRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.BankAccountInquiry(ctx).BankAccountInquiryRequest(*bankAccountInquiryRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertBankAccountInquiryErrorBypassSDK(t, "InquiryBankAccountInactiveAccount")
 	})
 }
 
 func TestInquiryBankAccountInvalidMerchant(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "InquiryBankAccountInvalidMerchant"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the BankAccountInquiryRequest object and populate it with JSON data
-		bankAccountInquiryRequest := &disbursement.BankAccountInquiryRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, bankAccountInquiryRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.BankAccountInquiry(ctx).BankAccountInquiryRequest(*bankAccountInquiryRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertBankAccountInquiryErrorBypassSDK(t, "InquiryBankAccountInvalidMerchant")
 	})
 }
 
 func TestInquiryBankAccountInvalidCard(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "InquiryBankAccountInvalidCard"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the BankAccountInquiryRequest object and populate it with JSON data
-		bankAccountInquiryRequest := &disbursement.BankAccountInquiryRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, bankAccountInquiryRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.BankAccountInquiry(ctx).BankAccountInquiryRequest(*bankAccountInquiryRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertBankAccountInquiryErrorBypassSDK(t, "InquiryBankAccountInvalidCard")
 	})
 }
 
@@ -299,46 +184,7 @@ func TestInquiryBankAccountInvalidFieldFormat(t *testing.T) {
 
 func TestInquiryBankAccountMissingMandatoryField(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		caseName := "InquiryBankAccountMissingMandatoryField"
-
-		// Get the request data from the JSON file
-		jsonDict, err := helper.GetRequest(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName)
-		if err != nil {
-			t.Fatalf("Failed to get request data: %v", err)
-		}
-
-		// Set the correct partner reference number
-		var partnerReferenceNo = uuid.New().String()
-		jsonDict["partnerReferenceNo"] = partnerReferenceNo
-
-		// Create the BankAccountInquiryRequest object and populate it with JSON data
-		bankAccountInquiryRequest := &disbursement.BankAccountInquiryRequest{}
-		jsonBytes, err := json.Marshal(jsonDict)
-		if err != nil {
-			t.Fatalf("Failed to marshal JSON: %v", err)
-		}
-
-		err = json.Unmarshal(jsonBytes, bankAccountInquiryRequest)
-		if err != nil {
-			t.Fatalf("Failed to unmarshal JSON: %v", err)
-		}
-
-		// Make the API call
-		ctx := context.Background()
-		_, httpResponse, err := helper.ApiClient.DisbursementAPI.BankAccountInquiry(ctx).BankAccountInquiryRequest(*bankAccountInquiryRequest).Execute()
-		if err != nil {
-			// Assert the API error response
-			err = helper.AssertFailResponse(bankAccountInquiryJsonPath, bankAccountInquiryTitleCase, caseName, httpResponse, map[string]interface{}{
-				"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-			})
-			if err != nil {
-				t.Fatal(err)
-			}
-		} else {
-			httpResponse.Body.Close()
-			t.Fatal("Expected error but got successful response")
-		}
-		return nil
+		return assertBankAccountInquiryErrorBypassSDK(t, "InquiryBankAccountMissingMandatoryField")
 	})
 }
 
@@ -368,17 +214,10 @@ func TestInquiryBankAccountUnauthorizedSignature(t *testing.T) {
 			t.Fatalf("Failed to unmarshal JSON: %v", err)
 		}
 
-		// Set up the context and endpoint details
 		ctx := context.Background()
-		endpoint := "https://api.sandbox.dana.id/v1.0/emoney/bank-account-inquiry.htm"
-		resourcePath := "/v1.0/emoney/bank-account-inquiry.htm"
-
-		// Set custom headers with invalid authorization to trigger unauthorized error
 		customHeaders := map[string]string{
 			"X-SIGNATURE": "invalid_signature",
 		}
-
-		// Create a variable dictionary to substitute in the response
 		variableDict := map[string]interface{}{
 			"partnerReferenceNo": partnerReferenceNo,
 		}
@@ -388,8 +227,8 @@ func TestInquiryBankAccountUnauthorizedSignature(t *testing.T) {
 			ctx,
 			bankAccountInquiryRequest,
 			"POST",
-			endpoint,
-			resourcePath,
+			bankAccountInquiryEndpoint,
+			bankAccountInquiryPath,
 			bankAccountInquiryJsonPath,
 			bankAccountInquiryTitleCase,
 			caseName,

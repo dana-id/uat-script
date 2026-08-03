@@ -174,8 +174,8 @@ func TestCreateOrderNetworkPayPgQris(t *testing.T) {
 		t.Fatalf("Failed to get request data: %v", err)
 	}
 
-	// Set a unique partner reference number
-	partnerReferenceNo := generatePartnerReferenceNo()
+	// QRIS requires partnerReferenceNo ≤ 25 chars (UUID is 36)
+	partnerReferenceNo := RandomString(25)
 	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 

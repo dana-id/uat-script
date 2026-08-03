@@ -14,6 +14,8 @@ import (
 const (
 	danaAccountInquiryTitleCase = "DanaAccountInquiry"
 	danaAccountInquiryJsonPath  = "../../../resource/request/components/Disbursement.json"
+	danaAccountInquiryEndpoint  = "https://api.sandbox.dana.id/rest/v1.0/emoney/account-inquiry"
+	danaAccountInquiryPath      = "/rest/v1.0/emoney/account-inquiry"
 )
 
 func TestInquiryCustomerValidData(t *testing.T) {
@@ -93,17 +95,10 @@ func TestInquiryCustomerUnauthorizedSignature(t *testing.T) {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	// Set up the context and endpoint details
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/account-inquiry"
-	resourcePath := "/rest/v1.0/emoney/account-inquiry"
-
-	// Set custom headers with invalid authorization to trigger unauthorized error
 	customHeaders := map[string]string{
 		"X-SIGNATURE": "invalid_signature",
 	}
-
-	// Create a variable dictionary to substitute in the response
 	variableDict := map[string]interface{}{
 		"partnerReferenceNo": partnerReferenceNo,
 	}
@@ -113,8 +108,8 @@ func TestInquiryCustomerUnauthorizedSignature(t *testing.T) {
 		ctx,
 		danaAccountInquiryRequest,
 		"POST",
-		endpoint,
-		resourcePath,
+		danaAccountInquiryEndpoint,
+		danaAccountInquiryPath,
 		danaAccountInquiryJsonPath,
 		danaAccountInquiryTitleCase,
 		caseName,
@@ -232,19 +227,26 @@ func TestInquiryCustomerExceededLimit(t *testing.T) {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	// Make the API call
+	// Bypass SDK sandbox amount validation (210000000 > max 20000000) and hit the API directly
 	ctx := context.Background()
-	_, httpResponse, err := helper.ApiClient.DisbursementAPI.DanaAccountInquiry(ctx).DanaAccountInquiryRequest(*danaAccountInquiryRequest).Execute()
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": partnerReferenceNo,
+	}
+
+	err = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		danaAccountInquiryRequest,
+		"POST",
+		danaAccountInquiryEndpoint,
+		danaAccountInquiryPath,
+		danaAccountInquiryJsonPath,
+		danaAccountInquiryTitleCase,
+		caseName,
+		nil,
+		variableDict,
+	)
 	if err != nil {
-		// Assert the API error response
-		err = helper.AssertFailResponse(danaAccountInquiryJsonPath, danaAccountInquiryTitleCase, caseName, httpResponse, map[string]interface{}{
-			"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-	} else {
-		httpResponse.Body.Close()
-		t.Fatal("Expected error but got successful response")
+		t.Fatal(err)
 	}
 }

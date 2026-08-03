@@ -85,7 +85,7 @@ setup_node_env() {
     fi
 
     echo "Installing dependencies..."
-    npm install --save dana-node dotenv
+    npm install --save dana-node@^2.2.0 dotenv
     npm install --save-dev jest ts-jest
 
     needs_playwright=$(resolve_needs_playwright "$folderName" "$caseName" "$runPattern")

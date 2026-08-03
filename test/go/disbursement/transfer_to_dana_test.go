@@ -15,6 +15,8 @@ import (
 const (
 	transferToDanaTitleCase = "TransferToDana"
 	transferToDanaJsonPath  = "../../../resource/request/components/Disbursement.json"
+	transferToDanaEndpoint  = "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
+	transferToDanaPath      = "/rest/v1.0/emoney/topup"
 )
 
 func TestTopUpCustomerValid(t *testing.T) {
@@ -82,31 +84,27 @@ func TestTopUpCustomerInsufficientFund(t *testing.T) {
 	var partnerReferenceNo = uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-	transferToDanaRequest := &disbursement.TransferToDanaRequest{}
-	jsonBytes, err := json.Marshal(jsonDict)
-	if err != nil {
-		t.Fatalf("Failed to marshal JSON: %v", err)
-	}
-
-	err = json.Unmarshal(jsonBytes, transferToDanaRequest)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal JSON: %v", err)
-	}
-
-	// Make the API call
+	// Bypass SDK sandbox amount validation (1000000000000 > max 20000000) and hit the API directly
 	ctx := context.Background()
-	_, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToDana(ctx).TransferToDanaRequest(*transferToDanaRequest).Execute()
+	variableDict := map[string]interface{}{
+		"partnerReferenceNo": partnerReferenceNo,
+	}
+
+	err = helper.ExecuteAndAssertErrorResponse(
+		t,
+		ctx,
+		jsonDict,
+		"POST",
+		transferToDanaEndpoint,
+		transferToDanaPath,
+		transferToDanaJsonPath,
+		transferToDanaTitleCase,
+		caseName,
+		nil,
+		variableDict,
+	)
 	if err != nil {
-		// Assert the API error response
-		err = helper.AssertFailResponse(transferToDanaJsonPath, transferToDanaTitleCase, caseName, httpResponse, map[string]interface{}{
-			"partnerReferenceNo": jsonDict["partnerReferenceNo"],
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-	} else {
-		httpResponse.Body.Close()
-		t.Fatal("Expected error but got successful response")
+		t.Fatal(err)
 	}
 }
 
@@ -261,8 +259,6 @@ func TestTopUpCustomerExceedAmountLimit(t *testing.T) {
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
-	resourcePath := "/rest/v1.0/emoney/topup"
 	variableDict := map[string]interface{}{
 		"partnerReferenceNo": partnerReferenceNo,
 	}
@@ -272,8 +268,8 @@ func TestTopUpCustomerExceedAmountLimit(t *testing.T) {
 		ctx,
 		jsonDict,
 		"POST",
-		endpoint,
-		resourcePath,
+		transferToDanaEndpoint,
+		transferToDanaPath,
 		transferToDanaJsonPath,
 		transferToDanaTitleCase,
 		caseName,
@@ -350,17 +346,10 @@ func TestTopUpCustomerUnauthorizedSignature(t *testing.T) {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	// Set up the context and endpoint details
 	ctx := context.Background()
-	endpoint := "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
-	resourcePath := "/rest/v1.0/emoney/topup"
-
-	// Set custom headers with invalid authorization to trigger unauthorized error
 	customHeaders := map[string]string{
 		"X-SIGNATURE": "invalid_signature",
 	}
-
-	// Create a variable dictionary to substitute in the response
 	variableDict := map[string]interface{}{
 		"partnerReferenceNo": partnerReferenceNo,
 	}
@@ -370,8 +359,8 @@ func TestTopUpCustomerUnauthorizedSignature(t *testing.T) {
 		ctx,
 		transferToDanaRequest,
 		"POST",
-		endpoint,
-		resourcePath,
+		transferToDanaEndpoint,
+		transferToDanaPath,
 		transferToDanaJsonPath,
 		transferToDanaTitleCase,
 		caseName,
