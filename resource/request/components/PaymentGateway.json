@@ -116,7 +116,7 @@
                     "value": "1.00",
                     "currency": "IDR"
                 },
-                "externalStoreId": "${EXTERNAL_SHOP_ID}",
+                "externalStoreId": "",
                 "urlParams": [
                     {
                         "url": "https://tinknet.my.id/v1/test",
