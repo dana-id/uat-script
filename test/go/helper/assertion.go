@@ -12,6 +12,33 @@ import (
 // valueFromServer is a special placeholder in expected data that only verifies the field exists
 const valueFromServer = "${valueFromServer}"
 
+func isNilInterface(v interface{}) bool {
+	if v == nil {
+		return true
+	}
+	rv := reflect.ValueOf(v)
+	switch rv.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+		return rv.IsNil()
+	default:
+		return false
+	}
+}
+
+func stringsMatchExpected(expected, actual string) bool {
+	if expected == actual {
+		return true
+	}
+	if strings.Contains(expected, "|") {
+		for _, alt := range strings.Split(expected, "|") {
+			if strings.TrimSpace(alt) == actual {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // ReplaceVariables recursively replaces placeholders in the format ${key} with values from variableDict
 func ReplaceVariables(data interface{}, variableDict map[string]interface{}) interface{} {
 	switch v := data.(type) {
@@ -230,6 +257,10 @@ func compareJsonObjects(expected, actual interface{}, path string, diffPaths *[]
 		if exp == valueFromServer {
 			// Only verify that the actual value exists (is not nil or empty string)
 			if actual == nil || (reflect.TypeOf(actual).Kind() == reflect.String && actual.(string) == "") {
+				*diffPaths = append(*diffPaths, fmt.Sprintf("Path: %s\n  Expected: %v\n  Actual: %v", path, exp, actual))
+			}
+		} else if actStr, ok := actual.(string); ok {
+			if !stringsMatchExpected(exp, actStr) {
 				*diffPaths = append(*diffPaths, fmt.Sprintf("Path: %s\n  Expected: %v\n  Actual: %v", path, exp, actual))
 			}
 		} else if exp != actual {

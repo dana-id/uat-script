@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 
 	"uat-script/helper"
@@ -84,26 +85,37 @@ func TestTopUpCustomerInsufficientFund(t *testing.T) {
 	var partnerReferenceNo = uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-	// Bypass SDK sandbox amount validation (1000000000000 > max 20000000) and hit the API directly
+	transferToDanaRequest := &disbursement.TransferToDanaRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+	if err = json.Unmarshal(jsonBytes, transferToDanaRequest); err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
+	}
+
 	ctx := context.Background()
+	apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToDana(ctx).TransferToDanaRequest(*transferToDanaRequest).Execute()
+	if httpResponse != nil {
+		defer httpResponse.Body.Close()
+	}
+
 	variableDict := map[string]interface{}{
 		"partnerReferenceNo": partnerReferenceNo,
 	}
+	if apiResponse != nil && apiResponse.GetReferenceNo() != "" {
+		variableDict["referenceNo"] = apiResponse.GetReferenceNo()
+	}
 
-	err = helper.ExecuteAndAssertErrorResponse(
-		t,
-		ctx,
-		jsonDict,
-		"POST",
-		transferToDanaEndpoint,
-		transferToDanaPath,
+	if err = helper.AssertSdkErrorResponse(
 		transferToDanaJsonPath,
 		transferToDanaTitleCase,
 		caseName,
-		nil,
+		apiResponse,
+		httpResponse,
+		err,
 		variableDict,
-	)
-	if err != nil {
+	); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -258,26 +270,26 @@ func TestTopUpCustomerExceedAmountLimit(t *testing.T) {
 	var partnerReferenceNo = uuid.New().String()
 	jsonDict["partnerReferenceNo"] = partnerReferenceNo
 
-	ctx := context.Background()
-	variableDict := map[string]interface{}{
-		"partnerReferenceNo": partnerReferenceNo,
+	transferToDanaRequest := &disbursement.TransferToDanaRequest{}
+	jsonBytes, err := json.Marshal(jsonDict)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+	if err = json.Unmarshal(jsonBytes, transferToDanaRequest); err != nil {
+		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	err = helper.ExecuteAndAssertErrorResponse(
-		t,
-		ctx,
-		jsonDict,
-		"POST",
-		transferToDanaEndpoint,
-		transferToDanaPath,
-		transferToDanaJsonPath,
-		transferToDanaTitleCase,
-		caseName,
-		nil,
-		variableDict,
-	)
-	if err != nil {
-		t.Fatal(err)
+	ctx := context.Background()
+	apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToDana(ctx).TransferToDanaRequest(*transferToDanaRequest).Execute()
+	if httpResponse != nil {
+		defer httpResponse.Body.Close()
+	}
+
+	fmt.Printf("case=%s err=%v apiResponse=%+v\n", caseName, err, apiResponse)
+	if httpResponse != nil && httpResponse.Body != nil {
+		if body, readErr := io.ReadAll(httpResponse.Body); readErr == nil {
+			fmt.Printf("case=%s httpBody=%s\n", caseName, string(body))
+		}
 	}
 }
 

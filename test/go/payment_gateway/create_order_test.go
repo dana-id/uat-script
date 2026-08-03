@@ -91,12 +91,11 @@ func TestCreateOrderRedirectScenario(t *testing.T) {
 		t.Fatalf("API call failed: %v", err)
 	}
 
-	// err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
+	err = helper.AssertResponse(createOrderJsonPath, createOrderTitleCase, caseName, result.(string), map[string]interface{}{"partnerReferenceNo": partnerReferenceNo})
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	fmt.Printf("Result: %s\n", result.(string))
 }
 
 // TestCreateOrderApiScenario tests creating an order using API scenario with BALANCE payment method

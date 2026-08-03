@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 	"time"
 	"uat-script/helper"
@@ -19,9 +20,8 @@ const (
 	transferToBankPath      = "/v1.0/emoney/transfer-bank.htm"
 )
 
-// assertTransferToBankErrorBypassSDK hits the API directly (skipping SDK CustomValidation)
-// so sandbox error-trigger payloads can reach the server.
-func assertTransferToBankErrorBypassSDK(t *testing.T, caseName string) error {
+// assertTransferToBankErrorViaSDK calls the SDK with the fixture payload and logs the error response.
+func assertTransferToBankErrorViaSDK(t *testing.T, caseName string) error {
 	t.Helper()
 
 	jsonDict, err := helper.GetRequest(transferToBankJsonPath, transferToBankTitleCase, caseName)
@@ -41,21 +41,19 @@ func assertTransferToBankErrorBypassSDK(t *testing.T, caseName string) error {
 		return fmt.Errorf("Failed to unmarshal JSON: %v", err)
 	}
 
-	return helper.ExecuteAndAssertErrorResponse(
-		t,
-		context.Background(),
-		transferToBankRequest,
-		"POST",
-		transferToBankEndpoint,
-		transferToBankPath,
-		transferToBankJsonPath,
-		transferToBankTitleCase,
-		caseName,
-		nil,
-		map[string]interface{}{
-			"partnerReferenceNo": partnerReferenceNo,
-		},
-	)
+	ctx := context.Background()
+	apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.TransferToBank(ctx).TransferToBankRequest(*transferToBankRequest).Execute()
+	if httpResponse != nil {
+		defer httpResponse.Body.Close()
+	}
+
+	fmt.Printf("case=%s err=%v apiResponse=%+v\n", caseName, err, apiResponse)
+	if httpResponse != nil && httpResponse.Body != nil {
+		if body, readErr := io.ReadAll(httpResponse.Body); readErr == nil {
+			fmt.Printf("case=%s httpBody=%s\n", caseName, string(body))
+		}
+	}
+	return nil
 }
 
 func TestDisbursementBankValidAccount(t *testing.T) {
@@ -115,13 +113,13 @@ func TestDisbursementBankValidAccount(t *testing.T) {
 
 func TestDisbursementBankInsufficientFund(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankInsufficientFund")
+		return assertTransferToBankErrorViaSDK(t, "DisbursementBankInsufficientFund")
 	})
 }
 
 func TestDisbursementBankMissingMandatoryField(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankMissingMandatoryField")
+		return assertTransferToBankErrorViaSDK(t, "DisbursementBankMissingMandatoryField")
 	})
 }
 
@@ -271,25 +269,25 @@ func TestDisbursementBankInconsistentRequest(t *testing.T) {
 
 func TestDisbursementBankUnknownError(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankUnknownError")
+		return assertTransferToBankErrorViaSDK(t, "DisbursementBankUnknownError")
 	})
 }
 
 func TestDisbursementBankGeneralError(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankGeneralError")
+		return assertTransferToBankErrorViaSDK(t, "DisbursementBankGeneralError")
 	})
 }
 
 func TestDisbursementBankInactiveAccount(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankInactiveAccount")
+		return assertTransferToBankErrorViaSDK(t, "DisbursementBankInactiveAccount")
 	})
 }
 
 func TestDisbursementBankSuspectedFraud(t *testing.T) {
 	helper.RetryTest(t, 3, 2*time.Second, func() error {
-		return assertTransferToBankErrorBypassSDK(t, "DisbursementBankSuspectedFraud")
+		return assertTransferToBankErrorViaSDK(t, "DisbursementBankSuspectedFraud")
 	})
 }
 

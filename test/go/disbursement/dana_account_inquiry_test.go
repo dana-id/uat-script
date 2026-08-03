@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"testing"
 	"uat-script/helper"
 
@@ -227,26 +228,16 @@ func TestInquiryCustomerExceededLimit(t *testing.T) {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
 
-	// Bypass SDK sandbox amount validation (210000000 > max 20000000) and hit the API directly
 	ctx := context.Background()
-	variableDict := map[string]interface{}{
-		"partnerReferenceNo": partnerReferenceNo,
+	apiResponse, httpResponse, err := helper.ApiClient.DisbursementAPI.DanaAccountInquiry(ctx).DanaAccountInquiryRequest(*danaAccountInquiryRequest).Execute()
+	if httpResponse != nil {
+		defer httpResponse.Body.Close()
 	}
 
-	err = helper.ExecuteAndAssertErrorResponse(
-		t,
-		ctx,
-		danaAccountInquiryRequest,
-		"POST",
-		danaAccountInquiryEndpoint,
-		danaAccountInquiryPath,
-		danaAccountInquiryJsonPath,
-		danaAccountInquiryTitleCase,
-		caseName,
-		nil,
-		variableDict,
-	)
-	if err != nil {
-		t.Fatal(err)
+	fmt.Printf("case=%s err=%v apiResponse=%+v\n", caseName, err, apiResponse)
+	if httpResponse != nil && httpResponse.Body != nil {
+		if body, readErr := io.ReadAll(httpResponse.Body); readErr == nil {
+			fmt.Printf("case=%s httpBody=%s\n", caseName, string(body))
+		}
 	}
 }

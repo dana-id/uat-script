@@ -275,7 +275,7 @@
       },
       "response": {
         "responseCode": "4033802",
-        "responseMessage": "Exceed maximum limit amount|Nilai transaksi melebihi batas maksimum limit"
+        "responseMessage": "Exceed maximum limit amount. Make sure DANA balance not exceeding limit of 21000000 after topup|Nilai transaksi melebihi batas maksimum limit. Make sure DANA balance not exceeding limit of 21000000 after topup"
       }
     },
     "TopUpCustomerMissingMandatoryField": {
