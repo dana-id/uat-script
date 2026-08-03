@@ -12,6 +12,8 @@ import id.dana.disbursement.v1.model.TransferToDanaRequest;
 import id.dana.disbursement.v1.model.TransferToDanaResponse;
 import id.dana.disbursement.v1.model.BankAccountInquiryRequest;
 import id.dana.disbursement.v1.model.BankAccountInquiryResponse;
+import id.dana.disbursement.v1.model.DanaAccountInquiryRequest;
+import id.dana.disbursement.v1.model.DanaAccountInquiryResponse;
 import id.dana.interceptor.ReplaceRequestBodyInterceptor;
 import id.dana.invoker.auth.DanaAuth;
 import id.dana.util.TestUtil;
@@ -77,8 +79,11 @@ final class DisbursementHttpUtil {
       String jsonPathFile, String caseName, String partnerReferenceNo) throws IOException {
     JsonNode bodyNode = getRawRequest(jsonPathFile, "TransferToBank", caseName);
     ((ObjectNode) bodyNode).put("partnerReferenceNo", partnerReferenceNo);
-    String payload = compactJsonForSnap(bodyNode);
+    return transferToBankWithPayload(jsonPathFile, compactJsonForSnap(bodyNode), partnerReferenceNo);
+  }
 
+  static TransferToBankResponse transferToBankWithPayload(
+      String jsonPathFile, String payload, String partnerReferenceNo) throws IOException {
     TransferToBankRequest shell =
         TestUtil.getRequest(
             jsonPathFile,
@@ -117,5 +122,28 @@ final class DisbursementHttpUtil {
                 .addInterceptor(new DanaAuth())
                 .build());
     return api.bankAccountInquiry(shell);
+  }
+
+  static DanaAccountInquiryResponse danaAccountInquiryWithFixtureBody(
+      String jsonPathFile, String caseName, String partnerReferenceNo) throws IOException {
+    JsonNode bodyNode = getRawRequest(jsonPathFile, "DanaAccountInquiry", caseName);
+    ((ObjectNode) bodyNode).put("partnerReferenceNo", partnerReferenceNo);
+    String payload = compactJsonForSnap(bodyNode);
+
+    DanaAccountInquiryRequest shell =
+        TestUtil.getRequest(
+            jsonPathFile,
+            "DanaAccountInquiry",
+            "InquiryCustomerValidData",
+            DanaAccountInquiryRequest.class);
+    shell.setPartnerReferenceNo(partnerReferenceNo);
+
+    DisbursementApi api =
+        new DisbursementApi(
+            new OkHttpClient.Builder()
+                .addInterceptor(new ReplaceRequestBodyInterceptor(payload, JSON))
+                .addInterceptor(new DanaAuth())
+                .build());
+    return api.danaAccountInquiry(shell);
   }
 }

@@ -155,8 +155,7 @@ public class CreateOrderTest {
     String caseName = "CreateOrderNetworkPayPgQris";
     CreateOrderByApiRequest requestData = PaymentPGUtil.getCreateOrderApiRequest(jsonPathFile, titleCase, caseName);
 
-    // Assign unique reference and merchant ID
-    String partnerReferenceNo = UUID.randomUUID().toString();
+    String partnerReferenceNo = RandomStringUtils.randomAlphanumeric(25);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
     requestData.setMerchantId(merchantId);
     requestData.setValidUpTo(PaymentPGUtil.generateDateWithOffsetSeconds(600));

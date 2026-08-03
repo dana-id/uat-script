@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Kevin Veros Hamonangan <kevin.veros@dana.id>
- * @version $Id: BankAccountInquiryTest.java, v 0.1 2025‐08‐13 10.06 kevin.veros Exp $$
+ * @version $Id: BankAccountInquiryTest.java, v 0.1 2025‐08-13 10.06 kevin.veros Exp $$
  */
 class BankAccountInquiryTest extends AbstractDisbursementTest {
 
@@ -61,7 +61,6 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
   void testInquiryBankAccountValidDataAmount() throws Exception {
     String caseName = "InquiryBankAccountValidDataAmount";
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
@@ -86,113 +85,70 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
   @Test
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInsufficientFund() throws IOException {
-    String caseName = "InquiryBankAccountInsufficientFund";
-    String partnerReferenceNo = UUID.randomUUID().toString();
-    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-
-    Map<String, Object> variableDict = new HashMap<>();
-    variableDict.put("partnerReferenceNo", partnerReferenceNo);
-
-    BankAccountInquiryResponse response =
-        DisbursementHttpUtil.bankAccountInquiryWithFixtureBody(
-            jsonPathFile, caseName, partnerReferenceNo);
-    variableDict.put("referenceNo", response.getReferenceNo());
-    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    assertBankAccountInquiryErrorWithFixtureBody("InquiryBankAccountInsufficientFund");
   }
 
   @Test
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountUnauthorizedSignature() throws IOException {
-    Map<String, String> customHeaders = new HashMap<>();
     String caseName = "InquiryBankAccountUnauthorizedSignature";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            BankAccountInquiryRequest.class);
+        BankAccountInquiryRequest.class);
 
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    customHeaders.put(
-            DanaHeader.X_SIGNATURE,
-            "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5");
-    OkHttpClient client = new OkHttpClient.Builder()
-            .addInterceptor(new DanaAuth())
-            .addInterceptor(new CustomHeaderInterceptor(customHeaders))
-            .build();
+    try {
+      Map<String, String> customHeaders = new HashMap<>();
+      customHeaders.put(
+          DanaHeader.X_SIGNATURE,
+          "85be817c55b2c135157c7e89f52499bf0c25ad6eeebe04a986e8c862561b19a5");
+      OkHttpClient client = new OkHttpClient.Builder()
+          .addInterceptor(new DanaAuth())
+          .addInterceptor(new CustomHeaderInterceptor(customHeaders))
+          .build();
+      DisbursementApi apiWithCustomHeader = new DisbursementApi(client);
 
-    DisbursementApi apiCustomHeader = new DisbursementApi(client);
+      BankAccountInquiryResponse response = apiWithCustomHeader.bankAccountInquiry(requestData);
+      String status = response.getResponseCode().substring(0, 3).trim();
 
-    BankAccountInquiryResponse response = apiCustomHeader.bankAccountInquiry(requestData);
-    variableDict.put("referenceNo", response.getReferenceNo());
-    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+      if (TestUtil.isSuccessful(status)) {
+        log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+        fail("Expected an error but the API call succeeded");
+      } else if (StringUtils.equals(status, "401")) {
+        variableDict.put("referenceNo", response.getReferenceNo());
+        TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+      } else {
+        log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+        fail("Expected unauthorized failed but got status code: " + status);
+      }
+    } catch (Exception e) {
+      log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
+      log.error("Bank account inquiry unauthorized signature test failed:", e);
+      fail("Bank account inquiry unauthorized signature test failed: " + e.getMessage());
+    }
   }
 
   @Test
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInactiveAccount() throws IOException {
-    String caseName = "InquiryBankAccountInactiveAccount";
-    BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            BankAccountInquiryRequest.class);
-
-    // Assign unique reference
-    String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
-
-    Map<String, Object> variableDict = new HashMap<>();
-    variableDict.put("partnerReferenceNo", partnerReferenceNo);
-
-    BankAccountInquiryResponse response = api.bankAccountInquiry(requestData);
-    variableDict.put("referenceNo", response.getReferenceNo());
-    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    assertBankAccountInquiryErrorWithFixtureBody("InquiryBankAccountInactiveAccount");
   }
 
   @Test
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInvalidMerchant() throws IOException {
-    String caseName = "InquiryBankAccountInvalidMerchant";
-    BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            BankAccountInquiryRequest.class);
-
-    // Assign unique reference
-    String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
-
-    Map<String, Object> variableDict = new HashMap<>();
-    variableDict.put("partnerReferenceNo", partnerReferenceNo);
-
-    BankAccountInquiryResponse response = api.bankAccountInquiry(requestData);
-    variableDict.put("referenceNo", response.getReferenceNo());
-    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    assertBankAccountInquiryErrorWithFixtureBody("InquiryBankAccountInvalidMerchant");
   }
 
   @Test
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountInvalidCard() throws IOException {
-    String caseName = "InquiryBankAccountInvalidCard";
-    BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            BankAccountInquiryRequest.class);
-
-    // Assign unique reference
-    String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
-
-    Map<String, Object> variableDict = new HashMap<>();
-    variableDict.put("partnerReferenceNo", partnerReferenceNo);
-
-    BankAccountInquiryResponse response = api.bankAccountInquiry(requestData);
-    variableDict.put("referenceNo", response.getReferenceNo());
-    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
+    assertBankAccountInquiryErrorWithFixtureBody("InquiryBankAccountInvalidCard");
   }
 
   @Test
@@ -200,11 +156,9 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
   void testInquiryBankAccountInvalidFieldFormat() throws IOException {
     String caseName = "InquiryBankAccountInvalidFieldFormat";
     BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            BankAccountInquiryRequest.class);
+        BankAccountInquiryRequest.class);
 
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     requestData.setPartnerReferenceNo(partnerReferenceNo);
 
@@ -219,20 +173,23 @@ class BankAccountInquiryTest extends AbstractDisbursementTest {
   @Test
   @RetryTestUtil.Retry(value = 3, waitMs = 2000)
   void testInquiryBankAccountMissingMandatoryField() throws IOException {
-    String caseName = "InquiryBankAccountMissingMandatoryField";
-    BankAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            BankAccountInquiryRequest.class);
+    assertBankAccountInquiryErrorWithFixtureBody("InquiryBankAccountMissingMandatoryField");
+  }
 
-    // Assign unique reference
+  /**
+   * Sends fixture JSON on the wire via {@link DisbursementHttpUtil} so SDK {@code customValidation}
+   * runs against a valid shell request, not the intentional error payload.
+   */
+  private void assertBankAccountInquiryErrorWithFixtureBody(String caseName) throws IOException {
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
     Map<String, Object> variableDict = new HashMap<>();
     variableDict.put("partnerReferenceNo", partnerReferenceNo);
 
-    BankAccountInquiryResponse response = api.bankAccountInquiry(requestData);
+    BankAccountInquiryResponse response =
+        DisbursementHttpUtil.bankAccountInquiryWithFixtureBody(
+            jsonPathFile, caseName, partnerReferenceNo);
     variableDict.put("referenceNo", response.getReferenceNo());
     TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }

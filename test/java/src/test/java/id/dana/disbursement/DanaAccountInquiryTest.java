@@ -114,17 +114,16 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest {
   @Test
   void testDanaAccountInquiryCustomerExceededLimit() throws IOException {
     String caseName = "InquiryCustomerExceededLimit";
-    DanaAccountInquiryRequest requestData = TestUtil.getRequest(jsonPathFile, titleCase, caseName,
-            DanaAccountInquiryRequest.class);
-
-    // Assign unique reference
     String partnerReferenceNo = UUID.randomUUID().toString();
- log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
     log.info("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
-    requestData.setPartnerReferenceNo(partnerReferenceNo);
 
-    DanaAccountInquiryResponse response = api.danaAccountInquiry(requestData);
-    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, null);
+    Map<String, Object> variableDict = new HashMap<>();
+    variableDict.put("partnerReferenceNo", partnerReferenceNo);
+
+    DanaAccountInquiryResponse response =
+        DisbursementHttpUtil.danaAccountInquiryWithFixtureBody(
+            jsonPathFile, caseName, partnerReferenceNo);
+    TestUtil.assertFailResponse(jsonPathFile, titleCase, caseName, response, variableDict);
   }
 
   @Test
