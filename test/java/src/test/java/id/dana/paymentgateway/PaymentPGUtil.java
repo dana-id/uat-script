@@ -119,7 +119,9 @@ public class PaymentPGUtil {
             JsonNode requestNode = objectMapper.readTree(new File(jsonPathFile)).path(title).path(caseName).path("request");
             JsonNode replacedNode = TestUtil.replaceTemplateValues(requestNode);
             if (replacedNode.isObject()) {
-                ((ObjectNode) replacedNode).put("validUpTo", generateDateWithOffsetSeconds(600));
+                ObjectNode obj = (ObjectNode) replacedNode;
+                obj.put("validUpTo", generateDateWithOffsetSeconds(600));
+                TestUtil.ensureJacksonDiscriminator(obj, CreateOrderByApiRequest.class);
             }
             CreateOrderByApiRequest result = objectMapper.treeToValue(replacedNode, CreateOrderByApiRequest.class);
             if (result.getAdditionalInfo() == null) {
@@ -137,7 +139,9 @@ public class PaymentPGUtil {
             JsonNode requestNode = objectMapper.readTree(new File(jsonPathFile)).path(title).path(caseName).path("request");
             JsonNode replacedNode = TestUtil.replaceTemplateValues(requestNode);
             if (replacedNode.isObject()) {
-                ((ObjectNode) replacedNode).put("validUpTo", generateDateWithOffsetSeconds(600));
+                ObjectNode obj = (ObjectNode) replacedNode;
+                obj.put("validUpTo", generateDateWithOffsetSeconds(600));
+                TestUtil.ensureJacksonDiscriminator(obj, CreateOrderByRedirectRequest.class);
             }
             CreateOrderByRedirectRequest result = objectMapper.treeToValue(replacedNode, CreateOrderByRedirectRequest.class);
             if (result.getAdditionalInfo() == null) {

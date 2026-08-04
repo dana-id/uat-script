@@ -141,6 +141,16 @@ public final class TestUtil {
     return data;
   }
 
+  /**
+   * OpenAPI oneOf models use {@code @type} as Jackson discriminator (class simple name).
+   * Fixture JSON omits it because the API payload does not include it.
+   */
+  public static void ensureJacksonDiscriminator(ObjectNode node, Class<?> clazz) {
+    if (!node.has("@type")) {
+      node.put("@type", clazz.getSimpleName());
+    }
+  }
+
   public static <T> T getRequest(String jsonPathFile, String title, String caseName,
       Class<T> clazz) {
     return getData(jsonPathFile, title, caseName, "request", clazz);
@@ -159,7 +169,10 @@ public final class TestUtil {
       
       // Apply template replacement to the entire request object
       JsonNode replacedNode = replaceTemplateValues(requestNode);
-      
+      if (replacedNode.isObject()) {
+        ensureJacksonDiscriminator((ObjectNode) replacedNode, clazz);
+      }
+
       return objectMapper.treeToValue(replacedNode, clazz);
     } catch (IOException e) {
       log.error("Error reading {} data from {}: {}", nodeKey, jsonPathFile, e.getMessage());
