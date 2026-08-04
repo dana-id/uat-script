@@ -1,5 +1,6 @@
 package id.dana.util;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -143,11 +144,32 @@ public final class TestUtil {
   }
 
   /**
-   * Fixture JSON may include {@code @type} for oneOf documentation; concrete SDK models do not
-   * declare that property and must not receive an injected discriminator.
+   * OpenAPI oneOf subtypes (e.g. CreateOrderByApiRequest) require {@code @type} for Jackson;
+   * plain concrete models (e.g. WidgetPaymentRequest) must not include it.
+   */
+  private static boolean needsJacksonTypeId(Class<?> clazz) {
+    if (clazz == JsonNode.class || clazz.isInterface()) {
+      return false;
+    }
+    for (Class<?> iface : clazz.getInterfaces()) {
+      if (iface.isAnnotationPresent(JsonTypeInfo.class)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Prepare fixture JSON before binding to an SDK model.
    */
   public static void prepareFixtureNode(ObjectNode node, Class<?> clazz) {
     if (clazz == JsonNode.class || clazz.isInterface()) {
+      return;
+    }
+    if (needsJacksonTypeId(clazz)) {
+      if (!node.has("@type")) {
+        node.put("@type", clazz.getSimpleName());
+      }
       return;
     }
     node.remove("@type");

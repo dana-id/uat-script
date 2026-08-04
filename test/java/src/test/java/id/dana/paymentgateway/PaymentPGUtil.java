@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import id.dana.invoker.JSON;
 import id.dana.paymentgateway.v1.model.*;
 import id.dana.util.BrowserTestSupport;
 import id.dana.util.TestUtil;
@@ -111,7 +112,7 @@ public class PaymentPGUtil {
                 || c.getPackage() != null && (c.getPackage().getName().startsWith("java.") || c.getPackage().getName().startsWith("javax."));
     }
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = JSON.getDefault().getMapper();
 
     /** Load CreateOrder API request: use TestUtil.replaceTemplateValues, patch validUpTo before deserialize, set additionalInfo if null. Payment Gateway only; TestUtil.getRequest would fail on validUpTo. */
     public static CreateOrderByApiRequest getCreateOrderApiRequest(String jsonPathFile, String title, String caseName) {
