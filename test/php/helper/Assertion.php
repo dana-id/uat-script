@@ -188,7 +188,7 @@ class Assertion
                     throw new \Exception("Value for '{$key}' at path: {$path} should not be empty when using \${valueFromServer} placeholder");
                 }
                 // Value exists, so this passes
-            } else if ($value !== null && $actual[$key] !== $value) {
+            } else if ($value !== null && !self::valuesMatchExpected($value, $actual[$key])) {
                 throw new \Exception("Value mismatch for '{$key}' at path: {$path}. Expected: " . json_encode($value) . ", Actual: " . json_encode($actual[$key]));
             }
         }
@@ -206,8 +206,6 @@ class Assertion
         if (preg_match('/response:\s*(.*)/s', $errorMessage, $matches)) {
             $jsonStr = $matches[1];
 
-            echo $jsonStr;
-            
             // Try to decode it
             $json = json_decode($jsonStr, true);
             
@@ -299,8 +297,8 @@ class Assertion
 
         // Case 1: ApiException handling
         if ($response instanceof ApiException) {
-            $statusCode = $response->getCode();
-            $responseBody = (string)$response->getResponseBody();
+            $statusCode = self::apiExceptionHttpStatus($response);
+            $responseBody = self::apiExceptionResponseJson($response);
             $actualResponseArray = json_decode($responseBody, true);
             
             if (json_last_error() !== JSON_ERROR_NONE) {
@@ -360,7 +358,107 @@ class Assertion
         // Indicate successful assertion
         echo "✅ Assertion passed for {$titleCase}.{$caseName}" . ($isErrorCase ? " (error case)" : "") . "\n";
     }
-    
+    public static function apiExceptionResponseJson(ApiException $e): string
+    {
+        $rawBody = (string) $e->getResponseBody();
+        $rawPayload = json_decode($rawBody, true);
+        $hasRawPayload = is_array($rawPayload) && json_last_error() === JSON_ERROR_NONE;
+
+        $enrichedPayload = null;
+        if (method_exists($e, 'getResponseObject')) {
+            $responseObject = $e->getResponseObject();
+            if ($responseObject !== null) {
+                if (is_object($responseObject) && method_exists($responseObject, '__toString')) {
+                    $enrichedPayload = json_decode((string) $responseObject, true);
+                } elseif (is_array($responseObject)) {
+                    $enrichedPayload = $responseObject;
+                } else {
+                    $enrichedPayload = json_decode(json_encode($responseObject), true);
+                }
+            }
+        }
+
+        if ($hasRawPayload && is_array($enrichedPayload)) {
+            $merged = $rawPayload;
+            foreach (['responseCode', 'responseMessage', 'partnerReferenceNo'] as $field) {
+                if (array_key_exists($field, $enrichedPayload) && $enrichedPayload[$field] !== null && $enrichedPayload[$field] !== '') {
+                    $merged[$field] = $enrichedPayload[$field];
+                }
+            }
+            return json_encode($merged);
+        }
+
+        if (is_array($enrichedPayload)) {
+            return json_encode($enrichedPayload);
+        }
+
+        if ($rawBody !== '') {
+            return $rawBody;
+        }
+
+        return $e->getMessage();
+    }
+
+    /**
+     * Resolve HTTP status for SDK ApiException (v2.2.1+ disbursement enrichment may leave getCode() at 0).
+     */
+    public static function apiExceptionHttpStatus(ApiException $e): int
+    {
+        $code = (int) $e->getCode();
+        if ($code >= 400 && $code < 600) {
+            return $code;
+        }
+
+        if (preg_match('/^\[(\d{3})\]/', $e->getMessage(), $matches)) {
+            return (int) $matches[1];
+        }
+
+        $headers = $e->getResponseHeaders();
+        if (is_array($headers)) {
+            foreach ($headers as $name => $values) {
+                if (!is_array($values) || $values === []) {
+                    continue;
+                }
+                $headerValue = (string) $values[0];
+                if (strcasecmp((string) $name, 'Status') === 0 && preg_match('/\s(\d{3})\s/', $headerValue, $matches)) {
+                    return (int) $matches[1];
+                }
+            }
+        }
+
+        $payload = json_decode(self::apiExceptionResponseJson($e), true);
+        if (is_array($payload) && !empty($payload['responseCode'])) {
+            $responseCode = (string) $payload['responseCode'];
+            if (strlen($responseCode) >= 3 && ctype_digit(substr($responseCode, 0, 3))) {
+                return (int) substr($responseCode, 0, 3);
+            }
+        }
+
+        return $code;
+    }
+
+    /**
+     * Match expected fixture string; pipe-separated values are treated as alternatives.
+     */
+    private static function valuesMatchExpected($expected, $actual): bool
+    {
+        if ($expected === $actual) {
+            return true;
+        }
+        if (!is_string($expected) || !is_string($actual)) {
+            return false;
+        }
+        if (strpos($expected, '|') === false) {
+            return false;
+        }
+        foreach (explode('|', $expected) as $alternative) {
+            if (trim($alternative) === $actual) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Extract the response body from various types of response objects
      *

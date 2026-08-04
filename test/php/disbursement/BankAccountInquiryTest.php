@@ -133,11 +133,10 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for insufficient fund but the API call succeeded');
             } catch (ApiException $e) {
-                // We expect a 403 Forbidden for insufficient fund (responseCode: 4034214)
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for insufficient fund, got {$e->getCode()}");
+                // We expect a 403 Forbidden for insufficient fund (responseCode: 4034202)
+                $this->assertEquals(403, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 403 Forbidden for insufficient fund, got {Assertion::apiExceptionHttpStatus($e)}");
 
-                // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -197,10 +196,10 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature
-                    $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
+                    $this->assertEquals(401, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 401 Unauthorized for invalid signature, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -254,10 +253,10 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for inactive account but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for inactive account (responseCode: 4034218)
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for inactive account, got {$e->getCode()}");
+                $this->assertEquals(403, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 403 Forbidden for inactive account, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -307,10 +306,10 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for invalid merchant but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 404 Not Found for invalid merchant (responseCode: 4044208)
-                $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for invalid merchant, got {$e->getCode()}");
+                $this->assertEquals(404, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 404 Not Found for invalid merchant, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -360,10 +359,10 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for invalid card but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 404 Not Found for invalid card (responseCode: 4044211)
-                $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for invalid card, got {$e->getCode()}");
+                $this->assertEquals(404, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 404 Not Found for invalid card, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -413,10 +412,10 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for invalid field format but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 400 Bad Request for invalid field format (responseCode: 4004201)
-                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid field format, got {$e->getCode()}");
+                $this->assertEquals(400, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 400 Bad Request for invalid field format, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -452,24 +451,30 @@ class BankAccountInquiryTest extends AbstractDisbursementTest
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-            // Create a BankAccountInquiryRequest object from the JSON request data
-            $bankAccountInquiryRequestObj = ObjectSerializer::deserialize(
+            $headers = Util::getHeadersWithSignature(
+                'POST',
+                '/v1.0/emoney/bank-account-inquiry.htm',
                 $jsonDict,
-                'Dana\Disbursement\v1\Model\BankAccountInquiryRequest'
+                true,
+                false,
+                false
             );
 
             try {
-                // Make the API call
-                self::$apiInstance->bankAccountInquiry($bankAccountInquiryRequestObj);
+                Util::executeApiRequest(
+                    'POST',
+                    'https://api.sandbox.dana.id/v1.0/emoney/bank-account-inquiry.htm',
+                    $headers,
+                    $jsonDict
+                );
 
                 echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004202)
-                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for missing mandatory field, got {$e->getCode()}");
+                $this->assertEquals(400, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 400 Bad Request for missing mandatory field, got {Assertion::apiExceptionHttpStatus($e)}");
 
-                // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(

@@ -258,10 +258,10 @@ class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for invalid field format but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 400 Bad Request for invalid field format
-                $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid field format, got {$e->getCode()}");
+                $this->assertEquals(400, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 400 Bad Request for invalid field format, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -311,10 +311,10 @@ class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for transaction not found but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 404 Not Found for transaction not found
-                $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                $this->assertEquals(404, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 404 Not Found for transaction not found, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -371,10 +371,10 @@ class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for missing mandatory field
-                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for missing mandatory field, got {$e->getCode()}");
+                    $this->assertEquals(400, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 400 Bad Request for missing mandatory field, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -437,10 +437,10 @@ class TransferToDanaInquiryStatusTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature
-                    $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
+                    $this->assertEquals(401, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 401 Unauthorized for invalid signature, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(

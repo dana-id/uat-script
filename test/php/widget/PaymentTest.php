@@ -623,14 +623,23 @@ class PaymentTest extends TestCase
             $jsonDict['partnerReferenceNo'] = PaymentUtil::generatePartnerReferenceNo();
             $jsonDict['validUpTo'] = Util::widgetPaymentValidUpTo();
 
-            $requestObj = ObjectSerializer::deserialize(
+            $headers = Util::getHeadersWithSignature(
+                'POST',
+                '/rest/redirection/v1.0/debit/payment-host-to-host',
                 $jsonDict,
-                'Dana\Widget\v1\Model\WidgetPaymentRequest'
+                true,
+                false,
+                false
             );
 
             try {
-                self::$apiInstanceWidget->widgetPayment($requestObj);
-                echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
+                Util::executeApiRequest(
+                    'POST',
+                    'https://api.sandbox.dana.id/rest/redirection/v1.0/debit/payment-host-to-host',
+                    $headers,
+                    $jsonDict
+                );
+
                 $this->fail('Expected ApiException for exceed amount limit but the API call succeeded');
             } catch (ApiException $e) {
                 Assertion::assertApiException(

@@ -23,12 +23,23 @@ class DisbursementCustomerRetry
             return true;
         }
         if ($e instanceof ApiException) {
-            $body = $e->getResponseBody();
-            if (is_string($body) && preg_match('/"responseCode"\s*:\s*"((?:403|404)[^"]*)"/', $body, $matches)) {
+            $httpStatus = Assertion::apiExceptionHttpStatus($e);
+            if (in_array($httpStatus, [403, 404], true)) {
+                return true;
+            }
+            $body = Assertion::apiExceptionResponseJson($e);
+            if (preg_match('/"responseCode"\s*:\s*"((?:403|404)[^"]*)"/', $body, $matches)) {
                 return self::isForbiddenResponseCode($matches[1]);
             }
-            if (is_object($body) && isset($body->responseCode)) {
-                return self::isForbiddenResponseCode((string) $body->responseCode);
+            if (method_exists($e, 'getResponseObject')) {
+                $responseObject = $e->getResponseObject();
+                if (is_object($responseObject) && isset($responseObject->responseCode)) {
+                    return self::isForbiddenResponseCode((string) $responseObject->responseCode);
+                }
+            }
+            $rawBody = $e->getResponseBody();
+            if (is_object($rawBody) && isset($rawBody->responseCode)) {
+                return self::isForbiddenResponseCode((string) $rawBody->responseCode);
             }
         }
         $message = $e->getMessage();

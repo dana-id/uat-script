@@ -122,10 +122,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for insufficient fund but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 403 Forbidden for insufficient fund (responseCode: 4033814)
-                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for insufficient fund, got {$e->getCode()}");
+                    $this->assertEquals(403, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 403 Forbidden for insufficient fund, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -176,10 +176,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for transaction not found but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 404 Not Found for transaction not found
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for transaction not found, got {$e->getCode()}");
+                    $this->assertEquals(404, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 404 Not Found for transaction not found, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -255,7 +255,8 @@ class TransferToDanaTest extends AbstractDisbursementTest
                         $this->fail('Both requests succeeded but returned different reference numbers - NOT truly idempotent');
                     }
                 } catch (ApiException $duplicateError) {
-                    $errorResponse = json_decode($duplicateError->getResponseBody(), true);
+                    $duplicateResponseJson = Assertion::apiExceptionResponseJson($duplicateError);
+                    $errorResponse = json_decode($duplicateResponseJson, true);
 
                     $isDuplicateError =
                         (isset($errorResponse['responseCode']) &&
@@ -272,7 +273,7 @@ class TransferToDanaTest extends AbstractDisbursementTest
                             self::$jsonPathFile,
                             self::$titleCase,
                             $caseName,
-                            $duplicateError->getResponseBody(),
+                            $duplicateResponseJson,
                             ['partnerReferenceNo' => $fixedPartnerRef]
                         );
                     } else {
@@ -337,10 +338,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for frozen account but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 403 Forbidden for frozen account (responseCode: 4033805)
-                    $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for frozen account, got {$e->getCode()}");
+                    $this->assertEquals(403, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 403 Forbidden for frozen account, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -365,49 +366,37 @@ class TransferToDanaTest extends AbstractDisbursementTest
         Util::withDelay(function () {
             $caseName = 'TopUpCustomerExceedAmountLimit';
 
-            // Get and prepare the request
             $jsonDict = Util::getRequest(
                 self::$jsonPathFile,
                 self::$titleCase,
                 $caseName
             );
 
-            // Set a unique partner reference number
             $partnerReferenceNo = Util::generatePartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
 
-            $headers = Util::getHeadersWithSignature(
-                'POST',
-                '/rest/v1.0/emoney/topup',
+            $transferToDanaRequestObj = ObjectSerializer::deserialize(
                 $jsonDict,
-                true,
-                false,
-                false
+                'Dana\Disbursement\v1\Model\TransferToDanaRequest'
             );
 
             try {
-                Util::executeApiRequest(
-                    'POST',
-                    'https://api.sandbox.dana.id/rest/v1.0/emoney/topup',
-                    $headers,
-                    $jsonDict
-                );
+                self::$apiInstance->transferToDana($transferToDanaRequestObj);
 
                 echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Expected ApiException for exceed amount limit but the API call succeeded');
             } catch (ApiException $e) {
-                // We expect a 403 Forbidden for exceed amount limit (responseCode: 4033813)
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for exceed amount limit, got {$e->getCode()}");
+                $this->assertEquals(
+                    403,
+                    Assertion::apiExceptionHttpStatus($e),
+                    'Expected HTTP 403 Forbidden for exceed amount limit, got ' . Assertion::apiExceptionHttpStatus($e)
+                );
 
-                // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
-
-                // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
                     self::$jsonPathFile,
                     self::$titleCase,
                     $caseName,
-                    $responseContent,
+                    Assertion::apiExceptionResponseJson($e),
                     ['partnerReferenceNo' => $partnerReferenceNo]
                 );
             } catch (Exception $e) {
@@ -450,10 +439,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for missing mandatory field but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for missing mandatory field (responseCode: 4004003)
-                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for missing mandatory field, got {$e->getCode()}");
+                    $this->assertEquals(400, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 400 Bad Request for missing mandatory field, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -513,10 +502,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature (responseCode: 4034001)
-                    $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
+                    $this->assertEquals(401, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 401 Unauthorized for invalid signature, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -570,10 +559,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for invalid field format but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 400 Bad Request for invalid field format (responseCode: 4003003)
-                    $this->assertEquals(400, $e->getCode(), "Expected HTTP 400 Bad Request for invalid field format, got {$e->getCode()}");
+                    $this->assertEquals(400, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 400 Bad Request for invalid field format, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -647,10 +636,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for inconsistent request but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 404 Not Found for inconsistent request (responseCode: 4043009)
-                    $this->assertEquals(404, $e->getCode(), "Expected HTTP 404 Not Found for inconsistent request, got {$e->getCode()}");
+                    $this->assertEquals(404, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 404 Not Found for inconsistent request, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -700,10 +689,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for internal server error but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 500 Internal Server Error for internal server error (responseCode: 5003001)
-                    $this->assertEquals(500, $e->getCode(), "Expected HTTP 500 Internal Server Error for internal server error, got {$e->getCode()}");
+                    $this->assertEquals(500, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 500 Internal Server Error for internal server error, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -753,10 +742,10 @@ class TransferToDanaTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for internal general error but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 500 Internal Server Error for internal general error (responseCode: 5004000)
-                    $this->assertEquals(500, $e->getCode(), "Expected HTTP 500 Internal Server Error for internal general error, got {$e->getCode()}");
+                    $this->assertEquals(500, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 500 Internal Server Error for internal general error, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(

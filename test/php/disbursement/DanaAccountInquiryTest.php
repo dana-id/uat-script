@@ -133,10 +133,10 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                     $this->fail('Expected ApiException for invalid signature but the API call succeeded');
                 } catch (ApiException $e) {
                     // We expect a 401 Unauthorized for invalid signature
-                    $this->assertEquals(401, $e->getCode(), "Expected HTTP 401 Unauthorized for invalid signature, got {$e->getCode()}");
+                    $this->assertEquals(401, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 401 Unauthorized for invalid signature, got {Assertion::apiExceptionHttpStatus($e)}");
 
                     // Get the response body from the exception
-                    $responseContent = (string)$e->getResponseBody();
+                    $responseContent = Assertion::apiExceptionResponseJson($e);
                     
                     // Use assertFailResponse to validate the error response
                     Assertion::assertFailResponse(
@@ -190,10 +190,10 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for frozen account but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for frozen account
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for frozen account, got {$e->getCode()}");
+                $this->assertEquals(403, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 403 Forbidden for frozen account, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -243,10 +243,10 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for unregistered account but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for unregistered account
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for unregistered account, got {$e->getCode()}");
+                $this->assertEquals(403, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 403 Forbidden for unregistered account, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(
@@ -296,10 +296,10 @@ class DanaAccountInquiryTest extends AbstractDisbursementTest
                 $this->fail('Expected ApiException for exceeded limit but the API call succeeded');
             } catch (ApiException $e) {
                 // We expect a 403 Forbidden for exceeded limit
-                $this->assertEquals(403, $e->getCode(), "Expected HTTP 403 Forbidden for exceeded limit, got {$e->getCode()}");
+                $this->assertEquals(403, Assertion::apiExceptionHttpStatus($e), "Expected HTTP 403 Forbidden for exceeded limit, got {Assertion::apiExceptionHttpStatus($e)}");
 
                 // Get the response body from the exception
-                $responseContent = (string)$e->getResponseBody();
+                $responseContent = Assertion::apiExceptionResponseJson($e);
                 
                 // Use assertFailResponse to validate the error response
                 Assertion::assertFailResponse(

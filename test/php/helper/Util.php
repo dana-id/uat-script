@@ -377,6 +377,20 @@ class Util
         shell_exec($command);
     }
 
+    /**
+     * Random alphanumeric partner reference (≤25 chars) for PG QRIS sandbox validation.
+     */
+    public static function generatePaymentGatewayPartnerReferenceNo(int $length = 25): string
+    {
+        $charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $maxIndex = strlen($charset) - 1;
+        $result = '';
+        for ($i = 0; $i < $length; $i++) {
+            $result .= $charset[random_int(0, $maxIndex)];
+        }
+        return $result;
+    }
+
     public static function generatePartnerReferenceNo(): string
     {
         // Generate a UUID v4
@@ -467,6 +481,9 @@ class Util
                 
                 return $testCallback();
             } catch (\Exception $e) {
+                if ($e instanceof \PHPUnit\Framework\AssertionFailedError) {
+                    throw $e;
+                }
                 $lastException = $e;
                 $shouldRetry = false;
                 

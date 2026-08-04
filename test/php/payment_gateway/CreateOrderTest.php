@@ -66,17 +66,14 @@ class CreateOrderTest extends TestCase
                 // Make the API call
                 $apiResponse = self::$apiInstance->createOrder($createOrderRequestObj);
 
-                // Sandbox SDK appends QRIS externalStoreId guidance on responseMessage for redirect
-                // without externalStoreId; skip exact responseMessage assert until SIT expectations update.
-                // Assertion::assertResponse(
-                //     self::$jsonPathFile,
-                //     self::$titleCase,
-                //     $caseName,
-                //     $apiResponse->__toString()
-                // );
+                Assertion::assertResponse(
+                    self::$jsonPathFile,
+                    self::$titleCase,
+                    $caseName,
+                    $apiResponse->__toString()
+                );
 
                 $this->assertNotNull($apiResponse);
-                $this->assertTrue(true);
             } catch (ApiException $e) {
                 echo "[REF] case=$caseName partnerReferenceNo=$partnerReferenceNo\n";
                 $this->fail('Failed to call create order API: ' . $e->getMessage());
@@ -155,13 +152,12 @@ class CreateOrderTest extends TestCase
                 $caseName
             );
             
-            // Set a unique partner reference number
-            $partnerReferenceNo = Util::generatePartnerReferenceNo();
+            // QRIS requires partnerReferenceNo ≤ 25 chars (UUID is 36)
+            $partnerReferenceNo = Util::generatePaymentGatewayPartnerReferenceNo();
             $jsonDict['partnerReferenceNo'] = $partnerReferenceNo;
             $jsonDict['externalStoreId'] = getenv('EXTERNAL_SHOP_ID');
             $jsonDict['validUpTo'] = Util::paymentGatewaySandboxValidUpTo();
-            
-            // Create a CreateOrderByApiRequest object from the JSON request data
+
             $createOrderRequestObj = ObjectSerializer::deserialize(
                 $jsonDict,
                 'Dana\PaymentGateway\v1\Model\CreateOrderByApiRequest',
