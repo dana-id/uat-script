@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
 	"uat-script/helper"
 
@@ -364,7 +365,6 @@ func TestPaymentFailMerchantNotExistOrStatusAbnormal(t *testing.T) {
 }
 
 func TestPaymentFailInconsistentRequest(t *testing.T) {
-	t.Skip("Skip: API returns success response instead of expected error - responseCode: 2005400, responseMessage: Successful (expected: 4045418, Inconsistent Request)")
 	caseName := "PaymentFailInconsistentRequest"
 	jsonDict, err := helper.GetRequest(widgetPaymentJsonPath, widgetPaymentTitleCase, caseName)
 	if err != nil {
@@ -384,23 +384,30 @@ func TestPaymentFailInconsistentRequest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to unmarshal JSON: %v", err)
 	}
+
 	ctx := context.Background()
-	apiResponse, httpResponse, err := helper.ApiClient.WidgetAPI.WidgetPayment(ctx).WidgetPaymentRequest(*request).Execute()
+	_, firstResponse, err := helper.ApiClient.WidgetAPI.WidgetPayment(ctx).WidgetPaymentRequest(*request).Execute()
 	if err != nil {
-		t.Fatalf("API request failed: %v", err)
+		t.Fatalf("First API call failed: %v", err)
+	}
+	firstResponse.Body.Close()
+
+	time.Sleep(2 * time.Second)
+
+	request.Amount.Value = "10000.00"
+	_, httpResponse, err := helper.ApiClient.WidgetAPI.WidgetPayment(ctx).WidgetPaymentRequest(*request).Execute()
+	if err != nil {
+		variableDict := map[string]interface{}{
+			"partnerReferenceNo": partnerReferenceNo,
+		}
+		err = helper.AssertFailResponse(widgetPaymentJsonPath, widgetPaymentTitleCase, caseName, httpResponse, variableDict)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return
 	}
 	defer httpResponse.Body.Close()
-	responseJSON, err := apiResponse.MarshalJSON()
-	if err != nil {
-		t.Fatalf("Failed to convert response to JSON: %v", err)
-	}
-	variableDict := map[string]interface{}{
-		"partnerReferenceNo": partnerReferenceNo,
-	}
-	err = helper.AssertFailResponse(widgetPaymentJsonPath, widgetPaymentTitleCase, caseName, string(responseJSON), variableDict)
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Fatal("Expected error but got successful response on inconsistent request")
 }
 
 func TestPaymentFailInternalServerError(t *testing.T) {
