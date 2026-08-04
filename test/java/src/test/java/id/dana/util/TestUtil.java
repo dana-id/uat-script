@@ -146,9 +146,19 @@ public final class TestUtil {
    * Fixture JSON omits it because the API payload does not include it.
    */
   public static void ensureJacksonDiscriminator(ObjectNode node, Class<?> clazz) {
-    if (!node.has("@type")) {
-      node.put("@type", clazz.getSimpleName());
+    if (!shouldInjectJacksonDiscriminator(clazz) || node.has("@type")) {
+      return;
     }
+    node.put("@type", clazz.getSimpleName());
+  }
+
+  /** Only SDK model types need @type for Jackson oneOf deserialization — not JsonNode fixtures. */
+  private static boolean shouldInjectJacksonDiscriminator(Class<?> clazz) {
+    if (clazz == JsonNode.class || clazz.isPrimitive()) {
+      return false;
+    }
+    Package pkg = clazz.getPackage();
+    return pkg != null && pkg.getName().startsWith("id.dana.");
   }
 
   public static <T> T getRequest(String jsonPathFile, String title, String caseName,
@@ -167,7 +177,6 @@ public final class TestUtil {
       JsonNode jsonData = objectMapper.readTree(new File(jsonPathFile));
       JsonNode requestNode = jsonData.path(title).path(caseName).path(nodeKey);
       
-      // Apply template replacement to the entire request object
       JsonNode replacedNode = replaceTemplateValues(requestNode);
       if (replacedNode.isObject()) {
         ensureJacksonDiscriminator((ObjectNode) replacedNode, clazz);
