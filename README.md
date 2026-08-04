@@ -163,11 +163,11 @@ Install the language SDK and tools for the stack you run:
 
 | Language | Prerequisites |
 |----------|---------------|
-| Python | Python 3, `pip` |
-| Go | Go 1.21+, `jq` (for retry) |
-| Node | Node.js, `npm`, `jq` (for retry) |
-| PHP | PHP, Composer; Chrome + Selenium for browser tests |
-| Java | JDK, Maven |
+| Python | Python 3, `pip`, `jq` |
+| Go | Go 1.21+, `jq` |
+| Node | Node.js, `npm`, `jq` |
+| PHP | PHP, Composer, `jq`; Chrome + Selenium for browser tests |
+| Java | JDK, Maven, `jq` |
 
 **OS:** macOS and Linux — run `./run-test.sh` directly.  
 Scripts require a Unix shell (`bash` / `sh`).
@@ -178,7 +178,9 @@ Scripts require a Unix shell (`bash` / `sh`).
 
 - `test/` — UAT scenarios per language and module
 - `resource/` — Request templates and fixtures
+- `resource/mandatory-tests.json` — Canonical mandatory test list (all languages derive patterns from this)
 - `runners/` — Test runner scripts (local mandatory + retry)
+- `runners/mandatory-tests.sh` — Shared loader for mandatory test patterns
 
 ---
 

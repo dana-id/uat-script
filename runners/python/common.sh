@@ -7,7 +7,7 @@ fi
 
 PROJECT_ROOT="$(dirname "$PYTHON_RUNNERS_DIR")"
 
-. "$PYTHON_RUNNERS_DIR/../mandatory-tests.sh"
+. "$PYTHON_RUNNERS_DIR/mandatory-tests.sh"
 
 resolve_python_cmd() {
     if command -v python3 > /dev/null 2>&1; then

@@ -5,6 +5,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+GO_RUNNERS_DIR="$SCRIPT_DIR"
 GO_MANDATORY_ONLY=true
 
 . "$SCRIPT_DIR/go/common.sh"

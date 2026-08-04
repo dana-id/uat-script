@@ -1,6 +1,11 @@
 # Shared Go test runner utilities (local + CI).
 
-. "$(CDPATH= cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/mandatory-tests.sh"
+if [ -z "${GO_RUNNERS_DIR:-}" ]; then
+    echo "GO_RUNNERS_DIR must be set before sourcing runners/go/common.sh" >&2
+    exit 1
+fi
+
+. "$GO_RUNNERS_DIR/mandatory-tests.sh"
 
 has_test_files() {
     dir="$1"

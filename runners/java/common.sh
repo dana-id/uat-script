@@ -121,7 +121,7 @@ compute_maven_playwright_profile_args() {
     fi
 }
 
-. "$(CDPATH= cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/mandatory-tests.sh"
+. "$JAVA_RUNNERS_DIR/mandatory-tests.sh"
 
 get_mandatory_pattern_for_module() {
     mandatory_java_pattern "$1"

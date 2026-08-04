@@ -1,20 +1,55 @@
 # Mandatory smoke test patterns — sourced from resource/mandatory-tests.json (Go is canonical).
 
+_mandatory_runners_dir() {
+    if [ -n "${GO_RUNNERS_DIR:-}" ]; then
+        echo "$GO_RUNNERS_DIR"
+        return 0
+    fi
+    if [ -n "${NODE_RUNNERS_DIR:-}" ]; then
+        echo "$NODE_RUNNERS_DIR"
+        return 0
+    fi
+    if [ -n "${PYTHON_RUNNERS_DIR:-}" ]; then
+        echo "$PYTHON_RUNNERS_DIR"
+        return 0
+    fi
+    if [ -n "${PHP_RUNNERS_DIR:-}" ]; then
+        echo "$PHP_RUNNERS_DIR"
+        return 0
+    fi
+    if [ -n "${JAVA_RUNNERS_DIR:-}" ]; then
+        echo "$JAVA_RUNNERS_DIR"
+        return 0
+    fi
+
+    # Direct bash sourcing (e.g. CI parity check) when no runner dir is preset.
+    if [ -n "${BASH_SOURCE[0]:-}" ]; then
+        local script_dir
+        script_dir=$(CDPATH= cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+        echo "$script_dir"
+        return 0
+    fi
+
+    echo "ERROR: set GO_RUNNERS_DIR (or *._RUNNERS_DIR) before sourcing mandatory-tests.sh" >&2
+    return 1
+}
+
 _mandatory_tests_json_path() {
     if [ -n "${MANDATORY_TESTS_JSON:-}" ] && [ -f "$MANDATORY_TESTS_JSON" ]; then
         echo "$MANDATORY_TESTS_JSON"
         return 0
     fi
 
-    local script_dir
-    script_dir=$(CDPATH= cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-    local candidate="$script_dir/../resource/mandatory-tests.json"
+    local runners_dir project_root candidate
+    runners_dir=$(_mandatory_runners_dir) || return 1
+    project_root=$(dirname "$runners_dir")
+    candidate="$project_root/resource/mandatory-tests.json"
     if [ -f "$candidate" ]; then
         echo "$candidate"
         return 0
     fi
 
-    echo "ERROR: mandatory-tests.json not found (set MANDATORY_TESTS_JSON)" >&2
+    echo "ERROR: mandatory-tests.json not found at $candidate (set MANDATORY_TESTS_JSON)" >&2
     return 1
 }
 

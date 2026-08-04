@@ -8,7 +8,7 @@ fi
 PROJECT_ROOT="$(dirname "$NODE_RUNNERS_DIR")"
 NODE_TEST_DIR="$PROJECT_ROOT/test/node"
 
-. "$NODE_RUNNERS_DIR/../mandatory-tests.sh"
+. "$NODE_RUNNERS_DIR/mandatory-tests.sh"
 
 get_mandatory_pattern_for_folder() {
     mandatory_node_pattern "$1"

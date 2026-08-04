@@ -1,6 +1,11 @@
 # Shared PHP test runner utilities (local + CI).
 
-. "$(CDPATH= cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/mandatory-tests.sh"
+if [ -z "${PHP_RUNNERS_DIR:-}" ]; then
+    echo "PHP_RUNNERS_DIR must be set before sourcing runners/php/common.sh" >&2
+    exit 1
+fi
+
+. "$PHP_RUNNERS_DIR/mandatory-tests.sh"
 
 get_mandatory_pattern_for_folder() {
     mandatory_php_pattern "$1"
