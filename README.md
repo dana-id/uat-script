@@ -167,7 +167,7 @@ Install the language SDK and tools for the stack you run:
 | Go | Go 1.21+, `jq` |
 | Node | Node.js, `npm`, `jq` |
 | PHP | PHP, Composer, `jq`; Chrome + Selenium for browser tests |
-| Java | JDK, Maven, `jq` |
+| Java | JDK, Maven, `jq`; SDK `dana-java` **2.2.1** (see `test/java/pom.xml`) |
 
 **OS:** macOS and Linux — run `./run-test.sh` directly.  
 Scripts require a Unix shell (`bash` / `sh`).

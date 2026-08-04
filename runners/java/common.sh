@@ -172,6 +172,7 @@ validate_environment() {
 
     print_success "Java version: $java_version"
     print_success "Maven version: $maven_version"
+    print_success "dana-java SDK: $(grep -A1 '<artifactId>dana-java</artifactId>' "$JAVA_TEST_DIR/pom.xml" | grep '<version>' | sed 's/.*<version>\([^<]*\)<\/version>.*/\1/' | tr -d ' ')"
     print_success "Test directory: $JAVA_TEST_DIR"
 }
 
