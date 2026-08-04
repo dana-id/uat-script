@@ -20,7 +20,7 @@ import * as dotenv from 'dotenv';
 
 // Import helper functions and assertion utilities
 import { getRequest } from '../helper/util';
-import { assertResponse, assertFailResponse } from '../helper/assertion';
+import { assertResponse, assertFailResponse, assertSdkErrorResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
@@ -69,6 +69,20 @@ async function assertTransferToBankErrorBypassSDK(caseName: string): Promise<voi
       console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
       fail('Transfer to bank test failed: ' + (e.message || e));
     }
+  }
+}
+
+async function assertTransferToBankErrorViaSDK(caseName: string): Promise<void> {
+  const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+  const partnerReferenceNo = uuidv4();
+  requestData.partnerReferenceNo = partnerReferenceNo;
+
+  let apiResponse: any = null;
+  try {
+    apiResponse = await dana.disbursementApi.transferToBank(requestData);
+    await assertSdkErrorResponse(jsonPathFile, titleCase, caseName, apiResponse, null, { partnerReferenceNo });
+  } catch (e: any) {
+    await assertSdkErrorResponse(jsonPathFile, titleCase, caseName, apiResponse, e, { partnerReferenceNo });
   }
 }
 
@@ -343,7 +357,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
    * @since 1.0.0
    */
   test('DisbursementBankUnknownError - should fail transfer due to internal server error', async () => {
-    await assertTransferToBankErrorBypassSDK('DisbursementBankUnknownError');
+    await assertTransferToBankErrorViaSDK('DisbursementBankUnknownError');
   });
 
   /**
@@ -360,7 +374,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
    * @since 1.0.0
    */
   test('DisbursementBankGeneralError - should fail transfer due to internal general error', async () => {
-    await assertTransferToBankErrorBypassSDK('DisbursementBankGeneralError');
+    await assertTransferToBankErrorViaSDK('DisbursementBankGeneralError');
   });
 
   /**
@@ -377,7 +391,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
    * @since 1.0.0
    */
   test('DisbursementBankInactiveAccount - should fail transfer due to inactive account', async () => {
-    await assertTransferToBankErrorBypassSDK('DisbursementBankInactiveAccount');
+    await assertTransferToBankErrorViaSDK('DisbursementBankInactiveAccount');
   });
 
   /**
@@ -394,7 +408,7 @@ describe('Disbursement - Transfer To Bank Tests', () => {
    * @since 1.0.0
    */
   test('DisbursementBankSuspectedFraud - should fail transfer due to suspected fraud', async () => {
-    await assertTransferToBankErrorBypassSDK('DisbursementBankSuspectedFraud');
+    await assertTransferToBankErrorViaSDK('DisbursementBankSuspectedFraud');
   });
 
   /**

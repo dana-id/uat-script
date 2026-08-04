@@ -24,7 +24,7 @@ import * as dotenv from 'dotenv';
 
 // Import helper functions and assertion utilities for comprehensive testing
 import { fail } from 'assert';
-import { getRequest, generateFormattedDate } from '../helper/util';
+import { getRequest, generateFormattedDate, widgetPaymentValidUpTo } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { WidgetPaymentRequest } from 'dana-node/widget/v1';
 import { executeManualApiRequest } from '../helper/apiHelpers';
@@ -60,6 +60,11 @@ function generateReferenceNo(): string {
     return uuidv4();
 }
 
+function prepareWidgetPaymentRequest(requestData: WidgetPaymentRequest, partnerReferenceNo: string): void {
+    requestData.partnerReferenceNo = partnerReferenceNo;
+    requestData.validUpTo = widgetPaymentValidUpTo();
+}
+
 /**
  * Widget Payment Test Suite
  * 
@@ -87,8 +92,7 @@ describe('Payment Tests', () => {
 
         // Configure request with unique reference number and validUpTo timestamp
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
-        requestData.validUpTo = generateFormattedDate(15 * 60, 7);
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
 
         try {
             // Execute widget payment API call
@@ -111,7 +115,7 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -207,7 +211,7 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -232,7 +236,7 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -258,7 +262,7 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID (use a non-existent merchant ID for testing)
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -278,31 +282,24 @@ describe('Payment Tests', () => {
 
     // Test: Payment Fail - Inconsistent Request
     test('PaymentFailInconsistentRequest - should fail with inconsistent request', async () => {
-        // Define the case name for the test
         const caseName = 'PaymentFailInconsistentRequest';
-
-        // Extract request data from test data file based on case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
-
-        // Configure request with unique reference number and merchant ID
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
+
+        await dana.widgetApi.widgetPayment(requestData);
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        requestData.amount.value = '10000.00';
 
         try {
-            await dana.widgetApi.widgetPayment(requestData);
-            requestData.amount.currency = "IDR"; // Change currency to create inconsistency
-            requestData.amount.value = "12000.00"; // Change value to create inconsistency
-            // Execute widget payment API call
             const response = await dana.widgetApi.widgetPayment(requestData);
-
-            // Validate response against expected result from test data
             await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
         } catch (e: any) {
-            // If a ResponseError occurs, assert the failure response
             if (e instanceof ResponseError) {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
-                // If another error occurs, fail the test with the error message
                 console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
@@ -317,7 +314,7 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);
@@ -338,22 +335,24 @@ describe('Payment Tests', () => {
     // Test: Payment Fail - Exceed Amount Limit (4035402) — Widget.json key is PaymentFailExceedAmountLimit
     test('PaymentFailExceedAmountLimit - should fail when amount exceeds limit', async () => {
         const caseName = 'PaymentFailExceedAmountLimit';
-        // Get the request data from the JSON file based on the case name
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
-        // Generate a unique reference number and set the merchant ID
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
+
         try {
-            // Call the widget payment API with the request data
-            const response = await dana.widgetApi.widgetPayment(requestData);
-            // Assert the failure response against the expected result
-            await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(response));
+            // Bypass SDK sandbox amount validation (21000000 > max 10000000) and hit the API directly
+            await executeManualApiRequest(
+                caseName,
+                'POST',
+                baseUrl + apiUrl,
+                apiUrl,
+                requestData as Record<string, any>,
+            );
+            fail('Expected an error but the API call succeeded');
         } catch (e: any) {
-            // If a ResponseError occurs, assert the failure response
             if (e instanceof ResponseError) {
                 await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse));
             } else {
-                // If another error occurs, fail the test with the error message
                 console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
                 fail('Payment test failed: ' + (e.message || e));
             }
@@ -368,7 +367,7 @@ describe('Payment Tests', () => {
         const requestData: WidgetPaymentRequest = getRequest(jsonPathFile, titleCase, caseName);
         // Generate a unique reference number and set the merchant ID
         const partnerReferenceNo = generateReferenceNo();
-        requestData.partnerReferenceNo = partnerReferenceNo;
+        prepareWidgetPaymentRequest(requestData, partnerReferenceNo);
         try {
             // Call the widget payment API with the request data
             const response = await dana.widgetApi.widgetPayment(requestData);

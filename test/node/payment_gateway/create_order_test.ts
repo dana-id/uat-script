@@ -19,7 +19,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 
 // Import helper functions and assertion utilities for robust testing
-import { getRequest, retryOnInconsistentRequest, generateFormattedDate } from '../helper/util';
+import { getRequest, retryOnInconsistentRequest, generateFormattedDate, paymentGatewaySandboxValidUpTo, generatePaymentGatewayPartnerReferenceNo } from '../helper/util';
 import { assertResponse, assertFailResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
@@ -92,15 +92,19 @@ describe('Payment Gateway - Create Order Tests', () => {
     const caseName = "CreateOrderRedirect";
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 1 hour from now
-    try {
-      // Execute create order API call
-      const response = await dana.paymentGatewayApi.createOrder(requestData);
+    requestData.validUpTo = paymentGatewaySandboxValidUpTo();
+    requestData.externalStoreId = '';
 
-      expect(response).toBeTruthy();
+    try {
+      const response = await retryOnInconsistentRequest(
+        () => dana.paymentGatewayApi.createOrder(requestData),
+        3,
+        2000,
+      );
+
+      await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
     } catch (e) {
       console.error('[REF] case=' + caseName + ' partnerReferenceNo:', partnerReferenceNo);
       console.error('Create order redirect test failed:', e);
@@ -126,11 +130,15 @@ describe('Payment Gateway - Create Order Tests', () => {
     // Assign unique reference and merchant ID for test isolation
     const partnerReferenceNo = generatePartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 9 hours and 43 minutes from now
+    requestData.validUpTo = paymentGatewaySandboxValidUpTo();
 
     try {
       // Use retry mechanism to handle potential inconsistent request errors
-      const response = await dana.paymentGatewayApi.createOrder(requestData)
+      const response = await retryOnInconsistentRequest(
+        () => dana.paymentGatewayApi.createOrder(requestData),
+        3,
+        2000,
+      );
 
       // Validate API response against expected result
       await assertResponse(jsonPathFile, titleCase, caseName, response, { partnerReferenceNo });
@@ -187,9 +195,9 @@ describe('Payment Gateway - Create Order Tests', () => {
     const caseName = "CreateOrderNetworkPayPgQris";
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    const partnerReferenceNo = generateRandomString(25);
+    const partnerReferenceNo = generatePaymentGatewayPartnerReferenceNo();
     requestData.partnerReferenceNo = partnerReferenceNo;
-    requestData.validUpTo = generateFormattedDate(1800); // Set validUpTo to 1 hour from now
+    requestData.validUpTo = paymentGatewaySandboxValidUpTo();
     requestData.externalStoreId = externalShopId;
 
     const response = await dana.paymentGatewayApi.createOrder(requestData);

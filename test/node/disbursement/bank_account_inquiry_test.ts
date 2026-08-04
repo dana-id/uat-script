@@ -20,7 +20,7 @@ import * as dotenv from 'dotenv';
 
 // Import helper functions and assertion utilities
 import { getRequest } from '../helper/util';
-import { assertResponse, assertFailResponse } from '../helper/assertion';
+import { assertResponse, assertFailResponse, assertSdkErrorResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
@@ -69,6 +69,20 @@ async function assertBankAccountInquiryErrorBypassSDK(caseName: string): Promise
     } else {
       fail('Bank account inquiry test failed: ' + (e.message || e));
     }
+  }
+}
+
+async function assertBankAccountInquiryErrorViaSDK(caseName: string): Promise<void> {
+  const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+  const partnerReferenceNo = uuidv4();
+  requestData.partnerReferenceNo = partnerReferenceNo;
+
+  let apiResponse: any = null;
+  try {
+    apiResponse = await dana.disbursementApi.bankAccountInquiry(requestData);
+    await assertSdkErrorResponse(jsonPathFile, titleCase, caseName, apiResponse, null, { partnerReferenceNo });
+  } catch (e: any) {
+    await assertSdkErrorResponse(jsonPathFile, titleCase, caseName, apiResponse, e, { partnerReferenceNo });
   }
 }
 
@@ -130,7 +144,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountInsufficientFund - should fail inquiry due to insufficient fund', async () => {
-    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountInsufficientFund');
+    await assertBankAccountInquiryErrorViaSDK('InquiryBankAccountInsufficientFund');
   });
 
   /**
@@ -147,7 +161,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountInactiveAccount - should fail inquiry due to inactive account', async () => {
-    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountInactiveAccount');
+    await assertBankAccountInquiryErrorViaSDK('InquiryBankAccountInactiveAccount');
   });
 
   /**
@@ -164,7 +178,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountInvalidMerchant - should fail inquiry due to invalid merchant', async () => {
-    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountInvalidMerchant');
+    await assertBankAccountInquiryErrorViaSDK('InquiryBankAccountInvalidMerchant');
   });
 
   /**
@@ -181,7 +195,7 @@ describe('Disbursement - Bank Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryBankAccountInvalidCard - should fail inquiry due to invalid card', async () => {
-    await assertBankAccountInquiryErrorBypassSDK('InquiryBankAccountInvalidCard');
+    await assertBankAccountInquiryErrorViaSDK('InquiryBankAccountInvalidCard');
   });
 
   /**

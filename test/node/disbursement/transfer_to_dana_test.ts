@@ -20,7 +20,7 @@ import * as dotenv from 'dotenv';
 
 // Import helper functions and assertion utilities
 import { getRequest } from '../helper/util';
-import { assertResponse, assertFailResponse } from '../helper/assertion';
+import { assertResponse, assertFailResponse, assertSdkErrorResponse } from '../helper/assertion';
 import { AssertionError, fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
@@ -323,27 +323,29 @@ describe('Disbursement - Transfer To DANA Tests', () => {
     const caseName = "TopUpCustomerExceedAmountLimit";
     const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
 
-    // Assign unique reference for test isolation
     const partnerReferenceNo = uuidv4();
     requestData.partnerReferenceNo = partnerReferenceNo;
 
-    const apiPath = '/rest/v1.0/emoney/topup';
+    let apiResponse: any = null;
     try {
-      await executeManualApiRequest(
+      apiResponse = await dana.disbursementApi.transferToDana(requestData);
+      await assertSdkErrorResponse(
+        jsonPathFile,
+        titleCase,
         caseName,
-        'POST',
-        `https://api.sandbox.dana.id${apiPath}`,
-        apiPath,
-        requestData,
+        apiResponse,
+        null,
+        { partnerReferenceNo },
       );
-      fail("Expected an error but the API call succeeded");
     } catch (e: any) {
-      if (e instanceof ResponseError) {
-        await assertFailResponse(jsonPathFile, titleCase, caseName, JSON.stringify(e.rawResponse),
-          { 'partnerReferenceNo': partnerReferenceNo });
-      } else {
-        fail('Payment test failed: ' + (e.message || e));
-      }
+      await assertSdkErrorResponse(
+        jsonPathFile,
+        titleCase,
+        caseName,
+        apiResponse,
+        e,
+        { partnerReferenceNo },
+      );
     }
   });
 

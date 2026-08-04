@@ -426,6 +426,26 @@ function generateFormattedDate(offsetSeconds: number = 0, timezoneOffset: number
     return `${year}-${month}-${day}T${hour}:${minute}:${second}${timezoneStr}`;
 }
 
+/** Random alphanumeric partner reference (≤25 chars) for PG QRIS sandbox validation. */
+function generatePaymentGatewayPartnerReferenceNo(length = 25): string {
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += charset.charAt(Math.floor(Math.random() * charset.length));
+  }
+  return result;
+}
+
+/** Sandbox PG create-order: validUpTo within 30 minutes (default 6 minutes). */
+function paymentGatewaySandboxValidUpTo(offsetSeconds = 360): string {
+  return generateFormattedDate(offsetSeconds, 7);
+}
+
+/** Widget payment validUpTo: wall clock in Jakarta, within API max horizon. */
+function widgetPaymentValidUpTo(minutesFromNow = 15): string {
+  return generateFormattedDate(minutesFromNow * 60, 7);
+}
+
 /**
  * Export all utility functions for use in test files
  * 
@@ -441,5 +461,8 @@ export {
   getResponseCode,
   retryOnInconsistentRequest,
   automatePayment,
-  generateFormattedDate
+  generateFormattedDate,
+  generatePaymentGatewayPartnerReferenceNo,
+  paymentGatewaySandboxValidUpTo,
+  widgetPaymentValidUpTo
 };

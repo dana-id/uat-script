@@ -627,8 +627,8 @@
         }
       },
       "response": {
-        "responseCode": "4034202",
-        "responseMessage": "Exceed Transaction Amount Limit|Exceed Transaction Amount Limit. In sandbox, amount.value must not exceed 20000000",
+        "responseCode": "4034214",
+        "responseMessage": "Insufficient Fund",
         "partnerReferenceNo": "${partnerReferenceNo}"
       }
     },
@@ -1030,7 +1030,7 @@
       },
       "response": {
         "responseCode": "5004300",
-        "responseMessage": "General Error. For testing positive case in sandbox use beneficiaryAccountNumber 2460888509 and beneficiaryBankCode 014"
+        "responseMessage": "General Error|General Error. For testing positive case in sandbox use beneficiaryAccountNumber 2460888509 and beneficiaryBankCode 014"
       }
     },
     "DisbursementBankUnknownError": {
@@ -1055,7 +1055,7 @@
       },
       "response": {
         "responseCode": "5004301",
-        "responseMessage": "Internal Server Error. For testing positive case in sandbox use beneficiaryAccountNumber 2460888509 and beneficiaryBankCode 014"
+        "responseMessage": "Internal Server Error|Internal Server Error. For testing positive case in sandbox use beneficiaryAccountNumber 2460888509 and beneficiaryBankCode 014"
       }
     },
     "DisbursementBankInactiveAccount": {

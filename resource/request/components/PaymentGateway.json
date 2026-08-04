@@ -851,7 +851,7 @@
             },
             "response": {
                 "responseCode": "5005501",
-                "responseMessage": "Internal Server Error"
+                "responseMessage": "Internal Server Error|Internal Server Error. If you want to use QRIS, make sure you fill externalStoreId. See https://dashboard.dana.id/sandbox/submerchants in the external shop id section. For QRIS, partnerReferenceNo max is 25 chars."
             }
         },
         "QueryPaymentUnauthorized": {
@@ -920,7 +920,7 @@
             },
             "response": {
                 "responseCode": "5005601",
-                "responseMessage": "Internal Server Error"
+                "responseMessage": "Internal Server Error|Internal Server Error. If you want to use QRIS, make sure you fill externalStoreId. See https://dashboard.dana.id/sandbox/submerchants in the external shop id section. For QRIS, partnerReferenceNo max is 25 chars."
             }
         }
     },
@@ -962,7 +962,7 @@
             },
             "response": {
                 "responseCode": "5005701",
-                "responseMessage": "Internal Server Error"
+                "responseMessage": "Internal Server Error|Internal Server Error. If you want to use QRIS, make sure you fill externalStoreId. See https://dashboard.dana.id/sandbox/submerchants in the external shop id section. For QRIS, partnerReferenceNo max is 25 chars."
             }
         },
         "CancelOrderInProgress": {
@@ -1010,7 +1010,7 @@
             },
             "response": {
                 "responseCode": "4045708",
-                "responseMessage": "Invalid Merchant"
+                "responseMessage": "Invalid Merchant|Invalid Merchant. If you are using QRIS / making order for your store / submerchant, make sure externalStoreId / subMerchant exists. See https://dashboard.dana.id/sandbox/submerchants external shop id section for external store id and external division id section for submerchant"
             }
         },
         "CancelOrderInvalidMandatoryField": {
@@ -1170,7 +1170,7 @@
             },
             "response": {
                 "responseCode": "5005701",
-                "responseMessage": "Internal Server Error"
+                "responseMessage": "Internal Server Error|Internal Server Error. If you want to use QRIS, make sure you fill externalStoreId. See https://dashboard.dana.id/sandbox/submerchants in the external shop id section. For QRIS, partnerReferenceNo max is 25 chars."
             }
         }
     },
@@ -1392,7 +1392,7 @@
             },
             "response": {
                 "responseCode": "5005801",
-                "responseMessage": "Internal Server Error"
+                "responseMessage": "Internal Server Error|Internal Server Error. If you want to use QRIS, make sure you fill externalStoreId. See https://dashboard.dana.id/sandbox/submerchants in the external shop id section. For QRIS, partnerReferenceNo max is 25 chars."
             }
         },
         "RefundOrderMerchantStatusAbnormal": {
@@ -1414,7 +1414,7 @@
             },
             "response": {
                 "responseCode": "4045808",
-                "responseMessage": "Invalid Merchant"
+                "responseMessage": "Invalid Merchant|Invalid Merchant. If you are using QRIS / making order for your store / submerchant, make sure externalStoreId / subMerchant exists. See https://dashboard.dana.id/sandbox/submerchants external shop id section for external store id and external division id section for submerchant"
             }
         },
         "RefundOrderInProgress": {

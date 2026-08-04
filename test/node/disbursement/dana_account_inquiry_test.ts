@@ -20,7 +20,7 @@ import * as dotenv from 'dotenv';
 
 // Import helper functions and assertion utilities
 import { getRequest } from '../helper/util';
-import { assertResponse, assertFailResponse } from '../helper/assertion';
+import { assertResponse, assertFailResponse, assertSdkErrorResponse } from '../helper/assertion';
 import { fail } from 'assert';
 import { ResponseError } from 'dana-node';
 import { executeManualApiRequest } from '../helper/apiHelpers';
@@ -69,6 +69,20 @@ async function assertDanaAccountInquiryErrorBypassSDK(caseName: string): Promise
     } else {
       fail('DANA account inquiry test failed: ' + (e.message || e));
     }
+  }
+}
+
+async function assertDanaAccountInquiryErrorViaSDK(caseName: string): Promise<void> {
+  const requestData: any = getRequest(jsonPathFile, titleCase, caseName);
+  const partnerReferenceNo = uuidv4();
+  requestData.partnerReferenceNo = partnerReferenceNo;
+
+  let apiResponse: any = null;
+  try {
+    apiResponse = await dana.disbursementApi.danaAccountInquiry(requestData);
+    await assertSdkErrorResponse(jsonPathFile, titleCase, caseName, apiResponse, null, { partnerReferenceNo });
+  } catch (e: any) {
+    await assertSdkErrorResponse(jsonPathFile, titleCase, caseName, apiResponse, e, { partnerReferenceNo });
   }
 }
 
@@ -247,6 +261,6 @@ describe('Disbursement - Dana Account Inquiry Tests', () => {
    * @since 1.0.0
    */
   test('InquiryCustomerExceededLimit - should fail inquiry due to exceeded limit', async () => {
-    await assertDanaAccountInquiryErrorBypassSDK('InquiryCustomerExceededLimit');
+    await assertDanaAccountInquiryErrorViaSDK('InquiryCustomerExceededLimit');
   });
 });

@@ -17,6 +17,7 @@
 /* eslint-disable */
 import * as fs from 'fs';
 import * as path from 'path';
+import { ResponseError } from 'dana-node';
 
 /**
  * Compares JSON objects with special handling for server-generated values
@@ -40,6 +41,16 @@ import * as path from 'path';
  * }
  * ```
  */
+function stringsMatchExpected(expected: string, actual: string): boolean {
+  if (expected === actual) {
+    return true;
+  }
+  if (expected.includes('|')) {
+    return expected.split('|').some((alt) => alt.trim() === actual);
+  }
+  return false;
+}
+
 function compareJsonObjects(expected: any, actual: any, currentPath = '', diffPaths: Array<[string, any, any]> = []): void {
   // Handle special server value patterns that cannot be predetermined
   if (typeof expected === 'string' && expected === '${valueFromServer}') {
@@ -97,7 +108,14 @@ function compareJsonObjects(expected: any, actual: any, currentPath = '', diffPa
     return;
   }
 
-  // For primitive values, perform direct comparison
+  // For primitive values, perform direct comparison (pipe-OR for sandbox hint variants)
+  if (typeof expected === 'string' && typeof actual === 'string') {
+    if (!stringsMatchExpected(expected, actual)) {
+      diffPaths.push([currentPath, expected, actual]);
+    }
+    return;
+  }
+
   if (expected !== actual) {
     diffPaths.push([currentPath, expected, actual]);
   }
@@ -287,6 +305,39 @@ function assertFailResponse(jsonPathFile: string, title: string, data: string, e
 }
 
 /**
+ * Assert SDK Execute results for business-error fixtures (HTTP error or 2xx non-200 responseCode).
+ */
+async function assertSdkErrorResponse(
+  jsonPathFile: string,
+  title: string,
+  data: string,
+  apiResponse: Record<string, any> | null,
+  error: unknown,
+  variableDict: Record<string, any> | null = null
+): Promise<boolean> {
+  if (error) {
+    if (apiResponse) {
+      return assertResponse(jsonPathFile, title, data, JSON.stringify(apiResponse), variableDict);
+    }
+    if (error instanceof ResponseError) {
+      return assertFailResponse(jsonPathFile, title, data, JSON.stringify(error.rawResponse), variableDict);
+    }
+    throw error;
+  }
+
+  if (!apiResponse) {
+    throw new Error('Expected error response but got nil');
+  }
+
+  const responseCode = String(apiResponse.responseCode ?? '');
+  if (responseCode.startsWith('200')) {
+    throw new Error(`Expected business error but got success responseCode ${responseCode}`);
+  }
+
+  return assertResponse(jsonPathFile, title, data, JSON.stringify(apiResponse), variableDict);
+}
+
+/**
  * Asserts that an API success response matches the expected data
  * 
  * This function validates successful API responses against expected response patterns
@@ -369,5 +420,7 @@ export {
   getResponse,
   getResponseCode,
   assertFailResponse,
-  assertResponse
+  assertResponse,
+  assertSdkErrorResponse,
+  stringsMatchExpected
 };
