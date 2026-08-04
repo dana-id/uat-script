@@ -1,26 +1,14 @@
 # Shared Go test runner utilities (local + CI).
 
+. "$(CDPATH= cd -- "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/mandatory-tests.sh"
+
 has_test_files() {
     dir="$1"
     [ -d "$dir" ] && find "$dir" -name "*_test.go" -type f 2>/dev/null | head -1 | grep -q .
 }
 
 get_mandatory_pattern_for_module() {
-    module_name="$1"
-    case "$module_name" in
-        "payment_gateway")
-            echo 'TestCreateOrderRedirectScenario|TestCreateOrderInvalidFieldFormat|TestCreateOrderInconsistentRequest|TestCreateOrderInvalidMandatoryField|TestCreateOrderUnauthorized|TestTransactionSuccessNotify|TestInternalServerErrorNotify|TestExpiredNotify'
-            ;;
-        "widget")
-            echo 'TestPaymentSuccess|TestPaymentFailMissingOrInvalidMandatoryField|TestPaymentFailGeneralError|TestPaymentFailTransactionNotPermitted|TestPaymentFailMerchantNotExistOrStatusAbnormal|TestPaymentFailInconsistentRequest|TestPaymentFailInternalServerError|TestPaymentFailInvalidFormat|TestPaymentFailInvalidSignature|TestPaymentFailExceedsTransactionAmountLimit|TestTransactionSuccessNotify|TestInternalServerErrorNotify|TestExpiredNotify'
-            ;;
-        "disbursement")
-            echo 'TestTopUpCustomerValid|TestTopUpCustomerInsufficientFund|TestTopUpCustomerFrozenAccount|TestTopUpCustomerMissingMandatoryField|TestTopUpCustomerInconsistentRequest|TestTopUpCustomerInternalServerError|TestTopUpCustomerInternalGeneralError|TestDisbursementBankValidAccount|TestDisbursementBankValidAccountInProgress|TestDisbursementBankInconsistentRequest|TestDisbursementBankInsufficientFund|TestDisbursementBankInactiveAccount|TestDisbursementBankInvalidFieldFormat|TestDisbursementBankMissingMandatoryField|TestTransactionSuccessNotify|TestInternalServerErrorNotify|TestExpiredNotify'
-            ;;
-        *)
-            echo ""
-            ;;
-    esac
+    mandatory_go_pattern "$1"
 }
 
 load_env_if_exists() {

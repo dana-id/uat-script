@@ -121,7 +121,7 @@ public class PaymentPGUtil {
             if (replacedNode.isObject()) {
                 ObjectNode obj = (ObjectNode) replacedNode;
                 obj.put("validUpTo", generateDateWithOffsetSeconds(600));
-                TestUtil.ensureJacksonDiscriminator(obj, CreateOrderByApiRequest.class);
+                TestUtil.prepareFixtureNode(obj, CreateOrderByApiRequest.class);
             }
             CreateOrderByApiRequest result = objectMapper.treeToValue(replacedNode, CreateOrderByApiRequest.class);
             if (result.getAdditionalInfo() == null) {
@@ -141,7 +141,7 @@ public class PaymentPGUtil {
             if (replacedNode.isObject()) {
                 ObjectNode obj = (ObjectNode) replacedNode;
                 obj.put("validUpTo", generateDateWithOffsetSeconds(600));
-                TestUtil.ensureJacksonDiscriminator(obj, CreateOrderByRedirectRequest.class);
+                TestUtil.prepareFixtureNode(obj, CreateOrderByRedirectRequest.class);
             }
             CreateOrderByRedirectRequest result = objectMapper.treeToValue(replacedNode, CreateOrderByRedirectRequest.class);
             if (result.getAdditionalInfo() == null) {

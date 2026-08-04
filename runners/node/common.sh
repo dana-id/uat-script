@@ -8,22 +8,10 @@ fi
 PROJECT_ROOT="$(dirname "$NODE_RUNNERS_DIR")"
 NODE_TEST_DIR="$PROJECT_ROOT/test/node"
 
+. "$NODE_RUNNERS_DIR/../mandatory-tests.sh"
+
 get_mandatory_pattern_for_folder() {
-    folder_name="$1"
-    case "$folder_name" in
-        "payment_gateway")
-            echo "CreateOrderRedirect|CreateOrderInvalidFieldFormat|CreateOrderInconsistentRequest|CreateOrderInvalidMandatoryField|CreateOrderUnauthorized|TransactionSuccessNotify|InternalServerErrorNotify|ExpiredNotify"
-            ;;
-        "widget")
-            echo "PaymentSuccess|PaymentFailInvalidFormat|PaymentFailMissingOrInvalidMandatoryField|PaymentFailInvalidSignature|PaymentFailNotPermitted|PaymentFailMerchantNotExistOrStatusAbnormal|PaymentFailInconsistentRequest|PaymentFailInternalServerError|PaymentFailGeneralError|PaymentFailExceedAmountLimit|TransactionSuccessNotify|InternalServerErrorNotify|ExpiredNotify"
-            ;;
-        "disbursement")
-            echo "TopUpCustomerValid|TopUpCustomerInsufficientFund|TopUpCustomerFrozenAccount|TopUpCustomerMissingMandatoryField|TopUpCustomerInconsistentRequest|TopUpCustomerInternalServerError|TopUpCustomerInternalGeneralError|DisbursementBankValidAccount|DisbursementBankValidAccountInProgress|DisbursementBankInconsistentRequest|DisbursementBankInsufficientFund|DisbursementBankInactiveAccount|DisbursementBankInvalidFieldFormat|DisbursementBankMissingMandatoryField|TransactionSuccessNotify|InternalServerErrorNotify|ExpiredNotify"
-            ;;
-        *)
-            echo ""
-            ;;
-    esac
+    mandatory_node_pattern "$1"
 }
 
 resolve_needs_playwright() {

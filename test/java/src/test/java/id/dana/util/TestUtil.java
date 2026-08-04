@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import id.dana.invoker.JSON;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import java.io.File;
@@ -29,7 +30,7 @@ public final class TestUtil {
 
   private static final Logger log = LoggerFactory.getLogger(TestUtil.class);
 
-  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final ObjectMapper objectMapper = JSON.getDefault().getMapper();
 
   private static final Pattern TEMPLATE_PATTERN = Pattern.compile("\\$\\{([^}]+)\\}");
 
@@ -142,23 +143,20 @@ public final class TestUtil {
   }
 
   /**
-   * OpenAPI oneOf models use {@code @type} as Jackson discriminator (class simple name).
-   * Fixture JSON omits it because the API payload does not include it.
+   * Fixture JSON may include {@code @type} for oneOf documentation; concrete SDK models do not
+   * declare that property and must not receive an injected discriminator.
    */
-  public static void ensureJacksonDiscriminator(ObjectNode node, Class<?> clazz) {
-    if (!shouldInjectJacksonDiscriminator(clazz) || node.has("@type")) {
+  public static void prepareFixtureNode(ObjectNode node, Class<?> clazz) {
+    if (clazz == JsonNode.class || clazz.isInterface()) {
       return;
     }
-    node.put("@type", clazz.getSimpleName());
+    node.remove("@type");
   }
 
-  /** Only SDK model types need @type for Jackson oneOf deserialization — not JsonNode fixtures. */
-  private static boolean shouldInjectJacksonDiscriminator(Class<?> clazz) {
-    if (clazz == JsonNode.class || clazz.isPrimitive()) {
-      return false;
-    }
-    Package pkg = clazz.getPackage();
-    return pkg != null && pkg.getName().startsWith("id.dana.");
+  /** @deprecated Use {@link #prepareFixtureNode(ObjectNode, Class)} */
+  @Deprecated
+  public static void ensureJacksonDiscriminator(ObjectNode node, Class<?> clazz) {
+    prepareFixtureNode(node, clazz);
   }
 
   public static <T> T getRequest(String jsonPathFile, String title, String caseName,
@@ -179,17 +177,13 @@ public final class TestUtil {
       
       JsonNode replacedNode = replaceTemplateValues(requestNode);
       if (replacedNode.isObject()) {
-        ensureJacksonDiscriminator((ObjectNode) replacedNode, clazz);
+        prepareFixtureNode((ObjectNode) replacedNode, clazz);
       }
 
       return objectMapper.treeToValue(replacedNode, clazz);
     } catch (IOException e) {
-      log.error("Error reading {} data from {}: {}", nodeKey, jsonPathFile, e.getMessage());
-      try {
-        return clazz.getDeclaredConstructor().newInstance();
-      } catch (Exception ex) {
-        throw new RuntimeException("Failed to create instance of " + clazz.getName(), ex);
-      }
+      throw new RuntimeException(
+          "Error reading " + nodeKey + " data from " + jsonPathFile + ": " + e.getMessage(), e);
     }
   }
 

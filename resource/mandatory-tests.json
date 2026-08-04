@@ -1,0 +1,266 @@
+{
+  "description": "Canonical mandatory tests",
+  "products": {
+    "payment_gateway": {
+      "go": [
+        "TestCreateOrderRedirectScenario",
+        "TestCreateOrderInvalidFieldFormat",
+        "TestCreateOrderInconsistentRequest",
+        "TestCreateOrderInvalidMandatoryField",
+        "TestCreateOrderUnauthorized",
+        "TestTransactionSuccessNotify",
+        "TestInternalServerErrorNotify",
+        "TestExpiredNotify"
+      ],
+      "python": [
+        "test_create_order_redirect_scenario",
+        "test_create_order_invalid_field_format",
+        "test_create_order_inconsistent_request",
+        "test_create_order_invalid_mandatory_field",
+        "test_create_order_unauthorized",
+        "test_transaction_success_notify",
+        "test_internal_server_error_notify",
+        "test_expired_notify"
+      ],
+      "php": [
+        "testCreateOrderRedirectScenario",
+        "testCreateOrderInvalidFieldFormat",
+        "testCreateOrderInconsistentRequest",
+        "testCreateOrderInvalidMandatoryField",
+        "testCreateOrderUnauthorized",
+        "testTransactionSuccessNotify",
+        "testInternalServerErrorNotify",
+        "testExpiredNotify"
+      ],
+      "node": [
+        "CreateOrderRedirect",
+        "CreateOrderInvalidFieldFormat",
+        "CreateOrderInconsistentRequest",
+        "CreateOrderInvalidMandatoryField",
+        "CreateOrderUnauthorized",
+        "TransactionSuccessNotify",
+        "InternalServerErrorNotify",
+        "ExpiredNotify"
+      ],
+      "java": [
+        {
+          "class": "id.dana.paymentgateway.CreateOrderTest",
+          "methods": [
+            "testCreateOrderRedirect",
+            "testCreateOrderInvalidFieldFormat",
+            "testCreateOrderInconsistentRequest",
+            "testCreateOrderInvalidMandatoryField",
+            "testCreateOrderUnauthorized"
+          ]
+        },
+        {
+          "class": "id.dana.paymentgateway.FinishNotifyTest",
+          "methods": [
+            "testTransactionSuccessNotify",
+            "testInternalServerErrorNotify",
+            "testExpiredNotify"
+          ]
+        }
+      ]
+    },
+    "widget": {
+      "go": [
+        "TestPaymentSuccess",
+        "TestPaymentFailMissingOrInvalidMandatoryField",
+        "TestPaymentFailGeneralError",
+        "TestPaymentFailTransactionNotPermitted",
+        "TestPaymentFailMerchantNotExistOrStatusAbnormal",
+        "TestPaymentFailInconsistentRequest",
+        "TestPaymentFailInternalServerError",
+        "TestPaymentFailInvalidFormat",
+        "TestPaymentFailInvalidSignature",
+        "TestPaymentFailExceedsTransactionAmountLimit",
+        "TestTransactionSuccessNotify",
+        "TestInternalServerErrorNotify",
+        "TestExpiredNotify"
+      ],
+      "python": [
+        "test_payment_success",
+        "test_payment_fail_missing_or_invalid_mandatory_field",
+        "test_payment_fail_general_error",
+        "test_payment_fail_not_permitted",
+        "test_payment_fail_merchant_not_exist_or_status_abnormal",
+        "test_payment_fail_inconsistent_request",
+        "test_payment_fail_internal_server_error",
+        "test_payment_fail_invalid_format",
+        "test_payment_fail_invalid_signature",
+        "test_payment_fail_exceed_amount_limit",
+        "test_transaction_success_notify",
+        "test_internal_server_error_notify",
+        "test_expired_notify"
+      ],
+      "php": [
+        "testPaymentSuccess",
+        "testPaymentFailMissingOrInvalidMandatoryField",
+        "testPaymentFailGeneralError",
+        "testPaymentFailNotPermitted",
+        "testPaymentFailMerchantNotExistOrStatusAbnormal",
+        "testPaymentFailInconsistentRequest",
+        "testPaymentFailInternalServerError",
+        "testPaymentFailInvalidFormat",
+        "testPaymentFailInvalidSignature",
+        "testPaymentFailExceedAmountLimit",
+        "testTransactionSuccessNotify",
+        "testInternalServerErrorNotify",
+        "testExpiredNotify"
+      ],
+      "node": [
+        "PaymentSuccess",
+        "PaymentFailMissingOrInvalidMandatoryField",
+        "PaymentFailGeneralError",
+        "PaymentFailNotPermitted",
+        "PaymentFailMerchantNotExistOrStatusAbnormal",
+        "PaymentFailInconsistentRequest",
+        "PaymentFailInternalServerError",
+        "PaymentFailInvalidFormat",
+        "PaymentFailInvalidSignature",
+        "PaymentFailExceedAmountLimit",
+        "TransactionSuccessNotify",
+        "InternalServerErrorNotify",
+        "ExpiredNotify"
+      ],
+      "java": [
+        {
+          "class": "id.dana.widget.PaymentTest",
+          "methods": [
+            "testPaymentOrderSuccess",
+            "testPaymentFailMissingOrInvalidMandatoryField",
+            "testPaymentFailGeneralError",
+            "testPaymentFailNotPermitted",
+            "testPaymentOrderMerchantDoesNotExist",
+            "testPaymentOrderInconsistent",
+            "testPaymentFailInternalServerError",
+            "testPaymentFailInvalidFormat",
+            "testPaymentFailInvalidSignature",
+            "testPaymentFailExceedAmountLimit"
+          ]
+        },
+        {
+          "class": "id.dana.widget.FinishNotifyTest",
+          "methods": [
+            "testTransactionSuccessNotify",
+            "testInternalServerErrorNotify",
+            "testExpiredNotify"
+          ]
+        }
+      ]
+    },
+    "disbursement": {
+      "go": [
+        "TestTopUpCustomerValid",
+        "TestTopUpCustomerInsufficientFund",
+        "TestTopUpCustomerFrozenAccount",
+        "TestTopUpCustomerMissingMandatoryField",
+        "TestTopUpCustomerInconsistentRequest",
+        "TestTopUpCustomerInternalServerError",
+        "TestTopUpCustomerInternalGeneralError",
+        "TestDisbursementBankValidAccount",
+        "TestDisbursementBankValidAccountInProgress",
+        "TestDisbursementBankInconsistentRequest",
+        "TestDisbursementBankInsufficientFund",
+        "TestDisbursementBankInactiveAccount",
+        "TestDisbursementBankInvalidFieldFormat",
+        "TestDisbursementBankMissingMandatoryField",
+        "TestTransactionSuccessNotify",
+        "TestInternalServerErrorNotify",
+        "TestExpiredNotify"
+      ],
+      "python": [
+        "test_topup_customer_valid",
+        "test_topup_customer_insufficient_fund",
+        "test_topup_customer_frozen_account",
+        "test_topup_customer_missing_mandatory_field",
+        "test_topup_customer_inconsistent_request",
+        "test_topup_customer_internal_server_error",
+        "test_topup_customer_internal_general_error",
+        "test_disbursement_to_bank_valid",
+        "test_disbursement_to_bank_valid_account_in_progress",
+        "test_disbursement_to_bank_inconsistent_request",
+        "test_disbursement_to_bank_insufficient_fund",
+        "test_disbursement_to_bank_inactive_account",
+        "test_disbursement_to_bank_invalid_field_format",
+        "test_disbursement_to_bank_missing_mandatory_field",
+        "test_transaction_success_notify",
+        "test_internal_server_error_notify",
+        "test_expired_notify"
+      ],
+      "php": [
+        "testTopUpCustomerValid",
+        "testTopUpCustomerInsufficientFund",
+        "testTopUpCustomerFrozenAccount",
+        "testTopUpCustomerMissingMandatoryField",
+        "testTopUpCustomerInconsistentRequest",
+        "testTopUpCustomerInternalServerError",
+        "testTopUpCustomerInternalGeneralError",
+        "testDisbursementBankValidAccount",
+        "testDisbursementBankValidAccountInProgress",
+        "testDisbursementBankInconsistentRequest",
+        "testDisbursementBankInsufficientFund",
+        "testDisbursementBankInactiveAccount",
+        "testDisbursementBankInvalidFieldFormat",
+        "testDisbursementBankMissingMandatoryField",
+        "testTransactionSuccessNotify",
+        "testInternalServerErrorNotify",
+        "testExpiredNotify"
+      ],
+      "node": [
+        "TopUpCustomerValid",
+        "TopUpCustomerInsufficientFund",
+        "TopUpCustomerFrozenAccount",
+        "TopUpCustomerMissingMandatoryField",
+        "TopUpCustomerInconsistentRequest",
+        "TopUpCustomerInternalServerError",
+        "TopUpCustomerInternalGeneralError",
+        "DisbursementBankValidAccount",
+        "DisbursementBankValidAccountInProgress",
+        "DisbursementBankInconsistentRequest",
+        "DisbursementBankInsufficientFund",
+        "DisbursementBankInactiveAccount",
+        "DisbursementBankInvalidFieldFormat",
+        "DisbursementBankMissingMandatoryField",
+        "TransactionSuccessNotify",
+        "InternalServerErrorNotify",
+        "ExpiredNotify"
+      ],
+      "java": [
+        {
+          "class": "id.dana.disbursement.TransferToDanaTest",
+          "methods": [
+            "testTopUpCustomerValid",
+            "testTopUpCustomerInsufficientFund",
+            "testTopUpCustomerFrozenAccount",
+            "testTopUpCustomerMissingMandatoryField",
+            "testTopUpCustomerInconsistentRequest",
+            "testTopUpCustomerInternalServerError",
+            "testTopUpCustomerInternalGeneralError"
+          ]
+        },
+        {
+          "class": "id.dana.disbursement.TransferToBankTest",
+          "methods": [
+            "testDisbursementBankValidAccount",
+            "testDisbursementBankValidAccountInProgress",
+            "testDisbursementBankInconsistentRequest",
+            "testDisbursementBankInsufficientFund",
+            "testDisbursementBankInactiveAccount",
+            "testDisbursementBankInvalidFieldFormat",
+            "testDisbursementBankMissingMandatoryField"
+          ]
+        },
+        {
+          "class": "id.dana.disbursement.FinishNotifyTest",
+          "methods": [
+            "testTransactionSuccessNotify",
+            "testInternalServerErrorNotify",
+            "testExpiredNotify"
+          ]
+        }
+      ]
+    }
+  }
+}
