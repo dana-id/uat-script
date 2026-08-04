@@ -10,7 +10,8 @@ from dana.exceptions import *
 from uuid import uuid4
 from helper.util import get_request, with_delay, retry_on_inconsistent_request
 from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error
-from helper.assertion import assert_response, assert_fail_response
+from helper.assertion import assert_response, assert_fail_response, api_exception_response_json
+from helper.disbursement_test_util import assert_disbursement_error_via_sdk
 
 title_case = "BankAccountInquiry"
 json_path_file = "resource/request/components/Disbursement.json"
@@ -78,22 +79,50 @@ def test_inquiry_bank_account_valid_data_amount():
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_insufficient_fund():
-    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountInsufficientFund", 403)
+    assert_disbursement_error_via_sdk(
+        api_instance,
+        "bank_account_inquiry",
+        json_path_file,
+        title_case,
+        "InquiryBankAccountInsufficientFund",
+        BankAccountInquiryRequest,
+    )
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_inactive_account():
-    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountInactiveAccount", 403)
+    assert_disbursement_error_via_sdk(
+        api_instance,
+        "bank_account_inquiry",
+        json_path_file,
+        title_case,
+        "InquiryBankAccountInactiveAccount",
+        BankAccountInquiryRequest,
+    )
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_invalid_merchant():
-    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountInvalidMerchant", 404)
+    assert_disbursement_error_via_sdk(
+        api_instance,
+        "bank_account_inquiry",
+        json_path_file,
+        title_case,
+        "InquiryBankAccountInvalidMerchant",
+        BankAccountInquiryRequest,
+    )
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
 def test_inquiry_bank_account_invalid_card():
-    _assert_bank_account_inquiry_error_bypass_sdk("InquiryBankAccountInvalidCard", 404)
+    assert_disbursement_error_via_sdk(
+        api_instance,
+        "bank_account_inquiry",
+        json_path_file,
+        title_case,
+        "InquiryBankAccountInvalidCard",
+        BankAccountInquiryRequest,
+    )
 
 @with_delay()
 @retry_on_inconsistent_request(max_retries=3, delay_seconds=2)
@@ -110,7 +139,7 @@ def test_inquiry_bank_account_invalid_field_format():
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e),
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()

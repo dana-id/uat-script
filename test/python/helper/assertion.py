@@ -1,5 +1,51 @@
+import json
 from pprint import pprint
+
+from dana.exceptions import ApiException
+
 from helper.util import *  # Import the Invoke class
+
+
+def strings_match_expected(expected: str, actual: str) -> bool:
+    """Match fixture string; pipe-separated values are treated as alternatives."""
+    if expected == actual:
+        return True
+    if "|" in expected:
+        return actual in [alt.strip() for alt in expected.split("|")]
+    return False
+
+
+def api_exception_response_json(exc: ApiException) -> str:
+    """Prefer SDK-enriched error fields (exc.data) over raw HTTP body, like PHP Assertion::apiExceptionResponseJson."""
+    raw_body = exc.body
+    if isinstance(raw_body, bytes):
+        raw_body = raw_body.decode("utf-8")
+    elif raw_body is not None and not isinstance(raw_body, str):
+        raw_body = str(raw_body)
+
+    raw_payload = None
+    if raw_body:
+        try:
+            raw_payload = json.loads(raw_body)
+        except json.JSONDecodeError:
+            raw_payload = None
+
+    enriched_payload = exc.data if isinstance(exc.data, dict) else None
+
+    if isinstance(raw_payload, dict) and isinstance(enriched_payload, dict):
+        merged = dict(raw_payload)
+        for field in ("responseCode", "responseMessage", "partnerReferenceNo"):
+            if field in enriched_payload and enriched_payload[field] not in (None, ""):
+                merged[field] = enriched_payload[field]
+        return json.dumps(merged)
+
+    if isinstance(enriched_payload, dict):
+        return json.dumps(enriched_payload)
+
+    if raw_body:
+        return raw_body
+
+    return str(exc.reason or exc)
 
 def replace_variables(data, variable_dict):
     """
@@ -72,6 +118,43 @@ def assert_response(json_path_file: str, title: str, data: str, api_response_jso
 
     logged = replace_variables(actual_response, variable_dict) if variable_dict else actual_response
     pprint(f"Assertion passed: API response matches the expected data {logged}")
+
+
+def assert_sdk_error_response(
+    json_path_file: str,
+    title: str,
+    data: str,
+    api_response,
+    error,
+    variable_dict: dict = None,
+) -> None:
+    """Assert disbursement/PG SDK results for business-error fixtures (HTTP error or non-2xx responseCode)."""
+    if error is not None:
+        if api_response is not None:
+            response_json = api_response.to_json() if hasattr(api_response, "to_json") else json.dumps(api_response)
+            assert_response(json_path_file, title, data, response_json, variable_dict)
+            return
+        if isinstance(error, ApiException):
+            assert_fail_response(
+                json_path_file,
+                title,
+                data,
+                api_exception_response_json(error),
+                variable_dict,
+            )
+            return
+        raise error
+
+    if api_response is None:
+        raise AssertionError("Expected error response but got nil")
+
+    response_json = api_response.to_json() if hasattr(api_response, "to_json") else json.dumps(api_response)
+    payload = json.loads(response_json)
+    response_code = str(payload.get("responseCode", ""))
+    if response_code.startswith("200"):
+        raise AssertionError(f"Expected business error but got success responseCode {response_code}")
+
+    assert_response(json_path_file, title, data, response_json, variable_dict)
 
 
 def assert_fail_response(json_path_file: str, title: str, data: str, error_body: str, variable_dict: dict = None) -> None:
@@ -168,6 +251,11 @@ def compare_json_objects(expected, actual, path, diff_paths):
         if actual is None or (isinstance(actual, str) and not actual):
             diff_paths.append((path, expected, actual))
     
+    # String comparison with pipe-separated alternatives (aligned with Go/Node/PHP)
+    elif isinstance(expected, str) and isinstance(actual, str):
+        if not strings_match_expected(expected, actual):
+            diff_paths.append((path, expected, actual))
+
     # For all other cases, do an exact comparison
     elif expected != actual:
         diff_paths.append((path, expected, actual))

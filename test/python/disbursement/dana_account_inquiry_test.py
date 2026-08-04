@@ -10,7 +10,8 @@ from dana.exceptions import *
 from uuid import uuid4
 from helper.util import get_request, with_delay
 from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error
-from helper.assertion import assert_response, assert_fail_response
+from helper.assertion import assert_response, assert_fail_response, api_exception_response_json
+from helper.disbursement_test_util import assert_disbursement_error_via_sdk
 
 title_case = "DanaAccountInquiry"
 json_path_file = "resource/request/components/Disbursement.json"
@@ -117,7 +118,7 @@ def test_inquiry_customer_frozen_account():
         pytest.fail("Expected ApiException for frozen account but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e),
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
@@ -133,9 +134,16 @@ def test_inquiry_customer_unregistered_account():
         pytest.fail("Expected ApiException for unregistered account but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e),
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
 def test_inquiry_customer_exceeded_limit():
-    _assert_dana_account_inquiry_error_bypass_sdk("InquiryCustomerExceededLimit", 403)
+    assert_disbursement_error_via_sdk(
+        api_instance,
+        "dana_account_inquiry",
+        json_path_file,
+        title_case,
+        "InquiryCustomerExceededLimit",
+        DanaAccountInquiryRequest,
+    )

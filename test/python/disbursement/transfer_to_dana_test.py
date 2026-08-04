@@ -11,7 +11,8 @@ from dana.exceptions import *
 from uuid import uuid4
 from helper.util import get_request, with_delay
 from helper.api_helpers import get_headers_with_signature, execute_and_assert_api_error
-from helper.assertion import assert_response, assert_fail_response
+from helper.assertion import assert_response, assert_fail_response, api_exception_response_json
+from helper.disbursement_test_util import assert_disbursement_error_via_sdk
 
 _TOPUP_RESOURCE_PATH = "/rest/v1.0/emoney/topup"
 _TOPUP_ENDPOINT = "https://api.sandbox.dana.id/rest/v1.0/emoney/topup"
@@ -90,7 +91,7 @@ def test_topup_customer_timeout():
         pytest.fail("Expected ApiException for timeout but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e), 
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
@@ -179,35 +180,18 @@ def test_topup_customer_frozen_account():
         pytest.fail("Expected ApiException for frozen account but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e), 
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
 def test_topup_customer_exceed_amount_limit():
-    case_name = "TopUpCustomerExceedAmountLimit"
-    json_dict = get_request(json_path_file, title_case, case_name)
-
-    json_dict["partnerReferenceNo"] = str(uuid4())
-
-    headers = get_headers_with_signature(
-        method="POST",
-        resource_path=_TOPUP_RESOURCE_PATH,
-        request_obj=json_dict,
-        with_timestamp=True,
-        invalid_timestamp=False,
-    )
-
-    execute_and_assert_api_error(
-        api_client,
-        "POST",
-        _TOPUP_ENDPOINT,
-        json_dict,
-        headers,
-        403,
+    assert_disbursement_error_via_sdk(
+        api_instance,
+        "transfer_to_dana",
         json_path_file,
         title_case,
-        case_name,
-        {'partnerReferenceNo': json_dict["partnerReferenceNo"]},
+        "TopUpCustomerExceedAmountLimit",
+        TransferToDanaRequest,
     )
 
 @with_delay()
@@ -223,7 +207,7 @@ def test_topup_customer_missing_mandatory_field():
         pytest.fail("Expected ApiException for missing mandatory field but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e), 
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
@@ -269,7 +253,7 @@ def test_topup_customer_invalid_field_format():
         pytest.fail("Expected ApiException for invalid field format but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e), 
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
@@ -291,7 +275,7 @@ def test_topup_customer_inconsistent_request():
         pytest.fail("Expected ApiException for inconsistent request but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e), 
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
@@ -307,7 +291,7 @@ def test_topup_customer_internal_server_error():
         pytest.fail("Expected ApiException for internal server error but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e), 
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
 
 @with_delay()
@@ -323,5 +307,5 @@ def test_topup_customer_internal_general_error():
         pytest.fail("Expected ApiException for general error but the API call succeeded")
 
     except ApiException as e:
-        assert_fail_response(json_path_file, title_case, case_name, str(e.body), 
+        assert_fail_response(json_path_file, title_case, case_name, api_exception_response_json(e), 
                            {'partnerReferenceNo': json_dict["partnerReferenceNo"]})
