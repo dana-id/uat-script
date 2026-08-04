@@ -43,36 +43,17 @@ resolve_needs_playwright() {
     folderName="$1"
     caseName="$2"
     runPattern="$3"
-    needs_playwright=true
-
-    if [ "$PYTHON_MANDATORY_ONLY" != "true" ]; then
-        echo "true"
-        return 0
-    fi
-
     needs_playwright=false
-    case "$folderName" in
-        ""|"widget")
-            if [ -z "$caseName" ] && [ -z "$runPattern" ]; then
-                needs_playwright=false
-            else
-                caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
-                runPatternLower=$(echo "$runPattern" | tr '[:upper:]' '[:lower:]')
-                if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|playwright"; then
-                    needs_playwright=true
-                fi
-            fi
-            ;;
-        "payment_gateway"|"disbursement")
-            if [ -n "$caseName" ] || [ -n "$runPattern" ]; then
-                caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
-                runPatternLower=$(echo "$runPattern" | tr '[:upper:]' '[:lower:]')
-                if echo "$caseNameLower $runPatternLower" | grep -Eq "automation|oauth|browser|playwright"; then
-                    needs_playwright=true
-                fi
-            fi
-            ;;
-    esac
+
+    caseNameLower=$(echo "$caseName" | tr '[:upper:]' '[:lower:]')
+    runPatternLower=$(echo "$runPattern" | tr '[:upper:]' '[:lower:]')
+    scope="$caseNameLower $runPatternLower $folderName"
+
+    # Browser/OAuth UI automation (widget + PG cancel/query/refund flows).
+    if echo "$scope" | grep -Eq \
+        'automation|oauth|browser|playwright|apply_token|apply_ott|get_auth|unbinding|balance_inquiry|query_order|query_payment|cancel_order|refund_order|payment_widget|payment_pg'; then
+        needs_playwright=true
+    fi
 
     echo "$needs_playwright"
 }
@@ -90,15 +71,15 @@ setup_python_env() {
     if [ "$needs_playwright" = "true" ]; then
         $PYTHON_CMD -m pip install --upgrade -r test/python/requirements.txt
     else
-        echo "Using test/python/requirements-core.txt (no Playwright) for local mandatory-only run."
+        echo "Using test/python/requirements-core.txt (no Playwright)."
         $PYTHON_CMD -m pip install --upgrade -r test/python/requirements-core.txt
     fi
-    $PYTHON_CMD -m pip install --upgrade "dana-python>=2.2.0"
+    $PYTHON_CMD -m pip install --upgrade "dana-python>=2.2.1"
 
     if [ "$needs_playwright" = "true" ]; then
         $PYTHON_CMD -m playwright install --with-deps chromium
     else
-        echo "Skipping Playwright browser install for local mandatory-only run."
+        echo "Skipping Playwright browser install (not required for this run)."
     fi
 
     export PYTHONPATH="${PYTHONPATH:+$PYTHONPATH:}$PROJECT_ROOT/test/python:$PROJECT_ROOT/runner/python"

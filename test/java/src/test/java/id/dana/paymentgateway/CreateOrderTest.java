@@ -88,10 +88,7 @@ public class CreateOrderTest {
 
     try {
       CreateOrderResponse response = api.createOrder(requestData);
-      // Sandbox redirect without externalStoreId appends QRIS guidance to responseMessage;
-      // skip exact AssertResponse (expects "Successful") like Go/Node/PHP/Python SIT.
-      assertTrue(response != null && response.getResponseCode() != null,
-          "CreateOrderRedirect should return a response");
+      TestUtil.assertResponse(jsonPathFile, titleCase, caseName, response, variableDict);
     } catch (Exception e) {
       log.error("[REF] case={} partnerReferenceNo={}", caseName, partnerReferenceNo);
       log.error("Create order test failed:", e);

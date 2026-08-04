@@ -218,9 +218,32 @@ public final class TestUtil {
       return;
     }
 
+    if (expected.isTextual() && actual.isTextual()) {
+      if (stringsMatchExpected(expected.asText(), actual.asText())) {
+        return;
+      }
+    }
+
     if (!expected.equals(actual)) {
       diffPaths.add(new Difference(currentPath, expected, actual));
     }
+  }
+
+  /**
+   * Match fixture string; pipe-separated values are treated as alternatives (aligned with Go/Node/PHP/Python).
+   */
+  static boolean stringsMatchExpected(String expected, String actual) {
+    if (expected.equals(actual)) {
+      return true;
+    }
+    if (expected.contains("|")) {
+      for (String alt : expected.split("\\|")) {
+        if (alt.trim().equals(actual)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public static JsonNode replaceVariables(JsonNode data, Map<String, Object> variableDict) {

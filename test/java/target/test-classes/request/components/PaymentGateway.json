@@ -109,7 +109,6 @@
     "CreateOrder": {
         "CreateOrderRedirect": {
             "request": {
-                "@type": "CreateOrderByRedirectRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
@@ -130,7 +129,7 @@
                         "isDeeplink": "Y"
                     }
                 ],
-                "validUpTo": "2030-05-01T00:46:43+07:00",
+                "validUpTo": "2026-05-01T00:46:43+07:00",
                 "additionalInfo": {
                     "order": {
                         "orderTitle": "Payment Gateway Order",
@@ -149,15 +148,13 @@
             },
             "response": {
                 "responseCode": "2005400",
-                "responseMessage": "Successful"
+                "responseMessage": "Successful. If you want to use QRIS and it is not showing in payment methods, make sure you already fill externalStoreId. See https://dashboard.dana.id/sandbox/submerchants in the external shop id section.|Successful. If you want to use QRIS and it is not showing in payment methods, make sure you already fill externalStoreId. See https://dashboard.dana.id/sandbox/submerchants in the external shop id section. For QRIS, partnerReferenceNo max is 25 chars."
             }
         },
         "CreateOrderApi": {
             "request": {
-                "@type": "CreateOrderByApiRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
-                "subMerchantId": "",
                 "amount": {
                     "value": "1.00",
                     "currency": "IDR"
@@ -208,11 +205,9 @@
             }
         },
         "CreateOrderBalance": {
-            "request": {
-                "@type": "CreateOrderByApiRequest",
+            "request": {                
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
-                "subMerchantId": "",
                 "amount": {
                     "value": "1.00",
                     "currency": "IDR"
@@ -251,7 +246,7 @@
                         "payMethod": "BALANCE",
                         "payOption": "",
                         "transAmount": {
-                            "value": "10000.00",
+                            "value": "1.00",
                             "currency": "IDR"
                         }
                     }
@@ -264,14 +259,13 @@
         },
         "CreateOrderNetworkPayPgQris": {
             "request": {
-                "@type": "CreateOrderByApiRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
+                "externalStoreId": "${EXTERNAL_SHOP_ID}",
                 "amount": {
                     "value": "1.00",
                     "currency": "IDR"
                 },
-                "externalStoreId": "${EXTERNAL_SHOP_ID}",
                 "urlParams": [
                     {
                         "url": "https://tinknet.my.id/v1/test",
@@ -305,9 +299,15 @@
                         "payMethod": "NETWORK_PAY",
                         "payOption": "NETWORK_PAY_PG_QRIS",
                         "transAmount": {
-                            "value": "10000.00",
-                            "currency": "IDR"
-                        }
+                            "currency": "IDR",
+                            "value": "1.00"
+                        },
+                        "feeAmount": {
+                            "currency": "IDR",
+                            "value": "0"
+                        },
+                        "cardToken": "",
+                        "merchantToken": ""
                     }
                 ]
             },
@@ -318,7 +318,6 @@
         },
         "CreateOrderNetworkPayPgOtherWallet": {
             "request": {
-                "@type": "CreateOrderByApiRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
                 "amount": {
@@ -398,7 +397,6 @@
         },
         "CreateOrderNetworkPayPgOtherVaBank": {
             "request": {
-                "@type": "CreateOrderByApiRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
                 "amount": {
@@ -444,15 +442,17 @@
             "response": {
                 "responseCode": "2005400",
                 "responseMessage": "Successful",
-                "partnerReferenceNo": "${partnerReferenceNo}"
+                "referenceNo": "${valueFromServer}",
+                "partnerReferenceNo": "${partnerReferenceNo}",
+                "additionalInfo": {
+                    "paymentCode": "${valueFromServer}"
+                }
             }
         },
         "CreateOrderInvalidFieldFormat": {
             "request": {
-                "@type": "CreateOrderByApiRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
-                "merchantId": "",
-                "subMerchantId": "",
+                "merchantId": "${MERCHANT_ID}",
                 "amount": {
                     "value": "1500",
                     "currency": "IDR"
@@ -505,10 +505,8 @@
         },
         "CreateOrderInconsistentRequest": {
             "request": {
-                "@type": "CreateOrderByApiRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
-                "subMerchantId": "",
                 "amount": {
                     "value": "1.00",
                     "currency": "IDR"
@@ -561,7 +559,6 @@
         },
         "CreateOrderInvalidMandatoryField": {
             "request": {
-                "@type": "CreateOrderByApiRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
                 "amount": {
@@ -596,7 +593,7 @@
                 "payOptionDetails": [
                     {
                         "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BRI",
+                        "payOption": "VIRTUAL_ACCOUNT_BNI",
                         "transAmount": {
                             "value": "15000.00",
                             "currency": "IDR"
@@ -611,7 +608,6 @@
         },
         "CreateOrderUnauthorized": {
             "request": {
-                "@type": "CreateOrderByApiRequest",
                 "partnerReferenceNo": "${partnerReferenceNo}",
                 "merchantId": "${MERCHANT_ID}",
                 "amount": {
@@ -646,7 +642,7 @@
                 "payOptionDetails": [
                     {
                         "payMethod": "VIRTUAL_ACCOUNT",
-                        "payOption": "VIRTUAL_ACCOUNT_BRI",
+                        "payOption": "VIRTUAL_ACCOUNT_BNI",
                         "transAmount": {
                             "value": "15000.00",
                             "currency": "IDR"
@@ -874,7 +870,7 @@
                 "merchantId": "23489182303312",
                 "subMerchantId": "23489182303312",
                 "amount": {
-                    "value": "10000.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "latestTransactionStatus": "00",
@@ -1020,6 +1016,7 @@
         "CancelOrderInvalidMandatoryField": {
             "request": {
                 "originalReferenceNo": "${originalPartnerReferenceNo}",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalExternalId": "",
                 "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
@@ -1038,7 +1035,7 @@
         },
         "CancelOrderTransactionNotFound": {
             "request": {
-                "originalPartnerReferenceNo": "1232143242342",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "merchantId": "${MERCHANT_ID}",
@@ -1268,7 +1265,7 @@
         },
         "RefundOrderIllegalParameter": {
             "request": {
-                "merchantId": "21662001001603363abscs",
+                "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
                 "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
@@ -1298,7 +1295,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1314,11 +1311,11 @@
             "request": {
                 "merchantId": "${MERCHANT_ID}",
                 "subMerchantId": "",
-                "originalPartnerReferenceNo": "12312312",
+                "originalPartnerReferenceNo": "${partnerReferenceNo}",
                 "originalReferenceNo": "",
                 "originalExternalId": "",
                 "originalCaptureNo": "",
-                "partnerRefundNo": "1231",
+                "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
                     "value": "1.00",
                     "currency": "IDR"
@@ -1364,7 +1361,7 @@
                 "originalCaptureNo": "",
                 "partnerRefundNo": "${partnerReferenceNo}",
                 "refundAmount": {
-                    "value": "10000.00",
+                    "value": "1.00",
                     "currency": "IDR"
                 },
                 "externalStoreId": "",
@@ -1460,7 +1457,7 @@
                 "additionalInfo": {}
             },
             "response": {
-                "responseCode": "2025812",
+                "responseCode": "2025800",
                 "responseMessage": "Request In Progress"
             }
         }
