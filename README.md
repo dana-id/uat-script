@@ -178,9 +178,8 @@ Scripts require a Unix shell (`bash` / `sh`).
 
 - `test/` — UAT scenarios per language and module
 - `resource/` — Request templates and fixtures
-- `resource/mandatory-tests.json` — Canonical mandatory test list (all languages derive patterns from this)
-- `runners/` — Test runner scripts (local mandatory + retry)
-- `runners/mandatory-tests.sh` — Shared loader for mandatory test patterns
+- `resource/mandatory-tests.json` — Canonical mandatory test list (runners read via `jq`; full list for customers)
+- `runners/` — Test runner scripts (local mandatory + retry). Uptime-only filtering is in `.gitlab/mandatory_tests.py` via `runners/ci/` (GitLab internal, not synced to GitHub).
 
 ---
 

@@ -7,7 +7,13 @@ fi
 
 PROJECT_ROOT="$(dirname "$PYTHON_RUNNERS_DIR")"
 
-. "$PYTHON_RUNNERS_DIR/mandatory-tests.sh"
+_mandatory_tests_json() {
+    if [ -n "${MANDATORY_TESTS_JSON:-}" ] && [ -f "$MANDATORY_TESTS_JSON" ]; then
+        echo "$MANDATORY_TESTS_JSON"
+    else
+        echo "$PROJECT_ROOT/resource/mandatory-tests.json"
+    fi
+}
 
 resolve_python_cmd() {
     if command -v python3 > /dev/null 2>&1; then
@@ -24,7 +30,13 @@ pattern_for_pytest_k() {
 }
 
 get_mandatory_pattern_for_folder() {
-    mandatory_python_pattern "$1"
+    folder="$1"
+    json=$(_mandatory_tests_json)
+    if ! command -v jq > /dev/null 2>&1; then
+        echo "ERROR: jq is required to read mandatory-tests.json" >&2
+        exit 1
+    fi
+    jq -r --arg m "$folder" '.products[$m].python | join("|")' "$json"
 }
 
 resolve_needs_playwright() {

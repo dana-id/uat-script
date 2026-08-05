@@ -121,10 +121,38 @@ compute_maven_playwright_profile_args() {
     fi
 }
 
-. "$JAVA_RUNNERS_DIR/mandatory-tests.sh"
+JAVA_PROJECT_ROOT="$(dirname "$JAVA_RUNNERS_DIR")"
+
+_mandatory_tests_json() {
+    if [ -n "${MANDATORY_TESTS_JSON:-}" ] && [ -f "$MANDATORY_TESTS_JSON" ]; then
+        echo "$MANDATORY_TESTS_JSON"
+    else
+        echo "$JAVA_PROJECT_ROOT/resource/mandatory-tests.json"
+    fi
+}
+
+_mandatory_java_json_key() {
+    case "$1" in
+        paymentgateway) echo "payment_gateway" ;;
+        widget) echo "widget" ;;
+        disbursement) echo "disbursement" ;;
+        *) echo "$1" ;;
+    esac
+}
 
 get_mandatory_pattern_for_module() {
-    mandatory_java_pattern "$1"
+    module="$1"
+    key=$(_mandatory_java_json_key "$module")
+    json=$(_mandatory_tests_json)
+    if ! command -v jq > /dev/null 2>&1; then
+        echo "ERROR: jq is required to read mandatory-tests.json" >&2
+        exit 1
+    fi
+    jq -r --arg m "$key" '
+        .products[$m].java
+        | map(.class + "#" + (.methods | join("+")))
+        | join(",")
+    ' "$json"
 }
 
 discover_business_modules() {

@@ -5,15 +5,24 @@ if [ -z "${GO_RUNNERS_DIR:-}" ]; then
     exit 1
 fi
 
-. "$GO_RUNNERS_DIR/mandatory-tests.sh"
+PROJECT_ROOT="$(dirname "$GO_RUNNERS_DIR")"
 
-has_test_files() {
-    dir="$1"
-    [ -d "$dir" ] && find "$dir" -name "*_test.go" -type f 2>/dev/null | head -1 | grep -q .
+_mandatory_tests_json() {
+    if [ -n "${MANDATORY_TESTS_JSON:-}" ] && [ -f "$MANDATORY_TESTS_JSON" ]; then
+        echo "$MANDATORY_TESTS_JSON"
+    else
+        echo "$PROJECT_ROOT/resource/mandatory-tests.json"
+    fi
 }
 
 get_mandatory_pattern_for_module() {
-    mandatory_go_pattern "$1"
+    module="$1"
+    json=$(_mandatory_tests_json)
+    if ! command -v jq > /dev/null 2>&1; then
+        echo "ERROR: jq is required to read mandatory-tests.json" >&2
+        exit 1
+    fi
+    jq -r --arg m "$module" '.products[$m].go | join("|")' "$json"
 }
 
 load_env_if_exists() {

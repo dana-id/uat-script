@@ -8,10 +8,22 @@ fi
 PROJECT_ROOT="$(dirname "$NODE_RUNNERS_DIR")"
 NODE_TEST_DIR="$PROJECT_ROOT/test/node"
 
-. "$NODE_RUNNERS_DIR/mandatory-tests.sh"
+_mandatory_tests_json() {
+    if [ -n "${MANDATORY_TESTS_JSON:-}" ] && [ -f "$MANDATORY_TESTS_JSON" ]; then
+        echo "$MANDATORY_TESTS_JSON"
+    else
+        echo "$PROJECT_ROOT/resource/mandatory-tests.json"
+    fi
+}
 
 get_mandatory_pattern_for_folder() {
-    mandatory_node_pattern "$1"
+    folder="$1"
+    json=$(_mandatory_tests_json)
+    if ! command -v jq > /dev/null 2>&1; then
+        echo "ERROR: jq is required to read mandatory-tests.json" >&2
+        exit 1
+    fi
+    jq -r --arg m "$folder" '.products[$m].node | join("|")' "$json"
 }
 
 resolve_needs_playwright() {
