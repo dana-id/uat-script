@@ -74,10 +74,29 @@ _mandatory_java_module_to_key() {
     esac
 }
 
+_mandatory_uptime_schedule() {
+    [ "${MANDATORY_UPTIME_SCHEDULE:-false}" = "true" ] \
+        || [ "${PIPELINE_TRIGGER_SOURCE:-}" = "go-mandatory-schedule" ]
+}
+
+# Finish-notify (webhook / pay-order) — omitted from 15-min uptime schedule only.
+_mandatory_go_uptime_jq_filter() {
+    echo 'map(select(
+        . != "TestTransactionSuccessNotify"
+        and . != "TestInternalServerErrorNotify"
+        and . != "TestExpiredNotify"
+    ))'
+}
+
 mandatory_go_pattern() {
-    local module
+    local module filter
     module=$(_mandatory_product_key "$1")
-    _mandatory_jq -r --arg m "$module" '.products[$m].go | join("|")'
+    if _mandatory_uptime_schedule; then
+        filter=$(_mandatory_go_uptime_jq_filter)
+        _mandatory_jq -r --arg m "$module" ".products[\$m].go | $filter | join(\"|\")"
+    else
+        _mandatory_jq -r --arg m "$module" '.products[$m].go | join("|")'
+    fi
 }
 
 mandatory_python_pattern() {
@@ -109,9 +128,14 @@ mandatory_java_pattern() {
 }
 
 mandatory_go_count() {
-    local module
+    local module filter
     module=$(_mandatory_product_key "$1")
-    _mandatory_jq -r --arg m "$module" '.products[$m].go | length'
+    if _mandatory_uptime_schedule; then
+        filter=$(_mandatory_go_uptime_jq_filter)
+        _mandatory_jq -r --arg m "$module" ".products[\$m].go | $filter | length"
+    else
+        _mandatory_jq -r --arg m "$module" '.products[$m].go | length'
+    fi
 }
 
 get_mandatory_pattern_for_module() {
