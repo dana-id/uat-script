@@ -15,6 +15,11 @@ _mandatory_tests_json() {
     fi
 }
 
+has_test_files() {
+    dir="$1"
+    [ -d "$dir" ] && find "$dir" -name "*_test.go" -type f 2>/dev/null | head -1 | grep -q .
+}
+
 get_mandatory_pattern_for_module() {
     module="$1"
     json=$(_mandatory_tests_json)
