@@ -19,7 +19,19 @@ go_retry_sleep_seconds() {
     esac
 }
 
+mandatory_retry_disabled() {
+    # Scheduled mandatory smoke tests run every 15 min — fail fast; next slot is the retry.
+    # Set MANDATORY_ENABLE_RETRY=true to opt back into failed-test retries.
+    [ "${GO_MANDATORY_ONLY:-false}" = "true" ] \
+        && [ "${MANDATORY_ENABLE_RETRY:-false}" != "true" ]
+}
+
 resolve_retry_max_attempts() {
+    if mandatory_retry_disabled; then
+        echo 1
+        return
+    fi
+
     max="${RETRY_MAX_ATTEMPTS:-5}"
     case "$max" in
         ''|*[!0-9]*) max=5 ;;
@@ -80,6 +92,10 @@ run_go_test_cmd() {
     current_run_pattern="$initial_run_pattern"
     last_exit_code=1
     json_log=""
+
+    if [ "$max_attempts" -eq 1 ] && mandatory_retry_disabled; then
+        echo "Mandatory-only: single API attempt (no retry — next schedule run is the retry)"
+    fi
 
     set +e
     while [ "$attempt" -le "$max_attempts" ]; do
