@@ -65,6 +65,7 @@ func TestTopUpCustomerValid(t *testing.T) {
 	}
 
 	// Assert the API response with variable substitution
+	fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 	err = helper.AssertResponse(transferToDanaJsonPath, transferToDanaTitleCase, caseName, string(responseJSON), variableDict)
 	if err != nil {
 		t.Fatal(err)

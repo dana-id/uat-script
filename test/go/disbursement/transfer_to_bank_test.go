@@ -104,6 +104,7 @@ func TestDisbursementBankValidAccount(t *testing.T) {
 		}
 
 		// Assert the API response with variable substitution
+		fmt.Printf("[REF] case=%s partnerReferenceNo=%s\n", caseName, partnerReferenceNo)
 		err = helper.AssertResponse(transferToBankJsonPath, transferToBankTitleCase, caseName, string(responseJSON), variableDict)
 		if err != nil {
 			t.Fatal(err)
