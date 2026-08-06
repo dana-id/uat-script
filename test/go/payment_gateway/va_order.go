@@ -15,6 +15,8 @@ import (
 const (
 	DefaultPGComponentJSON = "../../../resource/request/components/PaymentGateway.json"
 	defaultSeedOrderAmount = "1.00"
+	// Merchant sandbox exposes CIMB/BNI VA (see ConsultPay); finish_notify uses CIMB successfully.
+	defaultVirtualAccountPayOption = "VIRTUAL_ACCOUNT_CIMB"
 )
 
 // DefaultSeedOrderAmount is the order amount used for readiness and refund happy paths.
@@ -22,8 +24,8 @@ func DefaultSeedOrderAmount() string {
 	return defaultSeedOrderAmount
 }
 
-// PatchCreateOrderAPIForVABRI switches a CreateOrderApi payload to VA BRI (sandbox-friendly, no browser).
-func PatchCreateOrderAPIForVABRI(jsonDict map[string]interface{}, amount string) {
+// PatchCreateOrderAPIForVirtualAccount switches CreateOrderApi to VA pay (sandbox tools, no browser).
+func PatchCreateOrderAPIForVirtualAccount(jsonDict map[string]interface{}, amount string) {
 	if amount == "" {
 		amount = defaultSeedOrderAmount
 	}
@@ -33,7 +35,7 @@ func PatchCreateOrderAPIForVABRI(jsonDict map[string]interface{}, amount string)
 	jsonDict["payOptionDetails"] = []interface{}{
 		map[string]interface{}{
 			"payMethod": "VIRTUAL_ACCOUNT",
-			"payOption": "VIRTUAL_ACCOUNT_BRI",
+			"payOption": defaultVirtualAccountPayOption,
 			"transAmount": map[string]interface{}{
 				"value":    amount,
 				"currency": "IDR",
@@ -42,7 +44,12 @@ func PatchCreateOrderAPIForVABRI(jsonDict map[string]interface{}, amount string)
 	}
 }
 
-// CreateOrderVABRI creates a PG API order with VA BRI and returns partner ref + JSON body.
+// PatchCreateOrderAPIForVABRI is deprecated naming — uses merchant-available VA CIMB (same as finish_notify).
+func PatchCreateOrderAPIForVABRI(jsonDict map[string]interface{}, amount string) {
+	PatchCreateOrderAPIForVirtualAccount(jsonDict, amount)
+}
+
+// CreateOrderVABRI creates a PG API VA order and returns partner ref + JSON body.
 func CreateOrderVABRI(componentJSONPath, amount string) (partnerReferenceNo, responseJSON string, err error) {
 	if componentJSONPath == "" {
 		componentJSONPath = DefaultPGComponentJSON
@@ -103,7 +110,7 @@ func PayVAFromCreateOrderResponse(responseJSON string) error {
 	return nil
 }
 
-// CreateAndPayOrderVABRI creates a VA BRI order and pays it through sandbox tools.
+// CreateAndPayOrderVABRI creates a VA order and pays it through sandbox tools.
 func CreateAndPayOrderVABRI(componentJSONPath string) (partnerReferenceNo string, err error) {
 	partnerReferenceNo, body, err := CreateOrderVABRI(componentJSONPath, defaultSeedOrderAmount)
 	if err != nil {
