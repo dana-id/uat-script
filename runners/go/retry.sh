@@ -32,6 +32,11 @@ resolve_retry_max_attempts() {
         return
     fi
 
+    if [ "${RETRY_MAX_ATTEMPTS:-}" = "1" ]; then
+        echo 1
+        return
+    fi
+
     max="${RETRY_MAX_ATTEMPTS:-5}"
     case "$max" in
         ''|*[!0-9]*) max=5 ;;
