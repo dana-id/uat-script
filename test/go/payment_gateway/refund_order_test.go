@@ -80,15 +80,9 @@ func createOrderInit() (string, string, error) {
 }
 
 func createPaidOrder(phoneNumber, pin string) (string, error) {
-	partnerReferenceNo, webRedirectUrl, err := createOrderInit()
-	if err != nil {
-		return "", fmt.Errorf("failed to create order: %w", err)
-	}
-
-	// Execute payment - PayOrder returns interface{}, not error
-	payment.PayOrder(phoneNumber, pin, webRedirectUrl)
-
-	return partnerReferenceNo, nil
+	_ = phoneNumber
+	_ = pin
+	return payment.CreateAndPayOrderVABRI(refundOrderJsonPath)
 }
 
 // TestRefundOrderInProgress tests refunding an order that is in progress
@@ -141,8 +135,6 @@ func TestRefundOrderInProgress(t *testing.T) {
 }
 
 func TestRefundOrderValid(t *testing.T) {
-	// Prevent parallel execution due to createPaidOrder using Playwright
-	t.Setenv("FORCE_SEQUENTIAL", "true")
 	helper.RetryTest(t, 3, 1, func() error {
 		// Create a paid order to get the original partner reference number
 		partnerReferenceNo, err := createPaidOrder(helper.TestConfig.PhoneNumber, helper.TestConfig.PIN)
