@@ -80,9 +80,15 @@ func createOrderInit() (string, string, error) {
 }
 
 func createPaidOrder(phoneNumber, pin string) (string, error) {
-	_ = phoneNumber
-	_ = pin
-	return payment.CreateAndPayOrderVABRI(refundOrderJsonPath)
+	partnerReferenceNo, webRedirectUrl, err := createOrderInit()
+	if err != nil {
+		return "", fmt.Errorf("failed to create order: %w", err)
+	}
+
+	// Execute payment - PayOrder returns interface{}, not error
+	payment.PayOrder(phoneNumber, pin, webRedirectUrl)
+
+	return partnerReferenceNo, nil
 }
 
 // TestRefundOrderInProgress tests refunding an order that is in progress
