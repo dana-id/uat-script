@@ -31,17 +31,46 @@ get_mandatory_pattern_for_module() {
 }
 
 load_env_if_exists() {
-    if [ -f "../.env" ]; then
+    if [ -f ".env" ]; then
         set -a
+        # shellcheck disable=SC1091
+        . ./.env
+        set +a
+        echo "Environment variables loaded from .env file"
+    elif [ -f "../.env" ]; then
+        set -a
+        # shellcheck disable=SC1091
         . ../.env
         set +a
         echo "Environment variables loaded from .env file"
     elif [ -f "../../.env" ]; then
         set -a
+        # shellcheck disable=SC1091
         . ../../.env
         set +a
         echo "Environment variables loaded from .env file"
     fi
+}
+
+load_project_root_env() {
+    if [ -f "$PROJECT_ROOT/.env" ]; then
+        set -a
+        # shellcheck disable=SC1090
+        . "$PROJECT_ROOT/.env"
+        set +a
+        echo "Environment variables loaded from $PROJECT_ROOT/.env"
+    fi
+}
+
+apply_disbursement_credentials_if_needed() {
+    if [ -z "${USE_DISBURSEMENT_CREDENTIALS:-}" ]; then
+        return 0
+    fi
+    echo "Using disbursement credentials (USE_DISBURSEMENT_CREDENTIALS)..."
+    export MERCHANT_ID="${DISBURSEMENT_MERCHANT_ID}"
+    export X_PARTNER_ID="${DISBURSEMENT_X_PARTNER_ID}"
+    export PRIVATE_KEY="${DISBURSEMENT_PRIVATE_KEY}"
+    export CLIENT_SECRET="${DISBURSEMENT_CLIENT_SECRET}"
 }
 
 prepare_go_deps() {
