@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dana-id/dana-go/v2/exceptions"
 	pg "github.com/dana-id/dana-go/v2/payment_gateway/v1"
 	"github.com/google/uuid"
 
@@ -14,48 +15,56 @@ import (
 
 const (
 	DefaultPGComponentJSON = "../../../resource/request/components/PaymentGateway.json"
-	defaultSeedOrderAmount = "1.00"
-	// Merchant sandbox exposes CIMB/BNI VA (see ConsultPay); finish_notify uses CIMB successfully.
-	defaultVirtualAccountPayOption = "VIRTUAL_ACCOUNT_CIMB"
+	// VA sandbox rejects tiny amounts; matches CreateOrderNetworkPayPgOtherVaBank fixture.
+	defaultSeedOrderAmount = "15000.00"
+	createOrderVACIMBCase  = "CreateOrderNetworkPayPgOtherVaBank"
 )
 
-// DefaultSeedOrderAmount is the order amount used for readiness and refund happy paths.
+// DefaultSeedOrderAmount is the order amount used for readiness seed/refund setup.
 func DefaultSeedOrderAmount() string {
 	return defaultSeedOrderAmount
 }
 
-// PatchCreateOrderAPIForVirtualAccount switches CreateOrderApi to VA pay (sandbox tools, no browser).
-func PatchCreateOrderAPIForVirtualAccount(jsonDict map[string]interface{}, amount string) {
+func patchCreateOrderAmount(jsonDict map[string]interface{}, amount string) {
 	if amount == "" {
-		amount = defaultSeedOrderAmount
+		return
 	}
 	if amt, ok := jsonDict["amount"].(map[string]interface{}); ok {
 		amt["value"] = amount
 	}
-	jsonDict["payOptionDetails"] = []interface{}{
-		map[string]interface{}{
-			"payMethod": "VIRTUAL_ACCOUNT",
-			"payOption": defaultVirtualAccountPayOption,
-			"transAmount": map[string]interface{}{
-				"value":    amount,
-				"currency": "IDR",
-			},
-		},
+	if details, ok := jsonDict["payOptionDetails"].([]interface{}); ok && len(details) > 0 {
+		if detail, ok := details[0].(map[string]interface{}); ok {
+			if trans, ok := detail["transAmount"].(map[string]interface{}); ok {
+				trans["value"] = amount
+			}
+		}
 	}
 }
 
-// PatchCreateOrderAPIForVABRI is deprecated naming — uses merchant-available VA CIMB (same as finish_notify).
-func PatchCreateOrderAPIForVABRI(jsonDict map[string]interface{}, amount string) {
-	PatchCreateOrderAPIForVirtualAccount(jsonDict, amount)
+func formatCreateOrderAPIError(err error) string {
+	if err == nil {
+		return ""
+	}
+	if apiErr, ok := err.(*exceptions.GenericOpenAPIError); ok {
+		if body := string(apiErr.Body()); body != "" {
+			return fmt.Sprintf("%v: %s", err, body)
+		}
+	}
+	return err.Error()
 }
 
-// CreateOrderVABRI creates a PG API VA order and returns partner ref + JSON body.
+// CreateOrderVABRI creates a PG API VA CIMB order and returns partner ref + JSON body.
+// Uses the dedicated VA fixture (not CreateOrderApi/BALANCE) — cancel readiness uses BALANCE
+// without payment; refund/seed need a payable VA order.
 func CreateOrderVABRI(componentJSONPath, amount string) (partnerReferenceNo, responseJSON string, err error) {
 	if componentJSONPath == "" {
 		componentJSONPath = DefaultPGComponentJSON
 	}
+	if amount == "" {
+		amount = defaultSeedOrderAmount
+	}
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
-		jsonDict, err := helper.GetRequest(componentJSONPath, "CreateOrder", "CreateOrderApi")
+		jsonDict, err := helper.GetRequest(componentJSONPath, "CreateOrder", createOrderVACIMBCase)
 		if err != nil {
 			return nil, err
 		}
@@ -63,22 +72,22 @@ func CreateOrderVABRI(componentJSONPath, amount string) (partnerReferenceNo, res
 		partnerReferenceNo = uuid.New().String()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["validUpTo"] = helper.GenerateFormattedDate(360, 7)
-		PatchCreateOrderAPIForVABRI(jsonDict, amount)
+		patchCreateOrderAmount(jsonDict, amount)
 
-		createOrderByAPIRequest := &pg.CreateOrderByApiRequest{}
+		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
 		jsonBytes, err := json.Marshal(jsonDict)
 		if err != nil {
 			return nil, err
 		}
-		if err = json.Unmarshal(jsonBytes, createOrderByAPIRequest); err != nil {
+		if err = json.Unmarshal(jsonBytes, createOrderByApiRequest); err != nil {
 			return nil, err
 		}
 
 		ctx := context.Background()
-		createOrderReq := pg.CreateOrderRequest{CreateOrderByApiRequest: createOrderByAPIRequest}
+		createOrderReq := pg.CreateOrderRequest{CreateOrderByApiRequest: createOrderByApiRequest}
 		apiResponse, httpResponse, err := helper.ApiClient.PaymentGatewayAPI.CreateOrder(ctx).CreateOrderRequest(createOrderReq).Execute()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%s", formatCreateOrderAPIError(err))
 		}
 		defer httpResponse.Body.Close()
 
