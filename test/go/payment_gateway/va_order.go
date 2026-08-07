@@ -4,25 +4,35 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/dana-id/dana-go/v2/exceptions"
 	pg "github.com/dana-id/dana-go/v2/payment_gateway/v1"
-	"github.com/google/uuid"
 
 	"uat-script/helper"
 )
 
 const (
 	DefaultPGComponentJSON = "../../../resource/request/components/PaymentGateway.json"
-	// VA sandbox rejects tiny amounts; matches CreateOrderNetworkPayPgOtherVaBank fixture.
+	// VA sandbox rejects tiny amounts; base fixture is CreateOrderNetworkPayPgOtherVaBank.
 	defaultSeedOrderAmount = "15000.00"
-	createOrderVACIMBCase  = "CreateOrderNetworkPayPgOtherVaBank"
+	createOrderVACase      = "CreateOrderNetworkPayPgOtherVaBank"
 )
 
 // DefaultSeedOrderAmount is the order amount used for readiness seed/refund setup.
 func DefaultSeedOrderAmount() string {
 	return defaultSeedOrderAmount
+}
+
+func newReadinessPartnerReferenceNo() string {
+	prefix := time.Now().Format("20060102")
+	suffix := fmt.Sprintf("%018d", rand.Int63n(1e18))
+	ref := prefix + suffix
+	if len(ref) > 30 {
+		return ref[:30]
+	}
+	return ref
 }
 
 func patchCreateOrderAmount(jsonDict map[string]interface{}, amount string) {
@@ -41,6 +51,43 @@ func patchCreateOrderAmount(jsonDict map[string]interface{}, amount string) {
 	}
 }
 
+// patchReadinessVABRIPayload adjusts the base VA fixture to match sandbox-successful VA BRI create.
+func patchReadinessVABRIPayload(jsonDict map[string]interface{}) {
+	delete(jsonDict, "subMerchantId")
+
+	jsonDict["urlParams"] = []interface{}{
+		map[string]interface{}{
+			"url":        "https://svc-notify-go-dev.ainosi.com/notify/v1/dana/v1.0/debit/notify",
+			"type":       "NOTIFICATION",
+			"isDeeplink": "Y",
+		},
+		map[string]interface{}{
+			"url":        "https://svc-notify-go-dev.ainosi.com",
+			"type":       "PAY_RETURN",
+			"isDeeplink": "Y",
+		},
+	}
+
+	if additionalInfo, ok := jsonDict["additionalInfo"].(map[string]interface{}); ok {
+		if order, ok := additionalInfo["order"].(map[string]interface{}); ok {
+			order["orderTitle"] = "Payment"
+			delete(order, "merchantTransType")
+		}
+		if envInfo, ok := additionalInfo["envInfo"].(map[string]interface{}); ok {
+			envInfo["terminalType"] = "APP"
+		}
+	}
+
+	if details, ok := jsonDict["payOptionDetails"].([]interface{}); ok && len(details) > 0 {
+		if detail, ok := details[0].(map[string]interface{}); ok {
+			detail["payOption"] = "VIRTUAL_ACCOUNT_BRI"
+			detail["additionalInfo"] = map[string]interface{}{
+				"phoneNumber": "621111111",
+			}
+		}
+	}
+}
+
 func formatCreateOrderAPIError(err error) string {
 	if err == nil {
 		return ""
@@ -53,9 +100,7 @@ func formatCreateOrderAPIError(err error) string {
 	return err.Error()
 }
 
-// CreateOrderVABRI creates a PG API VA CIMB order and returns partner ref + JSON body.
-// Uses the dedicated VA fixture (not CreateOrderApi/BALANCE) — cancel readiness uses BALANCE
-// without payment; refund/seed need a payable VA order.
+// CreateOrderVABRI creates a PG API VA BRI order and returns partner ref + JSON body.
 func CreateOrderVABRI(componentJSONPath, amount string) (partnerReferenceNo, responseJSON string, err error) {
 	if componentJSONPath == "" {
 		componentJSONPath = DefaultPGComponentJSON
@@ -64,15 +109,16 @@ func CreateOrderVABRI(componentJSONPath, amount string) (partnerReferenceNo, res
 		amount = defaultSeedOrderAmount
 	}
 	result, err := helper.RetryOnInconsistentRequest(func() (interface{}, error) {
-		jsonDict, err := helper.GetRequest(componentJSONPath, "CreateOrder", createOrderVACIMBCase)
+		jsonDict, err := helper.GetRequest(componentJSONPath, "CreateOrder", createOrderVACase)
 		if err != nil {
 			return nil, err
 		}
 
-		partnerReferenceNo = uuid.New().String()
+		partnerReferenceNo = newReadinessPartnerReferenceNo()
 		jsonDict["partnerReferenceNo"] = partnerReferenceNo
 		jsonDict["validUpTo"] = helper.GenerateFormattedDate(360, 7)
 		patchCreateOrderAmount(jsonDict, amount)
+		patchReadinessVABRIPayload(jsonDict)
 
 		createOrderByApiRequest := &pg.CreateOrderByApiRequest{}
 		jsonBytes, err := json.Marshal(jsonDict)
