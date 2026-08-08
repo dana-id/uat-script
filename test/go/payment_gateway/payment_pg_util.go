@@ -3,6 +3,7 @@ package payment_gateway
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -61,8 +62,26 @@ var payButtonSelectors = []string{
 	".btn.btn-primary.btn-pay",
 	".btn-pay",
 	"button:has-text(\"BAYAR\")",
+	"button:has-text(\"Bayar Rp\")",
+	"button:has-text(\"PAY Rp\")",
+	"button:has-text(\"PAY\")",
+	"button:has-text(\"Pay\")",
+	"button:has-text(\"Bayar\")",
+	"button:has-text(\"Confirm\")",
+	"button:has-text(\"Continue\")",
 	".btn.btn-primary",
+	"button.payment-button",
+	"button.dana-button",
 	"button[type='submit']",
+}
+
+var submitPinSelectors = []string{
+	"button[type='submit']:not(.btn-pay)",
+	".btn-submit",
+	"button:has-text(\"Submit\")",
+	"button:has-text(\"Confirm\")",
+	"button:has-text(\"Konfirmasi\")",
+	"button:has-text(\"Masuk\")",
 }
 
 var checkoutErrorSelectors = []string{
@@ -92,6 +111,26 @@ func waitForVisiblePayButton(page playwright.Page, timeout time.Duration) (playw
 		time.Sleep(500 * time.Millisecond)
 	}
 	return nil, "", fmt.Errorf("pay button not visible after %s (tried %v)", timeout, payButtonSelectors)
+}
+
+func logCheckoutDebug(page playwright.Page, context string) {
+	url := page.URL()
+	summary, err := page.Evaluate(`() => {
+		const buttons = Array.from(document.querySelectorAll('button'))
+			.filter(b => b.offsetParent !== null)
+			.map(b => ({
+				text: (b.textContent || '').trim().slice(0, 80),
+				className: b.className,
+				type: b.type || '',
+			}));
+		const bodyText = (document.body && document.body.innerText || '').replace(/\s+/g, ' ').trim().slice(0, 500);
+		return { buttons, bodyText };
+	}`)
+	if err != nil {
+		log.Printf("checkout debug (%s): url=%s evaluate err=%v", context, url, err)
+		return
+	}
+	log.Printf("checkout debug (%s): url=%s snapshot=%v", context, url, summary)
 }
 
 func checkoutPageError(page playwright.Page) string {
@@ -149,7 +188,15 @@ func enterPIN(page playwright.Page, pin string) error {
 		setter.call(el, pin);
 		el.dispatchEvent(new Event('input', { bubbles: true }));
 		el.dispatchEvent(new Event('change', { bubbles: true }));
+		el.dispatchEvent(new Event('blur', { bubbles: true }));
 		el.focus();
+		for (let i = 0; i < pin.length; i++) {
+			const char = pin[i];
+			el.dispatchEvent(new KeyboardEvent('keydown', { key: char, code: 'Digit' + char, bubbles: true }));
+			el.dispatchEvent(new KeyboardEvent('keyup', { key: char, code: 'Digit' + char, bubbles: true }));
+		}
+		el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', bubbles: true }));
+		el.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', code: 'Enter', bubbles: true }));
 		return el.value === pin;
 	}`, pin)
 	if err != nil {
@@ -161,6 +208,74 @@ func enterPIN(page playwright.Page, pin string) error {
 	log.Println("PIN entered")
 	time.Sleep(2 * time.Second)
 	return nil
+}
+
+func submitPinAfterEntry(page playwright.Page) {
+	if _, selector, err := waitForVisibleSelector(page, submitPinSelectors, 3*time.Second); err == nil {
+		loc := page.Locator(selector).First()
+		if clickErr := loc.Click(); clickErr == nil {
+			log.Printf("Submitted PIN via button (%s)", selector)
+			return
+		}
+	}
+	clicked, err := page.Evaluate(`() => {
+		const buttons = document.querySelectorAll('button');
+		for (const button of buttons) {
+			if (button.offsetParent === null) continue;
+			if (button.classList.contains('btn-pay') || button.classList.contains('btn-continue')) continue;
+			const text = (button.textContent || '').trim();
+			if (!text) continue;
+			if (/pay|bayar|continue|lanjut/i.test(text)) continue;
+			if (button.type === 'submit' || /submit|confirm|konfirmasi|masuk/i.test(text)) {
+				button.click();
+				return text;
+			}
+		}
+		return null;
+	}`)
+	if err == nil {
+		if label, ok := clicked.(string); ok && label != "" {
+			log.Printf("Submitted PIN via JS fallback (%q)", label)
+			return
+		}
+	}
+	log.Println("No PIN submit button found; relying on Enter key from PIN entry")
+}
+
+func clickPayButton(page playwright.Page, payButton playwright.Locator, selector string) error {
+	if err := payButton.Click(); err == nil {
+		log.Printf("Clicked Pay button (%s)", selector)
+		return nil
+	}
+	clicked, jsErr := page.Evaluate(`() => {
+		const buttons = document.querySelectorAll('button');
+		for (const button of buttons) {
+			if (button.offsetParent === null) continue;
+			const text = (button.textContent || '').trim();
+			if (button.classList.contains('btn-pay') ||
+				/pay|bayar|confirm|continue/i.test(text)) {
+				button.click();
+				return true;
+			}
+		}
+		return false;
+	}`)
+	if jsErr != nil {
+		return fmt.Errorf("error: could not click pay button: %w", jsErr)
+	}
+	if ok, _ := clicked.(bool); ok && ok {
+		log.Println("Clicked Pay button via JS fallback")
+		return nil
+	}
+	return fmt.Errorf("error: could not click pay button")
+}
+
+func playwrightHeadless() bool {
+	raw := strings.TrimSpace(strings.ToLower(os.Getenv("PLAYWRIGHT_HEADLESS")))
+	if raw == "false" || raw == "0" || raw == "no" {
+		return false
+	}
+	return true
 }
 
 func paymentAlreadySucceeded(page playwright.Page) bool {
@@ -197,7 +312,7 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 
 	browserType := pw.Chromium
 	browser, err := browserType.Launch(playwright.BrowserTypeLaunchOptions{
-		Headless: playwright.Bool(true),
+		Headless: playwright.Bool(playwrightHeadless()),
 		Args: []string{
 			"--no-sandbox",
 			"--disable-setuid-sandbox",
@@ -279,9 +394,13 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 	if err := enterPIN(page, pin); err != nil {
 		return err
 	}
-	log.Println("Submitted PIN")
+	submitPinAfterEntry(page)
 	log.Println("Waiting for PIN processing...")
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
+	_ = page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
+		State:   playwright.LoadStateNetworkidle,
+		Timeout: playwright.Float(float64(15 * time.Second / time.Millisecond)),
+	})
 
 	if paymentAlreadySucceeded(page) {
 		log.Println("Payment already succeeded on checkout page")
@@ -291,8 +410,9 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 		return fmt.Errorf("checkout error after PIN: %s", checkoutErr)
 	}
 
-	payButton, selector, err := waitForVisiblePayButton(page, 30*time.Second)
+	payButton, selector, err := waitForVisiblePayButton(page, 45*time.Second)
 	if err != nil {
+		logCheckoutDebug(page, "pay-button-missing")
 		if checkoutErr := checkoutPageError(page); checkoutErr != "" {
 			return fmt.Errorf("checkout error: %s", checkoutErr)
 		}
@@ -302,10 +422,9 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 
 	time.Sleep(2 * time.Second)
 
-	if err := payButton.Click(); err != nil {
-		return fmt.Errorf("error: could not click pay button: %w", err)
+	if err := clickPayButton(page, payButton, selector); err != nil {
+		return err
 	}
-	log.Println("Clicked Pay button")
 
 	// Wait until the textSuccess is visible with shorter timeout
 	err = page.Locator(textSuccess).WaitFor(playwright.LocatorWaitForOptions{
