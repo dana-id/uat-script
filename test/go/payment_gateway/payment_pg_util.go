@@ -4,10 +4,29 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mxschmitt/playwright-go"
 )
+
+var (
+	playwrightInstallOnce sync.Once
+	playwrightInstallErr  error
+)
+
+var pinInputSelectors = []string{
+	".txt-input-pin-field",
+	"input[maxlength=\"6\"][inputmode=\"numeric\"]",
+	"input[type=\"password\"]",
+}
+
+func ensurePlaywrightInstalled() error {
+	playwrightInstallOnce.Do(func() {
+		playwrightInstallErr = playwright.Install()
+	})
+	return playwrightInstallErr
+}
 
 var phoneInputSelectors = []string{
 	".desktop-input>.txt-input-phone-number-field",
@@ -91,14 +110,14 @@ func checkoutPageError(page playwright.Page) string {
 }
 
 func enterPIN(page playwright.Page, pin string) error {
-	pinSelector := ".txt-input-pin-field, input[maxlength=\"6\"][inputmode=\"numeric\"], input[type=\"password\"]"
-	pinLoc := page.Locator(pinSelector).First()
-	if err := pinLoc.WaitFor(playwright.LocatorWaitForOptions{
-		State:   playwright.WaitForSelectorStateVisible,
-		Timeout: playwright.Float(float64(15 * time.Second / time.Millisecond)),
-	}); err != nil {
+	time.Sleep(3 * time.Second)
+
+	pinLoc, selector, err := waitForVisibleSelector(page, pinInputSelectors, 30*time.Second)
+	if err != nil {
 		return fmt.Errorf("PIN field not visible: %w", err)
 	}
+	log.Printf("PIN field visible (%s)", selector)
+
 	if err := pinLoc.Click(); err != nil {
 		return fmt.Errorf("PIN field click: %w", err)
 	}
@@ -106,12 +125,41 @@ func enterPIN(page playwright.Page, pin string) error {
 	if err := page.Keyboard().Type(pin, playwright.KeyboardTypeOptions{
 		Delay: playwright.Float(100),
 	}); err != nil {
-		return fmt.Errorf("PIN keyboard type: %w", err)
+		log.Printf("PIN keyboard type: %v", err)
 	}
-	time.Sleep(500 * time.Millisecond)
-	if err := pinLoc.Press("Enter"); err != nil {
-		log.Printf("PIN Enter key: %v", err)
+
+	ok, err := page.Evaluate(`(pin) => {
+		const selectors = [
+			'input.txt-input-pin-field',
+			'input[class*="txt-input-pin-field"]',
+			'input[maxlength="6"][inputmode="numeric"]',
+			'input[type="password"]',
+			'input[inputmode="numeric"]',
+		];
+		let el = null;
+		for (const sel of selectors) {
+			const candidate = document.querySelector(sel);
+			if (candidate && candidate.offsetParent !== null) {
+				el = candidate;
+				break;
+			}
+		}
+		if (!el) return false;
+		const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+		setter.call(el, pin);
+		el.dispatchEvent(new Event('input', { bubbles: true }));
+		el.dispatchEvent(new Event('change', { bubbles: true }));
+		el.focus();
+		return el.value === pin;
+	}`, pin)
+	if err != nil {
+		return fmt.Errorf("PIN JS entry: %w", err)
 	}
+	if entered, _ := ok.(bool); !entered {
+		return fmt.Errorf("PIN JS entry failed")
+	}
+	log.Println("PIN entered")
+	time.Sleep(2 * time.Second)
 	return nil
 }
 
@@ -137,9 +185,8 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 		return fmt.Errorf("error: no checkout URL provided")
 	}
 
-	// Install playwright if it's not already installed
-	err := playwright.Install()
-	if err != nil {
+	// Install playwright once per process (retries reuse the same browser driver).
+	if err := ensurePlaywrightInstalled(); err != nil {
 		return fmt.Errorf("could not install playwright: %w", err)
 	}
 

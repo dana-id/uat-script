@@ -805,8 +805,8 @@
         }
       },
       "response": {
-        "responseCode": "2004300",
-        "responseMessage": "Success"
+        "responseCode": "2004300|2024300",
+        "responseMessage": "Success|Request In Progress"
       }
     },
     "DisbursementBankInsufficientFund": {
