@@ -3,10 +3,42 @@ package payment_gateway
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/mxschmitt/playwright-go"
 )
+
+var payButtonSelectors = []string{
+	"button.btn-pay",
+	".btn.btn-primary.btn-pay",
+	".btn-pay",
+	".btn.btn-primary",
+	"button[type='submit']",
+}
+
+func normalizePhoneNumber(phoneNumber string) string {
+	phone := strings.TrimSpace(phoneNumber)
+	if strings.HasPrefix(phone, "0") {
+		return phone[1:]
+	}
+	return phone
+}
+
+func waitForVisiblePayButton(page playwright.Page, timeout time.Duration) (playwright.Locator, string, error) {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		for _, selector := range payButtonSelectors {
+			loc := page.Locator(selector).First()
+			visible, err := loc.IsVisible()
+			if err == nil && visible {
+				return loc, selector, nil
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return nil, "", fmt.Errorf("pay button not visible after %s (tried %v)", timeout, payButtonSelectors)
+}
 
 func PayOrder(phoneNumber, pin, redirectUrl string) error {
 	// Create a custom allocator with non-headless mode
@@ -48,12 +80,12 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 
 	page, err := browser.NewPage()
 	if err != nil {
-		log.Fatalf("could not create page: %v", err)
+		return fmt.Errorf("could not create page: %w", err)
 	}
 	print("Redirect URL:", redirectUrl, "\n")
 
 	if _, err = page.Goto(redirectUrl); err != nil {
-		log.Fatalf("could not goto: %v", err)
+		return fmt.Errorf("could not goto: %w", err)
 	}
 	page.WaitForLoadState()
 
@@ -61,7 +93,6 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 	inputPhoneNumber := ".desktop-input>.txt-input-phone-number-field"
 	buttonSubmitPhoneNumber := ".agreement__button>.btn-continue"
 	inputPin := ".txt-input-pin-field"
-	buttonPay := ".btn.btn-primary"
 	textSuccess := "//*[contains(@class,'lbl-success')]"
 
 	// Wait for the phone number input to be visible
@@ -83,7 +114,7 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 
 		for _, selector := range danaPaySelectors {
 			elementCount, err := page.Locator(selector).Count()
-			if err != nil && elementCount > 0 {
+			if err == nil && elementCount > 0 {
 				log.Printf("DANA payment option found with selector: %s\n", selector)
 				danaButtonFound = true
 				err := page.Locator(selector).Click()
@@ -98,31 +129,36 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 			return fmt.Errorf("DANA payment option not found")
 		}
 	}
-	// Fill in the phone number and pin
-	page.Locator(inputPhoneNumber).Fill(phoneNumber)
+	phone := normalizePhoneNumber(phoneNumber)
+	page.Locator(inputPhoneNumber).Fill(phone)
 	page.Locator(buttonSubmitPhoneNumber).Click()
 	log.Println("Submitted phone number")
+	page.Locator(inputPin).WaitFor()
 	page.Locator(inputPin).Fill(pin)
 	log.Println("Submitted PIN")
+	if err := page.Locator(inputPin).Press("Enter"); err != nil {
+		log.Printf("PIN Enter key: %v", err)
+	}
+	log.Println("Waiting for PIN processing...")
+	time.Sleep(5 * time.Second)
 
-	// Wait until the buttonPay is visible
-	err = page.Locator(buttonPay).WaitFor(playwright.LocatorWaitForOptions{
-		State:   playwright.WaitForSelectorStateVisible,
-		Timeout: playwright.Float(float64(20 * time.Second / time.Millisecond)), // Reduced timeout for CI
-	})
+	payButton, selector, err := waitForVisiblePayButton(page, 30*time.Second)
 	if err != nil {
 		return fmt.Errorf("error: buttonPay not visible: %w", err)
 	}
+	log.Printf("Pay button visible (%s)", selector)
 
-	time.Sleep(2 * time.Second) // Reduced wait time
+	time.Sleep(2 * time.Second)
 
-	page.Locator(buttonPay).Click()
+	if err := payButton.Click(); err != nil {
+		return fmt.Errorf("error: could not click pay button: %w", err)
+	}
 	log.Println("Clicked Pay button")
 
 	// Wait until the textSuccess is visible with shorter timeout
 	err = page.Locator(textSuccess).WaitFor(playwright.LocatorWaitForOptions{
 		State:   playwright.WaitForSelectorStateVisible,
-		Timeout: playwright.Float(float64(20 * time.Second / time.Millisecond)), // Reduced timeout for CI
+		Timeout: playwright.Float(float64(30 * time.Second / time.Millisecond)),
 	})
 	if err != nil {
 		return fmt.Errorf("error: textSuccess not visible: %w", err)
