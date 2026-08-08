@@ -148,6 +148,85 @@ func checkoutPageError(page playwright.Page) string {
 	return ""
 }
 
+func cashierErrorFromPage(page playwright.Page) string {
+	url := page.URL()
+	if !strings.Contains(url, "/n/error") && !strings.Contains(url, "errorCode=") {
+		return ""
+	}
+	const marker = "errorCode="
+	idx := strings.Index(url, marker)
+	if idx < 0 {
+		return "cashier error page"
+	}
+	code := url[idx+len(marker):]
+	if end := strings.IndexAny(code, "&"); end >= 0 {
+		code = code[:end]
+	}
+	if code == "" {
+		return "cashier error page"
+	}
+	return code
+}
+
+// IsTerminalCashierError is true for sandbox /n/error pages (retry needs a fresh order URL).
+func IsTerminalCashierError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "checkout cashier error:") ||
+		strings.Contains(msg, "/n/error") ||
+		strings.Contains(msg, "errorCode=AE")
+}
+
+// DanaPhoneNumber returns PG pay automation phone (PG_DANA_PHONE or DANA_PHONE override).
+func DanaPhoneNumber() string {
+	for _, key := range []string{"PG_DANA_PHONE", "DANA_PHONE"} {
+		if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+			return v
+		}
+	}
+	return "083811223355"
+}
+
+// DanaPIN returns PG pay automation PIN (PG_DANA_PIN or DANA_PIN override).
+func DanaPIN() string {
+	for _, key := range []string{"PG_DANA_PIN", "DANA_PIN"} {
+		if v := strings.TrimSpace(os.Getenv(key)); v != "" {
+			return v
+		}
+	}
+	return "181818"
+}
+
+func waitForCheckoutAfterPIN(page playwright.Page, timeout time.Duration) (playwright.Locator, string, error) {
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if paymentAlreadySucceeded(page) {
+			return nil, "", nil
+		}
+		if code := cashierErrorFromPage(page); code != "" {
+			logCheckoutDebug(page, "cashier-error")
+			return nil, "", fmt.Errorf("checkout cashier error: %s", code)
+		}
+		if msg := checkoutPageError(page); msg != "" {
+			return nil, "", fmt.Errorf("checkout error after PIN: %s", msg)
+		}
+		if payButton, selector, err := waitForVisiblePayButton(page, 2*time.Second); err == nil {
+			return payButton, selector, nil
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	logCheckoutDebug(page, "pay-button-missing")
+	if code := cashierErrorFromPage(page); code != "" {
+		return nil, "", fmt.Errorf("checkout cashier error: %s", code)
+	}
+	if msg := checkoutPageError(page); msg != "" {
+		return nil, "", fmt.Errorf("checkout error: %s", msg)
+	}
+	return nil, "", fmt.Errorf("pay button not visible after %s (tried %v)", timeout, payButtonSelectors)
+}
+
 func enterPIN(page playwright.Page, pin string) error {
 	time.Sleep(3 * time.Second)
 
@@ -263,7 +342,7 @@ func clickPayButton(page playwright.Page, payButton playwright.Locator, selector
 	if jsErr != nil {
 		return fmt.Errorf("error: could not click pay button: %w", jsErr)
 	}
-	if ok, _ := clicked.(bool); ok && ok {
+	if ok, _ := clicked.(bool); ok {
 		log.Println("Clicked Pay button via JS fallback")
 		return nil
 	}
@@ -396,7 +475,7 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 	}
 	submitPinAfterEntry(page)
 	log.Println("Waiting for PIN processing...")
-	time.Sleep(10 * time.Second)
+	time.Sleep(3 * time.Second)
 	_ = page.WaitForLoadState(playwright.PageWaitForLoadStateOptions{
 		State:   playwright.LoadStateNetworkidle,
 		Timeout: playwright.Float(float64(15 * time.Second / time.Millisecond)),
@@ -406,17 +485,14 @@ func PayOrder(phoneNumber, pin, redirectUrl string) error {
 		log.Println("Payment already succeeded on checkout page")
 		return nil
 	}
-	if checkoutErr := checkoutPageError(page); checkoutErr != "" {
-		return fmt.Errorf("checkout error after PIN: %s", checkoutErr)
-	}
 
-	payButton, selector, err := waitForVisiblePayButton(page, 45*time.Second)
+	payButton, selector, err := waitForCheckoutAfterPIN(page, 45*time.Second)
 	if err != nil {
-		logCheckoutDebug(page, "pay-button-missing")
-		if checkoutErr := checkoutPageError(page); checkoutErr != "" {
-			return fmt.Errorf("checkout error: %s", checkoutErr)
-		}
 		return fmt.Errorf("error: buttonPay not visible: %w", err)
+	}
+	if payButton == nil {
+		log.Println("Payment already succeeded on checkout page")
+		return nil
 	}
 	log.Printf("Pay button visible (%s)", selector)
 
